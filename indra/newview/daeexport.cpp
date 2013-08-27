@@ -68,6 +68,9 @@
 #include "lfsimfeaturehandler.h"
 #include "llface.h"
 #include "llvovolume.h"
+#include "llviewerinventory.h"
+#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 
 // menu includes
 #include "llevent.h"
@@ -118,12 +121,49 @@ namespace DAEExportUtil
 	}
 
 	// Identical to the one in awavefront.cpp
-	bool can_export_node(const LLSelectNode* node)
+	bool can_export_node(LLSelectNode* node)
 	{
 		LLPermissions* perms = node->mPermissions;	// Is perms ever NULL?
 		// This tests the PERM_EXPORT bit too, which is not really necessary (just checking if it's set
 		// on the root prim would suffice), but also isn't hurting.
-		return perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().exportPolicy());
+		if (!(perms && perms->allowExportBy(gAgentID, LFSimFeatureHandler::instance().exportPolicy())))
+		{
+			return false;
+		}
+
+		// Additionally chack if this is a sculpt
+		LLViewerObject* obj = node->getObject();
+		if (obj->isSculpted() && !obj->isMesh())
+		{
+			LLSculptParams *sculpt_params = (LLSculptParams *)obj->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+			LLUUID sculpt_id = sculpt_params->getSculptTexture();
+
+			// Find inventory items with asset id of the sculpt map
+			LLViewerInventoryCategory::cat_array_t cats;
+			LLViewerInventoryItem::item_array_t items;
+			LLAssetIDMatches asset_id_matches(sculpt_id);
+			gInventory.collectDescendentsIf(LLUUID::null,
+							cats,
+							items,
+							LLInventoryModel::INCLUDE_TRASH,
+							asset_id_matches);
+
+			// See if any of the inventory items matching this sculpt id are exportable
+			for (S32 i = 0; i < items.count(); i++)
+			{
+				const LLPermissions item_permissions = items[i]->getPermissions();
+				if (item_permissions.allowExportBy(gAgentID, LFSimFeatureHandler::instance().exportPolicy()))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+		else // not sculpt, we already checked generic permissions
+		{
+			return true;
+		}
 	}
 
 	void saveSelectedObject()
@@ -141,7 +181,7 @@ namespace DAEExportUtil
 			{
 				total++;
 				LLSelectNode* node = *iter;
-				if (!can_export_node(node) || !node->getObject()->getVolume()) continue;
+				if (!node->getObject()->getVolume() || !can_export_node(node)) continue;
 				included++;
 				daesaver->Add(node->getObject(), node->mName);
 			}
