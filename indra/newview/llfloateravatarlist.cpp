@@ -1296,7 +1296,7 @@ void LLFloaterAvatarList::onClickGetKey()
 
 	if (NULL == item) return;
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
 }
 
 void LLFloaterAvatarList::sendKeys()

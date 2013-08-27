@@ -513,25 +513,7 @@ void LLWorldMapView::draw()
 				static const LLCachedControl<bool> show_avs("LiruMapShowAvCount");
 				if (show_avs) mesg += llformat(" (%d)", info->getAgentCount());
 
-				U8 access = info->getAccess();
-				switch(access)
-				{
-				case SIM_ACCESS_MIN:
-					mesg += " (Min)";
-					break;
-				case SIM_ACCESS_PG:
-					mesg += " (PG)";
-					break;
-				case SIM_ACCESS_MATURE:
-					mesg += " (Mature)";
-					break;
-				case SIM_ACCESS_ADULT:
-					mesg += " (Adult)";
-					break;
-				default:
-					mesg += llformat(" (Access=%d)",access);
-					break;
-				}
+				mesg += llformat(" (%s)", info->getAccessString().c_str());
 			}
 //			if (!mesg.empty())
 // [RLVa:KB] - Checked: 2012-02-08 (RLVa-1.4.5) | Added: RLVa-1.4.5
