@@ -311,6 +311,12 @@ void LLViewerInventoryItem::removeFromServer()
 
 void LLViewerInventoryItem::updateServer(BOOL is_new) const
 {
+	if(getWearableType() == LLWearableType::WT_UNKNOWN)
+	{
+		llwarns << "LLViewerInventoryItem::updateServer() - for item with unknown wearable type"
+				<< llendl;
+		return;
+	}
 	if(!mIsComplete)
 	{
 		// *FIX: deal with this better.
@@ -1777,6 +1783,15 @@ LLWearableType::EType LLViewerInventoryItem::getWearableType() const
 	return LLWearableType::EType(getFlags() & LLInventoryItemFlags::II_FLAGS_WEARABLES_MASK);
 }
 
+void LLViewerInventoryItem::setWearableType(LLWearableType::EType type)
+{
+	if (getWearableType() != LLWearableType::WT_UNKNOWN)
+	{
+		llwarns << "Calling LLViewerInventoryItem::setWearableType for item that does not have an unknown wearable type!?" << llendl;
+		return;
+	}
+	mFlags = (mFlags & ~LLInventoryItemFlags::II_FLAGS_WEARABLES_MASK) | type;
+}
 
 time_t LLViewerInventoryItem::getCreationDate() const
 {
