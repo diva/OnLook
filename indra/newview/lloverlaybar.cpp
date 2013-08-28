@@ -46,6 +46,7 @@
 #include "llbutton.h"
 #include "llchatbar.h"
 #include "llfocusmgr.h"
+#include "llimpanel.h"
 #include "llimview.h"
 #include "llmediaremotectrl.h"
 #include "llpanelaudiovolume.h"
@@ -308,9 +309,22 @@ void LLOverlayBar::refresh()
 {
 	bool buttons_changed = FALSE;
 
-	if(LLButton* button = updateButtonVisiblity(mNewIM,gIMMgr->getIMReceived()))
+	if (LLButton* button = updateButtonVisiblity(mNewIM,gIMMgr->getIMReceived()))
 	{
-		int unread_count = gIMMgr->getIMUnreadCount();
+		int unread_count(0);
+		static const LLCachedControl<bool> per_conversation("NewIMsPerConversation");
+		if (per_conversation)
+		{
+			for(std::set<LLHandle<LLFloater> >::const_iterator it = gIMMgr->getIMFloaterHandles().begin(); it != gIMMgr->getIMFloaterHandles().end(); ++it)
+				if (LLFloaterIMPanel* im_floater = static_cast<LLFloaterIMPanel*>(it->get()))
+					if (im_floater->getParent() != gFloaterView && im_floater->getNumUnreadMessages()) // Only count docked IMs
+						++unread_count;
+		}
+		else
+		{
+			unread_count = gIMMgr->getIMUnreadCount();
+		}
+
 		if (unread_count > 0)
 		{
 			if (unread_count > 1)
