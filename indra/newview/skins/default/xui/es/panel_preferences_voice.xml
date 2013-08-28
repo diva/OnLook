@@ -8,10 +8,13 @@
 	<string value="Permitir múltiples instancias de [APP_NAME] usar el voice simultáneamente (req. reiniciar)" name="multivoice_label"/>
 	<radio_group name="ear_location">
 		<radio_item name="0">
-			Oir el chat desde la posición de la cámara.
+			Escuchar chat de voz desde la posición de la cámara.
 		</radio_item>
 		<radio_item name="1">
-			Oir el chat desde la posición del avatar.
+			Escuchar chat de voz desde la posición del avatar.
+		</radio_item>
+		<radio_item name="3">
+			Escuchar chat de voz desde cualquier posición.
 		</radio_item>
 	</radio_group>
 	<text name="push_to_talk_heading">

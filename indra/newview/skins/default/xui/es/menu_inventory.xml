@@ -71,6 +71,8 @@
 	<menu_item_separator name="Animation Separator" />	
 	<menu_item_call name="Animation Play" label="Reproducir en el mundo"/>
 	<menu_item_call name="Animation Audition" label="Reproducir localmente" />
+	<menu_item_separator name="Send Instant Message Separator" />
+	<menu_item_call label="Perfil Web" name="Web Profile"/>
 	<menu_item_call name="Send Instant Message" label="Enviar MI"/>
 	<menu_item_call name="Offer Teleport..." label="Ofrecer Teleporte..."/>
 	<menu_item_call label="Solicitar Teleporte..." name="Request Teleport..."/>
