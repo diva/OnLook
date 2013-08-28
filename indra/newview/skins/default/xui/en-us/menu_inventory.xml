@@ -273,6 +273,9 @@
 		<on_click filter="" function="Inventory.DoToSelected" userdata="playlocal" />
 	</menu_item_call>
 	<menu_item_separator name="Send Instant Message Separator" />
+	<menu_item_call label="Web Profile" name="Web Profile">
+		<on_click function="Inventory.DoToSelected" userdata="web_profile"/>
+	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Send Instant Message" left="0"
 	     mouse_opaque="true" name="Send Instant Message" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="begin_im" />

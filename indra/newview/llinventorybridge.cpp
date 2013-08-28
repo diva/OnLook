@@ -4642,6 +4642,13 @@ void LLCallingCardBridge::performAction(LLInventoryModel* model, std::string act
 			LLAvatarActions::teleportRequest(item->getCreatorUUID());
 		}
 	}
+	else if ("web_profile" == action)
+	{
+		if (LLViewerInventoryItem* item = getItem())
+		{
+			LLAvatarActions::showProfile(item->getCreatorUUID(), true);
+		}
+	}
 
 	else LLItemBridge::performAction(model, action);
 }
@@ -4724,6 +4731,8 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			user_online = (LLAvatarTracker::instance().isBuddyOnline(item->getCreatorUUID()));
 		}
 		items.push_back(std::string("Send Instant Message Separator"));
+		if (!gSavedSettings.getString("WebProfileURL").empty() && !gSavedSettings.getBOOL("UseWebProfiles"))
+			items.push_back(std::string("Web Profile"));
 		items.push_back(std::string("Send Instant Message"));
 		items.push_back(std::string("Offer Teleport..."));
 		items.push_back(std::string("Request Teleport..."));
