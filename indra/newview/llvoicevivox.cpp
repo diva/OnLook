@@ -2564,41 +2564,44 @@ void LLVivoxVoiceClient::sendPositionalUpdate(void)
 
 		stream << "<ListenerPosition>";
 
-		LLVector3d	earPosition;
-		LLVector3	earVelocity;
-		LLMatrix3	earRot;
+        if (mEarLocation != earLocSpeaker)
+        {
+		    LLVector3d	earPosition;
+		    LLVector3	earVelocity;
+		    LLMatrix3	earRot;
 
-		switch(mEarLocation)
-		{
-			case earLocCamera:
-			default:
-				earPosition = mCameraPosition;
-				earVelocity = mCameraVelocity;
-				earRot = mCameraRot;
-			break;
+		    switch(mEarLocation)
+		    {
+			    case earLocCamera:
+			    default:
+				    earPosition = mCameraPosition;
+				    earVelocity = mCameraVelocity;
+				    earRot = mCameraRot;
+			    break;
 
-			case earLocAvatar:
-				earPosition = mAvatarPosition;
-				earVelocity = mAvatarVelocity;
-				earRot = mAvatarRot;
-			break;
+			    case earLocAvatar:
+				    earPosition = mAvatarPosition;
+				    earVelocity = mAvatarVelocity;
+				    earRot = mAvatarRot;
+			    break;
 
-			case earLocMixed:
-				earPosition = mAvatarPosition;
-				earVelocity = mAvatarVelocity;
-				earRot = mCameraRot;
-			break;
-		}
+			    case earLocMixed:
+				    earPosition = mAvatarPosition;
+				    earVelocity = mAvatarVelocity;
+				    earRot = mCameraRot;
+			    break;
+		    }
 
-		l = earRot.getLeftRow();
-		u = earRot.getUpRow();
-		a = earRot.getFwdRow();
-		pos = earPosition;
-		vel = earVelocity;
+		    l = earRot.getLeftRow();
+		    u = earRot.getUpRow();
+		    a = earRot.getFwdRow();
+		    pos = earPosition;
+		    vel = earVelocity;
 
 //		LL_DEBUGS("Voice") << "Sending listener position " << earPosition << LL_ENDL;
 
-		oldSDKTransform(l, u, a, pos, vel);
+		    oldSDKTransform(l, u, a, pos, vel);
+        }
 
 		stream
 			<< "<Position>"
