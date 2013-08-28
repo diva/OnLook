@@ -4117,6 +4117,11 @@ void reset_view_final( BOOL proceed )
 		return;
 	}
 
+	if (!gViewerWindow->getLeftMouseDown() && gAgentCamera.cameraThirdPerson() && gSavedSettings.getBOOL("ResetViewTurnsAvatar") && !gSavedSettings.getBOOL("FreezeTime"))
+	{
+		gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
+	}
+
 	gAgentCamera.switchCameraPreset(CAMERA_PRESET_REAR_VIEW);
 	gAgentCamera.resetView(TRUE, TRUE);
 	gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
