@@ -1204,7 +1204,7 @@ void LLWorldMapView::drawAgents()
 {	
 	F32 agents_scale = (sMapScale * 0.9f) / 256.f;
 
-	LLColor4 avatar_color = gColors.getColor( "MapAvatar" );
+	LLColor4 avatar_color = gSavedSettings.getColor( "MapAvatar" );
 	//	LLColor4 friend_color = gColors.getColor( "MapFriend" );
 
 	for (handle_list_t::iterator iter = mVisibleRegions.begin(); iter != mVisibleRegions.end(); ++iter)

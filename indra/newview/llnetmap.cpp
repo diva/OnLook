@@ -375,7 +375,7 @@ void LLNetMap::draw()
 		// Draw avatars
 //		LLColor4 mapcolor = gAvatarMapColor;
 
-		static const LLCachedControl<LLColor4>	standard_color(gColors,"MapAvatar",LLColor4(0.f,1.f,0.f,1.f));
+		static const LLCachedControl<LLColor4>	standard_color("MapAvatar",LLColor4(0.f,1.f,0.f,1.f));
 		static const LLCachedControl<LLColor4>	friend_color_stored("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 		static const LLCachedControl<LLColor4>	em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
 		static const LLCachedControl<LLColor4>	linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));

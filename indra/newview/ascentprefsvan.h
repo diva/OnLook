@@ -84,6 +84,7 @@ protected:
     LLColor4 mEstateOwnerColor;
     LLColor4 mLindenColor;
     LLColor4 mMutedColor;
+	LLColor4 mMapAvatarColor;
 	LLColor4 mCustomColor;
 	bool mColorFriendChat;
 	bool mColorEOChat;

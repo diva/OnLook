@@ -187,6 +187,7 @@ void LLPrefsAscentVan::refreshValues()
     mEstateOwnerColor		= gSavedSettings.getColor4("AscentEstateOwnerColor");
     mLindenColor			= gSavedSettings.getColor4("AscentLindenColor");
     mMutedColor				= gSavedSettings.getColor4("AscentMutedColor");
+	mMapAvatarColor			= gSavedSettings.getColor4("MapAvatar");
     mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
 	mColorFriendChat        = gSavedSettings.getBOOL("ColorFriendChat");
 	mColorEOChat            = gSavedSettings.getBOOL("ColorEstateOwnerChat");
@@ -258,6 +259,7 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setColor4("AscentEstateOwnerColor",   mEstateOwnerColor);
     gSavedSettings.setColor4("AscentLindenColor",        mLindenColor);
     gSavedSettings.setColor4("AscentMutedColor",         mMutedColor);
+	gSavedSettings.setColor4("MapAvatar",                mMapAvatarColor);
     gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
     gSavedSettings.setBOOL("ColorFriendChat",            mColorFriendChat);
     gSavedSettings.setBOOL("ColorEstateOwnerChat",       mColorEOChat);
