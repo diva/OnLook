@@ -567,13 +567,12 @@ BOOL LLFloaterIMPanel::postBuild()
 		{
 			flyout->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, flyout, _2));
 			flyout->add(getString("ding off"), 6);
+			flyout->add(getString("rp mode off"), 7);
 		}
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("history_btn"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickHistory, this));
-		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
-			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
 		getChild<LLButton>("start_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::startCall, gIMMgr, mSessionUUID, LLVoiceChannel::OUTGOING_CALL));
 		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, mSessionUUID));
@@ -1063,11 +1062,6 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 	self->setInputFocus(TRUE);
 }
 
-void LLFloaterIMPanel::onRPMode(const LLSD& value)
-{
-	mRPMode = value.asBoolean();
-}
-
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
 	if (value.isUndefined())
@@ -1085,8 +1079,10 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	else if (option >= 6) // Options that change labels need to stay in order at the end
 	{
 		std::string ding_label(mDing ? getString("ding on") : getString("ding off"));
+		std::string rp_label(mRPMode ? getString("rp mode on") : getString("rp mode off"));
 		// First remove them all
 		flyout->remove(ding_label);
+		flyout->remove(rp_label);
 
 		// Toggle as requested, adjust the strings
 		if (option == 6)
@@ -1094,9 +1090,15 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 			mDing = !mDing;
 			ding_label = mDing ? getString("ding on") : getString("ding off");
 		}
+		else if (option == 7)
+		{
+			mRPMode = !mRPMode;
+			rp_label = mRPMode ? getString("rp mode on") : getString("rp mode off");
+		}
 
 		// Last add them back
 		flyout->add(ding_label, 6);
+		flyout->add(rp_label, 7);
 	}
 }
 

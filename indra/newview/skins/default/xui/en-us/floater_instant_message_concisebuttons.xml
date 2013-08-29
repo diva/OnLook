@@ -20,7 +20,8 @@
     </flyout_button>
     <string name="ding on" value="Ding on new messages (On)"/>
     <string name="ding off" value="Ding on new messages (Off)"/>
-	<check_box bottom="-20" follows="right|top" height="20" left_delta="90" name="rp_mode">RP Mode</check_box>
+    <string name="rp mode on" value="RP Mode (On)"/>
+    <string name="rp mode off" value="RP Mode (Off)"/>
 	<button bottom="-20" follows="right|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="67" name="start_call_btn" width="60"/>
 	<button bottom="-20" follows="right|top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" scale_image="true" label="End" name="end_call_btn" width="24"/>
 	<panel mouse_opaque="false" border="false" bottom="-20" follows="right|top" height="20" left_delta="16" name="speaker_controls" width="60">

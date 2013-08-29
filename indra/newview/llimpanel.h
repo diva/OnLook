@@ -95,7 +95,6 @@ public:
 	void selectAll();
 	void selectNone();
 	void setVisible(BOOL b);
-	BOOL mRPMode;
 
 	S32 getNumUnreadMessages() { return mNumUnreadMessages; }
 
@@ -114,7 +113,6 @@ public:
 	static void		onTabClick( void* userdata );
 
 	void			onClickHistory();
-	void			onRPMode(const LLSD& value);
 	void			onFlyoutCommit(class LLComboBox* flyout, const LLSD& value);
 	static void		onClickStartCall( void* userdata );
 	static void		onClickEndCall( void* userdata );
@@ -241,6 +239,7 @@ private:
 	BOOL mCallBackEnabled;
 
 	bool mDing; // Whether or not to play a ding on new messages
+	bool mRPMode;
 
 	LLIMSpeakerMgr* mSpeakers;
 	LLParticipantList* mSpeakerPanel;
