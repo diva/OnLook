@@ -32,22 +32,19 @@
 #ifndef LL_IMPANEL_H
 #define LL_IMPANEL_H
 
-#include "llavatarnamecache.h"
 #include "llfloater.h"
 #include "lllogchat.h"
-#include "lluuid.h"
-#include "lldarray.h"
-#include "llinstantmessage.h"
-#include "llvoiceclient.h"
 #include "llstyle.h"
 
-class LLLineEditor;
-class LLViewerTextEditor;
-class LLInventoryItem;
-class LLInventoryCategory;
-class LLIMSpeakerMgr;
-class LLParticipantList;
+class LLAvatarName;
 class LLButton;
+class LLIMSpeakerMgr;
+class LLIMInfo;
+class LLInventoryCategory;
+class LLInventoryItem;
+class LLLineEditor;
+class LLParticipantList;
+class LLViewerTextEditor;
 class LLVoiceChannel;
 
 class LLFloaterIMPanel : public LLFloater

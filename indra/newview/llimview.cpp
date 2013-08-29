@@ -34,35 +34,25 @@
 
 #include "llimview.h"
 
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llbutton.h"
 #include "llhttpclient.h"
+#include "llhttpnode.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
+#include "llsdserialize.h"
 #include "llsdutil_math.h"
-#include "llstring.h"
 #include "lltrans.h"
 #include "lluictrlfactory.h"
 
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llavataractions.h"
-#include "llcallingcard.h"
-#include "llchat.h"
-#include "llresmgr.h"
+#include "llavatarnamecache.h"
 #include "llfloaterchat.h"
 #include "llfloaterchatterbox.h"
-#include "llhttpnode.h"
 #include "llimpanel.h"
-#include "llnotificationsutil.h"
-#include "llsdserialize.h"
-#include "llspeakers.h"
-#include "lltabcontainer.h"
 #include "llmutelist.h"
-#include "llviewermenu.h"
-#include "llviewermessage.h"
-#include "llviewerwindow.h"
+#include "llspeakers.h"
 #include "llvoavatar.h" // For mIdleTimer reset
-#include "llnotify.h"
 #include "llviewerregion.h"
 
 // [RLVa:KB]
@@ -80,6 +70,7 @@ LLIMMgr* gIMMgr = NULL;
 //
 // Helper Functions
 //
+std::string formatted_time(const time_t& the_time);
 LLVOAvatar* find_avatar_from_object(const LLUUID& id);
 
 LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_chat)
