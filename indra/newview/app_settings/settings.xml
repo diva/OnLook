@@ -762,6 +762,32 @@
       <key>Value</key>
       <integer>20000</integer>
     </map>
+    <key>LiruNewMessageSound</key>
+    <map>
+      <key>Comment</key>
+      <string>Sound ID to play when ding is on for an IM session and an IM comes in.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>67cc2844-00f3-2b3c-b991-6418d01e1bb7</string>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
+    <key>LiruNewMessageSoundForSystemMessages</key>
+    <map>
+      <key>Comment</key>
+      <string>Sound ID to play when ding is on for an IM session and a system message comes through, like when the correspondent starts typing or logs off. (Defaults to off)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string/>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
     <key>LiruNoTransactionClutter</key>
     <map>
       <key>Comment</key>

@@ -18,6 +18,8 @@
       <flyout_button_item label="Pay" name="profile_tele_btn" value="4"/>
       <flyout_button_item label="Invite To Group" name="profile_tele_btn" value="5"/>
     </flyout_button>
+    <string name="ding on" value="Ding on new messages (On)"/>
+    <string name="ding off" value="Ding on new messages (Off)"/>
 	<check_box bottom="-37" follows="top" height="20" left_delta="80" name="rp_mode">RP Mode</check_box>
 	<button bottom="-37" follows="left|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="80" name="start_call_btn" width="80"/>
 	<button bottom="-37" follows="top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" label="End" name="end_call_btn" visible="false" width="80"/>

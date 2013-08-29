@@ -46,6 +46,7 @@
 #include "llagent.h"
 #include "llavataractions.h"
 #include "llbutton.h"
+#include "llcombobox.h"
 #include "llcallingcard.h"
 #include "llchat.h"
 #include "llconsole.h"
@@ -549,6 +550,7 @@ BOOL LLFloaterIMPanel::postBuild()
 
 	if (checkRequirements())
 	{
+		mDing = false;
 		mRPMode = false;
 
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
@@ -561,9 +563,10 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
 		mInputEditor->setPassDelete( TRUE );
 
-		if (LLUICtrl* ctrl = findChild<LLUICtrl>("instant_message_flyout"))
+		if (LLComboBox* flyout = findChild<LLComboBox>("instant_message_flyout"))
 		{
-			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, _2));
+			flyout->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, flyout, _2));
+			flyout->add(getString("ding off"), 6);
 		}
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
@@ -796,6 +799,13 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 			{
 				incolor = mKeywordsColor;
 			}
+		}
+
+		if (mDing && (!hasFocus() || !gFocusMgr.getAppHasFocus()))
+		{
+			static const LLCachedControl<std::string> ding("LiruNewMessageSound");
+			static const LLCachedControl<std::string> dong("LiruNewMessageSoundForSystemMessages");
+			LLUI::sAudioCallback(LLUUID(source.notNull() ? ding : dong));
 		}
 	}
 
@@ -1053,13 +1063,12 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 	self->setInputFocus(TRUE);
 }
 
-
 void LLFloaterIMPanel::onRPMode(const LLSD& value)
 {
 	mRPMode = value.asBoolean();
 }
 
-void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
+void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
 	if (value.isUndefined())
 	{
@@ -1073,6 +1082,22 @@ void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
 	else if (option == 3) LLAvatarActions::teleportRequest(mOtherParticipantUUID);
 	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
 	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
+	else if (option >= 6) // Options that change labels need to stay in order at the end
+	{
+		std::string ding_label(mDing ? getString("ding on") : getString("ding off"));
+		// First remove them all
+		flyout->remove(ding_label);
+
+		// Toggle as requested, adjust the strings
+		if (option == 6)
+		{
+			mDing = !mDing;
+			ding_label = mDing ? getString("ding on") : getString("ding off");
+		}
+
+		// Last add them back
+		flyout->add(ding_label, 6);
+	}
 }
 
 void LLFloaterIMPanel::onClickHistory()

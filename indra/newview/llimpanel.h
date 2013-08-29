@@ -115,7 +115,7 @@ public:
 
 	void			onClickHistory();
 	void			onRPMode(const LLSD& value);
-	void			onFlyoutCommit(const LLSD& value);
+	void			onFlyoutCommit(class LLComboBox* flyout, const LLSD& value);
 	static void		onClickStartCall( void* userdata );
 	static void		onClickEndCall( void* userdata );
 	void			onClickToggleActiveSpeakers(const LLSD& value);
@@ -239,6 +239,8 @@ private:
 	BOOL mTextIMPossible;
 	BOOL mProfileButtonEnabled;
 	BOOL mCallBackEnabled;
+
+	bool mDing; // Whether or not to play a ding on new messages
 
 	LLIMSpeakerMgr* mSpeakers;
 	LLParticipantList* mSpeakerPanel;
