@@ -569,6 +569,10 @@ BOOL LLFloaterIMPanel::postBuild()
 			flyout->add(getString("ding off"), 6);
 			flyout->add(getString("rp mode off"), 7);
 		}
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("tp_btn"))
+			ctrl->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("pay_btn"))
+			ctrl->setCommitCallback(boost::bind(LLAvatarActions::pay, mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("history_btn"))
