@@ -57,8 +57,17 @@ void LFFloaterInvPanel::show(const LLUUID& cat_id, LLInventoryModel* model, cons
 // static
 void LFFloaterInvPanel::closeAll()
 {
-	for (instance_iter i = endInstances(); i >= beginInstances(); --i)
-		i->close();
+	// We must make a copy first, because LLInstanceTracker doesn't allow destruction while having iterators to it.
+	std::vector<LFFloaterInvPanel*> cache;
+	for (instance_iter i = beginInstances(); i != endInstances(); ++i)
+	{
+		cache.push_back(&*i);
+	}
+	// Now close all panels, without using instance_iter iterators.
+	for (std::vector<LFFloaterInvPanel*>::iterator i = cache.begin(); i != cache.end(); ++i)
+	{
+		(*i)->close();
+	}
 }
 
 // virtual
