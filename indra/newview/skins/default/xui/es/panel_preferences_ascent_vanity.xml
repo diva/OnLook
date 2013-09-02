@@ -56,6 +56,7 @@
 			<color_swatch label="Estado" name="estate_owner_color_swatch" tool_tip="Color para Administrador de Regiones"/>
 			<color_swatch label="Lindens" name="linden_color_swatch" tool_tip="Color para empleados de Linden Lab"/>
 			<color_swatch label="Ignorados" name="muted_color_swatch" tool_tip="Color para usuarios ignorados o bloqueados"/>
+			<color_swatch label="Otros" name="others_color_swatch" tool_tip="Color para todos los demás usuarios en el mapa y el mini mapa"/>
 			<color_swatch label="Pers.(Minimapa)" name="custom_color_swatch" tool_tip="Color solamente para usuarios marcados en el minimapa"/>
 			<text name="chat_color_text" bottom_delta="-13" >
 				Usar colores para chat:
