@@ -284,9 +284,9 @@
 	     mouse_opaque="true" name="Offer Teleport..." width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="lure" />
 	</menu_item_call>
-	<!--menu_item_call label="Request Teleport..." name="Request Teleport...">
+	<menu_item_call label="Request Teleport..." name="Request Teleport...">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="request_lure" />
-	</menu_item_call-->
+	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Start Conference Chat" left="0"
 	     mouse_opaque="true" name="Conference Chat" width="128">
 		<on_click filter="" function="Inventory.BeginIMSession" userdata="selected" />
