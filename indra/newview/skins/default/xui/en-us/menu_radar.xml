@@ -53,10 +53,10 @@
       <on_click function="Radar.TeleportTo"/>
       <on_enable function="List.EnableSingleSelected"/>
     </menu_item_call>
-    <!--menu_item_call label="Request Teleport" name="Request Teleport">
+    <menu_item_call label="Request Teleport" name="Request Teleport">
       <on_click function="List.RequestTeleport"/>
       <on_visible function="List.EnableSingleSelected"/>
-    </menu_item_call-->
+    </menu_item_call>
     <menu_item_call label="Track/Untrack" name="Track/Untrack">
       <on_click function="Radar.Track"/>
       <on_enable function="List.EnableSingleSelected"/>
