@@ -692,16 +692,18 @@ void LLPanelPermissions::refresh()
 			getChild<LLUICtrl>("B:")->setValue("B: " + perm_string);
 			getChildView("B:")->setVisible(							TRUE);
 			
+			/*
 			perm_string = mask_to_string(owner_mask_on);
 			if (!supports_export && owner_mask_on & PERM_EXPORT) // Hide Export when not available
 				perm_string.erase(perm_string.find_last_of("E"));
-			//getChild<LLUICtrl>("O:")->setValue("O: " + perm_string);
-			//getChildView("O:")->setVisible(							TRUE);
+			getChild<LLUICtrl>("O:")->setValue("O: " + perm_string);
+			getChildView("O:")->setVisible(							TRUE);
+			*/
 			
 			getChild<LLUICtrl>("G:")->setValue("G: " + mask_to_string(group_mask_on));
 			getChildView("G:")->setVisible(							TRUE);
 			
-			perm_string = mask_to_string(owner_mask_on);
+			perm_string = mask_to_string(everyone_mask_on);
 			if (!supports_export && everyone_mask_on & PERM_EXPORT) // Hide Export when not available
 				perm_string.erase(perm_string.find_last_of("E"));
 			getChild<LLUICtrl>("E:")->setValue("E: " + perm_string);

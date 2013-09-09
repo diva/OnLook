@@ -112,7 +112,7 @@ The following wildcards are available to enhance your autoresponses: #n for user
       <check_box control_name="AntiSpamScripts" height="16" label="Scripts" name="Scripts" bottom_delta="0" left_delta="120"/>
       <check_box control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
       <check_box control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
-      <!--check_box control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/-->
+      <check_box control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
       <text name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
       <check_box control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
       <check_box control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
