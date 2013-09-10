@@ -2833,6 +2833,19 @@ void LLPipeline::shiftObjects(const LLVector3 &offset)
 		mShiftList.resize(0);
 	}
 
+	//<FS:TS> FIRE-11593: Teleporting more than 4096 regions away clears screen
+	//        The spatial partition octree shift code has problems with
+	//        shifts of more than 4096 regions (1M meters). We shift just
+	//        less than that distance, and let later processing deal with
+	//        all the spatial partitions that are shifted far enough away
+	//        that we'll never see them anyway.
+	if (offset.length() > MAX_SHIFT_DISTANCE)
+	{
+		offseta.splat(MAX_SHIFT_DISTANCE);
+	}
+	//</FS:TS> FIRE-11593
+
+
 	{
 		LLFastTimer t(FTM_SHIFT_OCTREE);
 		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
@@ -4008,18 +4021,6 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	//LLGLState::checkTextureChannels();
 	//LLGLState::checkClientArrays();
 
-	//<FS:TS> FIRE-11593: Teleporting more than 4096 regions away clears screen
-	//        The spatial partition octree shift code has problems with
-	//        shifts of more than 4096 regions (1M meters). We shift just
-	//        less than that distance, and let later processing deal with
-	//        all the spatial partitions that are shifted far enough away
-	//        that we'll never see them anyway.
-	if (offset.length() > MAX_SHIFT_DISTANCE)
-	{
-		offseta.splat(MAX_SHIFT_DISTANCE);
-	}
-	//</FS:TS> FIRE-11593
-	
 
 	//stop_glerror();
 		
