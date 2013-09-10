@@ -6457,6 +6457,15 @@ bool handle_teleport_access_blocked(LLSD& llsdBlock)
 	return returnValue;
 }
 
+void home_position_set()
+{
+	// save the home location image to disk
+	std::string snap_filename = gDirUtilp->getLindenUserDir();
+	snap_filename += gDirUtilp->getDirDelimiter();
+	snap_filename += SCREEN_HOME_FILENAME;
+	gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, FALSE);
+}
+
 bool attempt_standard_notification(LLMessageSystem* msgsystem)
 {
 	// if we have additional alert data
@@ -6519,7 +6528,16 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 				return true;
 			}
 		}
-		
+		// HACK -- handle callbacks for specific alerts.
+		if (notificationID == "HomePositionSet")
+		{
+			home_position_set();
+		}
+		else if (notificationID == "YouDiedAndGotTPHome")
+		{
+			LLViewerStats::getInstance()->incStat(LLViewerStats::ST_KILLED_COUNT);
+		}
+
 		LLNotificationsUtil::add(notificationID, llsdBlock);
 		return true;
 	}	
@@ -6596,11 +6614,7 @@ void process_alert_core(const std::string& message, BOOL modal)
 	}
 	else if( message == "Home position set." )
 	{
-		// save the home location image to disk
-		std::string snap_filename = gDirUtilp->getLindenUserDir();
-		snap_filename += gDirUtilp->getDirDelimiter();
-		snap_filename += SCREEN_HOME_FILENAME;
-		gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, FALSE);
+		home_position_set();
 	}
 
 	const std::string ALERT_PREFIX("ALERT: ");
