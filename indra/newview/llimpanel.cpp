@@ -869,13 +869,13 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		// [/Ansariel: Display name support]
 	}
 
-	if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
-	{
-		mNumUnreadMessages++;
-	}
-
 	if (source.notNull())
 	{
+		if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
+		{
+			mNumUnreadMessages++;
+		}
+
 		mSpeakers->speakerChatted(source);
 		mSpeakers->setSpeakerTyping(source, FALSE);
 	}
