@@ -37,9 +37,10 @@
 		<flyout_button_item label="Pagar" name="profile_tele_btn"/>
 		<flyout_button_item label="Invitar  a Grupo" name="profile_tele_btn" value="5"/>
 	</flyout_button>
-	<check_box left_delta="75" name="rp_mode">
-		Modo RP
-	</check_box>
+	<string name="ding on" value="Timbre en Nuevos Mensajes (Encendido)"/>
+    <string name="ding off" value="Timbre en Nuevos Mensajes (Apagado)"/>
+    <string name="rp mode on" value="Modo RP (Encendido)"/>
+    <string name="rp mode off" value="Modo RP (Apagado)"/>
 	<button label="Llamar" left_delta="67" name="start_call_btn" width="60"/>
 	<button label="Finalizar" name="end_call_btn" width="24"/>
 	<panel left_delta="16" name="speaker_controls" width="60">
