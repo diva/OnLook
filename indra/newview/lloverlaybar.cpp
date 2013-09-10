@@ -294,19 +294,19 @@ void LLOverlayBar::refresh()
 {
 	bool buttons_changed = FALSE;
 
-	int count(0);
+	int unread_count(gIMMgr->getIMUnreadCount());
 	static const LLCachedControl<bool> per_conversation("NewIMsPerConversation");
-	if (per_conversation && !LLFloaterChatterBox::instanceVisible())
+	static const LLCachedControl<bool> reset_count("NewIMsPerConversationReset");
+	if (per_conversation && (!reset_count || unread_count) && !LLFloaterChatterBox::instanceVisible())
 	{
+		unread_count = 0;
 		for(std::set<LLHandle<LLFloater> >::const_iterator it = gIMMgr->getIMFloaterHandles().begin(); it != gIMMgr->getIMFloaterHandles().end(); ++it)
 			if (LLFloaterIMPanel* im_floater = static_cast<LLFloaterIMPanel*>(it->get()))
 				if (im_floater->getParent() != gFloaterView && im_floater->getNumUnreadMessages()) // Only count docked IMs
-					++count;
+					++unread_count;
 	}
-	if (LLButton* button = updateButtonVisiblity(mNewIM, per_conversation ? count : gIMMgr->getIMReceived()))
+	if (LLButton* button = updateButtonVisiblity(mNewIM, unread_count))
 	{
-		int unread_count(per_conversation ? count : gIMMgr->getIMUnreadCount());
-
 		if (unread_count > 0)
 		{
 			if (unread_count > 1)

@@ -977,6 +977,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <boolean>0</boolean>
     </map>
+    <key>NewIMsPerConversationReset</key>
+    <map>
+      <key>Comment</key>
+      <string>When NewIMsPerConversation is on, this determines when the New IMs button becomes visible while the communicate floater is closed.  True will wait until a new IM is received, false displays as long as a conversation is unread.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
     <key>ResetFocusOnSelfClick</key>
 		<map>
 		<key>Comment</key>
