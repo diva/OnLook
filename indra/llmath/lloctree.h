@@ -1010,7 +1010,7 @@ public:
 		}
 		
 		LLVector4a MAX_MAG;
-		MAX_MAG.splat(1024.f*1024.f);
+		MAX_MAG.splat(32767.f * 256.f); // Singu note: SVC-2941 FIRE-11593 maximum increased to 32768 sims across from 4096
 
 		const LLVector4a& v = data->getPositionGroup();
 
