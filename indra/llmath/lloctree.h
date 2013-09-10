@@ -1009,6 +1009,9 @@ public:
 			return false;
 		}
 		
+// Singu note: Don't limit center of octree to 2^20, otherwise we end with the famous longjump bug (cannot TP further than 4095 regions [4096*256 = 2^20]
+// SVC-2941 FIRE-11593
+#if 0
 		LLVector4a MAX_MAG;
 		MAX_MAG.splat(1024.f*1024.f);
 
@@ -1024,6 +1027,7 @@ public:
 			//OCT_ERRS << "!!! ELEMENT EXCEEDS RANGE OF SPATIAL PARTITION !!!" << llendl;
 			return false;
 		}
+#endif
 
 		if (this->getSize()[0] > data->getBinRadius() && this->isInside(data->getPositionGroup()))
 		{
