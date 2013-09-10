@@ -34,7 +34,7 @@
 		Ofrecido un Item de Inventario
 	</string>
 	<flyout_button label="Perfil" name="instant_message_flyout">
-		<!--flyout_button_item label="Solicitar Teleporte" name="profile_tele_btn"/-->
+		<flyout_button_item label="Solicitar Teleporte" name="request_teleport_item"/>
 		<flyout_button_item label="Invitar al Grupo" name="group_invite_item"/>
 	</flyout_button>
 	<string name="ding on" value="Timbre en Nuevos Mensajes (Encendido)"/>
