@@ -623,6 +623,9 @@ public:
 				child->insert(data);
 			}
 		}
+// Singu note: now that we allow wider range in octree, discard them here
+// if they fall out of range
+#if 0
 		else 
 		{
 			//it's not in here, give it to the root
@@ -641,6 +644,7 @@ public:
 				node->insert(data);
 			}
 		}
+#endif
 
 		return false;
 	}
