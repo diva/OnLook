@@ -2298,9 +2298,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			gIMMgr->processIMTypingStop(im_info);
 		}
 // [/RLVa:KB]
-//		else if (offline == IM_ONLINE && !is_linden && is_busy && name != SYSTEM_FROM)
+//		else if (offline == IM_ONLINE && !is_linden && !is_muted && is_busy && name != SYSTEM_FROM)
 // [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-		else if ( (offline == IM_ONLINE && !is_linden && is_busy && name != SYSTEM_FROM) && (gRlvHandler.canReceiveIM(from_id)) )
+		else if ( (offline == IM_ONLINE && !is_linden && !is_muted && is_busy && name != SYSTEM_FROM) && (gRlvHandler.canReceiveIM(from_id)) )
 // [/RLVa:KB]
 		{
 			// return a standard "busy" message, but only do it to online IM
@@ -2732,7 +2732,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_GROUP_INVITATION:
 		{
 			//if (!is_linden && (is_busy || is_muted))
-			if ((is_busy || is_muted))
+			if (is_muted) return;
+			if (is_busy)
 			{
 				LLMessageSystem *msg = gMessageSystem;
 				busy_message(msg,from_id);
@@ -3327,7 +3328,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			payload["online"] = (offline == IM_ONLINE);
 			payload["sender"] = msg->getSender().getIPandPort();
 
-			if (is_busy)
+			if (!is_muted && is_busy)
 			{
 				busy_message(msg, from_id);
 				LLNotifications::instance().forceResponse(LLNotification::Params("OfferFriendship").payload(payload), 1);
@@ -4029,7 +4030,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, FALSE);
 			static_cast<LLVOAvatar*>(chatter)->stopTyping();
 
-			if (!is_muted && !is_busy)
+			if (!is_muted /*&& !is_busy*/)
 			{
 				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
 				visible_in_chat_bubble = use_chat_bubbles;
