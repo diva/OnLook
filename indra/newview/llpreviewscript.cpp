@@ -1447,6 +1447,7 @@ void LLPreviewLSL::saveIfNeeded(bool sync /*= true*/)
 
 	mPendingUploads = 0;
 	mScriptEd->mErrorList->deleteAllItems();
+	mScriptEd->mErrorList->setCommentText("");
 	mScriptEd->mEditor->makePristine();
 
 	// save off asset into file
@@ -2190,6 +2191,7 @@ void LLLiveLSLEditor::saveIfNeeded(bool sync /*= true*/)
 	mScriptEd->enableSave(FALSE);
 	mScriptEd->mEditor->makePristine();
 	mScriptEd->mErrorList->deleteAllItems();
+	mScriptEd->mErrorList->setCommentText("");
 
 	// set up the save on the local machine.
 	mScriptEd->mEditor->makePristine();
