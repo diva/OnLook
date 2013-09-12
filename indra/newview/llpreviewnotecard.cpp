@@ -159,8 +159,6 @@ LLPreviewNotecard::LLPreviewNotecard(const std::string& name,
 	}
 
 	initMenu();
-
-	gAgentCamera.changeCameraToDefault();
 }
 
 LLPreviewNotecard::~LLPreviewNotecard()
