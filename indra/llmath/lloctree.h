@@ -1014,7 +1014,7 @@ public:
 		}
 		
 		LLVector4a MAX_MAG;
-		MAX_MAG.splat(2048.f * 2048.f); // Singu note: SVC-2941 FIRE-11593 (original range was 1024 * 1024)
+		MAX_MAG.splat(1024.f * 1024.f);
 
 		const LLVector4a& v = data->getPositionGroup();
 

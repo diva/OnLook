@@ -338,7 +338,11 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 
 	// Create the object lists
 	initStats();
+	initPartitions();
+}
 
+void LLViewerRegion::initPartitions()
+{
 	//create object partitions
 	//MUST MATCH declaration of eObjectPartitions
 	mImpl->mObjectPartition.push_back(new LLHUDPartition());		//PARTITION_HUD
@@ -357,6 +361,12 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mImpl->mObjectPartition.push_back(NULL);						//PARTITION_NONE
 }
 
+void LLViewerRegion::reInitPartitions()
+{
+	std::for_each(mImpl->mObjectPartition.begin(), mImpl->mObjectPartition.end(), DeletePointer());
+	mImpl->mObjectPartition.clear();
+	initPartitions();
+}
 
 void LLViewerRegion::initStats()
 {
