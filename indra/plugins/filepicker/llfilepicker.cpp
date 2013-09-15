@@ -692,6 +692,18 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 			L"Landmarks (*.phy)\0*.phy\0" \
 			L"\0";
 		break;
+	case FFSAVE_IMAGE:
+		mOFN.lpstrDefExt = NULL;
+		mOFN.lpstrFilter =
+			L"Image (*.bmp *.dxt *.jpg *.jpeg *.j2c *.mip *.png *.tga)\0*.bmp;*.dxt;*.jpg;*.jpeg;*.j2c;*.mip;*.png;*.tga\0" \
+			L"PNG Image (*.png)\0*.png\0" \
+			L"Targa Image (*.tga)\0*.tga\0" \
+			L"Bitmap Image (*.bmp)\0*.bmp\0" \
+			L"JPEG Image (*.jpg *.jpeg)\0*.jpg;*.jpeg\0" \
+			L"Compressed Image (*.j2c)\0*.j2c\0" \
+			L"DXT Image (*.dxt *.mip)\0*.dxt;*.mip\0" \
+			L"\0";
+		break;
 	// </edit>
 	default:
 		return FALSE;
@@ -1423,6 +1435,21 @@ static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 	return filtername;
 }
 
+static std::string add_imagesave_filter_to_gtkchooser(GTKWindow *picker)
+{
+	GtkFileFilter *gfilter = gtk_file_filter_new();
+	gtk_file_filter_add_mime_type(gfilter, "image/bmp");
+	gtk_file_filter_add_pattern(gfilter, "*.dxt");
+	gtk_file_filter_add_mime_type(gfilter, "image/jpeg");
+	gtk_file_filter_add_pattern(gfilter, "*.j2c");
+	gtk_file_filter_add_pattern(gfilter, "*.mip");
+	gtk_file_filter_add_mime_type(gfilter, "image/png");
+	gtk_file_filter_add_pattern(gfilter, "*.tga");
+	std::string filtername = LLTrans::getString("image_files") + "(*.bmp; *.dxt; *.jpg; *.jpeg; *.j2c; *.mip; *.png; *.tga)";
+	add_common_filters_to_gtkchooser(gfilter, picker, filtername);
+	return filtername;
+}
+
 static std::string add_script_filter_to_gtkchooser(GtkWindow *picker)
 {
 	return add_simple_mime_filter_to_gtkchooser(picker,  "text/plain",
@@ -1496,6 +1523,10 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 		case FFSAVE_SCRIPT:
 			caption += add_script_filter_to_gtkchooser(picker);
 			suggest_ext = ".lsl";
+			break;
+		case FFSAVE_IMAGE:
+			caption += add_imagesave_filter_to_gtkchooser(picker);
+			suggest_ext = ".png";
 			break;
 		default:;
 			break;
