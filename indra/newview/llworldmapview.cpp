@@ -2137,6 +2137,7 @@ BOOL LLWorldMapView::handleDoubleClick( S32 x, S32 y, MASK mask )
 			}
 		default:
 			{
+				if (!gSavedSettings.getBOOL("DoubleClickTeleportMap")) return true;
 				if (LLWorldMap::getInstance()->isTracking())
 				{
 					LLWorldMap::getInstance()->setTrackingDoubleClick();
