@@ -766,8 +766,8 @@ bool DAESaver::saveDAE(std::string filename)
 
 	// File creator
 	daeElement* contributor = asset->add("contributor");
-	contributor->add("author")->setCharData(llformat("%s User", LLAppViewer::instance()->getSecondLifeTitle()));
-	contributor->add("authoring_tool")->setCharData(llformat("%s Collada Export", LLAppViewer::instance()->getSecondLifeTitle()));
+	contributor->add("author")->setCharData(LLAppViewer::instance()->getSecondLifeTitle() + " User");
+	contributor->add("authoring_tool")->setCharData(LLAppViewer::instance()->getSecondLifeTitle() + " Collada Export");
 
 	daeElement* images = root->add("library_images");
 	daeElement* geomLib = root->add("library_geometries");
@@ -1041,13 +1041,13 @@ void DAESaver::generateEffects(daeElement *effects)
 			{
 				colladaName = mTextureNames[i] + "_" + mImageFormat;
 				daeElement* newparam = profile->add("newparam");
-				newparam->setAttribute("sid", llformat("%s-surface", colladaName).c_str());
+				newparam->setAttribute("sid", (colladaName + "-surface").c_str());
 				daeElement* surface = newparam->add("surface");
 				surface->setAttribute("type", "2D");
 				surface->add("init_from")->setCharData(colladaName.c_str());
 				newparam = profile->add("newparam");
-				newparam->setAttribute("sid", llformat("%s-sampler", colladaName).c_str());
-				newparam->add("sampler2D source")->setCharData(llformat("%s-surface", colladaName).c_str());
+				newparam->setAttribute("sid", (colladaName + "-sampler").c_str());
+				newparam->add("sampler2D source")->setCharData((colladaName + "-surface").c_str());
 			}
 		}
 
@@ -1059,7 +1059,7 @@ void DAESaver::generateEffects(daeElement *effects)
 		if (!colladaName.empty())
 		{
 			daeElement* txtr = diffuse->add("texture");
-			txtr->setAttribute("texture", llformat("%s-sampler", colladaName).c_str());
+			txtr->setAttribute("texture", (colladaName + "-sampler").c_str());
 			txtr->setAttribute("texcoord", colladaName.c_str());
 		}
 		else
