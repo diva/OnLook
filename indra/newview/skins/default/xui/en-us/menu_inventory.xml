@@ -25,6 +25,9 @@
 	     name="Task Remove" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="delete" />
 	</menu_item_call>
+	<menu_item_call label="Reset" name="Task Reset">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="reset_script" />
+	</menu_item_call>
 	<menu_item_call label="Set Not Running" name="Task Set Not Running">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="stop_script" />
 	</menu_item_call>
