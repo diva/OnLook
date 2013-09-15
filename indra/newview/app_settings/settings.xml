@@ -846,6 +846,19 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LogShowHistoryLines</key>
+    <map>
+      <key>Comment</key>
+      <string>Lines of history to load from log file if LogShowHistory is true.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>32</integer>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
     <key>ContactsUseHorizontalButtons</key>
     <map>
       <key>Comment</key>
