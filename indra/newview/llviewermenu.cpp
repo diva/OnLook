@@ -2891,24 +2891,18 @@ class LLObjectEnableExport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLPermissions perms;
-		bool new_value = LLSelectMgr::getInstance()->selectGetPermissions(perms) && perms.isOwned();	// At least one object, accumulated permissions of all objects.
 		ExportPolicy export_policy = LFSimFeatureHandler::instance().exportPolicy();
-		if (new_value && !(export_policy == ep_export_bit && (perms.getMaskEveryone() & PERM_EXPORT)))	// No need to call allowExportBy if PERM_EXPORT is set on (all) root objects.
+		bool can_export_any = false;
+		LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+		for (LLObjectSelection::iterator node = selection->begin(); node != selection->end(); ++node)
 		{
-			bool can_export_any = false;
-			LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
-			for (LLObjectSelection::iterator node = selection->begin(); node != selection->end(); ++node)
+			if ((*node)->mPermissions->allowExportBy(gAgent.getID(), export_policy))
 			{
-				if ((*node)->mPermissions->allowExportBy(gAgent.getID(), export_policy))
-				{
-					can_export_any = true;
-					break;
-				}
+				can_export_any = true;
+				break;
 			}
-			new_value = can_export_any;
 		}
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(can_export_any);
 		return true;
 	}
 };
