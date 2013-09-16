@@ -36,9 +36,7 @@
 #include "lllogchat.h"
 #include "llappviewer.h"
 #include "llfloaterchat.h"
-#include "llviewercontrol.h"
 
-const S32 LOG_RECALL_SIZE = 2048;
 
 //static
 std::string LLLogChat::makeLogFileName(std::string filename)
@@ -137,47 +135,19 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 		return ;
 	}
 
-	LLFILE* fptr = LLFile::fopen(makeLogFileName(filename), "r");		/*Flawfinder: ignore*/
-	if (!fptr)
+	llifstream ifstr(makeLogFileName(filename));
+	if (!ifstr.is_open())
 	{
-		//LLUIString message = LLFloaterChat::getInstance()->getString("IM_logging_string");
-		//callback(LOG_EMPTY,"IM_logging_string",userdata);
 		callback(LOG_EMPTY,LLStringUtil::null,userdata);
-		return;			//No previous conversation with this name.
 	}
 	else
 	{
-		char buffer[LOG_RECALL_SIZE];		/*Flawfinder: ignore*/
-		char *bptr;
-		S32 len;
-		bool firstline=TRUE;
-
-		if ( fseek(fptr, (LOG_RECALL_SIZE - 1) * -1  , SEEK_END) )		
-		{	//File is smaller than recall size.  Get it all.
-			firstline = FALSE;
-			if ( fseek(fptr, 0, SEEK_SET) )
-			{
-				fclose(fptr);
-				return;
-			}
-		}
-
-		while ( fgets(buffer, LOG_RECALL_SIZE, fptr)  && !feof(fptr) ) 
+		static const LLCachedControl<U32> lines("LogShowHistoryLines", 32);
+		std::string line;
+		for (U32 i = 0; i < lines && getline(ifstr, line); ++i)
 		{
-			len = strlen(buffer) - 1;		/*Flawfinder: ignore*/
-			for ( bptr = (buffer + len); (*bptr == '\n' || *bptr == '\r') && bptr>buffer; bptr--)	*bptr='\0';
-			
-			if (!firstline)
-			{
-				callback(LOG_LINE,std::string(buffer),userdata);
-			}
-			else
-			{
-				firstline = FALSE;
-			}
+			callback(LOG_LINE, line, userdata);
 		}
 		callback(LOG_END,LLStringUtil::null,userdata);
-		
-		fclose(fptr);
 	}
 }

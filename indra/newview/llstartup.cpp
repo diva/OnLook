@@ -1551,6 +1551,7 @@ bool idle_startup()
 				{
 					name += " " + lastname;
 				}
+				if (gSavedSettings.getBOOL("LiruGridInTitle")) gWindowTitle += "- " + gHippoGridManager->getCurrentGrid()->getGridName() + " ";
 				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);

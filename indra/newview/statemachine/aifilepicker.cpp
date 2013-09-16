@@ -329,6 +329,9 @@ void AIFilePicker::open(std::string const& filename, ESaveFilter filter, std::st
 		case FFSAVE_PHYSICS:
 			mFilter = "physics";
 			break;
+		case FFSAVE_IMAGE:
+			mFilter = "image";
+			break;
 	}
 }
 

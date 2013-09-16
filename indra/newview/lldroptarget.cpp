@@ -79,8 +79,6 @@ LLDropTarget::LLDropTarget(const LLDropTarget::Params& p)
 
 LLDropTarget::~LLDropTarget()
 {
-	delete mText;
-	delete mBorder;
 }
 
 // static
