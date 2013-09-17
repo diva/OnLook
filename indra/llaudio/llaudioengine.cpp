@@ -399,7 +399,7 @@ void LLAudioEngine::idle(F32 max_decode_time)
 		}
 
 		LLAudioChannel *channelp = sourcep->getChannel();
-		bool is_stopped = channelp && channelp->isPlaying();
+		bool is_stopped = !channelp || !channelp->isPlaying();
 		if (is_stopped || (sourcep->isLoop() && channelp->mLoopedThisFrame))
 		{
 			// This sound isn't playing, so we just process move the queue
