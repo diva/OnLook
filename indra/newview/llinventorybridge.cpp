@@ -3440,6 +3440,7 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 
 			mItems.push_back(std::string("Replace Outfit"));
 		}
+		mItems.push_back(std::string("Replace Remove Separator"));
 		mItems.push_back(std::string("Remove From Outfit"));
 		if (!LLAppearanceMgr::getCanRemoveFromCOF(mUUID))
 		{

@@ -243,6 +243,7 @@
 	     mouse_opaque="true" name="Replace Outfit" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="replaceoutfit" />
 	</menu_item_call>
+  <menu_item_separator name="Replace Remove Separator"/>
   <menu_item_call bottom_delta="-18" height="18" label="Remove From Outfit" left="0"
 	     mouse_opaque="true" name="Remove From Outfit" width="128">
     <on_click filter="" function="Inventory.DoToSelected" userdata="removefromoutfit" />

@@ -1435,7 +1435,7 @@ static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 	return filtername;
 }
 
-static std::string add_imagesave_filter_to_gtkchooser(GTKWindow *picker)
+static std::string add_imagesave_filter_to_gtkchooser(GtkWindow *picker)
 {
 	GtkFileFilter *gfilter = gtk_file_filter_new();
 	gtk_file_filter_add_mime_type(gfilter, "image/bmp");

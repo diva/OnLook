@@ -92,7 +92,7 @@ std::string LLLogChat::timestamp(bool withdate)
 	std::string text;
 	if (withdate)
 		if (withseconds)
-			text = llformat("[%d-%02d-%02d %02d:%02d:%02d]  ", (timep->tm_year-100)+2000, timep->tm_mon+1, timep->tm_mday, timep->tm_hour, timep->tm_min, timep->tm_sec);
+			text = llformat("[%d/%02d/%02d %02d:%02d:%02d]  ", (timep->tm_year-100)+2000, timep->tm_mon+1, timep->tm_mday, timep->tm_hour, timep->tm_min, timep->tm_sec);
 		else
 			text = llformat("[%d/%02d/%02d %02d:%02d]  ", (timep->tm_year-100)+2000, timep->tm_mon+1, timep->tm_mday, timep->tm_hour, timep->tm_min);
 	else
@@ -127,6 +127,19 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 	}
 }
 
+const std::streamoff BUFFER_SIZE(4096);
+
+// Read a chunk of size from pos in ifstr and prepend it to data
+// return that chunk's newline count
+U32 read_chunk(llifstream& ifstr, const std::streamoff& pos, U32 size, std::string& data)
+{
+	char buffer[BUFFER_SIZE];
+	ifstr.seekg(pos);
+	ifstr.read(buffer, size);
+	data.insert(0, buffer, size);
+	return std::count(buffer, buffer + size, '\n');
+}
+
 void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogLineType,std::string,void*), void* userdata)
 {
 	if(!filename.size())
@@ -143,10 +156,43 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 	else
 	{
 		static const LLCachedControl<U32> lines("LogShowHistoryLines", 32);
-		std::string line;
-		for (U32 i = 0; i < lines && getline(ifstr, line); ++i)
+		ifstr.seekg(-1, std::ios_base::end);
+		if (!lines || !ifstr)
 		{
-			callback(LOG_LINE, line, userdata);
+			callback(LOG_EMPTY,LLStringUtil::null,userdata);
+			return;
+		}
+
+		std::string data;
+		U32 nlines = 0;
+		if (ifstr.get() != '\n') // in case file doesn't end with a newline
+		{
+			data.push_back('\n');
+			++nlines;
+		}
+
+		// Read BUFFER_SIZE byte chunks until we have enough endlines accumulated
+		for(std::streamoff pos = ifstr.tellg() - BUFFER_SIZE; nlines < lines+1; pos -= BUFFER_SIZE)
+		{
+			if (pos > 0)
+			{
+				nlines += read_chunk(ifstr, pos, BUFFER_SIZE, data);
+			}
+			else // Ran out of file read the remaining from the start
+			{
+				nlines += read_chunk(ifstr, 0, pos + BUFFER_SIZE, data);
+				break;
+			}
+		}
+
+		// Break data into lines
+		std::istringstream sstr(data);
+		for (std::string line; nlines > 0 && getline(sstr, line); --nlines)
+		{
+			if (nlines <= lines)
+			{
+				callback(LOG_LINE, line, userdata);
+			}
 		}
 		callback(LOG_END,LLStringUtil::null,userdata);
 	}
