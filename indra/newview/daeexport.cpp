@@ -814,7 +814,7 @@ bool DAESaver::saveDAE(std::string filename)
 			v4adapt verts(face->mPositions);
 			v4adapt norms(face->mNormals);
 
-			LLVector2* newCoord;
+			LLVector2* newCoord = NULL;
 
 			if (applyTexCoord)
 			{
