@@ -189,9 +189,11 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 		while (fgets(buffer, LOG_RECALL_BUFSIZ, fptr))
 		{
 		  size_t len = strlen(buffer);
-		  if (buffer[len - 1] == '\n')	// In case the log file doesn't end on a new-line (is that even possible?)
+		  int i = len - 1;
+		  while (i >= 0 && (buffer[i] == '\r' || buffer[i] == '\n')) // strip newline chars from the end of the string
 		  {
-			  buffer[len - 1] = '\0';
+			  buffer[i] = '\0';
+			  i--;
 		  }
 		  callback(LOG_LINE, buffer, userdata);
 		}
