@@ -438,13 +438,14 @@ void LLScrollListCheck::setEnabled(BOOL enable)
 
 LLScrollListDate::LLScrollListDate( const LLScrollListCell::Params& p)
 :	LLScrollListText(p),
+	mFormat(p.format),
 	mDate(p.value().asDate())
 {}
 
 void LLScrollListDate::setValue(const LLSD& value)
 {
 	mDate = value.asDate();
-	LLScrollListText::setValue(mDate.asRFC1123());
+	LLScrollListText::setValue(mFormat.empty() ? mDate.asRFC1123() : mDate.toHTTPDateString(mFormat));
 }
 
 const LLSD LLScrollListDate::getValue() const
