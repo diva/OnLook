@@ -455,7 +455,6 @@ void LLPanelGroupNotices::processNotices(LLMessageSystem* msg)
 		msg->getBOOL("Data","HasAttachment",has_attachment,i);
 		msg->getU8("Data","AssetType",asset_type,i);
 		msg->getU32("Data","Timestamp",timestamp,i);
-		time_t t = timestamp;
 
 		LLSD row;
 		row["id"] = id;
@@ -480,9 +479,10 @@ void LLPanelGroupNotices::processNotices(LLMessageSystem* msg)
 		std::string format(gSavedSettings.getString("ShortDateFormat"));
 		if (gSavedSettings.getBOOL("LiruGroupNoticeTimes"))
 			format += " " + gSavedSettings.getString("ShortTimeFormat");
-		timeToFormattedString(t, format, buffer);
+		row["columns"][3]["type"] = "date";
+		row["columns"][3]["format"] = format;
 		row["columns"][3]["column"] = "date";
-		row["columns"][3]["value"] = buffer;
+		row["columns"][3]["value"] = LLDate(timestamp);
 
 		buffer = llformat( "%u", timestamp);
 		row["columns"][4]["column"] = "sort";

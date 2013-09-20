@@ -50,6 +50,7 @@
 #include "lltabcontainer.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
+#include "lltrans.h"
 #include "llviewertexturelist.h"
 #include "llviewerwindow.h"
 #include "llfocusmgr.h"
@@ -1536,7 +1537,10 @@ void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 	item_params.columns.add().column("donated").value(donated.getString())
 			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 
+	static const LLCachedControl<std::string> format(gSavedSettings, "ShortDateFormat");
+	static const std::string online(LLTrans::getString("group_member_status_online"));
 	item_params.columns.add().column("online").value(data->getOnlineStatus())
+			.format(format).type(data->getOnlineStatus() == online ? "text" : "date")
 			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 	mMembersList->addNameItemRow(item_params);
 

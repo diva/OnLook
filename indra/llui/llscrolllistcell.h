@@ -61,6 +61,7 @@ public:
 		Optional<void*>				userdata;
 		Optional<LLSD>				value;
 		Optional<std::string>		tool_tip;
+		Optional<std::string>		format;
 
 		Optional<std::string>		font;
 		Optional<LLColor4>			font_color;
@@ -77,6 +78,7 @@ public:
 			visible("visible", true),
 			value("value"),
 			tool_tip("tool_tip", ""),
+			format("format", ""),
 			font("font"/*, LLFontGL::getFontSansSerifSmall()*/),
 			font_color("font_color", LLColor4::black),
 			font_style("font-style"),
@@ -230,6 +232,7 @@ public:
 	virtual const LLSD getValue() const;
 
 private:
+	std::string	mFormat;
 	LLDate		mDate;
 };
 
