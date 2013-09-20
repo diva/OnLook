@@ -1038,6 +1038,7 @@ void LLPanelLogin::onLocationSLURL()
 {
 	LLComboBox* location_combo = getChild<LLComboBox>("start_location_combo");
 	std::string location = location_combo->getValue().asString();
+	LLStringUtil::trim(location);
 	LL_DEBUGS("AppInit")<<location<<LL_ENDL;
 
 	LLStartUp::setStartSLURL(location); // calls onUpdateStartSLURL, above 
