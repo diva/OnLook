@@ -309,6 +309,13 @@ public:
 		U32 ypos = 64;
 		const U32 y_inc = 20;
 
+		static const LLCachedControl<bool> slb_show_fps("SLBShowFPS");
+		if (slb_show_fps)
+		{
+			addText(xpos+280, ypos+5, llformat("FPS %3.1f", LLViewerStats::getInstance()->mFPSStat.getMeanPerSec()));
+			ypos += y_inc;
+		}
+
 		static const LLCachedControl<bool> debug_show_time("DebugShowTime");
 		if (debug_show_time)
 		{
@@ -726,13 +733,6 @@ public:
 			LLCoordGL coord = gViewerWindow->getCurrentMouse();
 			glReadPixels(coord.mX, coord.mY, 1,1,GL_RGBA, GL_UNSIGNED_BYTE, color);
 			addText(xpos, ypos, llformat("%d %d %d %d", color[0], color[1], color[2], color[3]));
-			ypos += y_inc;
-		}
-
-		static const LLCachedControl<bool> slb_show_fps("SLBShowFPS");
-		if (slb_show_fps)
-		{
-			addText(xpos+280, ypos+5, llformat("FPS %3.1f", LLViewerStats::getInstance()->mFPSStat.getMeanPerSec()));
 			ypos += y_inc;
 		}
 
