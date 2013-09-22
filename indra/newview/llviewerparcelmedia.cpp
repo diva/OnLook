@@ -1071,7 +1071,11 @@ std::string LLViewerParcelMedia::extractDomain(std::string url)
 		url = url.substr(pos + 1, count);
 	}
 
-	if (url.find(gAgent.getRegion()->getHost().getHostName()) == 0 || url.find(last_region) == 0)
+	//Singu note: The call to getHostName() freezes the viewer for a few seconds if the region has no reverse DNS...
+	// Avoid calling it three times therefore -- not to mention that if it fails, it returns an empty string which
+	// does NOT mean that it should match the current url as if the current url contains the current regions hostname!
+	std::string const hostname = gAgent.getRegion()->getHost().getHostName();
+	if ((!hostname.empty() && url.find(hostname) == 0) || url.find(last_region) == 0)
 	{
 		// This must be a scripted object rezzed in the region:
 		// extend the concept of "domain" to encompass the
@@ -1080,7 +1084,7 @@ std::string LLViewerParcelMedia::extractDomain(std::string url)
 
 		// Get rid of any port number
 		pos = url.find('/');		// We earlier made sure that there's one
-		url = gAgent.getRegion()->getHost().getHostName() + url.substr(pos);
+		url = hostname + url.substr(pos);
 
 		pos = url.find('?');
 		if (pos != std::string::npos)
@@ -1111,10 +1115,12 @@ std::string LLViewerParcelMedia::extractDomain(std::string url)
 		}
 	}
 
-		
 	// Remember this region, so to cope with requests occuring just after a
 	// TP out of it.
-	last_region = gAgent.getRegion()->getHost().getHostName();
+	if (!hostname.empty())	// Singu note: also make sure that last_region doesn't become empty.
+	{
+		last_region = hostname;
+	}
 
 	return url;
 }
