@@ -1452,7 +1452,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				S32 max_attempts;
 				switch(mGetStatus)
 				{
-#define HTTP_CASE(name) case name: LL_DEBUGS("TexDebug") << mID << " status = " << mGetStatus << " (" << ##name << ")" << " Failcount = " << mHTTPFailCount << llendl; break; 
+#define HTTP_CASE(name) case name: LL_DEBUGS("TexDebug") << mID << " status = " << mGetStatus << " (" << #name << ")" << " Failcount = " << mHTTPFailCount << llendl; break; 
 				HTTP_CASE(HTTP_CONTINUE)
 				HTTP_CASE(HTTP_SWITCHING_PROTOCOLS)
 				HTTP_CASE(HTTP_OK)
