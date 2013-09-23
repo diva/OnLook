@@ -59,7 +59,7 @@ LLDir_Win32::LLDir_Win32()
 	if(pSHGetKnownFolderPath)
 	{
 		WCHAR* pPath = NULL;
-		if((*pSHGetKnownFolderPath)(FOLDERID_LocalAppData, 0, NULL, &pPath) == S_OK)
+		if((*pSHGetKnownFolderPath)(FOLDERID_RoamingAppData, 0, NULL, &pPath) == S_OK)
 			wcscpy_s(w_str,pPath);
 		else
 			SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
