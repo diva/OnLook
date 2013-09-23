@@ -3768,6 +3768,23 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 	else if (!getParent() && mIsSitting && !isMotionActive(ANIM_AGENT_SIT_GROUND_CONSTRAINED))
 	{
 		getOffObject();
+		//<edit>
+		//Singu note: this appears to be a safety catch:
+		// when getParent() is NULL and we're note playing ANIM_AGENT_SIT_GROUND_CONSTRAINED then we aren't sitting!
+		// The previous call existed in an attempt to fix this inconsistent state by standing up from an object.
+		// However, since getParent() is NULL that function would crash!
+		// Since we never got crash reports regarding to this, that apparently never happened, except, I discovered
+		// today, when you are ground sitting and then LLMotionController::deleteAllMotions or
+		// LLMotionController::deactivateAllMotions is called, which seems to only happen when previewing an
+		// to-be-uploaded animation on your own avatar (while ground sitting).
+		// Hence, we DO need this safety net but not for standing up from an object but for standing up from the ground.
+		// I fixed the crash in getOffObject(), so it's ok to call that. In order to make things consistent with
+		// the server we need to actually stand up though, or we can't move anymore afterwards.
+		if (isSelf())
+		{
+		  gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+		}
+		//</edit>
 	}
 
 	//--------------------------------------------------------------------
@@ -6564,7 +6581,7 @@ void LLVOAvatar::getOffObject()
 
 		gAgentCamera.setSitCamera(LLUUID::null);
 
-		if (!sit_object->permYouOwner() && gSavedSettings.getBOOL("RevokePermsOnStandUp"))
+		if (sit_object && !sit_object->permYouOwner() && gSavedSettings.getBOOL("RevokePermsOnStandUp"))
 		{
 			gMessageSystem->newMessageFast(_PREHASH_RevokePermissions);
 			gMessageSystem->nextBlockFast(_PREHASH_AgentData);

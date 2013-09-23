@@ -85,7 +85,7 @@ LLDebugView::LLDebugView(const std::string& name, const LLRect &rect)
 	mFastTimerView->setVisible(FALSE);			// start invisible
 	addChild(mFastTimerView);
 
-	r.set(150, rect.getHeight() - 50, 870, 100);
+	r.set(150, rect.getHeight() - 50, 970, 100);
 	LLTextureView::Params tvp;
 	tvp.name("gTextureView");
 	tvp.rect(r);

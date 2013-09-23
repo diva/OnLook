@@ -163,7 +163,7 @@ LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
 
 	LLGroupMgr::getInstance()->addObserver(this);
 
-	mCommitCallbackRegistrar.add("Group.CopyURI", boost::bind(copy_group_profile_uri, group_id));
+	mCommitCallbackRegistrar.add("Group.CopyURI", boost::bind(copy_group_profile_uri, boost::ref(mID)));
 	// Pass on construction of this panel to the control factory.
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_group.xml", &getFactoryMap());
 }
