@@ -926,7 +926,7 @@ void LLViewerFetchedTexture::init(bool firstinit)
 	mIsMissingAsset = FALSE;
 
 	mLoadedCallbackDesiredDiscardLevel = S8_MAX;
-	mPauseLoadedCallBacks = TRUE ;
+	mPauseLoadedCallBacks = FALSE ;
 
 	mNeedsCreateTexture = FALSE;
 	
@@ -1288,6 +1288,7 @@ BOOL LLViewerFetchedTexture::createTexture(S32 usename/*= 0*/)
 			// An inappropriately-sized image was uploaded (through a non standard client)
 			// We treat these images as missing assets which causes them to
 			// be renderd as 'missing image' and to stop requesting data
+			llwarns << "!size_ok, setting as missing" << llendl;
 			setIsMissingAsset();
 			destroyRawImage();
 			return FALSE;
@@ -1712,6 +1713,7 @@ bool LLViewerFetchedTexture::updateFetch()
 				{ 
 					//discard all oversized textures.
 					destroyRawImage();
+					llwarns << "oversize, setting as missing" << llendl;
 					setIsMissingAsset();
 					mRawDiscardLevel = INVALID_DISCARD_LEVEL ;
 					mIsFetching = FALSE ;
@@ -1741,6 +1743,10 @@ bool LLViewerFetchedTexture::updateFetch()
 				// We finished but received no data
 				if (current_discard < 0)
 				{
+					llwarns << "!mIsFetching, setting as missing, decode_priority " << decode_priority
+							<< " mRawDiscardLevel " << mRawDiscardLevel
+							<< " current_discard " << current_discard
+							<< llendl;
 					setIsMissingAsset();
 					desired_discard = -1;
 				}
@@ -1781,6 +1787,10 @@ bool LLViewerFetchedTexture::updateFetch()
 	{
 		make_request = false;
 	}
+	else if(mDesiredDiscardLevel > getMaxDiscardLevel())
+	{
+		make_request = false;
+	}
 	else if (mNeedsCreateTexture || mIsMissingAsset)
 	{
 		make_request = false;
@@ -1788,6 +1798,11 @@ bool LLViewerFetchedTexture::updateFetch()
 	else if (current_discard >= 0 && current_discard <= mMinDiscardLevel)
 	{
 		make_request = false;
+	}
+	else if(mCachedRawImage.notNull() && (current_discard < 0 || current_discard > mCachedRawDiscardLevel))
+	{
+		make_request = false;
+		switchToCachedImage() ; //use the cached raw data first
 	}
 	//else if (!isJustBound() && mCachedRawImageReady)
 	//{
@@ -1881,11 +1896,14 @@ void LLViewerFetchedTexture::forceToDeleteRequest()
 {
 	if (mHasFetcher)
 	{
-		LLAppViewer::getTextureFetch()->deleteRequest(getID(), true);
+		//LLAppViewer::getTextureFetch()->deleteRequest(getID(), true);
 		mHasFetcher = FALSE;
 		mIsFetching = FALSE ;
-		resetTextureStats();
 	}
+
+	resetTextureStats();
+
+	mDesiredDiscardLevel = getMaxDiscardLevel() + 1; //defer LLAppViewer::getTextureFetch()->deleteRequest to updateFetch?
 }
 
 void LLViewerFetchedTexture::setIsMissingAsset()
@@ -1928,10 +1946,18 @@ void LLViewerFetchedTexture::setLoadedCallback( loaded_callback_func loaded_call
 		mLoadedCallbackDesiredDiscardLevel = llmin(mLoadedCallbackDesiredDiscardLevel, (S8)discard_level) ;
 	}
 
-	if(mPauseLoadedCallBacks && !pause)
+	if(mPauseLoadedCallBacks)
 	{
-		unpauseLoadedCallbacks(src_callback_list) ;
+		if(!pause)
+		{
+			unpauseLoadedCallbacks(src_callback_list) ;
+		}
 	}
+	else if(pause)
+	{
+		pauseLoadedCallbacks(src_callback_list) ;
+	}
+
 	LLLoadedCallbackEntry* entryp = new LLLoadedCallbackEntry(loaded_callback, discard_level, keep_imageraw, userdata, src_callback_list, this, pause);
 	mLoadedCallbackList.push_back(entryp);	
 
