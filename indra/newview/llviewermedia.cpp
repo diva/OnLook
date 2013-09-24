@@ -2595,6 +2595,12 @@ void LLViewerMediaImpl::unload()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mime_type,  bool rediscover_type, bool server_request)
 {
+	if (url.empty())
+	{
+		llwarns << "Calling LLViewerMediaImpl::navigateTo with empty url" << llendl;
+		return;
+	}
+
 	cancelMimeTypeProbe();
 
 	if(mMediaURL != url)
@@ -2638,6 +2644,12 @@ void LLViewerMediaImpl::navigateInternal()
 {
 	// Helpful to have media urls in log file. Shouldn't be spammy.
 	llinfos << "media id= " << mTextureId << " url=" << mMediaURL << " mime_type=" << mMimeType << llendl;
+
+	if (mMediaURL.empty())
+	{
+		llwarns << "Calling LLViewerMediaImpl::navigateInternal() with empty mMediaURL" << llendl;
+		return;
+	}
 
 	if(mNavigateSuspended)
 	{

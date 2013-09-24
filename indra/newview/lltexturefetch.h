@@ -84,8 +84,14 @@ public:
 	S32 getFetchState(const LLUUID& id, F32& decode_progress_p, F32& requested_priority_p,
 					  U32& fetch_priority_p, F32& fetch_dtime_p, F32& request_dtime_p, bool& can_use_http);
 	void dump();
-	S32 getNumRequests() ;
-	U32 getTotalNumHTTPRequests() ;
+	// Threads:  T*
+	S32 getNumRequests();
+
+	// Threads:  T*
+	S32 getNumHTTPRequests();
+
+	// Threads:  T*
+	U32 getTotalNumHTTPRequests();
 	
 	// Public for access by callbacks
     S32 getPending();

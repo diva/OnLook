@@ -16,7 +16,7 @@
     <text name="Exportable Textures" bottom_delta="-20" height="20">Exportable Textures: [COUNT]/[TOTAL]</text>
   </panel>
   <panel border="true" bottom_delta="-120" height="115" width="200" follows="bottom|left" name="options panel">
-    <text name="Object info" bottom="-20" height="20" left="5">Options</text>
+    <text name="Options" bottom="-20" height="20" left="5">Options</text>
     <check_box name="texture export check" label="Export Textures" height="20" bottom_delta="-20" left="10" control_name="DAEExportTextures">
       <check_box.commit_callback function="ColladaExport.TextureExport"/>
     </check_box>

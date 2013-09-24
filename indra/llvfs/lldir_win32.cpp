@@ -48,8 +48,28 @@ LLDir_Win32::LLDir_Win32()
 
 	WCHAR w_str[MAX_PATH];
 
+	HRESULT (WINAPI* pSHGetKnownFolderPath)(REFKNOWNFOLDERID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath) = NULL;
+	HMODULE shell = LoadLibrary(L"shell32");
+	if(shell)	//SHGetSpecialFolderPath is deprecated from Vista an onwards. Try to use SHGetKnownFolderPath if it's available
+	{
+		pSHGetKnownFolderPath = (HRESULT (WINAPI *)(REFKNOWNFOLDERID, DWORD, HANDLE, PWSTR *))GetProcAddress(shell, "SHGetKnownFolderPath");
+	}
+
 	// Application Data is where user settings go
-	SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
+	if(pSHGetKnownFolderPath)
+	{
+		WCHAR* pPath = NULL;
+		if((*pSHGetKnownFolderPath)(FOLDERID_RoamingAppData, 0, NULL, &pPath) == S_OK)
+			wcscpy_s(w_str,pPath);
+		else
+			SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
+		if(pPath)
+			CoTaskMemFree(pPath);
+	}
+	else	//XP doesn't support SHGetKnownFolderPath
+	{
+		SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
+	}
 
 	mOSUserDir = utf16str_to_utf8str(llutf16string(w_str));
 
@@ -64,17 +84,14 @@ LLDir_Win32::LLDir_Win32()
 	// We used to store the cache in AppData\Roaming, and the installer
 	// cleans up that version on upgrade.  JC
 
-	if(HMODULE shell = LoadLibrary(L"shell32"))	//SHGetSpecialFolderPath is deprecated from Vista an onwards. Try to use SHGetSpecialFolderPath if it's available
+	
+	if(pSHGetKnownFolderPath)
 	{
-		HRESULT (WINAPI* pSHGetKnownFolderPath)(REFKNOWNFOLDERID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
-		pSHGetKnownFolderPath = (HRESULT (WINAPI *)(REFKNOWNFOLDERID, DWORD, HANDLE, PWSTR *))GetProcAddress(shell, "SHGetKnownFolderPath");
 		WCHAR* pPath = NULL;
-		if(pSHGetKnownFolderPath && (*pSHGetKnownFolderPath)(FOLDERID_LocalAppData, 0, NULL, &pPath) == S_OK)
+		if((*pSHGetKnownFolderPath)(FOLDERID_LocalAppData, 0, NULL, &pPath) == S_OK)
 			wcscpy_s(w_str,pPath);
 		else
 			SHGetSpecialFolderPath(NULL, w_str, CSIDL_LOCAL_APPDATA, TRUE);
-
-		FreeLibrary(shell);
 		if(pPath)
 			CoTaskMemFree(pPath);
 	}
@@ -82,6 +99,10 @@ LLDir_Win32::LLDir_Win32()
 	{
 		SHGetSpecialFolderPath(NULL, w_str, CSIDL_LOCAL_APPDATA, TRUE);
 	}
+
+	if(shell)
+		FreeLibrary(shell);
+
 	mOSCacheDir = utf16str_to_utf8str(llutf16string(w_str));
 
 	if (GetTempPath(MAX_PATH, w_str))

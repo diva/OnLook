@@ -214,7 +214,7 @@ std::string AIPerService::extract_canonical_servicename(std::string const& url)
     }
     ++p;
   }
-  // Strip of any trailing ":80".
+  // Strip off any trailing ":80".
   if (p - 3 == port_colon && p[-1] == '0' && p[-2] == '8')
   {
     return servicename.substr(0, p - hostname - 3);
