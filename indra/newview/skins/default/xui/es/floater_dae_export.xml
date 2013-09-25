@@ -12,7 +12,7 @@
 		<text name="Exportable Textures">Texturas Exportables: [COUNT]/[TOTAL]</text>
 	</panel>
 	<panel name="options panel">
-		<text name="Object info">Opciones</text>
+		<text name="Options">Opciones</text>
 		<check_box name="texture export check" label="Exportar Texturas"/>
 		<combo_box name="texture type combo">
 			<combo_item name="tga" value="0">TGA</combo_item>
