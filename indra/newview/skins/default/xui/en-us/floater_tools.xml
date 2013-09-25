@@ -294,6 +294,9 @@
 	     image_unselected="object_grass.tga" label="" label_selected=""
 	     left_delta="23" mouse_opaque="true" name="ToolGrass" scale_image="TRUE"
 	     tool_tip="Grass" width="24" />
+	<text name="tree_grass_label" bottom="-106" follows="left|top" height="16" width="135" right="-5"/>
+	<combo_box name="trees_grass" bottom="-120" follows="left|top" height="18" width="135" right="-5"/>
+	<string name="Random">Random</string>
 	<check_box bottom="-117" control_name="CreateToolKeepSelected" follows="left|top"
 	     font="SansSerifSmall" height="16" initial_value="false"
 	     label="Keep selected" left="4" mouse_opaque="true"

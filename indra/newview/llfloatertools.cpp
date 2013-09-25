@@ -2003,7 +2003,7 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 		}
 
 		mComboTreesGrass->removeall();
-		mComboTreesGrass->add("Random");
+		mComboTreesGrass->add(getString("Random"));
 
 		int select = 0, i = 0;
 
