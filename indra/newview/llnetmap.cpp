@@ -157,7 +157,10 @@ void LLNetMap::setScale( F32 scale )
 		F32 height = (F32)(getRect().getHeight());
 		F32 diameter = sqrt(width * width + height * height);
 		F32 region_widths = diameter / mScale;
-		F32 meters = region_widths * LLWorld::getInstance()->getRegionWidthInMeters();
+// <FS:CR> Aurora Sim
+		//F32 meters = region_widths * LLWorld::getInstance()->getRegionWidthInMeters();
+		F32 meters = region_widths * REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
 		F32 num_pixels = (F32)mObjectImagep->getWidth();
 		mObjectMapTPM = num_pixels / meters;
 		mObjectMapPixels = diameter;
@@ -256,12 +259,15 @@ void LLNetMap::draw()
 		LLColor4 this_region_color = gColors.getColor( "NetMapThisRegion" );
 		LLColor4 live_region_color = gColors.getColor( "NetMapLiveRegion" );
 		LLColor4 dead_region_color = gColors.getColor( "NetMapDeadRegion" );
+// <FS:CR> Aurora Sim
+		//S32 region_width = llround(LLWorld::getInstance()->getRegionWidthInMeters());
+		S32 region_width = llround(REGION_WIDTH_METERS);
+// </FS:CR> Aurora Sim
 
 		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
 			 iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
-			S32 region_width = llround(regionp->getWidth());
 			// Find x and y position relative to camera's center.
 			LLVector3 origin_agent = regionp->getOriginAgent();
 			LLVector3 rel_region_pos = origin_agent - gAgentCamera.getCameraPositionAgent();
@@ -271,8 +277,12 @@ void LLNetMap::draw()
 			// background region rectangle
 			F32 bottom =	relative_y;
 			F32 left =		relative_x;
-			F32 top =		bottom + mScale ;
-			F32 right =		left + mScale ;
+// <FS:CR> Aurora Sim
+			//F32 top =		bottom + mScale ;
+			//F32 right =		left + mScale ;
+			F32 top =		bottom + (regionp->getWidth() / region_width) * mScale ;
+			F32 right =		left + (regionp->getWidth() / region_width) * mScale ;
+// </FS:CR> Aurora Sim
 
 			gGL.color4fv(regionp == gAgent.getRegion() ? this_region_color.mV : live_region_color.mV);
 			if (!regionp->isAlive())
@@ -479,7 +489,10 @@ void LLNetMap::draw()
 			dot_width);
 
 		// Draw frustum
-		F32 meters_to_pixels = mScale/ LLWorld::getInstance()->getRegionWidthInMeters();
+// <FS:CR> Aurora Sim
+		//F32 meters_to_pixels = mScale/ LLWorld::getInstance()->getRegionWidthInMeters();
+		F32 meters_to_pixels = mScale/ REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
 
 		F32 horiz_fov = LLViewerCamera::getInstance()->getView() * LLViewerCamera::getInstance()->getAspect();
 		F32 far_clip_meters = LLViewerCamera::getInstance()->getFar();
@@ -551,6 +564,9 @@ LLVector3 LLNetMap::globalPosToView(const LLVector3d& global_pos, BOOL rotated)
 	LLVector3 pos_local;
 	pos_local.setVec(relative_pos_global);  // convert to floats from doubles
 
+// <FS:CR> Aurora Sim
+	mPixelsPerMeter = mScale / REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
 	pos_local.mV[VX] *= mPixelsPerMeter;
 	pos_local.mV[VY] *= mPixelsPerMeter;
 	// leave Z component in meters
@@ -609,7 +625,10 @@ LLVector3d LLNetMap::viewPosToGlobal( S32 x, S32 y, BOOL rotated )
 		pos_local.rotVec( rot );
 	}
 
-	pos_local *= ( LLWorld::getInstance()->getRegionWidthInMeters() / mScale );
+// <FS:CR> Aurora Sim
+	//pos_local *= ( LLWorld::getInstance()->getRegionWidthInMeters() / mScale );
+	pos_local *= ( REGION_WIDTH_METERS / mScale );
+// </FS:CR> Aurora Sim
 	
 	LLVector3d pos_global;
 	pos_global.setVec( pos_local );

@@ -192,8 +192,15 @@ public:
 	const LLSimInfo::item_info_list_t& getLandForSaleAdult() const { return mLandForSaleAdult; }
 	const LLSimInfo::item_info_list_t& getAgentLocation() const { return mAgentLocations; }
 
+	const U64 		&getHandle() const 			{ return mHandle; }
+
+//private:
+	U64 mHandle;				// This is a hash of the X and Y world coordinates of the SW corner of the sim
+	U16 mSizeX;
+	U16 mSizeY;
+
 private:
-	U64 mHandle;
+// </FS:CR> Aurora Sim
 	std::string mName;
 
 	F64 mAgentsUpdateTime;		// Time stamp giving the last time the agents information was requested for that region
@@ -201,8 +208,6 @@ private:
 
 	U32  mAccess;				// Down/up and maturity rating of the region
 	U32 mRegionFlags;
-    U16 mSizeX;
-	U16 mSizeY;
 	
 	F32 mAlpha;
 
@@ -235,8 +240,12 @@ struct LLWorldMapLayer
 
 // We request region data on the world by "blocks" of (MAP_BLOCK_SIZE x MAP_BLOCK_SIZE) regions
 // This is to reduce the number of requests to the asset DB and get things in big "blocks"
-const S32 MAP_MAX_SIZE = 2048;
-const S32 MAP_BLOCK_SIZE = 4;
+// <FS:CR> Aurora Sim
+//const S32 MAP_MAX_SIZE = 2048;
+//const S32 MAP_BLOCK_SIZE = 4;
+const S32 MAP_MAX_SIZE = 16384;
+const S32 MAP_BLOCK_SIZE = 16;
+// </FS:CR> Aurora Sim
 const S32 MAP_BLOCK_RES = (MAP_MAX_SIZE / MAP_BLOCK_SIZE);
 
 class LLWorldMap : public LLSingleton<LLWorldMap>
@@ -262,7 +271,10 @@ public:
 
 	// Insert a region and items in the map global instance
 	// Note: x_world and y_world in world coordinates (meters)
-	static bool insertRegion(U32 x_world, U32 y_world, U32 x_size, U32 y_size, U32 agent_flags, std::string& name, LLUUID& image_id, U32 accesscode, U32 region_flags);
+// <FS:CR> Aurora Sim
+	static bool insertRegion(U32 x_world, U32 y_world, std::string& name, LLUUID& uuid, U32 accesscode, U64 region_flags);
+	static bool insertRegion(U32 x_world, U32 y_world, U16 x_size, U16 y_size, std::string& name, LLUUID& uuid, U32 accesscode, U64 region_flags);
+// </FS:CR> Aurora Sim
 	static bool insertItem(U32 x_world, U32 y_world, std::string& name, LLUUID& uuid, U32 type, S32 extra, S32 extra2);
 
 	// Get info on sims (region) : note that those methods only search the range of loaded sims (the one that are being browsed)

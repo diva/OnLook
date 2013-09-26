@@ -84,8 +84,10 @@ LLSimInfo::LLSimInfo(U64 handle)
 	mAccess(0x0),
 	mRegionFlags(0x0),
 	mFirstAgentRequest(true),
+// <FS:CR> Aurora Sim
     mSizeX(REGION_WIDTH_UNITS),
 	mSizeY(REGION_WIDTH_UNITS),
+// </FS:CR> Aurora Sim
 	mAlpha(0.f)
 {
 }
@@ -376,10 +378,31 @@ LLSimInfo* LLWorldMap::simInfoFromPosGlobal(const LLVector3d& pos_global)
 
 LLSimInfo* LLWorldMap::simInfoFromHandle(const U64 handle)
 {
-	sim_info_map_t::iterator it = mSimInfoMap.find(handle);
-	if (it != mSimInfoMap.end())
+// <FS:CR> Aurora Sim
+	//sim_info_map_t::iterator it = mSimInfoMap.find(handle);
+	//if (it != mSimInfoMap.end())
+	//{
+	//	return it->second;
+	std::map<U64, LLSimInfo*>::const_iterator it;
+	for (it = LLWorldMap::getInstance()->mSimInfoMap.begin(); it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
 	{
-		return it->second;
+		const U64 hndl = (*it).first;
+		LLSimInfo* info = (*it).second;
+		if(hndl == handle)
+		{
+			return info;
+		}
+		U32 x = 0, y = 0;
+		from_region_handle(handle, &x, &y);
+		U32 checkRegionX, checkRegionY;
+		from_region_handle(hndl, &checkRegionX, &checkRegionY);
+
+		if(x >= checkRegionX && x < (checkRegionX + info->mSizeX) &&
+			y >= checkRegionY && y < (checkRegionY + info->mSizeY))
+		{
+			return info;
+		}
+// </FS:CR> Aurora Sim
 	}
 	return NULL;
 }
@@ -538,7 +561,10 @@ void LLWorldMap::reloadItems(bool force)
 // static public
 // Insert a region in the region map
 // returns true if region inserted, false otherwise
-bool LLWorldMap::insertRegion(U32 x_world, U32 y_world, U32 x_size, U32 y_size, U32 agent_flags, std::string& name, LLUUID& image_id, U32 accesscode, U32 region_flags)
+// <FS:CR> Aurora Sim
+//bool LLWorldMap::insertRegion(U32 x_world, U32 y_world, std::string& name, LLUUID& image_id, U32 accesscode, U64 region_flags)
+bool LLWorldMap::insertRegion(U32 x_world, U32 y_world, U16 x_size, U16 y_size, std::string& name, LLUUID& image_id, U32 accesscode, U64 region_flags)
+// </FS:CR> Aurora Sim
 {
 	// This region doesn't exist
 	if (accesscode == 255)
@@ -562,17 +588,14 @@ bool LLWorldMap::insertRegion(U32 x_world, U32 y_world, U32 x_size, U32 y_size, 
 		{
 			siminfo = LLWorldMap::getInstance()->createSimInfoFromHandle(handle);
 		}
-
-		siminfo->setName( name );
-		siminfo->setAccess( accesscode );
-		siminfo->setRegionFlags( region_flags );
-		//siminfo->setWaterHeight((F32) water_height);
-		U32 layer = flagsToLayer(agent_flags);
-		if (layer == SIM_LAYER_OVERLAY)
-			siminfo->setLandForSaleImage(image_id);
-		else if(layer < SIM_LAYER_COUNT)
-			siminfo->setMapImageID( image_id, layer );
-		siminfo->setSize( x_size, y_size );
+		siminfo->setName(name);
+		siminfo->setAccess(accesscode);
+		siminfo->setRegionFlags(region_flags);
+	//	siminfo->setWaterHeight((F32) water_height);
+		siminfo->setLandForSaleImage(image_id);
+// <FS:CR> Aurora Sim
+		siminfo->setSize(x_size, y_size);
+// </FS:CR> Aurora Sim
 
 		// Handle the location tracking (for teleport, UI feedback and info display)
 		if (LLWorldMap::getInstance()->isTrackingInRectangle( x_world, y_world, x_world + REGION_WIDTH_UNITS, y_world + REGION_WIDTH_UNITS))

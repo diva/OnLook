@@ -2319,7 +2319,10 @@ void LLAgent::setStartPosition( U32 location_id )
     // this simulator.  Clamp it to the region the agent is
     // in, a little bit in on each side.
     const F32 INSET = 0.5f; //meters
-    const F32 REGION_WIDTH = LLWorld::getInstance()->getRegionWidthInMeters();
+// <FS:CR> Aurora Sim
+    //const F32 REGION_WIDTH = LLWorld::getInstance()->getRegionWidthInMeters();
+    const F32 REGION_WIDTH = getRegion()->getWidth();
+// </FS:CR> Aurora Sim
 
     LLVector3 agent_pos = getPositionAgent();
 
@@ -4233,8 +4236,10 @@ void LLAgent::doTeleportViaLocation(const LLVector3d& pos_global)
 			(F32)(pos_global.mdV[VX] - region_origin.mdV[VX]),
 			(F32)(pos_global.mdV[VY] - region_origin.mdV[VY]),
 			(F32)(pos_global.mdV[VZ]));
-		pos_local += offset;
-		teleportRequest(handle, pos_local);
+// <FS:CR> Aurora-sim var region teleports
+		//teleportRequest(handle, pos_local);
+		teleportRequest(info->getHandle(), pos_local);
+// </FS:CR>
 	}
 	else if(regionp && 
 		teleportCore(regionp->getHandle() == to_region_handle_global((F32)pos_global.mdV[VX], (F32)pos_global.mdV[VY])))
@@ -4289,6 +4294,13 @@ void LLAgent::doTeleportViaLocationLookAt(const LLVector3d& pos_global)
 	mbTeleportKeepsLookAt = true;
 	gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);	// detach camera form avatar, so it keeps direction
 	U64 region_handle = to_region_handle(pos_global);
+// <FS:CR> Aurora-sim var region teleports
+	LLSimInfo* simInfo = LLWorldMap::instance().simInfoFromHandle(region_handle);
+	if (simInfo)
+	{
+		region_handle = simInfo->getHandle();
+	}
+// </FS:CR>
 	LLVector3 pos_local = (LLVector3)(pos_global - from_region_handle(region_handle));
 	teleportRequest(region_handle, pos_local, getTeleportKeepsLookAt());
 }
