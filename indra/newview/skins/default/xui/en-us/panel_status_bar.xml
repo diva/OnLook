@@ -137,4 +137,5 @@
 	<string name="bandwidth_tooltip">
 		Bandwidth
 	</string>
+	<string name="Local">Local</string>
 </panel>
