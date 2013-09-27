@@ -43,6 +43,7 @@
 #include "llmapresponders.h"
 #include "llviewercontrol.h"
 #include "llfloaterworldmap.h"
+#include "lltexturecache.h"
 #include "lltracker.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
@@ -94,12 +95,17 @@ LLSimInfo::LLSimInfo(U64 handle)
 
 void LLSimInfo::setLandForSaleImage (LLUUID image_id) 
 {
+	const bool is_aurora = gHippoGridManager->getConnectedGrid()->isAurora();
+	if (is_aurora && mMapImageID[SIM_LAYER_OVERLAY].isNull() && image_id.notNull() && gTextureList.findImage(image_id))
+		LLAppViewer::getTextureCache()->removeFromCache(image_id);
+
 	mMapImageID[SIM_LAYER_OVERLAY] = image_id;
 
 	// Fetch the image
 	if (mMapImageID[SIM_LAYER_OVERLAY].notNull())
 	{
 		mLayerImage[SIM_LAYER_OVERLAY] = LLViewerTextureManager::getFetchedTexture(mMapImageID[SIM_LAYER_OVERLAY], MIPMAP_TRUE, LLGLTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
+		if (is_aurora) mLayerImage[SIM_LAYER_OVERLAY]->forceImmediateUpdate();
 		mLayerImage[SIM_LAYER_OVERLAY]->setAddressMode(LLTexUnit::TAM_CLAMP);
 	}
 	else
@@ -378,32 +384,28 @@ LLSimInfo* LLWorldMap::simInfoFromPosGlobal(const LLVector3d& pos_global)
 
 LLSimInfo* LLWorldMap::simInfoFromHandle(const U64 handle)
 {
-// <FS:CR> Aurora Sim
-	//sim_info_map_t::iterator it = mSimInfoMap.find(handle);
-	//if (it != mSimInfoMap.end())
-	//{
-	//	return it->second;
-	std::map<U64, LLSimInfo*>::const_iterator it;
-	for (it = LLWorldMap::getInstance()->mSimInfoMap.begin(); it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
+	sim_info_map_t::const_iterator it = mSimInfoMap.find(handle);
+	if (it != mSimInfoMap.end())
 	{
-		const U64 hndl = (*it).first;
-		LLSimInfo* info = (*it).second;
-		if(hndl == handle)
-		{
-			return info;
-		}
-		U32 x = 0, y = 0;
-		from_region_handle(handle, &x, &y);
-		U32 checkRegionX, checkRegionY;
-		from_region_handle(hndl, &checkRegionX, &checkRegionY);
-
-		if(x >= checkRegionX && x < (checkRegionX + info->mSizeX) &&
-			y >= checkRegionY && y < (checkRegionY + info->mSizeY))
-		{
-			return info;
-		}
-// </FS:CR> Aurora Sim
+		return it->second;
 	}
+
+// <FS:CR> Aurora Sim
+	U32 x = 0, y = 0;
+	from_region_handle(handle, &x, &y);
+	for (it = mSimInfoMap.begin(); it != mSimInfoMap.end(); ++it)
+	{
+		U32 checkRegionX, checkRegionY;
+		from_region_handle((*it).first, &checkRegionX, &checkRegionY);
+
+		LLSimInfo* info = (*it).second;
+		if (x >= checkRegionX && x < (checkRegionX + info->getSizeX()) &&
+			y >= checkRegionY && y < (checkRegionY + info->getSizeY()))
+		{
+			return info;
+		}
+	}
+// </FS:CR> Aurora Sim
 	return NULL;
 }
 

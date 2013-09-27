@@ -146,10 +146,7 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	mCollisionParcel = new LLParcel();
 
 // <FS:CR> Aurora Sim
-	// Max region size on Aurora-Sim, 8192, just creating larger buffers, it will still work on Second Life and Opensim
-	F32 region_size = 8192.f;
-
-	mParcelsPerEdge = S32(	region_size / PARCEL_GRID_STEP_METERS );
+	mParcelsPerEdge = S32(8192.f / PARCEL_GRID_STEP_METERS); // 8192 is the maximum region size on Aurora and solves the audio problem.
 	//mParcelsPerEdge = S32(	REGION_WIDTH_METERS / PARCEL_GRID_STEP_METERS );
 // </FS:CR> Aurora Sim
 	mHighlightSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
@@ -175,7 +172,7 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	}
 
 // <FS:CR> Aurora Sim
-	mParcelsPerEdge = S32(	REGION_WIDTH_METERS / PARCEL_GRID_STEP_METERS );
+	mParcelsPerEdge = S32(REGION_WIDTH_METERS / PARCEL_GRID_STEP_METERS);
 // </FS:CR> Aurora Sim
 
 	mTeleportInProgress = TRUE; // the initial parcel update is treated like teleport
@@ -184,7 +181,7 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 // <FS:CR> Aurora Sim
 void LLViewerParcelMgr::init(F32 region_size)
 {
-	mParcelsPerEdge = S32(	region_size / PARCEL_GRID_STEP_METERS );
+	mParcelsPerEdge = S32(region_size / PARCEL_GRID_STEP_METERS);
 }
 // </FS:CR> Aurora Sim
 
@@ -472,8 +469,7 @@ void LLViewerParcelMgr::selectCollisionParcel()
 	//mEastNorth += LLVector3d(PARCEL_GRID_STEP_METERS, PARCEL_GRID_STEP_METERS, 0.0);
 	mWestSouth = getSelectionRegion()->getOriginGlobal();
 	mEastNorth = mWestSouth;
-	mEastNorth += LLVector3d((getSelectionRegion()->getWidth() / REGION_WIDTH_METERS) * PARCEL_GRID_STEP_METERS, 
-		                     (getSelectionRegion()->getWidth() / REGION_WIDTH_METERS) * PARCEL_GRID_STEP_METERS, 0.0);
+	mEastNorth += LLVector3d(getSelectionRegion()->getWidth()/REGION_WIDTH_METERS * PARCEL_GRID_STEP_METERS, getSelectionRegion()->getWidth()/REGION_WIDTH_METERS * PARCEL_GRID_STEP_METERS, 0.0);
 // </FS:CR> Aurora Sim
 
 	// BUG: must be in the sim you are in
@@ -1500,13 +1496,11 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 
 	LLViewerParcelMgr& parcel_mgr = LLViewerParcelMgr::instance();
 // <FS:CR> Aurora Sim
-	LLViewerRegion* msg_region = LLWorld::getInstance()->getRegion( msg->getSender() );
-	if(msg_region) {
-			parcel_mgr.mParcelsPerEdge = S32( msg_region->getWidth() / PARCEL_GRID_STEP_METERS );
-	}
-	else {
-		parcel_mgr.mParcelsPerEdge = S32( gAgent.getRegion()->getWidth() / PARCEL_GRID_STEP_METERS );
-	}
+	LLViewerRegion* msg_region = LLWorld::getInstance()->getRegion(msg->getSender());
+	if(msg_region)
+		parcel_mgr.mParcelsPerEdge = S32(msg_region->getWidth() / PARCEL_GRID_STEP_METERS);
+	else
+		parcel_mgr.mParcelsPerEdge = S32(gAgent.getRegion()->getWidth() / PARCEL_GRID_STEP_METERS);
 // </FS:CR> Aurora Sim
 
 	msg->getS32Fast(_PREHASH_ParcelData, _PREHASH_RequestResult, request_result );

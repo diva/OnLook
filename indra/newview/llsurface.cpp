@@ -302,28 +302,7 @@ void LLSurface::initTextures()
 		//water_pos_global += LLVector3d(128.0, 128.0, DEFAULT_WATER_HEIGHT);		// region doesn't have a valid water height yet
 		water_pos_global += LLVector3d(mRegionp->getWidth()/2, mRegionp->getWidth()/2, DEFAULT_WATER_HEIGHT);
 		mWaterObjp->setPositionGlobal(water_pos_global);
-	}
-}
-
-void LLSurface::rebuildWater()
-{
-	BOOL renderwater = gSavedSettings.getBOOL("RenderWater");
-	BOOL prev_renderwater = !mWaterObjp.isNull();
-
-	if(prev_renderwater && !renderwater)
-	{
-		gObjectList.killObject(mWaterObjp);
-	}
-
-	if (!prev_renderwater && renderwater)
-	{
-		createWaterTexture();
-		mWaterObjp = (LLVOWater *)gObjectList.createObjectViewer(LLViewerObject::LL_VO_WATER, mRegionp);
-		gPipeline.createObject(mWaterObjp);
-		LLVector3d water_pos_global = from_region_handle(mRegionp->getHandle());
-		water_pos_global += LLVector3d(mRegionp->getWidth()/2, mRegionp->getWidth()/2, DEFAULT_WATER_HEIGHT);
 // </FS:CR> Aurora Sim
-		mWaterObjp->setPositionGlobal(water_pos_global);
 	}
 }
 
@@ -414,20 +393,24 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 	from_region_handle(mRegionp->getHandle(), &own_xpos, &own_ypos);
 	from_region_handle(neighborp->getRegion()->getHandle(), &neighbor_xpos, &neighbor_ypos);
 
-	if(own_ypos >= neighbor_ypos) {
+	if(own_ypos >= neighbor_ypos)
+	{
 		neighbor_offset[1] = (own_ypos - neighbor_ypos) / mGridsPerPatchEdge;
 		ppe[1] = llmin(mPatchesPerEdge, neighborPatchesPerEdge-neighbor_offset[1]);
 	}
-	else {
+	else
+	{
 		own_offset[1] = (neighbor_ypos - own_ypos) / mGridsPerPatchEdge;
 		ppe[1] = llmin(mPatchesPerEdge-own_offset[1], neighborPatchesPerEdge);
 	}
 
-	if(own_xpos >= neighbor_xpos) {
+	if(own_xpos >= neighbor_xpos)
+	{
 		neighbor_offset[0] = (own_xpos - neighbor_xpos) / mGridsPerPatchEdge;
 		ppe[0] = llmin(mPatchesPerEdge, neighborPatchesPerEdge-neighbor_offset[0]);
 	}
-	else {
+	else
+	{
 		own_offset[0] = (neighbor_xpos - own_xpos) / mGridsPerPatchEdge;
 		ppe[0] = llmin(mPatchesPerEdge-own_offset[0], neighborPatchesPerEdge);
 	}
