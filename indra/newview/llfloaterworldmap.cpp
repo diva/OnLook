@@ -875,6 +875,11 @@ void LLFloaterWorldMap::updateLocation()
 // [/RLVa:KB]
 //		if ( gotSimName )
 		{
+			// Singu Note: Var region support for SLURLs
+			const LLSimInfo* sim = LLWorldMap::getInstance()->simInfoFromPosGlobal(pos_global);
+			const F64 size(sim ? sim->getSizeX() : 256);
+			pos_global[0] = fmod(pos_global[0], size);
+			pos_global[1] = fmod(pos_global[1], size);
 			mSLURL = LLSLURL(sim_name, pos_global);
 		}
 		else
