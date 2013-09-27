@@ -6,6 +6,7 @@
 	<menu_item_call name="Task Properties" label="Propiedades"/>
 	<menu_item_call name="Task Rename" label="Renombrar"/>
 	<menu_item_call name="Task Remove" label="Borrar"/>
+	<menu_item_call label="Reiniciar" name="Task Reset"/>
 	<menu_item_call label="Detener Script" name="Task Set Not Running"/>
 	<menu_item_call label="Ejecutar Script" name="Task Set Running"/>
 	<menu_item_call name="Empty Trash" label="Vaciar Papelera"/>
@@ -63,6 +64,7 @@
 	<menu_item_call name="Wear Items" label="Vestirse objetos"/>
 	<menu_item_call name="Add To Outfit" label="Añadir al vestuario"/>
 	<menu_item_call name="Replace Outfit" label="Reemplazar Vestuario"/>
+  <menu_item_separator name="Replace Remove Separator"/>
 	<menu_item_call name="Remove From Outfit" label="Quitar del Vestuario"/>
 	<menu_item_call name="Conference Chat Folder" label="Iniciar Conferencia Grupal"/>
 	<menu_item_call name="Sound Play" label="Reproducir"/>
