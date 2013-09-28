@@ -66,6 +66,7 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 	getChild<LLUICtrl>("show_self_tag_color_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("customize_own_tag_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("show_friend_tag_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
+	getChild<LLUICtrl>("display_client_new_line_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("use_status_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
 
 	getChild<LLUICtrl>("custom_tag_label_box")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitTextModified, this, _1, _2));
@@ -174,6 +175,7 @@ void LLPrefsAscentVan::refreshValues()
     mShowSelfClientTag		= gSavedSettings.getBOOL("AscentShowSelfTag");
     mShowSelfClientTagColor = gSavedSettings.getBOOL("AscentShowSelfTagColor");
     mShowFriendsTag         = gSavedSettings.getBOOL("AscentShowFriendsTag");
+    mDisplayClientTagOnNewLine		= gSavedSettings.getBOOL("SLBDisplayClientTagOnNewLine");
     mCustomTagOn			= gSavedSettings.getBOOL("AscentUseCustomTag");
     mCustomTagLabel			= gSavedSettings.getString("AscentCustomTagLabel");
     mCustomTagColor			= gSavedSettings.getColor4("AscentCustomTagColor");
@@ -246,6 +248,7 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setBOOL("AscentShowSelfTag",          mShowSelfClientTag);
     gSavedSettings.setBOOL("AscentShowSelfTagColor",     mShowSelfClientTagColor);
     gSavedSettings.setBOOL("AscentShowFriendsTag",       mShowFriendsTag);
+    gSavedSettings.setBOOL("SLBDisplayClientTagOnNewLine",       mDisplayClientTagOnNewLine);
     gSavedSettings.setBOOL("AscentUseCustomTag",         mCustomTagOn);
     gSavedSettings.setString("AscentCustomTagLabel",     mCustomTagLabel);
     gSavedSettings.setColor4("AscentCustomTagColor",     mCustomTagColor);

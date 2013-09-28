@@ -24,6 +24,7 @@
       <check_box label="Display client tag to self" tool_tip="Enabling this will show your client tag on your avatar name locally." name="show_self_tag_check"/>
       <check_box label="Display client tag color to self" tool_tip="Enabling this set your avatar name color to your client tag color or custom set color." name="show_self_tag_color_check"/>
       <check_box label="Display friend client tags as (Friend)" tool_tip="Enabling this changes your friends' client tags to (Friend)." name="show_friend_tag_check"/>
+      <check_box label="Display client tag on a new line" tool_tip="Enabling this will show client tag on a new line." name="display_client_new_line_check"/>
       <!-- End of Left Side -->
       <check_box label="Use a custom color and label (Local only)" tool_tip="Enabling this will let you set your own name tag to show up with your custom client and tag color. This only shows up to yourself." name="customize_own_tag_check"/>
       <text name="custom_tag_label_text">Label:</text>
