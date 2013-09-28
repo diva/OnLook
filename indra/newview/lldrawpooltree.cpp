@@ -110,9 +110,7 @@ void LLDrawPoolTree::render(S32 pass)
 		renderTree();
 	}
 	else
-	{
-		gGL.getTexUnit(sDiffTex)->bind(mTexturep);
-	}
+	gGL.getTexUnit(sDiffTex)->bind(mTexturep);
 					
 	for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
 			 iter != mDrawFace.end(); iter++)
@@ -189,8 +187,8 @@ void LLDrawPoolTree::beginShadowPass(S32 pass)
 {
 	LLFastTimer t(FTM_SHADOW_TREE);
 
-	static const LLCachedControl<F32> render_deferred_offset(gSavedSettings, "RenderDeferredTreeShadowOffset");
-	static const LLCachedControl<F32> render_deferred_bias(gSavedSettings, "RenderDeferredTreeShadowBias");
+	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredTreeShadowOffset",1.f);
+	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 	gDeferredTreeShadowProgram.bind();
 	gDeferredTreeShadowProgram.setMinimumAlpha(0.5f);
@@ -205,8 +203,8 @@ void LLDrawPoolTree::endShadowPass(S32 pass)
 {
 	LLFastTimer t(FTM_SHADOW_TREE);
 
-	static const LLCachedControl<F32> render_deferred_offset(gSavedSettings, "RenderDeferredSpotShadowOffset");
-	static const LLCachedControl<F32> render_deferred_bias(gSavedSettings, "RenderDeferredSpotShadowBias");
+	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredSpotShadowOffset",1.f);
+	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredSpotShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 	gDeferredTreeShadowProgram.unbind();
 }
