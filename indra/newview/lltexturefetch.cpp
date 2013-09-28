@@ -2976,6 +2976,7 @@ bool LLTextureFetchWorker::insertPacket(S32 index, U8* data, S32 size)
 
 void LLTextureFetchWorker::setState(e_state new_state)
 {
+	/*
 	static const char* e_state_name[] =
 	{
 		"INVALID",
@@ -2994,6 +2995,7 @@ void LLTextureFetchWorker::setState(e_state new_state)
 		"WAIT_ON_WRITE",
 		"DONE"
 	};
+	*/
 	//if(mState != new_state)
 	//	LL_INFOS("Texture") << "id: " << mID << " disc: " << mDesiredDiscard << " sz: " << mDesiredSize << " state: " << e_state_name[mState] << " => " << e_state_name[new_state] << llendl;
 	mState = new_state;
