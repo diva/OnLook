@@ -221,12 +221,12 @@ public:
 		// The default is to keep connections open for possible reuse.
 		virtual bool forbidReuse(void) const { return false; }
 
-		// A derived class should return true if curl should follow redirections.
-		// The default is not to follow redirections.
-		virtual bool followRedir(void) const { return false; }
+		// A derived class should return true if curl should not follow redirections, but instead pass redirection status codes to the responder.
+		// The default is to follow redirections and not pass them to the responder.
+		virtual bool pass_redirect_status(void) const { return false; }
 
 		// If this function returns false then we generate an error when a redirect status (300..399) is received.
-		virtual bool redirect_status_ok(void) const { return followRedir(); }
+		virtual bool redirect_status_ok(void) const { return true; }
 
 		// Returns the capability type used by this responder.
 		virtual AICapabilityType capability_type(void) const { return cap_other; }
@@ -259,7 +259,6 @@ public:
 	class ResponderHeadersOnly : public ResponderBase {
 	private:
 		/*virtual*/ bool needsHeaders(void) const { return true; }
-		/*virtual*/ bool followRedir(void) const { return true; }
 
 	protected:
 		// ResponderBase event
