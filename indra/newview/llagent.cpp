@@ -2321,7 +2321,7 @@ void LLAgent::setStartPosition( U32 location_id )
     const F32 INSET = 0.5f; //meters
 // <FS:CR> Aurora Sim
     //const F32 REGION_WIDTH = LLWorld::getInstance()->getRegionWidthInMeters();
-    const F32 REGION_WIDTH = getRegion()->getWidth();
+	const F32 REGION_WIDTH = getRegion()->getWidth();
 // </FS:CR> Aurora Sim
 
     LLVector3 agent_pos = getPositionAgent();

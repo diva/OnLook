@@ -71,11 +71,7 @@ public:
 	LLWorld();
 	void destroyClass();
 
-// <FS:CR> Aurora Sim
-	void updateLimits(); // <FS:CR> Aurora Sim
-	//LLViewerRegion*	addRegion(const U64 &region_handle, const LLHost &host);
-	LLViewerRegion*	addRegion(const U64 &region_handle, const LLHost &host, const U32 &region_size_x, const U32 &region_size_y);
-// <FS:CR> Aurora Sim
+	LLViewerRegion*	addRegion(const U64 &region_handle, const LLHost &host);
 		// safe to call if already present, does the "right thing" if
 		// hosts are same, or if hosts are different, etc...
 	void			removeRegion(const LLHost &host);
@@ -117,6 +113,9 @@ public:
 
 	LLSurfacePatch *		resolveLandPatchGlobal(const LLVector3d &position);
 	LLVector3				resolveLandNormalGlobal(const LLVector3d &position);		// absolute frame
+
+	// update region size
+	void					setRegionWidth(const U32 width = 0);
 
 	U32						getRegionWidthInPoints() const	{ return mWidth; }
 	F32						getRegionScale() const			{ return mScale; }

@@ -36,7 +36,6 @@
 #include "timing.h"
 #include "llsky.h"
 #include "llviewercamera.h"
-#include "llregionhandle.h" // <FS:CR> Aurora Sim
 
 // For getting composition values
 #include "llviewerregion.h"
@@ -251,30 +250,23 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 	const F32 mpg = mSurfacep->getMetersPerGrid() * stride;
 
 // <FS:CR> Aurora Sim
+// Singu Note: poffsets gets an extra space each for surface stride (tag clutter removed)
 	//S32 poffsets[2][2][2];
 	S32 poffsets[2][2][3];
-// </FS:CR> Aurora Sim
 	poffsets[0][0][0] = x - stride;
 	poffsets[0][0][1] = y - stride;
-// <FS:CR> Aurora Sim
 	poffsets[0][0][2] = surface_stride;
-// </FS:CR> Aurora Sim
 
 	poffsets[0][1][0] = x - stride;
 	poffsets[0][1][1] = y + stride;
-// <FS:CR> Aurora Sim
 	poffsets[0][1][2] = surface_stride;
-// </FS:CR> Aurora Sim
 
 	poffsets[1][0][0] = x + stride;
 	poffsets[1][0][1] = y - stride;
-// <FS:CR> Aurora Sim
 	poffsets[1][0][2] = surface_stride;
-// </FS:CR> Aurora Sim
 
 	poffsets[1][1][0] = x + stride;
 	poffsets[1][1][1] = y + stride;
-// <FS:CR> Aurora Sim
 	poffsets[1][1][2] = surface_stride;
 // </FS:CR> Aurora Sim
 
@@ -312,12 +304,6 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				if (!ppatches[i][j]->getNeighborPatch(SOUTH))
 				{
 					poffsets[i][j][1] = 0;
-				}
-				else
-				{
-// <FS:CR> Aurora Sim
-					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(SOUTH);
-					poffsets[i][j][1] += patch_width;
 					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 // </FS>CR> Aurora Sim
 				}
@@ -359,28 +345,19 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				  *(ppatches[0][0]->mDataZ
 				  + poffsets[0][0][0]
 // <FS:CR> Aurora Sim
-				  //+ poffsets[0][0][1]*surface_stride));
+// Singu Note: multiply the y poffsets by its own surface stride (tag clutter removed)
 				  + poffsets[0][0][1]*poffsets[0][0][2]));
-// </FS:CR> Aurora Sim
 	LLVector3 p01(-mpg,+mpg,
 				  *(ppatches[0][1]->mDataZ
 				  + poffsets[0][1][0]
-// <FS:CR> Aurora Sim
-				  //+ poffsets[0][1][1]*surface_stride));
 				  + poffsets[0][1][1]*poffsets[0][1][2]));
-// </FS:CR> Aurora Sim
 	LLVector3 p10(+mpg,-mpg,
 				  *(ppatches[1][0]->mDataZ
 				  + poffsets[1][0][0]
-// <FS:CR> Aurora Sim
-				  //+ poffsets[1][0][1]*surface_stride));
 				  + poffsets[1][0][1]*poffsets[1][0][2]));
-// </FS:CR> Aurora Sim
 	LLVector3 p11(+mpg,+mpg,
 				  *(ppatches[1][1]->mDataZ
 				  + poffsets[1][1][0]
-// <FS:CR> Aurora Sim
-				  //+ poffsets[1][1][1]*surface_stride));
 				  + poffsets[1][1][1]*poffsets[1][1][2]));
 // </FS:CR> Aurora Sim
 
@@ -520,18 +497,6 @@ void LLSurfacePatch::updateNormals()
 	// update the north edge
 	if (mNormalsInvalid[NORTHEAST] || mNormalsInvalid[NORTH] || mNormalsInvalid[NORTHWEST])
 	{
-// <FS:CR> Aurora Sim
-		/*
-		if(!getNeighborPatch(EAST) && getNeighborPatch(NORTHEAST))
-		{
-			if(getNeighborPatch(NORTHEAST)->getHasReceivedData())
-			{
-				*(getNeighborPatch(NORTHEAST)->mDataZ) = 100.0f;
-			}
-		}
-		*/
-// </FS:CR> Aurora Sim
-
 		for (i = 0; i <= grids_per_patch_edge; i++)
 		{
 			calcNormal(i, grids_per_patch_edge, 2);
@@ -546,12 +511,9 @@ void LLSurfacePatch::updateNormals()
 	if (mNormalsInvalid[NORTHWEST] || mNormalsInvalid[WEST] || mNormalsInvalid[SOUTHWEST])
 	{
 // <FS:CR> Aurora Sim
-		if(!getNeighborPatch(NORTH) && getNeighborPatch(NORTHWEST))
+		if (!getNeighborPatch(NORTH) && getNeighborPatch(NORTHWEST) && getNeighborPatch(NORTHWEST)->getHasReceivedData())
 		{
-			if(getNeighborPatch(NORTHWEST)->getHasReceivedData())
-			{
-				*(mDataZ + grids_per_patch_edge*grids_per_edge) = *(getNeighborPatch(NORTHWEST)->mDataZ + grids_per_patch_edge);
-			}
+			*(mDataZ + grids_per_patch_edge*grids_per_edge) = *(getNeighborPatch(NORTHWEST)->mDataZ + grids_per_patch_edge);
 		}
 // </FS:CR> Aurora Sim
 
@@ -567,13 +529,9 @@ void LLSurfacePatch::updateNormals()
 	if (mNormalsInvalid[SOUTHWEST] || mNormalsInvalid[SOUTH] || mNormalsInvalid[SOUTHEAST])
 	{
 // <FS:CR> Aurora Sim
-		if(!getNeighborPatch(EAST) && getNeighborPatch(SOUTHEAST))
+		if (!getNeighborPatch(EAST) && getNeighborPatch(SOUTHEAST) && getNeighborPatch(SOUTHEAST)->getHasReceivedData())
 		{
-			if(getNeighborPatch(SOUTHEAST)->getHasReceivedData())
-			{
-				*(mDataZ + grids_per_patch_edge) = 
-				*(getNeighborPatch(SOUTHEAST)->mDataZ + grids_per_patch_edge * getNeighborPatch(SOUTHEAST)->getSurface()->getGridsPerEdge());
-			}
+			*(mDataZ + grids_per_patch_edge) = *(getNeighborPatch(SOUTHEAST)->mDataZ + grids_per_patch_edge * getNeighborPatch(SOUTHEAST)->getSurface()->getGridsPerEdge());
 		}
 // </FS:CR> Aurora Sim
 
@@ -658,19 +616,13 @@ void LLSurfacePatch::updateNormals()
 				S32 own_offset = 0, neighbor_offset = 0;
 				from_region_handle(mSurfacep->getRegion()->getHandle(), &own_xpos, &own_ypos);
 				from_region_handle(getNeighborPatch(NORTHEAST)->mSurfacep->getRegion()->getHandle(), &neighbor_xpos, &neighbor_ypos);
-				if(own_ypos >= neighbor_ypos) {
+				if (own_ypos >= neighbor_ypos)
 					neighbor_offset = own_ypos - neighbor_ypos;
-				}
-				else {
+				else
 					own_offset = neighbor_ypos - own_ypos;
-				}
-// </FS:CR> Aurora Sim
 
 				*(mDataZ + grids_per_patch_edge + grids_per_patch_edge*grids_per_edge) =
-										*(getNeighborPatch(NORTHEAST)->mDataZ + 
-// <FS:CR> Aurora Sim
-											(grids_per_edge + neighbor_offset - own_offset - 1) * 
-											getNeighborPatch(NORTHEAST)->getSurface()->getGridsPerEdge() );
+					*(getNeighborPatch(NORTHEAST)->mDataZ + (grids_per_edge + neighbor_offset - own_offset - 1) * getNeighborPatch(NORTHEAST)->getSurface()->getGridsPerEdge());
 // </FS:CR> Aurora Sim
 			}
 		}

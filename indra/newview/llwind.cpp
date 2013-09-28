@@ -50,13 +50,10 @@
 #include "noise.h"
 #include "v4color.h"
 #include "llagent.h"
-#include "llworld.h"
+#include "llviewerregion.h"
 
 const F32 CLOUD_DIVERGENCE_COEF = 0.5f; 
 
-// <FS:CR> Aurora Sim
-#include "llviewerregion.h"
-// </FS:CR> Aurora Sim
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -124,18 +121,12 @@ void LLWind::decompress(LLBitPack &bitpack, LLGroupHeader *group_headerp)
 	set_group_of_patch_header(group_headerp);
 
 	// X component
-// <FS:CR> Aurora Sim
-	//decode_patch_header(bitpack, &patch_header);
-	decode_patch_header(bitpack, &patch_header, FALSE);
-// </FS:CR> Aurora Sim
+	decode_patch_header(bitpack, &patch_header);
 	decode_patch(bitpack, buffer);
 	decompress_patch(mVelX, buffer, &patch_header);
 
 	// Y component
-// <FS:CR> Aurora Sim
-	//decode_patch_header(bitpack, &patch_header);
-	decode_patch_header(bitpack, &patch_header, FALSE);
-// </FS:CR> Aurora Sim
+	decode_patch_header(bitpack, &patch_header);
 	decode_patch(bitpack, buffer);
 	decompress_patch(mVelY, buffer, &patch_header);
 
@@ -333,7 +324,7 @@ LLVector3 LLWind::getCloudVelocity(const LLVector3 &pos_region)
 
 	LLVector3 pos_clamped_region(pos_region);
 	
-	F32 region_width_meters = LLWorld::getInstance()->getRegionWidthInMeters();
+	F32 region_width_meters = gAgent.getRegion()->getWidth();
 
 	if (pos_clamped_region.mV[VX] < 0.f)
 	{

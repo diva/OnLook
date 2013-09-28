@@ -747,6 +747,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 	LLVector3d posagent;
 	posagent.setVec(gAgent.getPositionAgent());
 	LLVector3d simpos = mypos - posagent;
+	const S32 width(gAgent.getRegion() ? gAgent.getRegion()->getWidth() : 256);
 
 	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
@@ -904,7 +905,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		S32 x = (S32)position.mdV[VX];
 		S32 y = (S32)position.mdV[VY];
-		if (x >= 0 && x <= 256 && y >= 0 && y <= 256)
+		if (x >= 0 && x <= width && y >= 0 && y <= width)
 		{
 			snprintf(temp, sizeof(temp), "%d, %d", x, y);
 		}
@@ -915,7 +916,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			{
 				strcat(temp, "S");
 			}
-			else if (y > 256)
+			else if (y > width)
 			{
 				strcat(temp, "N");
 			}
@@ -923,7 +924,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			{
 				strcat(temp, "W");
 			}
-			else if (x > 256)
+			else if (x > width)
 			{
 				strcat(temp, "E");
 			}

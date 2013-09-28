@@ -101,7 +101,7 @@ LLNetMap::LLNetMap(const std::string& name) :
 	mUpdateNow( FALSE )
 {
 	mScale = gSavedSettings.getF32("MiniMapScale");
-	mPixelsPerMeter = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
+	mPixelsPerMeter = mScale / REGION_WIDTH_METERS;
 	mDotRadius = llmax(DOT_SCALE * mPixelsPerMeter, MIN_DOT_RADIUS);
 
 	mObjectImageCenterGlobal = gAgentCamera.getCameraPositionGlobal();
@@ -166,7 +166,7 @@ void LLNetMap::setScale( F32 scale )
 		mObjectMapPixels = diameter;
 	}
 
-	mPixelsPerMeter = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
+	mPixelsPerMeter = mScale / REGION_WIDTH_METERS;
 	mDotRadius = llmax(DOT_SCALE * mPixelsPerMeter, MIN_DOT_RADIUS);
 
 	mUpdateNow = TRUE;
@@ -261,7 +261,7 @@ void LLNetMap::draw()
 		LLColor4 dead_region_color = gColors.getColor( "NetMapDeadRegion" );
 // <FS:CR> Aurora Sim
 		//S32 region_width = llround(LLWorld::getInstance()->getRegionWidthInMeters());
-		S32 region_width = llround(REGION_WIDTH_METERS);
+		S32 region_width = REGION_WIDTH_UNITS;
 // </FS:CR> Aurora Sim
 
 		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
@@ -280,8 +280,8 @@ void LLNetMap::draw()
 // <FS:CR> Aurora Sim
 			//F32 top =		bottom + mScale ;
 			//F32 right =		left + mScale ;
-			F32 top =		bottom + (regionp->getWidth() / region_width) * mScale ;
-			F32 right =		left + (regionp->getWidth() / region_width) * mScale ;
+			F32 top =		bottom + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
+			F32 right =		left + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
 // </FS:CR> Aurora Sim
 
 			gGL.color4fv(regionp == gAgent.getRegion() ? this_region_color.mV : live_region_color.mV);
@@ -351,8 +351,8 @@ void LLNetMap::draw()
 
 		LLVector3 map_center_agent = gAgent.getPosAgentFromGlobal(mObjectImageCenterGlobal);
 		map_center_agent -= gAgentCamera.getCameraPositionAgent();
-		map_center_agent.mV[0] *= mScale/LLWorld::getInstance()->getRegionWidthInMeters();
-		map_center_agent.mV[1] *= mScale/LLWorld::getInstance()->getRegionWidthInMeters();
+		map_center_agent.mV[0] *= mScale/REGION_WIDTH_METERS;
+		map_center_agent.mV[1] *= mScale/REGION_WIDTH_METERS;
 
 		gGL.getTexUnit(0)->bind(mObjectImagep);
 		F32 image_half_width = 0.5f*mObjectMapPixels;

@@ -310,8 +310,8 @@ void release_start_screen();
 void reset_login();
 void apply_udp_blacklist(const std::string& csv);
 // <FS:CR> Aurora Sim
-//bool process_login_success_response();
-bool process_login_success_response(std::string& password, U32 &first_sim_size_x, U32 &first_sim_size_y);
+//bool process_login_success_response(std::string& password);
+bool process_login_success_response(std::string& password, U32& first_sim_size_x);
 // </FS:CR> Aurora Sim
 void transition_back_to_login_panel(const std::string& emsg);
 
@@ -402,7 +402,6 @@ bool idle_startup()
 
 // <FS:CR> Aurora Sim
 	static U32 first_sim_size_x = 256;
-	static U32 first_sim_size_y = 256;
 // </FS:CR> Aurora Sim
 	static LLVector3 initial_sun_direction(1.f, 0.f, 0.f);
 	static LLVector3 agent_start_position_region(10.f, 10.f, 10.f);		// default for when no space server
@@ -1550,7 +1549,7 @@ bool idle_startup()
 		if (successful_login)
 		{
 			// unpack login data needed by the application
-			if(process_login_success_response(password, first_sim_size_x, first_sim_size_y))
+			if (process_login_success_response(password, first_sim_size_x))
 			{
 				std::string name = firstname;
 				if (!gHippoGridManager->getCurrentGrid()->isSecondLife() ||
@@ -1670,9 +1669,9 @@ bool idle_startup()
 		display_startup();
 
 // <FS:CR> Aurora Sim
-		//LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim);
-LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim, first_sim_size_x, first_sim_size_y);
+		LLWorld::getInstance()->setRegionWidth(first_sim_size_x);
 // </FS:CR> Aurora Sim
+		LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim);
 		display_startup();
 
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
@@ -3854,7 +3853,7 @@ void apply_udp_blacklist(const std::string& csv)
 	
 }
 
-bool process_login_success_response(std::string& password, U32 &first_sim_size_x, U32 &first_sim_size_y)
+bool process_login_success_response(std::string& password, U32& first_sim_size_x)
 {
 	LLSD response = LLUserAuth::getInstance()->getResponse();
 
@@ -3994,18 +3993,12 @@ bool process_login_success_response(std::string& password, U32 &first_sim_size_x
 		U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
 		gFirstSimHandle = to_region_handle(region_x, region_y);
 	}
-	
+
 // <FS:CR> Aurora Sim
 	text = response["region_size_x"].asString();
-	if(!text.empty()) {
-		first_sim_size_x = strtoul(text.c_str(), NULL, 10);
-		LLViewerParcelMgr::getInstance()->init(first_sim_size_x);
-	}
-
-	//region Y size is currently unused, major refactoring required. - Patrick Sapinski (2/10/2011)
-	text = response["region_size_y"].asString();
-	if(!text.empty()) first_sim_size_y = strtoul(text.c_str(), NULL, 10);
+	if (!text.empty()) LLViewerParcelMgr::getInstance()->init(first_sim_size_x = atoi(text.c_str()));
 // </FS:CR> Aurora Sim	
+
 	const std::string look_at_str = response["look_at"];
 	if (!look_at_str.empty())
 	{

@@ -142,9 +142,11 @@ public:
 
 	// Setters
 	void setName(std::string& name) { mName = name; }
+// <FS:CR> Aurora Sim
+	void setSize(U16 sizeX, U16 sizeY) { mSizeX = sizeX; mSizeY = sizeY; }
+// </FS:CR> Aurora Sim
 	void setAccess (U32 accesscode) { mAccess = accesscode; }
 	void setRegionFlags (U32 region_flags) { mRegionFlags = region_flags; }
-	void setSize(U16 sizeX, U16 sizeY) { mSizeX = sizeX; mSizeY = sizeY; }
 	void setAlpha(F32 alpha) { mAlpha = alpha; }
 	
 	void setLandForSaleImage (LLUUID image_id);
@@ -160,8 +162,11 @@ public:
 	LLPointer<LLViewerFetchedTexture> getLandForSaleImage();	// Get the overlay image, fetch it if necessary
 	
 	const F32 getAlpha() const { return mAlpha; }
+// <FS:CR> Aurora Sim
+	const U64& getHandle() const { return mHandle; }
 	const U16 getSizeX() const { return mSizeX; }
 	const U16 getSizeY() const { return mSizeY; }
+// </FS:CR> Aurora Sim
 	bool isName(const std::string& name) const;
 	bool isDown() { return (mAccess == SIM_ACCESS_DOWN); }
 	bool isPG() { return (mAccess <= SIM_ACCESS_PG); }
@@ -192,15 +197,13 @@ public:
 	const LLSimInfo::item_info_list_t& getLandForSaleAdult() const { return mLandForSaleAdult; }
 	const LLSimInfo::item_info_list_t& getAgentLocation() const { return mAgentLocations; }
 
-	const U64 		&getHandle() const 			{ return mHandle; }
-
-//private:
+private:
 	U64 mHandle;				// This is a hash of the X and Y world coordinates of the SW corner of the sim
+// <FS:CR> Aurora Sim
 	U16 mSizeX;
 	U16 mSizeY;
-
-private:
 // </FS:CR> Aurora Sim
+
 	std::string mName;
 
 	F64 mAgentsUpdateTime;		// Time stamp giving the last time the agents information was requested for that region
