@@ -2062,7 +2062,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
   if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
   {
-	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mResponder->getName() << "\" which has no followRedir()!" << llendl;
+	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mResponder->getName() << "\" which does not allow redirection!" << llendl;
   }
 }
 
