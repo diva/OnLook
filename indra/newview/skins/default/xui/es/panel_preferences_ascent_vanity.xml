@@ -27,6 +27,7 @@
 			<check_box label="Mostrarte tag de cliente" tool_tip="Elige el color que verás del tag de tu visor." name="show_self_tag_check"/>
 			<check_box label="Mostrarte color del tag de cliente" tool_tip="Activándolo,  ajustará el nombre de avatar en el color de tu cliente o en el color personalizado." name="show_self_tag_color_check"/>
 			<check_box label="Ver tags de amigos como (Amigo)" tool_tip="Activándolo cambia el tag de cliente de tus amigos a (Amigo)." name="show_friend_tag_check"/>
+			<check_box label="Mostrarte tag de cliente en una nueva línea" tool_tip="Activándolo mostra el tag de cliente en una nueva línea." name="display_client_new_line_check"/>
 			<!-- End of Left Side -->
 			<check_box label="Usar color y etiqueta personalizadas (Sólo local)" tool_tip="Activándolo te permitirá ajustar tu tag de nombre para mostrar con tu tag de cliente y color  personalizados. Esto sólo funciona para ti mismo." name="customize_own_tag_check"/>
 			<text name="custom_tag_label_text">

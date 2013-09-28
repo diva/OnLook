@@ -74,7 +74,6 @@
 // menu includes
 #include "llevent.h"
 #include "llmemberlistener.h"
-#include "llview.h"
 #include "llselectmgr.h"
 
 // Floater and UI
@@ -82,8 +81,6 @@
 #include "lluictrlfactory.h"
 #include "llscrollcontainer.h"
 #include "lltexturectrl.h"
-#include "llcombobox.h"
-#include "llcheckboxctrl.h"
 
 // Files and cache
 #include "llcallbacklist.h"
@@ -188,16 +185,13 @@ class ColladaExportFloater
 {
 private:
 	typedef std::map<LLUUID, std::string> texture_list_t;
-	LLButton* mExportBtn;
-	LLButton* mBrowseBtn;
-	LLLineEditor* mFileName;
-	LLComboBox* mTextureTypeCombo;
-	LLCheckBoxCtrl* mTextureExportCheck;
+	LLView* mExportBtn;
+	LLView* mFileName;
+	LLView* mTextureTypeCombo;
 
 	DAESaver mSaver;
 	texture_list_t mTexturesToSave;
 	S32 mTotal;
-	S32 mIncluded;
 	S32 mNumTextures;
 	S32 mNumExportableTextures;
 	std::string mObjectName;
@@ -210,16 +204,25 @@ public:
 	{
 		mCommitCallbackRegistrar.add("ColladaExport.FilePicker",		boost::bind(&ColladaExportFloater::onClickBrowse, this));
 		mCommitCallbackRegistrar.add("ColladaExport.Export",			boost::bind(&ColladaExportFloater::onClickExport, this));
-		mCommitCallbackRegistrar.add("ColladaExport.TextureTypeCombo",	boost::bind(&ColladaExportFloater::onTextureTypeCombo, this));
-		mCommitCallbackRegistrar.add("ColladaExport.TextureExport",		boost::bind(&ColladaExportFloater::onTextureExportCheck, this));
+		mCommitCallbackRegistrar.add("ColladaExport.TextureTypeCombo",	boost::bind(&ColladaExportFloater::onTextureTypeCombo, this, boost::bind(&LLUICtrl::getControlName, _1), _2));
+		mCommitCallbackRegistrar.add("ColladaExport.TextureExport",		boost::bind(&ColladaExportFloater::onTextureExportCheck, this, _2));
 		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_dae_export.xml");
 
 		addSelectedObjects();
-		childSetTextArg("Object Name", "[NAME]", mObjectName);
-		childSetTextArg("Exportable Prims", "[COUNT]", llformat("%d", mIncluded));
-		childSetTextArg("Exportable Prims", "[TOTAL]", llformat("%d", mTotal));
-		childSetTextArg("Exportable Textures", "[COUNT]", llformat("%d", mNumExportableTextures));
-		childSetTextArg("Exportable Textures", "[TOTAL]", llformat("%d", mNumTextures));
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("Object Name"))
+		{
+			ctrl->setTextArg("[NAME]", mObjectName);
+		}
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("Exportable Prims"))
+		{
+			ctrl->setTextArg("[COUNT]", llformat("%d", mSaver.mObjects.size()));
+			ctrl->setTextArg("[TOTAL]", llformat("%d", mTotal));
+		}
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("Exportable Textures"))
+		{
+			ctrl->setTextArg("[COUNT]", llformat("%d", mNumExportableTextures));
+			ctrl->setTextArg("[TOTAL]", llformat("%d", mNumTextures));
+		}
 		addTexturePreview();
 	}
 
@@ -233,17 +236,13 @@ public:
 
 	BOOL postBuild()
 	{
-		mFileName				= getChild<LLLineEditor>("file name editor");
-		mExportBtn				= getChild<LLButton>("export button");
-		mBrowseBtn				= getChild<LLButton>("browse button");
-		mTextureTypeCombo       = getChild<LLComboBox>("texture type combo");
-		mTextureExportCheck		= getChild<LLCheckBoxCtrl>("texture export check");
+		mFileName				= getChildView("file name editor");
+		mExportBtn				= getChildView("export button");
+		mTextureTypeCombo       = getChildView("texture type combo");
 		mTitleProgress			= getString("texture_progress");
 
-		mExportBtn->setEnabled(FALSE);
-		mFileName->setEnabled(FALSE);
 		mTextureTypeCombo->setValue(gSavedSettings.getS32(mTextureTypeCombo->getControlName()));
-		onTextureExportCheck();
+		onTextureExportCheck(getChildView("texture export check")->getValue());
 		return TRUE;
 	}
 
@@ -253,14 +252,14 @@ public:
 		setTitle(mTitleProgress);
 	}
 
-	void onTextureExportCheck()
+	void onTextureExportCheck(const LLSD& value)
 	{
-		mTextureTypeCombo->setEnabled(mTextureExportCheck->get());
+		mTextureTypeCombo->setEnabled(value);
 	}
 
-	void onTextureTypeCombo()
+	void onTextureTypeCombo(const std::string& control_name, const LLSD& value)
 	{
-		gSavedSettings.setS32(mTextureTypeCombo->getControlName(), mTextureTypeCombo->getValue());
+		gSavedSettings.setS32(control_name, value);
 	}
 
 	void onClickBrowse()
@@ -276,10 +275,7 @@ public:
 		if (filepicker->hasFilename())
 		{
 			mFileName->setValue(filepicker->getFilename());
-			if (mIncluded > 0)
-			{
-				mExportBtn->setEnabled(TRUE);
-			}
+			mExportBtn->setEnabled(TRUE);
 		}
 	}
 
@@ -310,14 +306,12 @@ public:
 			mSaver.mOffset = -selection->getFirstRootObject()->getRenderPosition();
 			mObjectName = selection->getFirstRootNode()->mName;
 			mTotal = 0;
-			mIncluded = 0;
 
 			for (LLObjectSelection::iterator iter = selection->begin(); iter != selection->end(); ++iter)
 			{
 				mTotal++;
 				LLSelectNode* node = *iter;
 				if (!node->getObject()->getVolume() || !DAEExportUtil::canExportNode(node)) continue;
-				mIncluded++;
 				mSaver.add(node->getObject(), node->mName);
 			}
 

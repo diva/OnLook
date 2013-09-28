@@ -154,6 +154,12 @@ public:
 
 static LLDispatchUPCBalance sDispatchUPCBalance;
 
+static void toggle_time_value()
+{
+	LLControlVariable* control = gSavedSettings.getControl("LiruLocalTime");
+	control->set(!control->get());
+}
+
 LLStatusBar::LLStatusBar(const std::string& name, const LLRect& rect)
 :	LLPanel(name, LLRect(), FALSE),		// not mouse opaque
 mBalance(0),
@@ -195,6 +201,7 @@ mIsNavMeshDirty(false)
 
 	mTextHealth = getChild<LLTextBox>("HealthText" );
 	mTextTime = getChild<LLTextBox>("TimeText" );
+	mTextTime->setClickedCallback(boost::bind(toggle_time_value));
 
 	if (!mUPCSupported)
 		mTextUPC->setVisible(false);
@@ -314,23 +321,28 @@ void LLStatusBar::refresh()
 	mSGBandwidth->setThreshold(1, bwtotal);
 	mSGBandwidth->setThreshold(2, bwtotal);
 
-	// *TODO: Localize / translate time
+	// Singu Note: Use system's time if the user desires, otherwise use server time
+	static const LLCachedControl<bool> show_local_time("LiruLocalTime");
 
 	// Get current UTC time, adjusted for the user's clock
 	// being off.
-	time_t utc_time;
-	utc_time = time_corrected();
+	time_t utc_time = show_local_time ? time(NULL) : time_corrected();
 
 	// There's only one internal tm buffer.
 	struct tm* internal_time;
 
 	// Convert to Pacific, based on server's opinion of whether
 	// it's daylight savings time there.
-	internal_time = utc_to_pacific_time(utc_time, gPacificDaylightTime);
+	internal_time = show_local_time ? std::localtime(&utc_time) : utc_to_pacific_time(utc_time, gPacificDaylightTime);
 
 	std::string t;
 	timeStructToFormattedString(internal_time, gSavedSettings.getString("ShortTimeFormat"), t);
-	if (gPacificDaylightTime)
+	if (show_local_time)
+	{
+		static const std::string local(" " + getString("Local"));
+		t += local;
+	}
+	else if (gPacificDaylightTime)
 	{
 		t += " PDT";
 	}

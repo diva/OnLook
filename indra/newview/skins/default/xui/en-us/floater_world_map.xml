@@ -156,14 +156,14 @@
 		Location:
 	</text>
 	<spinner bottom_delta="0" decimal_digits="0" follows="bottom|right" height="16"
-	     increment="1" initial_val="128" left="1090" max_val="255" min_val="0"
+	     increment="1" initial_val="128" left="1090" max_val="8191" min_val="0"
 	     mouse_opaque="true" name="spin x"
 	     tool_tip="X coordinate of location to show on map" label_width="0" width="48" >
         <spinner.commit_callback
           function="WMap.Coordinates" />
       </spinner>
 	<spinner bottom_delta="0" decimal_digits="0" follows="bottom|right" height="16"
-	     increment="1" initial_val="128" left_delta="50" max_val="255" min_val="0"
+	     increment="1" initial_val="128" left_delta="50" max_val="8191" min_val="0"
 	     mouse_opaque="true" name="spin y"
 	     tool_tip="Y coordinate of location to show on map" label_width="0" width="48" >
         <spinner.commit_callback

@@ -66,6 +66,7 @@
 #include "lltrans.h"
 #include "llurldispatcher.h"
 #include "llviewerobjectlist.h"
+#include "llviewerparcelmgr.h"
 #include "llviewerparceloverlay.h"
 #include "llviewerstatsrecorder.h"
 #include "llvlmanager.h"
@@ -78,6 +79,7 @@
 #include "llviewercontrol.h"
 #include "llsdserialize.h"
 
+#include "llviewerparcelmgr.h"	//Aurora Sim
 #ifdef LL_WINDOWS
 	#pragma warning(disable:4355)
 #endif
@@ -309,9 +311,12 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mReleaseNotesRequested(FALSE),
 	mCapabilitiesReceived(false),
 	mFeaturesReceived(false),
-	mGamingFlags(0)
+	mGamingFlags(0),
+// <FS:CR> Aurora Sim
+	mWidth(region_width_meters)
 {
-	mWidth = region_width_meters;
+	// Moved this up... -> mWidth = region_width_meters;
+// </FS:CR>
 	mImpl->mOriginGlobal = from_region_handle(handle); 
 	updateRenderMatrix();
 
@@ -321,7 +326,10 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mImpl->mCompositionp =
 		new LLVLComposition(mImpl->mLandp,
 							grids_per_region_edge,
-							region_width_meters / grids_per_region_edge);
+// <FS:CR> Aurora Sim
+							//region_width_meters / grids_per_region_edge);
+							mWidth / grids_per_region_edge);
+// </FS:CR> Aurora Sim
 	mImpl->mCompositionp->setSurface(mImpl->mLandp);
 
 	// Create the surfaces
@@ -331,7 +339,11 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 					mImpl->mOriginGlobal,
 					mWidth);
 
-	mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
+// <FS:CR> Aurora Sim
+	//mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
+	mParcelOverlay = new LLViewerParcelOverlay(this, mWidth);
+	LLViewerParcelMgr::getInstance()->init(mWidth);
+// </FS:CR> Aurora Sim
 
 	setOriginGlobal(from_region_handle(handle));
 	calculateCenterGlobal();
@@ -838,11 +850,13 @@ LLVLComposition * LLViewerRegion::getComposition() const
 
 F32 LLViewerRegion::getCompositionXY(const S32 x, const S32 y) const
 {
-	if (x >= 256)
+// Singu Note: The Aurora Sim patches here were too many to read the code itself, mWidth and getWidth() (-1) replace 256 (255) in this function, only the first and last tags remain
+// <FS:CR> Aurora Sim
+	if (x >= mWidth)
 	{
-		if (y >= 256)
+		if (y >= mWidth)
 		{
-			LLVector3d center = getCenterGlobal() + LLVector3d(256.f, 256.f, 0.f);
+			LLVector3d center = getCenterGlobal() + LLVector3d(mWidth, mWidth, 0.f);
 			LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromPosGlobal(center);
 			if (regionp)
 			{
@@ -851,8 +865,8 @@ F32 LLViewerRegion::getCompositionXY(const S32 x, const S32 y) const
 				// If we're attempting to blend, then we want to make the fractional part of
 				// this region match the fractional of the adjacent.  For now, just minimize
 				// the delta.
-				F32 our_comp = getComposition()->getValueScaled(255, 255);
-				F32 adj_comp = regionp->getComposition()->getValueScaled(x - 256.f, y - 256.f);
+				F32 our_comp = getComposition()->getValueScaled(mWidth-1.f, mWidth-1.f);
+				F32 adj_comp = regionp->getComposition()->getValueScaled(x - regionp->getWidth(), y - regionp->getWidth());
 				while (llabs(our_comp - adj_comp) >= 1.f)
 				{
 					if (our_comp > adj_comp)
@@ -869,7 +883,7 @@ F32 LLViewerRegion::getCompositionXY(const S32 x, const S32 y) const
 		}
 		else
 		{
-			LLVector3d center = getCenterGlobal() + LLVector3d(256.f, 0, 0.f);
+			LLVector3d center = getCenterGlobal() + LLVector3d(mWidth, 0.f, 0.f);
 			LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromPosGlobal(center);
 			if (regionp)
 			{
@@ -878,8 +892,8 @@ F32 LLViewerRegion::getCompositionXY(const S32 x, const S32 y) const
 				// If we're attempting to blend, then we want to make the fractional part of
 				// this region match the fractional of the adjacent.  For now, just minimize
 				// the delta.
-				F32 our_comp = getComposition()->getValueScaled(255.f, (F32)y);
-				F32 adj_comp = regionp->getComposition()->getValueScaled(x - 256.f, (F32)y);
+				F32 our_comp = getComposition()->getValueScaled(mWidth-1.f, (F32)y);
+				F32 adj_comp = regionp->getComposition()->getValueScaled(x - regionp->getWidth(), (F32)y);
 				while (llabs(our_comp - adj_comp) >= 1.f)
 				{
 					if (our_comp > adj_comp)
@@ -895,9 +909,9 @@ F32 LLViewerRegion::getCompositionXY(const S32 x, const S32 y) const
 			}
 		}
 	}
-	else if (y >= 256)
+	else if (y >= mWidth)
 	{
-		LLVector3d center = getCenterGlobal() + LLVector3d(0.f, 256.f, 0.f);
+		LLVector3d center = getCenterGlobal() + LLVector3d(0.f, mWidth, 0.f);
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromPosGlobal(center);
 		if (regionp)
 		{
@@ -906,8 +920,9 @@ F32 LLViewerRegion::getCompositionXY(const S32 x, const S32 y) const
 			// If we're attempting to blend, then we want to make the fractional part of
 			// this region match the fractional of the adjacent.  For now, just minimize
 			// the delta.
-			F32 our_comp = getComposition()->getValueScaled((F32)x, 255.f);
-			F32 adj_comp = regionp->getComposition()->getValueScaled((F32)x, y - 256.f);
+			F32 our_comp = getComposition()->getValueScaled((F32)x, mWidth-1.f);
+			F32 adj_comp = regionp->getComposition()->getValueScaled((F32)x, y - regionp->getWidth());
+// <FS:CR> Aurora Sim
 			while (llabs(our_comp - adj_comp) >= 1.f)
 			{
 				if (our_comp > adj_comp)

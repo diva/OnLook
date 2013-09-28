@@ -564,6 +564,7 @@ SHClientTagMgr::SHClientTagMgr()
 	gSavedSettings.getControl("AscentEstateOwnerColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 	gSavedSettings.getControl("AscentFriendColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 	gSavedSettings.getControl("AscentMutedColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
+	gSavedSettings.getControl("SLBDisplayClientTagOnNewLine")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 
 	//Following group of settings all actually manipulate the tag cache for agent avatar. Even if the tag system is 'disabled', we still allow an
 	//entry to exist for the agent avatar.
@@ -3060,6 +3061,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 	LLNameValue *title = getNVPair("Title");
 	LLNameValue* firstname = getNVPair("FirstName");
 	LLNameValue* lastname = getNVPair("LastName");
+	static const LLCachedControl<bool>	display_client_new_line("SLBDisplayClientTagOnNewLine");
 
 	// Avatars must have a first and last name
 	if (!firstname || !lastname) return;
@@ -3282,7 +3284,12 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		else if(allow_nameplate_override && !mCCSAttachmentText.empty())
 			tag_format=mCCSAttachmentText;
 		else
-			tag_format=sRenderGroupTitles ? "%g\n%f %l %t" : "%f %l %t";
+		{
+			if(!display_client_new_line)
+				tag_format=sRenderGroupTitles ? "%g\n%f %l %t" : "%f %l %t";
+			else
+				tag_format=sRenderGroupTitles ? "%g\n%f %l\n%t" : "%f %l\n%t";
+		}
 
 		// replace first name, last name and title
 		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;

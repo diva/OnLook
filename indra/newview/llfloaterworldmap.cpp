@@ -700,8 +700,14 @@ void LLFloaterWorldMap::trackLocation(const LLVector3d& pos_global)
 	}
 	
 	std::string sim_name = sim_info->getName();
-	F32 region_x = (F32)fmod( pos_global.mdV[VX], (F64)REGION_WIDTH_METERS );
-	F32 region_y = (F32)fmod( pos_global.mdV[VY], (F64)REGION_WIDTH_METERS );
+// <FS:CR> Aurora-sim var region teleports
+	//F32 region_x = (F32)fmod( pos_global.mdV[VX], (F64)REGION_WIDTH_METERS );
+	//F32 region_y = (F32)fmod( pos_global.mdV[VY], (F64)REGION_WIDTH_METERS );
+	U32 locX, locY;
+	from_region_handle(sim_info->getHandle(), &locX, &locY);
+	F32 region_x = pos_global.mdV[VX] - locX;
+	F32 region_y = pos_global.mdV[VY] - locY;
+// </FS:CR>
 	std::string full_name = llformat("%s (%d, %d, %d)", 
 								  sim_name.c_str(),
 								  llround(region_x), 
@@ -754,17 +760,27 @@ void LLFloaterWorldMap::updateTeleportCoordsDisplay( const LLVector3d& pos )
 {
 	// if we're going to update their value, we should also enable them
 	enableTeleportCoordsDisplay( true );
-	
+
 	// convert global specified position to a local one
 	F32 region_local_x = (F32)fmod( pos.mdV[VX], (F64)REGION_WIDTH_METERS );
 	F32 region_local_y = (F32)fmod( pos.mdV[VY], (F64)REGION_WIDTH_METERS );
 	F32 region_local_z = (F32)llclamp( pos.mdV[VZ], 0.0, 8192.0/*(F64)REGION_HEIGHT_METERS*/ );
+
+	LLSimInfo* sim_info = LLWorldMap::getInstance()->simInfoFromPosGlobal(pos);
+	if (sim_info) // Singu Note: Aurora var region support
+	{
+		U32 locX, locY;
+		from_region_handle(sim_info->getHandle(), &locX, &locY);
+		region_local_x = pos.mdV[VX] - locX;
+		region_local_y = pos.mdV[VY] - locY;
+		region_local_z = (F32)pos.mdV[VZ];
 
 	// write in the values
 	childSetValue("spin x", region_local_x );
 	childSetValue("spin y", region_local_y );
 	childSetValue("spin z", region_local_z );
 	}
+}
 
 void LLFloaterWorldMap::updateLocation()
 {
@@ -812,7 +828,10 @@ void LLFloaterWorldMap::updateLocation()
 				
 				// Figure out where user is
 				// Set the current SLURL
-				mSLURL = LLSLURL(agent_sim_name, gAgent.getPositionGlobal());
+// <FS:CR> Aurora-sim var region teleports
+				//mSLURL = LLSLURL(agent_sim_name, gAgent.getPositionGlobal());
+				mSLURL = LLSLURL(agent_sim_name, gAgent.getPositionAgent());
+// </FS:CR>
 			}
 		}
 
@@ -856,6 +875,11 @@ void LLFloaterWorldMap::updateLocation()
 // [/RLVa:KB]
 //		if ( gotSimName )
 		{
+			// Singu Note: Var region support for SLURLs
+			const LLSimInfo* sim = LLWorldMap::getInstance()->simInfoFromPosGlobal(pos_global);
+			const F64 size(sim ? sim->getSizeX() : 256);
+			pos_global[0] = fmod(pos_global[0], size);
+			pos_global[1] = fmod(pos_global[1], size);
 			mSLURL = LLSLURL(sim_name, pos_global);
 		}
 		else

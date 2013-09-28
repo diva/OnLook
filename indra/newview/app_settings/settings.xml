@@ -753,6 +753,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruLocalTime</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to display system time in the top bar instead of server time.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
     <key>LiruMapShowAvCount</key>
     <map>
       <key>Comment</key>
@@ -856,6 +867,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>SLBDisplayClientTagOnNewLine</key>
+    <map>
+      <key>Comment</key>
+      <string>Display the client tag on a new line</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
     <key>LogShowHistoryLines</key>
     <map>

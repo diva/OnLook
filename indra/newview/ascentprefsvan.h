@@ -71,6 +71,7 @@ protected:
     BOOL mShowSelfClientTag;
     BOOL mShowSelfClientTagColor;
     BOOL mShowFriendsTag;
+    BOOL mDisplayClientTagOnNewLine;
     BOOL mCustomTagOn;
     std::string mCustomTagLabel;
     LLColor4 mCustomTagColor;

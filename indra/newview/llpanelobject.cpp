@@ -2568,7 +2568,7 @@ void LLPanelObject::onPastePos(void* user_data)
 	
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	LLCalc* calcp = LLCalc::getInstance();
-	float region_width = LLWorld::getInstance()->getRegionWidthInMeters();
+	float region_width = gAgent.getRegion()->getWidth();
 	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], -3.5f, region_width);
 	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], -3.5f, region_width);
 	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], -3.5f, gHippoLimits->getMaxHeight());
@@ -2648,7 +2648,9 @@ void LLPanelObject::onPastePosClip(void* user_data)
 	std::string stringVec = wstring_to_utf8str(temp_string); 
 	if(!getvectorfromclip(stringVec, &mClipboardPos)) return;
 	
-	float region_width = LLWorld::getInstance()->getRegionWidthInMeters();
+	const LLViewerRegion* region(self->mObject ? self->mObject->getRegion() : NULL);
+	if (!region) return;
+	F32 region_width = region->getWidth();
 	mClipboardPos.mV[VX] = llclamp(mClipboardPos.mV[VX], -3.5f, region_width);
 	mClipboardPos.mV[VY] = llclamp(mClipboardPos.mV[VY], -3.5f, region_width);
 	mClipboardPos.mV[VZ] = llclamp(mClipboardPos.mV[VZ], -3.5f, gHippoLimits->getMaxHeight());

@@ -22,6 +22,7 @@
       <check_box label="Fonction d&#xE9;sactiv&#xE9;e par Linden Lab" tool_tip="Le viewer utilis&#xE9; par les avatars ne peut plus &#xEA;tre visible depuis que Linden lab l&#x27;a d&#xE9;sactiv&#xE9;" name="show_self_tag_check"/>
       <check_box label="Afficher sa propre couleur custom " tool_tip="Vous seul la voyez." name="show_self_tag_color_check"/>
       <check_box label="Afficher le tag (Friend)" tool_tip="Rajoute (friends) dans le tag quand vous voyez un(e) ami(e)." name="show_friend_tag_check"/>
+      <check_box label="Afficher le tag sur une nouvelle ligne" tool_tip="L&apos;activation de cette montrera le tag sur une nouvelle ligne." name="display_client_new_line_check"/>
       <!-- End of Left Side -->
       <check_box label="Choisir une couleur custom (Mode Local uniquement)" left_delta="205" tool_tip="Vous seul(e) la voyez." name="customize_own_tag_check"/>
       <text name="custom_tag_label_text">Label :</text>
