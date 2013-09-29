@@ -56,7 +56,8 @@ void LLAgentUI::buildSLURL(LLSLURL& slurl, const bool escaped /*= true*/)
       LLViewerRegion *regionp = gAgent.getRegion();
       if (regionp)
       {
-		  return_slurl = LLSLURL(regionp->getName(), gAgent.getPositionGlobal());
+		// Singu Note: Not Global, get correct SLURL for Variable Regions
+		return_slurl = LLSLURL(regionp->getName(), gAgent.getPositionAgent());
       }
 	slurl = return_slurl;
 }
