@@ -35,6 +35,7 @@
 #include "llfiltersd2xmlrpc.h"
 #include "curl/curl.h"
 #include "hippogridmanager.h"
+#include "llworldmap.h" // Variable size regions
 
 const char* LLSLURL::SLURL_HTTP_SCHEME		 = "http";
 const char* LLSLURL::SLURL_HTTPS_SCHEME		 = "https";
@@ -377,10 +378,14 @@ LLSLURL::LLSLURL(const std::string& grid,
 		 const LLVector3d& global_position)
 {
 	HippoGridInfo* gridp = gHippoGridManager->getGrid(grid);
+	LLVector3 pos(global_position);
+	if (LLSimInfo* sim = LLWorldMap::getInstance()->simInfoFromPosGlobal(global_position)) // Variable size regions, we need to fmod against their proper dimensions, not 256
+	{
+		pos[VX] = fmod(pos[VX], sim->getSizeX());
+		pos[VY] = fmod(pos[VY], sim->getSizeY());
+	}
 	*this = LLSLURL(gridp ? gridp->getGridNick() : gHippoGridManager->getDefaultGridNick(),
-		  region, LLVector3(global_position.mdV[VX],
-				    global_position.mdV[VY],
-				    global_position.mdV[VZ]));
+		  region, pos);
 }
 
 // create a slurl from a global position
