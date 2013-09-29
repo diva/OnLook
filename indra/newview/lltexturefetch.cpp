@@ -328,13 +328,12 @@ class HTTPGetResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(HTTPGetResponder);
 public:
-	HTTPGetResponder(LLTextureFetch* fetcher, const LLUUID& id, U64 startTime, S32 requestedSize, U32 offset, bool redir)
+	HTTPGetResponder(LLTextureFetch* fetcher, const LLUUID& id, U64 startTime, S32 requestedSize, U32 offset)
 		: mFetcher(fetcher)
 		, mID(id)
 		, mMetricsStartTime(startTime)
 		, mRequestedSize(requestedSize)
 		, mRequestedOffset(offset)
-		, mFollowRedir(redir)
 		, mReplyOffset(0)
 		, mReplyLength(0)
 		, mReplyFullLength(0)
@@ -449,7 +448,6 @@ public:
 		}
 	}
 	
-	/*virtual*/ bool followRedir() const { return mFollowRedir; }
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_texture; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "HTTPGetResponder"; }
@@ -464,8 +462,6 @@ private:
 	U32 mReplyOffset;
 	U32 mReplyLength;
 	U32 mReplyFullLength;
-
-	bool mFollowRedir;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1423,7 +1419,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				headers.addHeader("Range", llformat("bytes=%d-%d", mRequestedOffset, mRequestedOffset + mRequestedSize - 1));
 			}
 			LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
-				new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
+				new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset),
 				headers, approved/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL);
 		}
 		else

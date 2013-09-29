@@ -1262,7 +1262,8 @@ std::string CurlEasyRequest::getLowercaseHostname(void) const
 //-----------------------------------------------------------------------------
 // BufferedCurlEasyRequest
 
-static int const HTTP_REDIRECTS_DEFAULT = 10;
+static int const HTTP_REDIRECTS_DEFAULT = 16;	// Singu note: I've seen up to 10 redirects, so setting the limit to 10 is cutting it.
+												// This limit is only here to avoid a redirect loop (infinite redirections).
 
 LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
 LLMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
@@ -1411,8 +1412,8 @@ void BufferedCurlEasyRequest::prepRequest(AICurlEasyRequest_wat& curl_easy_reque
   curl_easy_request_w->setHeaderCallback(&curlHeaderCallback, lockobj);
 
   bool allow_cookies = headers.hasHeader("Cookie");
-  // Allow up to ten redirects.
-  if (responder->followRedir())
+  // Allow up to sixteen redirects.
+  if (!responder->pass_redirect_status())
   {
 	curl_easy_request_w->setopt(CURLOPT_FOLLOWLOCATION, 1);
 	curl_easy_request_w->setopt(CURLOPT_MAXREDIRS, HTTP_REDIRECTS_DEFAULT);
