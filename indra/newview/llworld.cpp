@@ -94,6 +94,12 @@ const F32 LLWorld::mScale = 1.f;
 F32 LLWorld::mWidthInMeters = mWidth * mScale;
 // </FS:CR> Aurora Sim
 
+//TODO: This will use chat ranges
+//      according to opensim settings
+const F32 LLWorld::mWhisperDistance = 10;
+const F32 LLWorld::mSayDistance = 20;
+const F32 LLWorld::mShoutDistance = 100;
+
 //
 // Functions
 //

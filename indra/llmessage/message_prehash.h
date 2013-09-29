@@ -37,8 +37,6 @@ extern F32 const gPrehashVersionNumber;
 extern char const* const _PREHASH_X;
 extern char const* const _PREHASH_Y;
 extern char const* const _PREHASH_Z;
-extern char const* const _PREHASH_SizeX;
-extern char const* const _PREHASH_SizeY;
 extern char const* const _PREHASH_AddFlags;
 extern char const* const _PREHASH_FailureInfo;
 extern char const* const _PREHASH_MapData;
