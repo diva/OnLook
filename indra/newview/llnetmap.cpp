@@ -504,7 +504,6 @@ void LLNetMap::draw()
 			dot_width);
 
 		// Draw chat range ring(s)
-		//static LLUICachedControl<bool> chat_rings("MiniMapChatRings");
 		static LLUICachedControl<bool> whisper_ring("MiniMapWhisperRing");
 		static LLUICachedControl<bool> chat_ring("MiniMapChatRing");
 		static LLUICachedControl<bool> shout_ring("MiniMapShoutRing");
@@ -620,7 +619,7 @@ void LLNetMap::drawRing(const F32 radius, const LLVector3 pos_map, const LLColor
 // </FS:CR> Aurora Sim
         F32 radius_pixels = radius * meters_to_pixels;
 
-        glMatrixMode(GL_MODELVIEW);
+        gGL.matrixMode(LLRender::MM_MODELVIEW);
         gGL.pushMatrix();
         gGL.translatef((F32)pos_map.mV[VX], (F32)pos_map.mV[VY], 0.f);
         gl_ring(radius_pixels, WIDTH_PIXELS, color, color, CIRCLE_STEPS, FALSE);
