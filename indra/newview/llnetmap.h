@@ -165,13 +165,13 @@ private:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
 
-	class LLChatRings : public LLMemberListener<LLNetMap>
+	class LLShowObjects : public LLMemberListener<LLNetMap>
 	{
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
 
-	class LLShowObjects : public LLMemberListener<LLNetMap>
+	class LLChatRings : public LLMemberListener<LLNetMap>
 	{
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
