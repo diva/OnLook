@@ -4788,7 +4788,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>32</integer>
+      <integer>8</integer>
     </map>
     <key>CurlTimeoutDNSLookup</key>
     <map>
