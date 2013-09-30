@@ -215,6 +215,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	
 	LLComboBox *server_choice_combo = getChild<LLComboBox>("grids_combo");
 	server_choice_combo->setCommitCallback(boost::bind(&LLPanelLogin::onSelectGrid, _1));
+	server_choice_combo->setFocusLostCallback(boost::bind(&LLPanelLogin::onSelectGrid, server_choice_combo));
 	
 	// Load all of the grids, sorted, and then add a bar and the current grid at the top
 	updateGridCombo();
@@ -1031,7 +1032,33 @@ void LLPanelLogin::refreshLoginPage()
 //void LLPanelLogin::onSelectServer()
 void LLPanelLogin::onSelectGrid(LLUICtrl *ctrl)
 {
-	gHippoGridManager->setCurrentGrid(ctrl->getValue());
+	std::string grid(ctrl->getValue().asString());
+	LLStringUtil::trim(grid); // Guard against copy paste
+	if (!gHippoGridManager->getGrid(grid)) // We can't get an input grid by name or nick, perhaps a Login URI was entered
+	{
+		HippoGridInfo* info(new HippoGridInfo("")); // Start off with empty grid name, otherwise we don't know what to name
+		info->setLoginUri(grid);
+		if (info->retrieveGridInfo()) // There's info from this URI
+		{
+			grid = info->getGridName();
+			if (HippoGridInfo* nick_info = gHippoGridManager->getGrid(info->getGridNick())) // Grid of same nick exists
+			{
+				delete info;
+				grid = nick_info->getGridName();
+			}
+			else // Guess not, try adding this grid
+			{
+				gHippoGridManager->addGrid(info); // deletes info if not needed (existing or no name)
+			}
+		}
+		else
+		{
+			delete info;
+			grid = gHippoGridManager->getCurrentGridName();
+		}
+	}
+	gHippoGridManager->setCurrentGrid(grid);
+	ctrl->setValue(grid);
 }
 
 void LLPanelLogin::onLocationSLURL()
