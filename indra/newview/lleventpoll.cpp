@@ -75,6 +75,7 @@ namespace
 		void handleMessage(const LLSD& content);
 		/*virtual*/ void error(U32 status, const std::string& reason);
 		/*virtual*/ void result(const LLSD&	content);
+		/*virtual*/ bool is_event_poll(void) const { return true; }
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventPollResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "LLEventPollResponder"; }
 

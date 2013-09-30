@@ -1437,6 +1437,7 @@ void BufferedCurlEasyRequest::prepRequest(AICurlEasyRequest_wat& curl_easy_reque
   mResponder = responder;
   // Cache capability type, because it will be needed even after the responder was removed.
   mCapabilityType = responder->capability_type();
+  mIsEventPoll = responder->is_event_poll();
 
   // Send header events to responder if needed.
   if (mResponder->needsHeaders())
