@@ -32,8 +32,8 @@
 	<menu bottom_delta="0" color="MenuDefaultBgColor" drop_shadow="true" height="175" left="0"
 	     mouse_opaque="false" name="Chat Distance Rings" opaque="true" tear_off="false" width="125">
 		<menu_item_check label="Show All" name="Show All">
-			<on_check function="MiniMap.CheckChatRings" userdata="MiniMapChatRings" />
-			<on_click function="MiniMap.ChatRings" userdata="MiniMapChatRings" />
+			<on_check function="MiniMap.CheckChatRings" />
+			<on_click function="MiniMap.ChatRings" />
 		</menu_item_check>
 		<menu_item_separator />
 		<menu_item_check label="Show Whisper Ring" name="Show Whisper Ring">
