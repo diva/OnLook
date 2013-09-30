@@ -53,7 +53,7 @@
 	     left="0" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="120">
         Grid:
       </text>
-      <combo_box allow_text_entry="false" bottom_delta="-24" follows="left|bottom" height="20"
+      <combo_box allow_text_entry="true" max_chars="128" bottom_delta="-24" follows="left|bottom" height="20"
            left="0" mouse_opaque="true" name="grids_combo" width="120" />
       <button name="grids_btn" label="Grid Manager"
           bottom_delta="-20" left_delta="10" height="16" width="100"
