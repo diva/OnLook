@@ -48,7 +48,6 @@ public:
 	bool saveCrashBehaviorSetting(S32 crash_behavior);
     bool sendCrashLog(std::string dump_dir);
 	LLSD constructPostData();
-	virtual void updateApplication(const std::string& message = LLStringUtil::null);
 	void setUserText(const std::string& text) { mCrashInfo["UserNotes"] = text; }
 	S32 getCrashBehavior() { return mCrashBehavior; }
 	bool readMinidump(std::string minidump_path);

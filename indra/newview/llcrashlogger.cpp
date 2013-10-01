@@ -189,7 +189,7 @@ bool LLCrashLogger::readMinidump(std::string minidump_path)
 
 void LLCrashLogger::gatherFiles()
 {
-	updateApplication("Gathering logs...");
+	llinfos << "Gathering logs..." << llendl;
  
     LLSD static_sd;
     LLSD dynamic_sd;
@@ -241,7 +241,7 @@ void LLCrashLogger::gatherFiles()
 	mCrashInfo["DebugLog"] = mDebugLog;
 	mFileMap["StatsLog"] = gDirUtilp->getExpandedFilename(LL_PATH_DUMP,"stats.log");
 	
-	updateApplication("Encoding files...");
+	llinfos << "Encoding files..." << llendl;
 
 	for(std::map<std::string, std::string>::iterator itr = mFileMap.begin(); itr != mFileMap.end(); ++itr)
 	{
@@ -330,7 +330,7 @@ bool LLCrashLogger::sendCrashLog(std::string dump_dir)
 	LLSD post_data;
 	post_data = constructPostData();
     
-	updateApplication("Sending reports...");
+	llinfos << "Sending reports..." << llendl;
 
 	std::ofstream out_file(report_file.c_str());
 	LLSDSerialize::toPrettyXML(post_data, out_file);
@@ -342,19 +342,17 @@ bool LLCrashLogger::sendCrashLog(std::string dump_dir)
 }
 
 
-void LLCrashLogger::updateApplication(const std::string& message)
-{
-	if (!message.empty()) llinfos << message << llendl;
-}
-
-
 void LLCrashLogger::checkCrashDump()
 {
 	mCrashHost = gSavedSettings.getString("CrashHostUrl");
+
 	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
 	if (gDirUtilp->fileExists(dumpDir))
 	{
-		sendCrashLog(dumpDir);
+		if (!mCrashHost.empty() && gSavedSettings.getS32("CrashSubmitBehavior") != 2)
+		{
+			sendCrashLog(dumpDir);
+		}
 		gDirUtilp->deleteDirAndContents(dumpDir);
 	}
 	else
