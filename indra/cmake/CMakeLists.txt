@@ -37,6 +37,7 @@ set(cmake_SOURCE_FILES
     FindColladadom.cmake
     FindELFIO.cmake
     FindGLOD.cmake
+    FindGoogleBreakpad.cmake
     FindGooglePerfTools.cmake
     FindHunSpell.cmake
     FindJsonCpp.cmake
@@ -50,6 +51,7 @@ set(cmake_SOURCE_FILES
     GStreamer010Plugin.cmake
     Glui.cmake
     Glut.cmake
+    GoogleBreakpad.cmake
     GooglePerfTools.cmake
     Hunspell.cmake
     JPEG.cmake
@@ -69,6 +71,7 @@ set(cmake_SOURCE_FILES
     LLPlugin.cmake
     LLPrimitive.cmake
     LLPhysicsExtensions.cmake
+    LLSharedLibs.cmake
     LLQtWebkit.cmake
     LLRender.cmake
     LLUI.cmake
