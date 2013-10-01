@@ -33,9 +33,8 @@
 #include "llapp.h"
 #include "llsd.h"
 #include "llcontrol.h"
-#include "llcrashlock.h"
 
-class LLCrashLogger : public LLApp
+class LLCrashLogger
 {
 public:
 	LLCrashLogger();
@@ -48,17 +47,12 @@ public:
 	virtual void gatherPlatformSpecificFiles() {}
 	bool saveCrashBehaviorSetting(S32 crash_behavior);
     bool sendCrashLog(std::string dump_dir);
-	bool sendCrashLogs();
 	LLSD constructPostData();
 	virtual void updateApplication(const std::string& message = LLStringUtil::null);
-	virtual bool init();
-	virtual bool mainLoop() = 0;
-	virtual bool cleanup() = 0;
-	void commonCleanup();
 	void setUserText(const std::string& text) { mCrashInfo["UserNotes"] = text; }
 	S32 getCrashBehavior() { return mCrashBehavior; }
-	bool runCrashLogPost(std::string host, LLSD data, std::string msg, int retries, int timeout);
 	bool readMinidump(std::string minidump_path);
+	void checkCrashDump();
 
 protected:
 	S32 mCrashBehavior;
@@ -69,10 +63,7 @@ protected:
 	std::string mProductName;
 	LLSD mCrashInfo;
 	std::string mCrashHost;
-	std::string mAltCrashHost;
 	LLSD mDebugLog;
-	bool mSentCrashLogs;
-    LLCrashLock mKeyMaster;
 };
 
 #endif //LLCRASHLOGGER_H

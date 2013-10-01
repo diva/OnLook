@@ -23,13 +23,9 @@
 * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 * $/LicenseInfo$
 */
-#include <cstdio>
-#include <cstdlib>
-#include <sstream>
-#include <map>
+#include "llviewerprecompiledheaders.h"
 
 #include "llcrashlogger.h"
-#include "llcrashlock.h"
 #include "linden_common.h"
 #include "llstring.h"
 #include "indra_constants.h"	// CRASH_BEHAVIOR_...
@@ -46,12 +42,6 @@
 #include "llproxy.h"
 #include "aistatemachine.h"
 
-LLPumpIO* gServicePump;
-BOOL gBreak = false;
-BOOL gSent = false;
-
-extern void startEngineThread(void);
-
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
 
@@ -64,13 +54,12 @@ public:
 
 	virtual void error(U32 status, const std::string& reason)
 	{
-		gBreak = true;
+		llwarns << "Crash report sending failed: " << reason << llendl;
 	}
 
 	virtual void result(const LLSD& content)
 	{
-		gBreak = true;
-		gSent = true;
+		llinfos << "Crash report successfully sent" << llendl;
 	}
 
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const 
@@ -88,7 +77,6 @@ LLCrashLogger::LLCrashLogger() :
 	mCrashBehavior(CRASH_BEHAVIOR_ALWAYS_SEND),
 	mCrashInPreviousExec(false),
 	mCrashSettings("CrashSettings"),
-	mSentCrashLogs(false),
 	mCrashHost("")
 {
 }
@@ -250,32 +238,6 @@ void LLCrashLogger::gatherFiles()
 
 	gatherPlatformSpecificFiles();
 
-	//Use the debug log to reconstruct the URL to send the crash report to
-	if(mDebugLog.has("CrashHostUrl"))
-	{
-		// Crash log receiver has been manually configured.
-		mCrashHost = mDebugLog["CrashHostUrl"].asString();
-	}
-	else if(mDebugLog.has("CurrentSimHost"))
-	{
-		mCrashHost = "https://";
-		mCrashHost += mDebugLog["CurrentSimHost"].asString();
-		mCrashHost += ":12043/crash/report";
-	}
-	else if(mDebugLog.has("GridName"))
-	{
-		// This is a 'little' hacky, but its the best simple solution.
-		std::string grid_host = mDebugLog["GridName"].asString();
-		LLStringUtil::toLower(grid_host);
-
-		mCrashHost = "https://login.";
-		mCrashHost += grid_host;
-		mCrashHost += ".lindenlab.com:12043/crash/report";
-	}
-
-	// Use login servers as the alternate, since they are already load balanced and have a known name
-	mAltCrashHost = "https://login.agni.lindenlab.com:12043/crash/report";
-
 	mCrashInfo["DebugLog"] = mDebugLog;
 	mFileMap["StatsLog"] = gDirUtilp->getExpandedFilename(LL_PATH_DUMP,"stats.log");
 	
@@ -354,80 +316,15 @@ LLSD LLCrashLogger::constructPostData()
 	return mCrashInfo;
 }
 
-// Singu Note, defiend in indra_constants.h # const char* const CRASH_SETTINGS_FILE = "settings_crash_behavior.xml";
-
-S32 LLCrashLogger::loadCrashBehaviorSetting()
-{
-	// First check user_settings (in the user's home dir)
-	std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, CRASH_SETTINGS_FILE);
-	if (! mCrashSettings.loadFromFile(filename))
-	{
-		// Next check app_settings (in the SL program dir)
-		std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, CRASH_SETTINGS_FILE);
-		mCrashSettings.loadFromFile(filename);
-	}
-
-	// If we didn't load any files above, this will return the default
-	S32 value = mCrashSettings.getS32("CrashSubmitBehavior");
-
-	// Whatever value we got, make sure it's valid
-	switch (value)
-	{
-	case CRASH_BEHAVIOR_NEVER_SEND:
-		return CRASH_BEHAVIOR_NEVER_SEND;
-	case CRASH_BEHAVIOR_ALWAYS_SEND:
-		return CRASH_BEHAVIOR_ALWAYS_SEND;
-	}
-
-	return CRASH_BEHAVIOR_ASK;
-}
-
-bool LLCrashLogger::saveCrashBehaviorSetting(S32 crash_behavior)
-{
-	switch (crash_behavior)
-	{
-	case CRASH_BEHAVIOR_ASK:
-	case CRASH_BEHAVIOR_NEVER_SEND:
-	case CRASH_BEHAVIOR_ALWAYS_SEND:
-		break;
-	default:
-		return false;
-	}
-
-	mCrashSettings.setS32("CrashSubmitBehavior", crash_behavior);
-	std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, CRASH_SETTINGS_FILE);
-	mCrashSettings.saveToFile(filename, FALSE);
-
-	return true;
-}
-
-bool LLCrashLogger::runCrashLogPost(std::string host, LLSD data, std::string msg, int retries, int timeout)
-{
-	gBreak = false;
-	for(int i = 0; i < retries; ++i)
-	{
-		updateApplication(llformat("%s, try %d...", msg.c_str(), i+1));
-		LLHTTPClient::post(host, data, new LLCrashLoggerResponder());
-		while(!gBreak)
-		{
-			updateApplication(); // No new message, just pump the IO
-		}
-		if(gSent)
-		{
-			return gSent;
-		}
-	}
-	return gSent;
-}
 
 bool LLCrashLogger::sendCrashLog(std::string dump_dir)
 {
     gDirUtilp->setDumpDir( dump_dir );
     
     std::string dump_path = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,
-                                                           "SecondLifeCrashReport");
+                                                           "SingularityCrashReport");
     std::string report_file = dump_path + ".log";
-   
+
 	gatherFiles();
     
 	LLSD post_data;
@@ -438,176 +335,30 @@ bool LLCrashLogger::sendCrashLog(std::string dump_dir)
 	std::ofstream out_file(report_file.c_str());
 	LLSDSerialize::toPrettyXML(post_data, out_file);
 	out_file.close();
-    
-	bool sent = false;
-    
-	//*TODO: Translate
-	if(mCrashHost != "")
-	{
-		sent = runCrashLogPost(mCrashHost, post_data, std::string("Sending to server"), 3, 5);
-	}
-    
-	if(!sent)
-	{
-		sent = runCrashLogPost(mAltCrashHost, post_data, std::string("Sending to alternate server"), 3, 5);
-	}
-    
-	mSentCrashLogs = sent;
-    
-	return sent;
-}
 
-bool LLCrashLogger::sendCrashLogs()
-{
+	LLHTTPClient::post(mCrashHost, post_data, new LLCrashLoggerResponder());
     
-    //pertinent code from below moved into a subroutine.
-    LLSD locks = mKeyMaster.getProcessList();
-    LLSD newlocks = LLSD::emptyArray();
-
-	LLSD opts = getOptionData(PRIORITY_COMMAND_LINE);
-    LLSD rec;
-
-	if ( opts.has("pid") && opts.has("dumpdir") && opts.has("procname") )
-    {
-        rec["pid"]=opts["pid"];
-        rec["dumpdir"]=opts["dumpdir"];
-        rec["procname"]=opts["procname"];
-#if LL_WINDOWS
-        locks.append(rec);
-#endif
-    }
-	
-    if (locks.isArray())
-    {
-        for (LLSD::array_iterator lock=locks.beginArray();
-             lock !=locks.endArray();
-             ++lock)
-        {
-            if ( (*lock).has("pid") && (*lock).has("dumpdir") && (*lock).has("procname") )
-            {
-                if ( mKeyMaster.isProcessAlive( (*lock)["pid"].asInteger(), (*lock)["procname"].asString() ) )
-                {
-                    newlocks.append(*lock);
-                }
-                else
-                {
-					//TODO:  This is a hack but I didn't want to include boost in another file or retest everything related to lldir
-                    if (LLCrashLock::fileExists((*lock)["dumpdir"].asString()))
-                    {
-                        //the viewer cleans up the log directory on clean shutdown
-                        //but is ignorant of the locking table. 
-                        if (!sendCrashLog((*lock)["dumpdir"].asString()))
-                        {
-                            newlocks.append(*lock);    //Failed to send log so don't delete it.
-                        }
-                        else
-                        {
-                            mCrashInfo["DebugLog"].erase("MinidumpPath");
-
-                            mKeyMaster.cleanupProcess((*lock)["dumpdir"].asString());  
-                        }
-                    }
-				}
-            }
-            else
-            {
-                llwarns << "Discarding corrupted entry from lock table." << llendl;
-            }
-        }
-    }
-#if !LL_WINDOWS
-    if (rec)
-    {
-        newlocks.append(rec);
-    }
-#endif
-    
-    mKeyMaster.putProcessList(newlocks);
-    return true;
-}
-
-void LLCrashLogger::updateApplication(const std::string& message)
-{
-	/* Sing TODO
-	gServicePump->pump();
-    gServicePump->callback();
-	*/
-	if (!message.empty()) llinfos << message << llendl;
-}
-
-bool LLCrashLogger::init()
-{
-	LLCurl::initCurl();
-	AIEngine::setMaxCount(100);
-
-	// We assume that all the logs we're looking for reside on the current drive
-	gDirUtilp->initAppDirs("SecondLife");
-
-	LLError::initForApplication(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, ""));
-
-	// Default to the product name "Second Life" (this is overridden by the -name argument)
-	mProductName = "Second Life";
-
-    // Handle locking
-    bool locked = mKeyMaster.requestMaster();  //Request maser locking file.  wait time is defaulted to 300S
-    
-    while (!locked && mKeyMaster.isWaiting())
-    {
-#if LL_WINDOWS
-		Sleep(1000);
-#else
-        sleep(1);
-#endif 
-        locked = mKeyMaster.checkMaster();
-    }
-    
-    if (!locked)
-    {
-        llwarns << "Unable to get master lock.  Another crash reporter may be hung." << llendl;
-        return false;
-    }
-    
-    // Rename current log file to ".old"
-	std::string old_log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "crashreport.log.old");
-	std::string log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "crashreport.log");
-
-#if LL_WINDOWS
-	LLAPRFile::remove(old_log_file);
-#endif 
-
-	LLFile::rename(log_file.c_str(), old_log_file.c_str());
-    
-	// Set the log file to crashreport.log
-	LLError::logToFile(log_file);
-
-    mCrashSettings.declareS32("CrashSubmitBehavior", CRASH_BEHAVIOR_ALWAYS_SEND,
-							  "Controls behavior when viewer crashes "
-							  "(0 = ask before sending crash report, "
-							  "1 = always send crash report, "
-							  "2 = never send crash report)");
-    
-	llinfos << "Loading crash behavior setting" << llendl;
-	mCrashBehavior = loadCrashBehaviorSetting();
-    
-	// If user doesn't want to send, bail out
-	if (mCrashBehavior == CRASH_BEHAVIOR_NEVER_SEND)
-	{
-		llinfos << "Crash behavior is never_send, quitting" << llendl;
-		return false;
-	}
-    
-	AICurlInterface::startCurlThread(&mCrashSettings);
-	startEngineThread();
-	/* Singu Note: not needed for AICurl
-	gServicePump = new LLPumpIO(gAPRPoolp);
-	gServicePump->prime(gAPRPoolp);
-	LLHTTPClient::setPump(*gServicePump);
- 	*/
 	return true;
 }
 
-// For cleanup code common to all platforms.
-void LLCrashLogger::commonCleanup()
+
+void LLCrashLogger::updateApplication(const std::string& message)
 {
-	LLProxy::cleanupClass();
+	if (!message.empty()) llinfos << message << llendl;
+}
+
+
+void LLCrashLogger::checkCrashDump()
+{
+	mCrashHost = gSavedSettings.getString("CrashHostUrl");
+	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
+	if (gDirUtilp->fileExists(dumpDir))
+	{
+		sendCrashLog(dumpDir);
+		gDirUtilp->deleteDirAndContents(dumpDir);
+	}
+	else
+	{
+		llinfos << "No crash dump found frome previous run, not sending report" << LL_ENDL;
+	}
 }

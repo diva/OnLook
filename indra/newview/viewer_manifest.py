@@ -339,10 +339,6 @@ class WindowsManifest(ViewerManifest):
                     self.path(path_pair[1])
                     self.end_prefix()
 
-        # pull in the crash logger and updater from other projects
-        self.path(src='../win_crash_logger/%s/windows-crash-logger.exe' % self.args['configuration'], dst="win_crash_logger.exe")
-        self.path(src='../win_updater/%s/windows-updater.exe' % self.args['configuration'], dst="updater.exe")
-
 
     def nsi_file_commands(self, install=True):
         def wpath(path):
@@ -545,18 +541,10 @@ class DarwinManifest(ViewerManifest):
                     print "Skipping libfmodex.dylib - not found"
                     pass
 
-                # our apps
-                try:
-                    self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                    self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
-                except:
-                    pass
-
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
 
                 # dependencies on shared libs
-                mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
                 for libfile in ("libllcommon.dylib",
                                 "libapr-1.0.dylib",
@@ -717,10 +705,8 @@ class LinuxManifest(ViewerManifest):
 
         if self.buildtype().lower()=='release':
             self.path("secondlife-stripped","bin/"+self.binary_name())
-            self.path("../linux_crash_logger/linux-crash-logger-stripped","linux-crash-logger.bin")
         else:
             self.path("secondlife-bin","bin/"+self.binary_name())
-            self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
 
         self.path("../llplugin/slplugin/SLPlugin", "bin/SLPlugin")
         if self.prefix("res-sdl"):

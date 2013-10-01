@@ -86,7 +86,7 @@
 #include "llvocache.h"
 #include "llvopartgroup.h"
 #include "llfloaterteleporthistory.h"
-
+#include "llcrashlogger.h"
 #include "llweb.h"
 #include "llsecondlifeurls.h"
 
@@ -640,6 +640,10 @@ bool LLAppViewer::init()
 	initMaxHeapSize() ;
 
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
+	// Check if we have a crash report to send
+	LLCrashLogger crashLogger;
+	crashLogger.checkCrashDump();
+
 	// write Google Breakpad minidump files to a per-run dump directory to avoid multiple viewer issues.
 	std::string logdir = gDirUtilp->getExpandedFilename(LL_PATH_DUMP, "");
 	mDumpPath = logdir;
