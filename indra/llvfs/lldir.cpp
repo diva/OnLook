@@ -283,12 +283,15 @@ const std::string &LLDir::getDumpDir() const
 {
     if (sDumpDir.empty() )
     {
+		/* Singu Note: don't generate a different dump dir each time
         LLUUID uid;
         uid.generate();
         
         sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "")
                     + "dump-" + uid.asString();
+		*/
 
+		sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
         dir_exists_or_crash(sDumpDir);  
     }
 

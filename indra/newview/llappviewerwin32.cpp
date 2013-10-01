@@ -522,6 +522,7 @@ bool LLAppViewerWin32::restoreErrorTrap()
 
 void LLAppViewerWin32::initCrashReporting(bool reportFreeze)
 {
+	/* Singu Note: don't fork the crash logger on start
 	const char* logger_name = "win_crash_logger.exe";
 	std::string exe_path = gDirUtilp->getExecutableDir();
 	exe_path += gDirUtilp->getDirDelimiter();
@@ -543,6 +544,7 @@ void LLAppViewerWin32::initCrashReporting(bool reportFreeze)
 	std::string arg_str = "\"" + exe_path + "\" -dumpdir \"" + logdir + "\" -procname \"" + appname + "\" -pid " + pid_str.str(); 
 	llinfos << "spawning " << arg_str << llendl;
 	_spawnl(_P_NOWAIT, exe_path.c_str(), arg_str.c_str(), NULL);
+	*/
 	  
 /*	STARTUPINFO         siStartupInfo;
 	
