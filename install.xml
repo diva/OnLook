@@ -582,6 +582,13 @@
             <key>url</key>
             <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-linux-20130329.tar.bz2</uri>
           </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>cf5300008895efcfcfcfacef05f32bff</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-linux64-20130506.tar.bz2</uri>
+          </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
