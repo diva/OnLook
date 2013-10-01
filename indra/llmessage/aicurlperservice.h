@@ -169,6 +169,7 @@ class AIPerService {
 	int mConcurrentConnections;					// The maximum number of allowed concurrent connections to this service.
 	int mApprovedRequests;						// The number of approved requests for this service by approveHTTPRequestFor that were not added to the command queue yet.
 	int mTotalAdded;							// Number of active easy handles with this service.
+	int mEventPolls;							// Number of active event poll handles with this service.
 	int mEstablishedConnections;				// Number of connected sockets to this service.
 
 	U32 mUsedCT;								// Bit mask with one bit per capability type. A '1' means the capability was in use since the last resetUsedCT().
@@ -267,9 +268,10 @@ class AIPerService {
 
   public:
 	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; mark_inuse(capability_type); }
-	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; llassert(mCapabilityType[capability_type].mQueuedCommands >= 0); }
-	void added_to_multi_handle(AICapabilityType capability_type);									// Called when an easy handle for this service has been added to the multi handle.
-	void removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something, bool success);	// Called when an easy handle for this service is removed again from the multi handle.
+	void removed_from_command_queue(AICapabilityType capability_type) { llassert(mCapabilityType[capability_type].mQueuedCommands > 0); --mCapabilityType[capability_type].mQueuedCommands; }
+	void added_to_multi_handle(AICapabilityType capability_type, bool event_poll);		// Called when an easy handle for this service has been added to the multi handle.
+	void removed_from_multi_handle(AICapabilityType capability_type, bool event_poll,
+								   bool downloaded_something, bool success);			// Called when an easy handle for this service is removed again from the multi handle.
 	void download_started(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mDownloading; }
 	bool throttled(AICapabilityType capability_type) const;		// Returns true if the maximum number of allowed requests for this service/capability type have been added to the multi handle.
 	bool nothing_added(AICapabilityType capability_type) const { return mCapabilityType[capability_type].mAdded == 0; }

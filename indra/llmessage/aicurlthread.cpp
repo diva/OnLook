@@ -1340,6 +1340,9 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		  break;
 		case cmd_add:
 		{
+		  // Note: AIPerService::added_to_multi_handle (called from add_easy_request) relies on the fact that
+		  // we first add the easy handle and then remove it from the command queue (which is necessary to
+		  // avoid that another thread adds one just in between).
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), false);
 		  PerService_wat(*per_service)->removed_from_command_queue(capability_type);
 		  break;
@@ -1747,10 +1750,12 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 {
   bool throttled = true;		// Default.
   AICapabilityType capability_type;
+  bool event_poll;
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(*easy_request);
 	capability_type = curl_easy_request_w->capability_type();
+	event_poll = curl_easy_request_w->is_event_poll();
 	per_service = curl_easy_request_w->getPerServicePtr();
 	if (!from_queue)
 	{
@@ -1782,7 +1787,7 @@ bool MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request, bool f
 	  curl_easy_request_w->set_timeout_opts();
 	  if (curl_easy_request_w->add_handle_to_multi(curl_easy_request_w, mMultiHandle) == CURLM_OK)
 	  {
-		per_service_w->added_to_multi_handle(capability_type);	// (About to be) added to mAddedEasyRequests.
+		per_service_w->added_to_multi_handle(capability_type, event_poll);	// (About to be) added to mAddedEasyRequests.
 		throttled = false;						// Fall through...
 	  }
 	}
@@ -1841,6 +1846,7 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 {
   CURLMcode res;
   AICapabilityType capability_type;
+  bool event_poll;
   AIPerServicePtr per_service;
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
@@ -1848,8 +1854,9 @@ CURLMcode MultiHandle::remove_easy_request(addedEasyRequests_type::iterator cons
 	bool success = curl_easy_request_w->success();
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
 	capability_type = curl_easy_request_w->capability_type();
+	event_poll = curl_easy_request_w->is_event_poll();
 	per_service = curl_easy_request_w->getPerServicePtr();
-	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, downloaded_something, success);		// (About to be) removed from mAddedEasyRequests.
+	PerService_wat(*per_service)->removed_from_multi_handle(capability_type, event_poll, downloaded_something, success);		// (About to be) removed from mAddedEasyRequests.
 #ifdef SHOW_ASSERT
 	curl_easy_request_w->mRemovedPerCommand = as_per_command;
 #endif
