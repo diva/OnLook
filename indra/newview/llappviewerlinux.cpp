@@ -345,7 +345,6 @@ void LLAppViewerLinux::initCrashReporting(bool reportFreeze)
 {
 	// Singu Note: this is where original code forks crash logger process.
 	// Singularity doesn't need it
-	}
 }
 
 bool LLAppViewerLinux::beingDebugged()
