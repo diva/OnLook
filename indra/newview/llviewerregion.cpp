@@ -1675,6 +1675,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("GamingData"); //Used by certain grids.
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetMesh");
+	capabilityNames.append("GetMesh2");		// Used on SecondLife(tm) sim versions 280647 and higher (13.09.17).
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
 	capabilityNames.append("GetTexture");
@@ -2072,7 +2073,7 @@ bool LLViewerRegion::meshRezEnabled() const
 {
 	if (getCapability("SimulatorFeatures").empty())
 	{
-		return !getCapability("GetMesh").empty();
+		return !getCapability("GetMesh").empty() || !getCapability("GetMesh2").empty();
 	}
 	else
 	{

@@ -89,6 +89,9 @@ const F32 DOT_SCALE = 0.75f;
 const F32 MIN_PICK_SCALE = 2.f;
 const S32 MOUSE_DRAG_SLOP = 2;				// How far the mouse needs to move before we think it's a drag
 
+const F32 WIDTH_PIXELS = 2.f; 
+const S32 CIRCLE_STEPS = 100; 
+
 LLNetMap::LLNetMap(const std::string& name) :
 	LLPanel(name),
 	mScale(128.f),
@@ -112,6 +115,12 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLCheckCenterMap())->registerListener(this, "MiniMap.CheckCenter");
 	(new LLRotateMap())->registerListener(this, "MiniMap.Rotate");
 	(new LLCheckRotateMap())->registerListener(this, "MiniMap.CheckRotate");
+	(new LLShowObjects())->registerListener(this, "MiniMap.ShowObjects");
+	(new LLCheckShowObjects())->registerListener(this, "MiniMap.CheckShowObjects");
+	(new LLChatRings())->registerListener(this, "MiniMap.ChatRings");
+	(new LLWhisperRing())->registerListener(this, "MiniMap.WhisperRing");
+	(new LLChatRing())->registerListener(this, "MiniMap.ChatRing");
+	(new LLShoutRing())->registerListener(this, "MiniMap.ShoutRing");
 	(new LLStopTracking())->registerListener(this, "MiniMap.StopTracking");
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
@@ -193,6 +202,10 @@ void LLNetMap::mm_setcolor(LLUUID key,LLColor4 col)
 void LLNetMap::draw()
 {
  	static LLFrameTimer map_timer;
+
+	static const LLCachedControl<LLColor4> map_whisper_ring_color("MiniMapWhisperRingColor", LLColor4(0.f,1.f,0.f,0.5f));
+	static const LLCachedControl<LLColor4> map_chat_ring_color("MiniMapChatRingColor", LLColor4(0.f,0.f,1.f,0.5f));
+	static const LLCachedControl<LLColor4> map_shout_ring_color("MiniMapShoutRingColor", LLColor4(1.f,0.f,0.f,0.5f));
 
 	if (mObjectImagep.isNull())
 	{
@@ -341,11 +354,13 @@ void LLNetMap::draw()
 			U8 *default_texture = mObjectRawImagep->getData();
 			memset( default_texture, 0, mObjectImagep->getWidth() * mObjectImagep->getHeight() * mObjectImagep->getComponents() );
 
-			// Draw buildings
-			gObjectList.renderObjectsForMap(*this);
+			if (gSavedSettings.getBOOL("ShowMiniMapObjects"))
+			{						
+				gObjectList.renderObjectsForMap(*this); // Draw buildings.
+			}
 
 			mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
-			
+		
 			map_timer.reset();
 		}
 
@@ -488,6 +503,17 @@ void LLNetMap::draw()
 			dot_width,
 			dot_width);
 
+		// Draw chat range ring(s)
+		static LLUICachedControl<bool> whisper_ring("MiniMapWhisperRing");
+		static LLUICachedControl<bool> chat_ring("MiniMapChatRing");
+		static LLUICachedControl<bool> shout_ring("MiniMapShoutRing");
+		if(whisper_ring)
+			drawRing(LLWorld::getInstance()->getWhisperDistance(), pos_map, map_whisper_ring_color);
+		if(chat_ring)
+			drawRing(LLWorld::getInstance()->getSayDistance(), pos_map, map_chat_ring_color);
+		if(shout_ring)
+			drawRing(LLWorld::getInstance()->getShoutDistance(), pos_map, map_shout_ring_color);
+
 		// Draw frustum
 // <FS:CR> Aurora Sim
 		//F32 meters_to_pixels = mScale/ LLWorld::getInstance()->getRegionWidthInMeters();
@@ -582,6 +608,22 @@ LLVector3 LLNetMap::globalPosToView(const LLVector3d& global_pos, BOOL rotated)
 	pos_local.mV[VY] += getRect().getHeight() / 2 + mCurPanY;
 
 	return pos_local;
+}
+
+void LLNetMap::drawRing(const F32 radius, const LLVector3 pos_map, const LLColor4& color)
+
+{
+// <FS:CR> Aurora Sim
+        F32 meters_to_pixels = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
+        //F32 meters_to_pixels = mScale / REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
+        F32 radius_pixels = radius * meters_to_pixels;
+
+        gGL.matrixMode(LLRender::MM_MODELVIEW);
+        gGL.pushMatrix();
+        gGL.translatef((F32)pos_map.mV[VX], (F32)pos_map.mV[VY], 0.f);
+        gl_ring(radius_pixels, WIDTH_PIXELS, color, color, CIRCLE_STEPS, FALSE);
+        gGL.popMatrix();
 }
 
 void LLNetMap::drawTracking(const LLVector3d& pos_global, BOOL rotated,
@@ -1134,6 +1176,82 @@ bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLS
 	LLNetMap *self = mPtr;
 	BOOL enabled = gSavedSettings.getBOOL("MiniMapRotate");
 	self->findControl(userdata["control"].asString())->setValue(enabled);
+	return true;
+}
+
+bool LLNetMap::LLShowObjects::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL showobjects = gSavedSettings.getBOOL("ShowMiniMapObjects");
+	gSavedSettings.setBOOL("ShowMiniMapObjects", !showobjects);
+	return true;
+}
+
+bool LLNetMap::LLCheckShowObjects::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	BOOL enabled = gSavedSettings.getBOOL("ShowMiniMapObjects"); 
+	self->findControl(userdata["control"].asString())->setValue(enabled);
+	return true;
+}
+
+bool LLNetMap::LLChatRings::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
+	gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
+	gSavedSettings.setBOOL("MiniMapWhisperRing", !all_enabled);
+	gSavedSettings.setBOOL("MiniMapChatRing", !all_enabled);
+	gSavedSettings.setBOOL("MiniMapShoutRing", !all_enabled);
+	return true;
+}
+
+bool LLNetMap::LLWhisperRing::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
+	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
+	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
+	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	
+	gSavedSettings.setBOOL("MiniMapWhisperRing", !whisper_enabled);
+		
+	if(all_enabled)
+		gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
+	else if(!whisper_enabled && chat_enabled && shout_enabled)
+		gSavedSettings.setBOOL("MiniMapChatRings", TRUE);
+	
+	return true;
+}
+
+bool LLNetMap::LLChatRing::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
+	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
+	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
+	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	
+	gSavedSettings.setBOOL("MiniMapChatRing", !chat_enabled);
+	
+	if(all_enabled)
+		gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
+	else if(whisper_enabled && !chat_enabled && shout_enabled)
+		gSavedSettings.setBOOL("MiniMapChatRings", TRUE);
+	
+	return true;
+}
+
+bool LLNetMap::LLShoutRing::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
+	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
+	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
+	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	
+	gSavedSettings.setBOOL("MiniMapShoutRing", !shout_enabled);
+	
+	if(all_enabled)
+		gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
+	else if(whisper_enabled && chat_enabled && !shout_enabled)
+		gSavedSettings.setBOOL("MiniMapChatRings", TRUE);
+	
 	return true;
 }
 

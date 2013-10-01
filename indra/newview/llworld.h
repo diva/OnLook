@@ -125,6 +125,10 @@ public:
 	F32						getRegionMinHeight() const		{ return -mWidthInMeters; }
 	F32						getRegionMaxHeight() const		{ return MAX_OBJECT_Z; }
 
+	F32 getWhisperDistance() const		{ return mWhisperDistance; }
+	F32 getSayDistance() const			{ return mSayDistance; }
+	F32 getShoutDistance() const		{ return mShoutDistance; }
+
 	void					updateRegions(F32 max_update_time);
 	void					updateVisibilities();
 	void					updateParticles();
@@ -197,6 +201,10 @@ private:
 	//static const F32 mWidthInMeters;
 	static F32 mWidthInMeters;
 // </FS:CR> Aurora Sim
+
+	static const F32 mWhisperDistance;
+	static const F32 mSayDistance;
+	static const F32 mShoutDistance;
 
 	F32 mLandFarClip;					// Far clip distance for land.
 	LLPatchVertexArray		mLandPatch;

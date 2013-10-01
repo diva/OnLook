@@ -82,6 +82,8 @@ private:
 	LLVector3		globalPosToView(const LLVector3d& global_pos, BOOL rotated);
 	LLVector3d		viewPosToGlobal(S32 x,S32 y, BOOL rotated);
 
+	void			drawRing(const F32 radius, LLVector3 pos_map, const LLColor4& color);
+
 	void			drawTracking( const LLVector3d& pos_global,
 							BOOL rotated,
 							const LLColor4& color,
@@ -152,6 +154,42 @@ private:
 	};
 
 	class LLCheckRotateMap : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLCheckShowObjects : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLChatRings : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLShowObjects : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLWhisperRing : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLChatRing : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLShoutRing : public LLMemberListener<LLNetMap>
 	{
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);

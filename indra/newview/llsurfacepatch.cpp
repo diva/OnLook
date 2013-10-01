@@ -304,6 +304,12 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				if (!ppatches[i][j]->getNeighborPatch(SOUTH))
 				{
 					poffsets[i][j][1] = 0;
+				}
+				else
+				{
+// <FS:CR> Aurora Sim
+					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(SOUTH);
+					poffsets[i][j][1] += patch_width;
 					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 // </FS>CR> Aurora Sim
 				}
