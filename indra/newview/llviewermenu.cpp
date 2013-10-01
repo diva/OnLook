@@ -1476,6 +1476,9 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	
 	menu->addChild(new LLMenuItemCallGL("Rebuild Vertex Buffers", reset_vertex_buffers, NULL, NULL, 'V', MASK_CONTROL | MASK_SHIFT));
 
+	item = new LLMenuItemCheckGL("Animate Trees", menu_toggle_control, NULL, menu_check_control, (void*)"RenderAnimateTrees");
+	menu->addChild(item);
+	
 	item = new LLMenuItemCheckGL("Animate Textures", menu_toggle_control, NULL, menu_check_control, (void*)"AnimateTextures");
 	menu->addChild(item);
 	
