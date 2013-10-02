@@ -113,14 +113,8 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLScaleMap())->registerListener(this, "MiniMap.ZoomLevel");
 	(new LLCenterMap())->registerListener(this, "MiniMap.Center");
 	(new LLCheckCenterMap())->registerListener(this, "MiniMap.CheckCenter");
-	(new LLRotateMap())->registerListener(this, "MiniMap.Rotate");
-	(new LLCheckRotateMap())->registerListener(this, "MiniMap.CheckRotate");
-	(new LLShowObjects())->registerListener(this, "MiniMap.ShowObjects");
-	(new LLCheckShowObjects())->registerListener(this, "MiniMap.CheckShowObjects");
 	(new LLChatRings())->registerListener(this, "MiniMap.ChatRings");
-	(new LLWhisperRing())->registerListener(this, "MiniMap.WhisperRing");
-	(new LLChatRing())->registerListener(this, "MiniMap.ChatRing");
-	(new LLShoutRing())->registerListener(this, "MiniMap.ShoutRing");
+	(new LLCheckChatRings())->registerListener(this, "MiniMap.CheckChatRings");
 	(new LLStopTracking())->registerListener(this, "MiniMap.StopTracking");
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
@@ -133,6 +127,7 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new mmsetcustom())->registerListener(this, "MiniMap.setcustom");
 	(new mmsetunmark())->registerListener(this, "MiniMap.setunmark");
 	(new mmenableunmark())->registerListener(this, "MiniMap.enableunmark");
+	(new LLToggleControl())->registerListener(this, "MiniMap.ToggleControl");
 
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_mini_map.xml");
 
@@ -1163,95 +1158,29 @@ bool LLNetMap::LLCheckCenterMap::handleEvent(LLPointer<LLEvent> event, const LLS
 	return true;
 }
 
-bool LLNetMap::LLRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	BOOL rotate = gSavedSettings.getBOOL("MiniMapRotate");
-	gSavedSettings.setBOOL("MiniMapRotate", !rotate);
-
-	return true;
-}
-
-bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	BOOL enabled = gSavedSettings.getBOOL("MiniMapRotate");
-	self->findControl(userdata["control"].asString())->setValue(enabled);
-	return true;
-}
-
-bool LLNetMap::LLShowObjects::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	BOOL showobjects = gSavedSettings.getBOOL("ShowMiniMapObjects");
-	gSavedSettings.setBOOL("ShowMiniMapObjects", !showobjects);
-	return true;
-}
-
-bool LLNetMap::LLCheckShowObjects::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	BOOL enabled = gSavedSettings.getBOOL("ShowMiniMapObjects"); 
-	self->findControl(userdata["control"].asString())->setValue(enabled);
-	return true;
-}
-
 bool LLNetMap::LLChatRings::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
-	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
-	gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
+	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
+	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
+	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	BOOL all_enabled = whisper_enabled && chat_enabled && shout_enabled;
+	
 	gSavedSettings.setBOOL("MiniMapWhisperRing", !all_enabled);
 	gSavedSettings.setBOOL("MiniMapChatRing", !all_enabled);
 	gSavedSettings.setBOOL("MiniMapShoutRing", !all_enabled);
-	return true;
-}
-
-bool LLNetMap::LLWhisperRing::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
-	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
-	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
-	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
-	
-	gSavedSettings.setBOOL("MiniMapWhisperRing", !whisper_enabled);
-		
-	if(all_enabled)
-		gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
-	else if(!whisper_enabled && chat_enabled && shout_enabled)
-		gSavedSettings.setBOOL("MiniMapChatRings", TRUE);
 	
 	return true;
 }
 
-bool LLNetMap::LLChatRing::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+bool LLNetMap::LLCheckChatRings::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
-	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
 	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
 	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
 	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	BOOL all_enabled = whisper_enabled && chat_enabled && shout_enabled;
 	
-	gSavedSettings.setBOOL("MiniMapChatRing", !chat_enabled);
-	
-	if(all_enabled)
-		gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
-	else if(whisper_enabled && !chat_enabled && shout_enabled)
-		gSavedSettings.setBOOL("MiniMapChatRings", TRUE);
-	
-	return true;
-}
-
-bool LLNetMap::LLShoutRing::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	BOOL all_enabled = gSavedSettings.getBOOL("MiniMapChatRings");
-	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
-	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
-	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
-	
-	gSavedSettings.setBOOL("MiniMapShoutRing", !shout_enabled);
-	
-	if(all_enabled)
-		gSavedSettings.setBOOL("MiniMapChatRings", !all_enabled);
-	else if(whisper_enabled && chat_enabled && !shout_enabled)
-		gSavedSettings.setBOOL("MiniMapChatRings", TRUE);
-	
+	LLNetMap *self = mPtr;
+	self->findControl(userdata["control"].asString())->setValue(all_enabled);
 	return true;
 }
 
@@ -1300,3 +1229,11 @@ bool LLNetMap::LLEnableProfile::handleEvent(LLPointer<LLEvent> event, const LLSD
 	//self->findControl(userdata["control"].asString())->setValue(self->isAgentUnderCursor());
 	return true;
 }
+
+bool LLNetMap::LLToggleControl::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	std::string control_name = userdata.asString();
+	gSavedSettings.setBOOL(control_name, !gSavedSettings.getBOOL(control_name));
+	return true;
+}
+

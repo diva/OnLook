@@ -147,49 +147,13 @@ private:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
 
-	class LLRotateMap : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-	};
-
-	class LLCheckRotateMap : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-	};
-
-	class LLCheckShowObjects : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-	};
-
 	class LLChatRings : public LLMemberListener<LLNetMap>
 	{
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
 
-	class LLShowObjects : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-	};
-
-	class LLWhisperRing : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-	};
-
-	class LLChatRing : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-	};
-
-	class LLShoutRing : public LLMemberListener<LLNetMap>
+	class LLCheckChatRings : public LLMemberListener<LLNetMap>
 	{
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
@@ -268,6 +232,13 @@ private:
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
+	
+	class LLToggleControl : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+	
 };
 
 

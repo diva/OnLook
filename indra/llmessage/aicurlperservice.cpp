@@ -75,6 +75,7 @@ AIPerService::AIPerService(void) :
 		mConcurrentConnections(CurlConcurrentConnectionsPerService),
 		mApprovedRequests(0),
 		mTotalAdded(0),
+		mEventPolls(0),
 		mEstablishedConnections(0),
 		mUsedCT(0),
 		mCTInUse(0)
@@ -335,24 +336,70 @@ bool AIPerService::throttled(AICapabilityType capability_type) const
 		 mCapabilityType[capability_type].mAdded >= mCapabilityType[capability_type].mConcurrentConnections;
 }
 
-void AIPerService::added_to_multi_handle(AICapabilityType capability_type)
+void AIPerService::added_to_multi_handle(AICapabilityType capability_type, bool event_poll)
 {
+  if (event_poll)
+  {
+	llassert(capability_type == cap_other);
+	// We want to mark this service as unused when only long polls have been added, because they
+	// are not counted towards the maximum number of connection for this service and therefore
+	// should not cause another capability type to get less connections.
+	// For example, if - like on opensim - Textures and Other capability types use the same
+	// service then it is nonsense to reserve 4 connections Other and only give 4 connections
+	// to Textures, only because there is a long poll connection (or any number of long poll
+	// connections). What we want is to see: 0-0-0,{0/7,0} for textures when Other is ONLY in
+	// use for the Event Poll.
+	//
+	// This translates to that, since we're adding an event_poll and are about to remove it from
+	// either the command queue OR the request queue, that when mAdded == 1 at the end of this function
+	// (and the rest of the pipeline is empty) we want to mark this capability type as unused.
+	//
+	// If mEventPolls > 0 at this point then mAdded will not be incremented.
+	// If mEventPolls == 0 then mAdded will be incremented and thus should be 0 now.
+	// In other words, if the number of mAdded requests is equal to the number of (counted)
+	// mEventPoll requests right now, then that will still be the case after we added another
+	// event poll request (the transition from used to unused only being necessary because
+	// event poll requests in the pipe line ARE counted; not because that is necessary but
+	// because it would be more complex to not do so).
+	//
+	// Moreover, when we get here then the request that is being added is still counted as being in
+	// the command queue, or the request queue, so that pipelined_requests() will return 1 more than
+	// the actual count.
+	U16 counted_event_polls = (mEventPolls == 0) ? 0 : 1;
+	if (mCapabilityType[capability_type].mAdded == counted_event_polls &&
+		mCapabilityType[capability_type].pipelined_requests() == counted_event_polls + 1)
+	{
+	  mark_unused(capability_type);
+	}
+	if (++mEventPolls > 1)
+	{
+	  // This only happens on megaregions. Do not count the additional long poll connections against the maximum handles for this service.
+	  return;
+	}
+  }
   ++mCapabilityType[capability_type].mAdded;
   ++mTotalAdded;
 }
 
-void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool downloaded_something, bool success)
+void AIPerService::removed_from_multi_handle(AICapabilityType capability_type, bool event_poll, bool downloaded_something, bool success)
 {
   CapabilityType& ct(mCapabilityType[capability_type]);
-  llassert(mTotalAdded > 0 && ct.mAdded > 0);
-  bool done = --ct.mAdded == 0;
+  llassert(mTotalAdded > 0 && ct.mAdded > 0 && (!event_poll || mEventPolls));
+  if (!event_poll || --mEventPolls == 0)
+  {
+	--ct.mAdded;
+	--mTotalAdded;
+  }
   if (downloaded_something)
   {
 	llassert(ct.mDownloading > 0);
 	--ct.mDownloading;
   }
-  --mTotalAdded;
-  if (done && ct.pipelined_requests() == 0)
+  // If the number of added request handles is equal to the number of counted event poll handles,
+  // in other words, when there are only long poll connections left, then mark the capability type
+  // as unused.
+  U16 counted_event_polls = (capability_type != cap_other || mEventPolls == 0) ? 0 : 1;
+  if (ct.mAdded == counted_event_polls && ct.pipelined_requests() == counted_event_polls)
   {
 	mark_unused(capability_type);
   }
@@ -467,6 +514,9 @@ void AIPerService::add_queued_to(curlthread::MultiHandle* multi_handle, bool onl
 		break;
 	  }
 	  // Request was added, remove it from the queue.
+	  // Note: AIPerService::added_to_multi_handle (called from add_easy_request above) relies on the fact that
+	  // we first add the easy handle and then remove it from the request queue (which is necessary to avoid
+	  // that another thread adds one just in between).
 	  ct.mQueuedRequests.pop_front();
 	  // Mark that at least one request of this CT was successfully added.
 	  success |= mask;
