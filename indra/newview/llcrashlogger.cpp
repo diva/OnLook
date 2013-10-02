@@ -248,7 +248,7 @@ void LLCrashLogger::gatherFiles()
 		std::ifstream f((*itr).second.c_str());
 		if(!f.is_open())
 		{
-			std::cout << "Can't find file " << (*itr).second << std::endl;
+			llinfos << "Can't find file " << (*itr).second << llendl;
 			continue;
 		}
 		std::stringstream s;
@@ -349,10 +349,12 @@ void LLCrashLogger::checkCrashDump()
 	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
 	if (gDirUtilp->fileExists(dumpDir))
 	{
+#if LL_SEND_CRASH_REPORTS
 		if (!mCrashHost.empty() && gSavedSettings.getS32("CrashSubmitBehavior") != 2)
 		{
 			sendCrashLog(dumpDir);
 		}
+#endif
 		gDirUtilp->deleteDirAndContents(dumpDir);
 	}
 	else

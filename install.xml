@@ -571,30 +571,30 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>723cd70d5090e448319b485b88aea379</string>
+            <string>5a5c90d28fd9bdc4244c56fef4216998</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-darwin-20130329.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-darwin-20131002.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>849241f3b638ee90b553a2ef6346107c</string>
+            <string>03852edfa946bdc365b5fbd1a373b17f</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-linux-20130329.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-linux-20131002.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>cf5300008895efcfcfcfacef05f32bff</string>
+            <string>e2e8d8068eceaad66758bb5f031d5246</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-linux64-20130506.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-linux64-20131002.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>7c33a10f132864f8492fd9ef9b6a4ccc</string>
+            <string>37d1f91f486e357c9a74e6b4af91fe13</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-windows-20130813.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-windows-20131002.tar.bz2</uri>
           </map>
         </map>
       </map>
