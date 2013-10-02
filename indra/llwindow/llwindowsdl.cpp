@@ -75,6 +75,9 @@ static bool ATIbug = false;
 
 #if LL_X11
 # include <X11/Xutil.h>
+#include <fstream>
+#include <string>
+#include <boost/regex.hpp>
 #endif //LL_X11
 
 // TOFU HACK -- (*exactly* the same hack as LLWindowMacOSX for a similar
@@ -323,6 +326,33 @@ static int x11_detect_VRAM_kb_fp(FILE *fp, const char *prefix_str)
 	return 0; // 'could not detect'
 }
 
+static int x11_detect_VRAM_kb_br(std::string filename) {
+  boost::regex pattern(".*?(VRAM|Memory|Video\\s?RAM)\\D*(\\d+)\\s?([kK]B?)");
+  std::string line;
+  std::ifstream in(filename.c_str());
+  int matched = -1; 
+  if(in.is_open()) {
+    matched = 0;
+    while (getline(in, line))
+    {
+      // lldebugs << "Processing line: " << line << llendl;
+      boost::cmatch match;
+      if(boost::regex_search(line.c_str(), match, pattern))
+      {
+	matched = atoi(std::string(match[2]).c_str());
+	lldebugs << "VRAM found: " << matched << llendl;
+	lldebugs << "Line matched: " << line << llendl;
+      }
+    }
+    in.close();
+  }
+  else
+  {
+    lldebugs << "Couldn't open logfile " << filename << llendl;
+  }
+  return matched; // matched should be -1 if no file opened, 0 if file opened but no info found, or >0 if file opened and info found
+}
+
 static int x11_detect_VRAM_kb()
 {
 #if LL_SOLARIS && defined(__sparc)
@@ -352,7 +382,8 @@ static int x11_detect_VRAM_kb()
 	fname += "Xorg.";
 	fname += ('0' + display_num);
 	fname += ".log";
-	fp = fopen(fname.c_str(), "r");
+	rtn = x11_detect_VRAM_kb_br(fname);
+	/*fp = fopen(fname.c_str(), "r");
 	if (fp)
 	{
 		llinfos << "Looking in " << fname
@@ -373,12 +404,13 @@ static int x11_detect_VRAM_kb()
 					{
 						rtn = x11_detect_VRAM_kb_fp(fp, ": Memory: ");
 						fclose(fp);
+						}
 					}
 				}
 			}
 		}
-	}
-	else
+	}*/
+	if(rtn == -1) // we couldn't read the Xorg file
 	{
 		llinfos << "Could not open " << fname
 			<< " - skipped." << llendl;	
@@ -387,7 +419,8 @@ static int x11_detect_VRAM_kb()
 		fname += "XFree86.";
 		fname += ('0' + display_num);
 		fname += ".log";
-		fp = fopen(fname.c_str(), "r");
+		rtn = x11_detect_VRAM_kb_br(fname);
+		/*fp = fopen(fname.c_str(), "r");
 		if (fp)
 		{
 			llinfos << "Looking in " << fname
@@ -403,13 +436,16 @@ static int x11_detect_VRAM_kb()
 					fclose(fp);
 				}
 			}
-		}
-		else
+		}*/
+		if(rtn == -1) // couldn't read old X log file either
 		{
 			llinfos << "Could not open " << fname
 				<< " - skipped." << llendl;
+			//stumped here, return 0
+			rtn = 0;
 		}
 	}
+	
 	return rtn;
 #endif // LL_SOLARIS
 }
