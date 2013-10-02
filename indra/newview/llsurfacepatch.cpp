@@ -881,6 +881,7 @@ void LLSurfacePatch::setOriginGlobal(const LLVector3d &origin_global)
 void LLSurfacePatch::connectNeighbor(LLSurfacePatch *neighbor_patchp, const U32 direction)
 {
 	llassert(neighbor_patchp);
+	if (!neighbor_patchp) return;
 	mNormalsInvalid[direction] = TRUE;
 	neighbor_patchp->mNormalsInvalid[gDirOpposite[direction]] = TRUE;
 
