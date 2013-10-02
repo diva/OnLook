@@ -440,6 +440,11 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 // <FS:CR> Aurora Sim
 		//neighbor_patchp = neighborp->getPatch(mPatchesPerEdge - 1, 0);
 		neighbor_patchp = neighborp->getPatch(neighbor_offset[0] - 1, off); //neighborPatchesPerEdge - 1
+		if (!neighbor_patchp)
+		{
+			mNeighbors[direction] = NULL;
+			return;
+		}
 // </FS:CR> Aurora Sim
 
 		patchp->connectNeighbor(neighbor_patchp, direction);
@@ -451,6 +456,11 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 // <FS:CR> Aurora Sim
 		//neighbor_patchp = neighborp->getPatch(mPatchesPerEdge - 1, mPatchesPerEdge - 1);
 		neighbor_patchp = neighborp->getPatch(neighbor_offset[0] - 1, neighbor_offset[1] - 1);
+		if (!neighbor_patchp)
+		{
+			mNeighbors[direction] = NULL;
+			return;
+		}
 // </FS:CR> Aurora Sim
 
 		patchp->connectNeighbor(neighbor_patchp, direction);
@@ -472,6 +482,11 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 // <FS:CR> Aurora Sim
 		//neighbor_patchp = neighborp->getPatch(0, mPatchesPerEdge - 1);
 		neighbor_patchp = neighborp->getPatch(off, neighbor_offset[1] - 1); //0
+		if (!neighbor_patchp)
+		{
+			mNeighbors[direction] = NULL;
+			return;
+		}
 // </FS:CR> Aurora Sim
 
 		patchp->connectNeighbor(neighbor_patchp, direction);
@@ -600,6 +615,7 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 			//neighbor_patchp = neighborp->getPatch(mPatchesPerEdge - 1, i);
 			patchp = getPatch(0, i + own_offset[1]);
 			neighbor_patchp = neighborp->getPatch(neighborPatchesPerEdge - 1, i + neighbor_offset[1]);
+			if (!neighbor_patchp) continue;
 // </FS:CR> Aurora Sim
 
 			patchp->connectNeighbor(neighbor_patchp, direction);
@@ -620,6 +636,7 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 			//neighbor_patchp = neighborp->getPatch(mPatchesPerEdge - 1, i - 1);
 			patchp = getPatch(0, i + own_offset[1]);
 			neighbor_patchp = neighborp->getPatch(neighborPatchesPerEdge - 1, i - 1 + neighbor_offset[1]);
+			if (!neighbor_patchp) continue;
 // </FS:CR> Aurora Sim
 
 			patchp->connectNeighbor(neighbor_patchp, SOUTHWEST);
@@ -637,6 +654,7 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 			//neighbor_patchp = neighborp->getPatch(mPatchesPerEdge - 1, i + 1);
 			patchp = getPatch(0, i + own_offset[1]);
 			neighbor_patchp = neighborp->getPatch(neighborPatchesPerEdge - 1, i + 1 + neighbor_offset[1]);
+			if (!neighbor_patchp) continue;
 // </FS:CR> Aurora Sim
 
 			patchp->connectNeighbor(neighbor_patchp, NORTHWEST);
@@ -656,6 +674,7 @@ void LLSurface::connectNeighbor(LLSurface *neighborp, U32 direction)
 			//neighbor_patchp = neighborp->getPatch(i, mPatchesPerEdge - 1);
 			patchp = getPatch(i + own_offset[0], 0);
 			neighbor_patchp = neighborp->getPatch(i + neighbor_offset[0], neighborPatchesPerEdge - 1);
+			if (!neighbor_patchp) continue;
 // </FS:CR> Aurora Sim
 
 			patchp->connectNeighbor(neighbor_patchp, direction);
@@ -1321,12 +1340,12 @@ LLSurfacePatch *LLSurface::getPatch(const S32 x, const S32 y) const
 {
 	if ((x < 0) || (x >= mPatchesPerEdge))
 	{
-		llerrs << "Asking for patch out of bounds" << llendl;
+		llwarns << "Asking for patch out of bounds" << llendl;
 		return NULL;
 	}
 	if ((y < 0) || (y >= mPatchesPerEdge))
 	{
-		llerrs << "Asking for patch out of bounds" << llendl;
+		llwarns << "Asking for patch out of bounds" << llendl;
 		return NULL;
 	}
 
