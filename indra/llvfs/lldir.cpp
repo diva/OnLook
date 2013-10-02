@@ -179,8 +179,15 @@ S32 LLDir::deleteFilesInDir(const std::string &dirname, const std::string &mask)
 
 U32 LLDir::deleteDirAndContents(const std::string& dir_name)
 {
-    //Removes the directory and its contents.  Returns number of files removed.
-    return boost::filesystem::remove_all(dir_name);
+	//Removes the directory and its contents.  Returns number of files removed.
+#if defined(LL_LINUX)
+	// Singu TODO: Workaround for boost crashing on linux
+	deleteFilesInDir(dir_name, "*");
+	boost::filesystem::remove(dir_name);
+	return 1;
+#else
+	return boost::filesystem::remove_all(dir_name);
+#endif
 }
 
 const std::string LLDir::findFile(const std::string &filename, 
