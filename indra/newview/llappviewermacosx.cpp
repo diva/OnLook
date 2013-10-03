@@ -262,11 +262,6 @@ bool LLAppViewerMacOSX::restoreErrorTrap()
 	return reset_count == 0;
 }
 
-void LLAppViewerMacOSX::handleSyncCrashTrace()
-{
-	// do nothing
-}
-
 static OSStatus CarbonEventHandler(EventHandlerCallRef inHandlerCallRef, 
 								   EventRef inEvent, 
 								   void* inUserData)
@@ -294,122 +289,10 @@ static OSStatus CarbonEventHandler(EventHandlerCallRef inHandlerCallRef,
     return noErr;
 }
 
-void LLAppViewerMacOSX::handleCrashReporting(bool reportFreeze)
+void LLAppViewerMacOSX::initCrashReporting(bool reportFreeze)
 {
-	// This used to use fork&exec, but is switched to LSOpenApplication to 
-	// Make sure the crash reporter launches in front of the SL window.
-	
-	std::string command_str;
-	//command_str = "open Second Life.app/Contents/Resources/mac-crash-logger.app";
-	command_str = "mac-crash-logger.app/Contents/MacOS/mac-crash-logger";
-	
-	FSRef appRef;
-	Boolean isDir = 0;
-	OSStatus os_result = FSPathMakeRef((UInt8*)command_str.c_str(),
-									   &appRef,
-									   &isDir);
-	if(os_result >= 0)
-	{
-		LSApplicationParameters appParams;
-		memset(&appParams, 0, sizeof(appParams));
-	 	appParams.version = 0;
-		appParams.flags = kLSLaunchNoParams | kLSLaunchStartClassic;
-		appParams.application = &appRef;
-		
-		if(reportFreeze)
-		{
-			// Make sure freeze reporting launches the crash logger synchronously, lest 
-			// Log files get changed by SL while the logger is running.
-		
-			// *NOTE:Mani A better way - make a copy of the data that the crash reporter will send
-			// and let SL go about its business. This way makes the mac work like windows and linux
-			// and is the smallest patch for the issue. 
-			sCrashReporterIsRunning = false;
-			ProcessSerialNumber o_psn;
-
-			static EventHandlerRef sCarbonEventsRef = NULL;
-			static const EventTypeSpec kEvents[] = 
-			{
-				{ kEventClassApplication, kEventAppTerminated }
-			};
-			
-			// Install the handler to detect crash logger termination
-			InstallEventHandler(GetApplicationEventTarget(), 
-								(EventHandlerUPP) CarbonEventHandler,
-								GetEventTypeCount(kEvents),
-								kEvents,
-								&o_psn,
-								&sCarbonEventsRef
-								);
-			
-			// Remove, temporarily the quit handler - which has *crash* behavior before 
-			// the mainloop gets running!
-			AERemoveEventHandler(kCoreEventClass, 
-								 kAEQuitApplication, 
-								 NewAEEventHandlerUPP(AEQuitHandler),
-								 false);
-
-			// Launch the crash reporter.
-			os_result = LSOpenApplication(&appParams, &o_psn);
-			
-			if(os_result >= 0)
-			{	
-				sCrashReporterIsRunning = true;
-			}
-
-			while(sCrashReporterIsRunning)
-			{
-				RunApplicationEventLoop();
-			}
-
-			// Re-install the apps quit handler.
-			AEInstallEventHandler(kCoreEventClass, 
-								  kAEQuitApplication, 
-								  NewAEEventHandlerUPP(AEQuitHandler),
-								  0, 
-								  false);
-			
-			// Remove the crash reporter quit handler.
-			RemoveEventHandler(sCarbonEventsRef);
-		}
-		else
-		{
-			appParams.flags |= kLSLaunchAsync;
-			clear_signals();
-
-			ProcessSerialNumber o_psn;
-			os_result = LSOpenApplication(&appParams, &o_psn);
-		}
-		
-	}
-
-	if(!reportFreeze)
-	{
-		_exit(1);
-	}
-	
-	// TODO:palmer REMOVE THIS VERY SOON.  THIS WILL NOT BE IN VIEWER 2.0
-	// Remove the crash stack log from previous executions.
-	// Since we've started logging a new instance of the app, we can assume 
-	// The old crash stack is invalid for the next crash report.
-	char path[MAX_PATH];		
-	FSRef folder;
-	if(FSFindFolder(kUserDomain, kLogsFolderType, false, &folder) == noErr)
-	{
-		// folder is an FSRef to ~/Library/Logs/
-		if(FSRefMakePath(&folder, (UInt8*)&path, sizeof(path)) == noErr)
-		{
-			std::string pathname = std::string(path) + std::string("/CrashReporter/");
-			std::string mask = "Second Life*";
-			std::string file_name;
-			LLDirIterator iter(pathname, mask);
-			while(iter.next(file_name))
-			{
-				LLFile::remove(pathname + file_name);
-			}
-		}
-	}
-	
+	// Singu Note: this is where original code forks crash logger process.
+	// Singularity doesn't need it
 }
 
 std::string LLAppViewerMacOSX::generateSerialNumber()

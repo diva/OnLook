@@ -922,7 +922,6 @@ P(charactersResponder);
 P(checkAgentAppearanceServiceResponder);
 P(classifiedStatsResponder);
 P(consoleResponder);
-P2(crashLoggerResponder,						transfer_22s_connect_10s);
 P(createInventoryCategoryResponder);
 P(emeraldDicDownloader);
 P(environmentApplyResponder);
@@ -993,4 +992,4 @@ P(webProfileResponders);
 P(wholeModelFeeResponder);
 P(wholeModelUploadResponder);
 P2(XMLRPCResponder,								connect_40s);
-
+P2(crashLoggerResponder,						transfer_300s);
