@@ -444,6 +444,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				{
 					gChatBar->sendChatFromViewer(text, CHAT_TYPE_STOP, FALSE);
 				}
+				return false;
 			}
 			else if(command == utf8str_tolower(sAscentCmdLineClearChat))
 			{
@@ -460,6 +461,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			else if(command == "invrepair")
 			{
 				invrepair();
+				return false;
 			}
 #ifdef PROF_CTRL_CALLS
 			else if(command == "dumpcalls")

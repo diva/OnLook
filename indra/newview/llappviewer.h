@@ -77,7 +77,7 @@ public:
     bool quitRequested() { return mQuitRequested; }
     bool logoutRequestSent() { return mLogoutRequestSent; }
 
-	void writeDebugInfo();
+	void writeDebugInfo(bool isStatic=true);
 
 	const LLOSInfo& getOSInfo() const { return mSysOSInfo; }
 
@@ -86,11 +86,8 @@ public:
 
 	virtual bool restoreErrorTrap() = 0; // Require platform specific override to reset error handling mechanism.
 	                                     // return false if the error trap needed restoration.
-	virtual void handleCrashReporting(bool reportFreeze = false) = 0; // What to do with crash report?
-	virtual void handleSyncCrashTrace() = 0; // any low-level crash-prep that has to happen in the context of the crashing thread before the crash report is delivered.
+	virtual void initCrashReporting(bool reportFreeze = false) = 0; // What to do with crash report?
 	static void handleViewerCrash(); // Hey! The viewer crashed. Do this, soon.
-	static void handleSyncViewerCrash(); // Hey! The viewer crashed. Do this right NOW in the context of the crashing thread.
-    void checkForCrash();
     
 	// Thread accessors
 	static LLTextureCache* getTextureCache() { return sTextureCache; }
@@ -118,6 +115,7 @@ public:
 
 	void removeMarkerFile(bool leave_logout_marker = false);
 	
+	void removeDumpDir();
     // LLAppViewer testing helpers.
     // *NOTE: These will potentially crash the viewer. Only for debugging.
     virtual void forceErrorLLError();
