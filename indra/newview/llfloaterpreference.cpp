@@ -461,7 +461,8 @@ void LLFloaterPreference::onBtnOK( void* userdata )
 		
 		std::string crash_settings_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, CRASH_SETTINGS_FILE);
 		// save all settings, even if equals defaults
-		gCrashSettings.saveToFile(crash_settings_filename, FALSE);
+		// Singu Note: crash settings no longer separate
+		// gCrashSettings.saveToFile(crash_settings_filename, FALSE);
 	}
 	else
 	{

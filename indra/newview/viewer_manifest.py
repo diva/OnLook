@@ -339,9 +339,7 @@ class WindowsManifest(ViewerManifest):
                     self.path(path_pair[1])
                     self.end_prefix()
 
-        # pull in the crash logger and updater from other projects
-        self.path(src='../win_crash_logger/%s/windows-crash-logger.exe' % self.args['configuration'], dst="win_crash_logger.exe")
-        self.path(src='../win_updater/%s/windows-updater.exe' % self.args['configuration'], dst="updater.exe")
+        self.package_file = 'npne'
 
 
     def nsi_file_commands(self, install=True):
@@ -526,7 +524,8 @@ class DarwinManifest(ViewerManifest):
                                 "libaprutil-1.0.dylib",
                                 "libcollada14dom.dylib",
                                 "libexpat.1.5.2.dylib",
-                                "libGLOD.dylib"):
+                                "libGLOD.dylib",
+                                "libexception_handler.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
                 # For using FMOD for sound...but, fmod is proprietary so some might not use it...
@@ -545,18 +544,10 @@ class DarwinManifest(ViewerManifest):
                     print "Skipping libfmodex.dylib - not found"
                     pass
 
-                # our apps
-                try:
-                    self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                    self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
-                except:
-                    pass
-
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
 
                 # dependencies on shared libs
-                mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
                 for libfile in ("libllcommon.dylib",
                                 "libapr-1.0.dylib",
@@ -715,12 +706,12 @@ class LinuxManifest(ViewerManifest):
         # Create an appropriate gridargs.dat for this package, denoting required grid.
         self.put_in_file(self.flags_list(), 'gridargs.dat')
 
-        if self.buildtype().lower()=='release':
-            self.path("secondlife-stripped","bin/"+self.binary_name())
-            self.path("../linux_crash_logger/linux-crash-logger-stripped","linux-crash-logger.bin")
-        else:
-            self.path("secondlife-bin","bin/"+self.binary_name())
-            self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
+        ## Singu note: we'll go strip crazy later on
+        #if self.buildtype().lower()=='release':
+        #    self.path("secondlife-stripped","bin/"+self.binary_name())
+        #else:
+        #    self.path("secondlife-bin","bin/"+self.binary_name())
+        self.path("secondlife-bin","bin/"+self.binary_name())
 
         self.path("../llplugin/slplugin/SLPlugin", "bin/SLPlugin")
         if self.prefix("res-sdl"):

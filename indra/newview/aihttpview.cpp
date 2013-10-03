@@ -293,7 +293,12 @@ AIHTTPView::~AIHTTPView()
 
 U32 AIHTTPView::updateColumn(int col, U32 start)
 {
-  llassert(col <= mStartColumn.size());
+  if (col > mStartColumn.size())
+  {
+	// This happens when AIGLHTTPHeaderBar::draw is called before AIServiceBar::draw, which
+	// happens when there are no services (visible) at the moment the HTTP console is opened.
+	return start;
+  }
   if (col == mStartColumn.size())
   {
 	mStartColumn.push_back(start);
