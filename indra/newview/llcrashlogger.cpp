@@ -59,7 +59,12 @@ public:
 
 	virtual void result(const LLSD& content)
 	{
-		llinfos << "Crash report successfully sent" << llendl;
+		std::string msg = "Crash report successfully sent";
+		if (content.has("message"))
+		{
+			msg += ": " + content["message"].asString();
+		}
+		llinfos << msg << llendl;
 	}
 
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const 
@@ -76,7 +81,6 @@ public:
 LLCrashLogger::LLCrashLogger() :
 	mCrashBehavior(CRASH_BEHAVIOR_ALWAYS_SEND),
 	mCrashInPreviousExec(false),
-	mCrashSettings("CrashSettings"),
 	mCrashHost("")
 {
 }
@@ -355,7 +359,6 @@ void LLCrashLogger::checkCrashDump()
 			sendCrashLog(dumpDir);
 		}
 #endif
-		gDirUtilp->deleteDirAndContents(dumpDir);
 	}
 	else
 	{

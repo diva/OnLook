@@ -2199,7 +2199,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>http://crash.singularityviewer.org/submit.php</string>>
+      <string>http://crash.singularityviewer.org/report.php</string>>
     </map>
     <key>AFKTimeout</key>
     <map>
@@ -17708,6 +17708,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>S32</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>CrashSubmitBehavior</key>
+    <map>
+      <key>Comment</key>
+      <string>Controls behavior when viewer crashes (0 = ask before sending crash report, 1 = always send crash report, 2 = never send crash report)</string>
+      <key>Persist</key>
+      <integer>2</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
   </map>
 </llsd>

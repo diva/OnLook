@@ -1530,10 +1530,34 @@ if (WINDOWS)
             ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
 
+      add_custom_command(
+        OUTPUT ${CMAKE_CFG_INTDIR}/copy_touched.bat
+        COMMAND ${PYTHON_EXECUTABLE}
+        ARGS
+          ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+          --artwork=${ARTWORK_DIR}
+          --actions=copy
+          --branding_id=${VIEWER_BRANDING_ID}
+          --build=${CMAKE_CURRENT_BINARY_DIR}
+          --channel=${VIEWER_CHANNEL}
+          --configuration=${CMAKE_CFG_INTDIR}
+          --dest=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
+          --grid=${GRID}
+          --login_channel=${VIEWER_LOGIN_CHANNEL}
+          --source=${CMAKE_CURRENT_SOURCE_DIR}
+          --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/copy_touched.bat
+		  ${MANIFEST_LIBRARIES}
+        DEPENDS
+            ${VIEWER_BINARY_NAME}
+            ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+        COMMENT "Performing viewer_manifest copy"
+        )
+
     add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker winmm_shim)
 
     if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
+      add_custom_target(copy_w_viewer_manifest ALL DEPENDS ${CMAKE_CFG_INTDIR}/copy_touched.bat)
     endif (PACKAGE)
 endif (WINDOWS)
 

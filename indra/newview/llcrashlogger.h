@@ -58,7 +58,6 @@ protected:
 	BOOL mCrashInPreviousExec;
 	std::map<std::string, std::string> mFileMap;
 	std::string mGridName;
-	LLControlGroup mCrashSettings;
 	std::string mProductName;
 	LLSD mCrashInfo;
 	std::string mCrashHost;

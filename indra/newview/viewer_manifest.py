@@ -339,6 +339,8 @@ class WindowsManifest(ViewerManifest):
                     self.path(path_pair[1])
                     self.end_prefix()
 
+        self.package_file = 'npne'
+
 
     def nsi_file_commands(self, install=True):
         def wpath(path):

@@ -640,18 +640,6 @@ bool LLAppViewer::init()
 	initMaxHeapSize() ;
 
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
-	// Check if we have a crash report to send
-	LLCrashLogger crashLogger;
-	crashLogger.checkCrashDump();
-
-	// write Google Breakpad minidump files to a per-run dump directory to avoid multiple viewer issues.
-	std::string logdir = gDirUtilp->getExpandedFilename(LL_PATH_DUMP, "");
-	mDumpPath = logdir;
-	setMiniDumpDir(logdir);
-	logdir += gDirUtilp->getDirDelimiter();
-    setDebugFileNames(logdir);
-
-    mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
 
 	AIEngine::setMaxCount(gSavedSettings.getU32("StateMachineMaxTime"));
 
@@ -668,6 +656,19 @@ bool LLAppViewer::init()
 			);
 		AIHTTPTimeoutPolicy::setDefaultCurlTimeout(policy_tmp);
 	}
+
+	// Check if we have a crash report to send
+	LLCrashLogger crashLogger;
+	crashLogger.checkCrashDump();
+
+	// write Google Breakpad minidump files to a per-run dump directory to avoid multiple viewer issues.
+	std::string logdir = gDirUtilp->getExpandedFilename(LL_PATH_DUMP, "");
+	mDumpPath = logdir;
+	setMiniDumpDir(logdir);
+	logdir += gDirUtilp->getDirDelimiter();
+    setDebugFileNames(logdir);
+
+    mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
 	{
 		// Viewer metrics initialization
 		//static LLCachedControl<bool> metrics_submode(gSavedSettings,
