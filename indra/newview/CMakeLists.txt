@@ -1557,7 +1557,6 @@ if (WINDOWS)
 
     if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
-      add_custom_target(copy_w_viewer_manifest ALL DEPENDS ${CMAKE_CFG_INTDIR}/copy_touched.bat)
     endif (PACKAGE)
 endif (WINDOWS)
 
@@ -1784,6 +1783,10 @@ if (INSTALL)
 endif (INSTALL)
 
 if (PACKAGE)
+  if(RELEASE_CRASH_REPORTING OR NON_RELEASE_CRASH_REPORTING)
+    add_custom_target(copy_w_viewer_manifest ALL DEPENDS ${CMAKE_CFG_INTDIR}/copy_touched.bat)
+  endif(RELEASE_CRASH_REPORTING OR NON_RELEASE_CRASH_REPORTING)
+
   set(SYMBOL_SEARCH_DIRS "")
   if (WINDOWS)
     list(APPEND SYMBOL_SEARCH_DIRS "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
