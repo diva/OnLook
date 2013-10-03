@@ -704,10 +704,12 @@ class LinuxManifest(ViewerManifest):
         # Create an appropriate gridargs.dat for this package, denoting required grid.
         self.put_in_file(self.flags_list(), 'gridargs.dat')
 
-        if self.buildtype().lower()=='release':
-            self.path("secondlife-stripped","bin/"+self.binary_name())
-        else:
-            self.path("secondlife-bin","bin/"+self.binary_name())
+        ## Singu note: we'll go strip crazy later on
+        #if self.buildtype().lower()=='release':
+        #    self.path("secondlife-stripped","bin/"+self.binary_name())
+        #else:
+        #    self.path("secondlife-bin","bin/"+self.binary_name())
+        self.path("secondlife-bin","bin/"+self.binary_name())
 
         self.path("../llplugin/slplugin/SLPlugin", "bin/SLPlugin")
         if self.prefix("res-sdl"):
