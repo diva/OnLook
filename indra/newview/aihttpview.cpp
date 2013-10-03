@@ -291,7 +291,7 @@ AIHTTPView::~AIHTTPView()
   mGLHTTPHeaderBar = NULL;
 }
 
-U32 AIHTTPView::updateColumn(int col, U32 start)
+U32 AIHTTPView::updateColumn(U32 col, U32 start)
 {
   if (col > mStartColumn.size())
   {

@@ -153,7 +153,7 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 
 		char buffer[LOG_RECALL_BUFSIZ];
 		bool error = false;
-		int nlines = 0;
+		U32 nlines = 0;
 		while (pos > 0 && nlines < lines)
 		{
 			// Read the LOG_RECALL_BUFSIZ characters before pos.
