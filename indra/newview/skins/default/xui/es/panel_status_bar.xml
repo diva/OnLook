@@ -31,7 +31,7 @@
 	<button name="status_no_voice" tool_tip="Chat de Voz No Disponible"/>
 	<button label="" label_selected="" name="status_SeeAV" tool_tip="La Parcela tiene Privacidad del Avatar" width="44" />
   <button label="" name="pf_dirty" tool_tip="Los Objectos que se mueven pueden no tener un comportamiento correcto en esta región hasta que se haga un rebake de la misma."/>
-  <button label="" name="pf_disabled" tool_tip="El Pathfinding Ddinámico no está habilitado en esta región."/>
+  <button label="" name="pf_disabled" tool_tip="El Pathfinding Dinámico no está habilitado en esta región."/>
 	<button name="buyland" tool_tip="Comprar esta parcela" />
 	<line_editor label="Buscar" name="search_editor" tool_tip="Buscar en Second Life"/>
 	<button name="search_btn" tool_tip="Buscar en Second Life"/>
@@ -41,4 +41,5 @@
 	<string name="bandwidth_tooltip">
 		Ancho de Banda
 	</string>
+	<string name="Local">Local</string>
 </panel>

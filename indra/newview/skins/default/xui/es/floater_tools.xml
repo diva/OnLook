@@ -74,6 +74,9 @@
 	<button label="" label_selected="" name="ToolRing" tool_tip="Anillo"/>
 	<button label="" label_selected="" name="ToolTree" tool_tip="Árbol"/>
 	<button label="" label_selected="" name="ToolGrass" tool_tip="Hierba"/>
+	<text name="tree_grass_label"/>
+	<combo_box name="trees_grass" width="125" right="-3"/>
+	<string name="Random">Al Azar</string>
 	<check_box label="Mantener Seleccionado" name="checkbox sticky"/>
 	<check_box label="Copiar Seleccionado" name="checkbox copy selection"/>
 	<check_box label="Centrar" name="checkbox copy centers"/>
@@ -88,7 +91,7 @@
 	<check_box label="Suavizar" name="radio smooth"/>
 	<check_box label="Escarpar" name="radio noise"/>
 	<check_box label="Restablecer" name="radio revert"/>
-	<button label="Aplicar" label_selected="Aplicar" name="button apply to selection" tool_tip="Modificar el terreno seleccionado"/>
+	<button label="Aplicar" label_selected="Aplicar" name="button apply to selection" tool_tip="Modificar el terreno seleccionado" left="126"/>
 	<text name="Bulldozer:">
 		Excavadora:
 	</text>
