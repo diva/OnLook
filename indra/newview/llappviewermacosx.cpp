@@ -262,6 +262,7 @@ bool LLAppViewerMacOSX::restoreErrorTrap()
 	return reset_count == 0;
 }
 
+#if 0 // Singu Note: Defined but not used
 static OSStatus CarbonEventHandler(EventHandlerCallRef inHandlerCallRef, 
 								   EventRef inEvent, 
 								   void* inUserData)
@@ -288,6 +289,7 @@ static OSStatus CarbonEventHandler(EventHandlerCallRef inHandlerCallRef,
     }
     return noErr;
 }
+#endif
 
 void LLAppViewerMacOSX::initCrashReporting(bool reportFreeze)
 {
