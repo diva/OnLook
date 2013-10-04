@@ -57,8 +57,6 @@ namespace
 	int gArgC;
 	char** gArgV;
 	
-	bool sCrashReporterIsRunning = false;
-	
 	OSErr AEQuitHandler(const AppleEvent *messagein, AppleEvent *reply, long refIn)
 	{
 		OSErr result = noErr;
@@ -261,35 +259,6 @@ bool LLAppViewerMacOSX::restoreErrorTrap()
 	
 	return reset_count == 0;
 }
-
-#if 0 // Singu Note: Defined but not used
-static OSStatus CarbonEventHandler(EventHandlerCallRef inHandlerCallRef, 
-								   EventRef inEvent, 
-								   void* inUserData)
-{
-    ProcessSerialNumber psn;
-	
-    GetEventParameter(inEvent, 
-					  kEventParamProcessID, 
-					  typeProcessSerialNumber, 
-					  NULL, 
-					  sizeof(psn), 
-					  NULL, 
-					  &psn);
-	
-    if( GetEventKind(inEvent) == kEventAppTerminated ) 
-	{
-		Boolean matching_psn = FALSE;	
-		OSErr os_result = SameProcess(&psn, (ProcessSerialNumber*)inUserData, &matching_psn);
-		if(os_result >= 0 && matching_psn)
-		{
-			sCrashReporterIsRunning = false;
-			QuitApplicationEventLoop();
-		}
-    }
-    return noErr;
-}
-#endif
 
 void LLAppViewerMacOSX::initCrashReporting(bool reportFreeze)
 {
