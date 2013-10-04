@@ -10,9 +10,9 @@ if (STANDALONE)
 else (STANDALONE)
   use_prebuilt_binary(colladadom)
 
-  if (NOT WINDOWS)
+  if (NOT WINDOWS AND NOT LINUX)
 	use_prebuilt_binary(pcre)
-  endif (NOT WINDOWS)
+  endif (NOT WINDOWS AND NOT LINUX)
 
   if (NOT DARWIN AND NOT WINDOWS)
 	use_prebuilt_binary(libxml)
