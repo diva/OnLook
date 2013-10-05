@@ -94,3 +94,17 @@ boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const boos
 	return mSearchURL.connect(slot);
 }
 
+boost::signals2::connection LFSimFeatureHandler::setSayRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mSayRange.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mShoutRange.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mWhisperRange.connect(slot);
+}

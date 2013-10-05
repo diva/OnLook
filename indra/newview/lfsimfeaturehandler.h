@@ -59,6 +59,9 @@ public:
 	// Connection setters
 	boost::signals2::connection setSupportsExportCallback(const boost::signals2::signal<void()>::slot_type& slot);
 	boost::signals2::connection setSearchURLCallback(const boost::signals2::signal<void()>::slot_type& slot);
+	boost::signals2::connection setSayRangeCallback(const boost::signals2::signal<void()>::slot_type& slot);
+	boost::signals2::connection setShoutRangeCallback(const boost::signals2::signal<void()>::slot_type& slot);
+	boost::signals2::connection setWhisperRangeCallback(const boost::signals2::signal<void()>::slot_type& slot);
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }
