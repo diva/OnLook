@@ -32,20 +32,10 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#if LL_MSVC
-#pragma warning (push)
-#pragma warning (disable : 4068)
-#pragma warning (disable : 4263)
-#pragma warning (disable : 4264)
-#endif
-#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
 #include "dom/domCOLLADA.h"
 #include "dom/domConstants.h"
 #include "dom/domProfile_COMMON.h"
-#if LL_MSVC
-#pragma warning (pop)
-#endif
 
 #include "llfloatermodelpreview.h"
 
