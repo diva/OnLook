@@ -26,6 +26,9 @@
 
 LFSimFeatureHandler::LFSimFeatureHandler()
 : mSupportsExport(false)
+, mSayRange(20)
+, mShoutRange(100)
+, mWhisperRange(10)
 {
 	if (!gHippoGridManager->getCurrentGrid()->isSecondLife()) // Remove this line if we ever handle SecondLife sim features
 		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
@@ -65,12 +68,18 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			mSupportsExport = extras.has("ExportSupported") ? extras["ExportSupported"].asBoolean() : false;
 			mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
 			mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
+			mSayRange = extras.has("say-range") ? extras["say-range"].asInteger() : 20;
+			mShoutRange = extras.has("shout-range") ? extras["shout-range"].asInteger() : 100;
+			mWhisperRange = extras.has("whisper-range") ? extras["whisper-range"].asInteger() : 10;
 		}
 		else // OpenSim specifics are unsupported reset all to default
 		{
 			mSupportsExport = false;
 			mMapServerURL = "";
 			mSearchURL = "";
+			mSayRange = 20;
+			mShoutRange = 100;
+			mWhisperRange = 10;
 		}
 	}
 }

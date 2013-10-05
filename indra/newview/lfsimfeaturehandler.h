@@ -64,6 +64,9 @@ public:
 	bool simSupportsExport() const { return mSupportsExport; }
 	std::string mapServerURL() const { return mMapServerURL; }
 	std::string searchURL() const { return mSearchURL; }
+	U32 sayRange() const { return mSayRange; }
+	U32 shoutRange() const { return mShoutRange; }
+	U32 whisperRange() const { return mWhisperRange; }
 	ExportPolicy exportPolicy() const;
 
 private:
@@ -71,6 +74,9 @@ private:
 	SignaledType<bool> mSupportsExport;
 	std::string mMapServerURL;
 	SignaledType<std::string> mSearchURL;
+	SignaledType<U32> mSayRange;
+	SignaledType<U32> mShoutRange;
+	SignaledType<U32> mWhisperRange;
 };
 
 #endif //LFSIMFEATUREHANDLER_H

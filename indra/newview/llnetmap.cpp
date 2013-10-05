@@ -40,6 +40,7 @@
 #include "lllocalcliprect.h"
 #include "llrender.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llfloateravatarlist.h"
 
 #include "llagent.h"
@@ -503,11 +504,11 @@ void LLNetMap::draw()
 		static LLUICachedControl<bool> chat_ring("MiniMapChatRing");
 		static LLUICachedControl<bool> shout_ring("MiniMapShoutRing");
 		if(whisper_ring)
-			drawRing(LLWorld::getInstance()->getWhisperDistance(), pos_map, map_whisper_ring_color);
+			drawRing(LFSimFeatureHandler::getInstance()->whisperRange(), pos_map, map_whisper_ring_color);
 		if(chat_ring)
-			drawRing(LLWorld::getInstance()->getSayDistance(), pos_map, map_chat_ring_color);
+			drawRing(LFSimFeatureHandler::getInstance()->sayRange(), pos_map, map_chat_ring_color);
 		if(shout_ring)
-			drawRing(LLWorld::getInstance()->getShoutDistance(), pos_map, map_shout_ring_color);
+			drawRing(LFSimFeatureHandler::getInstance()->shoutRange(), pos_map, map_shout_ring_color);
 
 		// Draw frustum
 // <FS:CR> Aurora Sim
