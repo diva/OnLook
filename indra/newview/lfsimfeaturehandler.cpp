@@ -61,9 +61,10 @@ void LFSimFeatureHandler::setSupportedFeatures()
 		{
 			// For definition of OpenSimExtras please see
 			// http://opensimulator.org/wiki/SimulatorFeatures_Extras
-			mSupportsExport = info["OpenSimExtras"].has("ExportSupported") ? info["OpenSimExtras"]["ExportSupported"].asBoolean() : false;
-			mMapServerURL = info["OpenSimExtras"].has("map-server-url") ? info["OpenSimExtras"]["map-server-url"].asString() : "";
-			mSearchURL = info["OpenSimExtras"].has("search-server-url") ? info["OpenSimExtras"]["search-server-url"].asString() : "";
+			const LLSD& extras(info["OpenSimExtras"]);
+			mSupportsExport = extras.has("ExportSupported") ? extras["ExportSupported"].asBoolean() : false;
+			mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
+			mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
 		}
 		else // OpenSim specifics are unsupported reset all to default
 		{
