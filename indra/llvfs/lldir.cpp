@@ -111,7 +111,7 @@ std::vector<std::string> LLDir::getFilesInDir(const std::string &dirname)
             {
                 if (boost::filesystem::is_regular_file(dir_itr->status()))
                 {
-                    v.push_back(dir_itr->path().filename().c_str());
+                    v.push_back(dir_itr->path().filename().string());
                 }
             }
         }
@@ -180,14 +180,19 @@ S32 LLDir::deleteFilesInDir(const std::string &dirname, const std::string &mask)
 U32 LLDir::deleteDirAndContents(const std::string& dir_name)
 {
 	//Removes the directory and its contents.  Returns number of files removed.
-#if defined(LL_LINUX)
-	// Singu TODO: Workaround for boost crashing on linux
-	deleteFilesInDir(dir_name, "*");
-	boost::filesystem::remove(dir_name);
-	return 1;
-#else
-	return boost::filesystem::remove_all(dir_name);
-#endif
+	// Singu Note: boost::filesystem throws exceptions
+	S32 res = 0;
+
+	try 
+	{
+		res = boost::filesystem::remove_all(dir_name);
+	}
+	catch(const boost::filesystem::filesystem_error& e)
+	{
+		llinfos << "boost::filesystem::remove_all(\"" + dir_name + "\") failed: '" + e.code().message() + "'" << llendl;
+	}
+
+	return res;
 }
 
 const std::string LLDir::findFile(const std::string &filename, 

@@ -181,30 +181,30 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>e859007376f28d699bfea420e44d02e3</string>
+            <string>b31c495d5e77daa09394b370fc228312</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.45.0-darwin-20110304.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.52.0-darwin-20130221.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>6e71c78873593aea2ec5c68dcfde0167</string>
+            <string>c11e7bd8c35401f240338ebea5390499</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.45.0-linux-20110604.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.52.0-linux-20130222.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>ac6e5b52d5cf13443607c09d8c62b6c5</string>
+            <string>fab1924c7c83c2fb945957b0a9a211e5</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.48.0-linux-x86_64-20120719.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.52.0-linux64-20130531.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>ba3165f8e51c7a59f55c7464932fbfc1</string>
+            <string>eb13ff93db50d4b08648a5c78ba05310</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.45.0-windows-20120704.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.52.0-windows-20130221.tar.bz2</uri>
           </map>
         </map>
       </map>

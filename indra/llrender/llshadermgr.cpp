@@ -56,14 +56,7 @@ LLShaderMgr::LLShaderMgr()
 {
 	{
 		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
-		try 
-		{
-			boost::filesystem::remove_all(dumpdir);
-		}
-		catch(const boost::filesystem::filesystem_error& e)
-		{
-			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
-		}
+		gDirUtilp->deleteDirAndContents(dumpdir);
 	}
 }
 
