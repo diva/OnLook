@@ -40,26 +40,9 @@
 #endif
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
-//#include "dom.h"
-#include "dom/domAsset.h"
-#include "dom/domBind_material.h"
 #include "dom/domCOLLADA.h"
 #include "dom/domConstants.h"
-#include "dom/domController.h"
-#include "dom/domEffect.h"
-#include "dom/domGeometry.h"
-#include "dom/domInstance_geometry.h"
-#include "dom/domInstance_material.h"
-#include "dom/domInstance_node.h"
-#include "dom/domInstance_effect.h"
-#include "dom/domMaterial.h"
-#include "dom/domMatrix.h"
-#include "dom/domNode.h"
 #include "dom/domProfile_COMMON.h"
-#include "dom/domRotate.h"
-#include "dom/domScale.h"
-#include "dom/domTranslate.h"
-#include "dom/domVisual_scene.h"
 #if LL_MSVC
 #pragma warning (pop)
 #endif
