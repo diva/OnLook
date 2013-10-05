@@ -56,14 +56,14 @@ LLShaderMgr::LLShaderMgr()
 {
 	{
 		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
-		try 
+		/*try 
 		{
 			boost::filesystem::remove_all(dumpdir);
 		}
 		catch(const boost::filesystem::filesystem_error& e)
 		{
 			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
-		}
+		}*/
 	}
 }
 
@@ -614,6 +614,9 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			text[count++] = strdup("#define ATTRIBUTE attribute\n");
 			text[count++] = strdup("#define VARYING varying\n");
 			text[count++] = strdup("#define VARYING_FLAT varying\n");
+			// Need to enable the GL_ARB_texture_rectangle extension here instead of in the shader files,
+			// before any non-preprocessor directives (per spec)
+			text[count++] = strdup("#extension GL_ARB_texture_rectangle : enable\n");
 		}
 		else if (minor_version <= 29)
 		{
@@ -624,6 +627,9 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			text[count++] = strdup("#define ATTRIBUTE attribute\n");
 			text[count++] = strdup("#define VARYING varying\n");
 			text[count++] = strdup("#define VARYING_FLAT varying\n");
+			// Need to enable the GL_ARB_texture_rectangle extension here instead of in the shader files,
+			// before any non-preprocessor directives (per spec)
+			text[count++] = strdup("#extension GL_ARB_texture_rectangle : enable\n");
 		}
 	}
 	else
@@ -632,6 +638,10 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		{
 			//set version to 1.30
 			text[count++] = strdup("#version 130\n");
+			
+			// Need to enable the GL_ARB_texture_rectangle extension here instead of in the shader files,
+			// before any non-preprocessor directives (per spec)
+			text[count++] = strdup("#extension GL_ARB_texture_rectangle : enable\n");
 
 			//some implementations of GLSL 1.30 require integer precision be explicitly declared
 			text[count++] = strdup("precision mediump int;\n");
@@ -640,7 +650,11 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		else
 		{ //set version to 400
 			text[count++] = strdup("#version 400\n");
+			// Need to enable the GL_ARB_texture_rectangle extension here instead of in the shader files,
+			// before any non-preprocessor directives (per spec)
+			text[count++] = strdup("#extension GL_ARB_texture_rectangle : enable\n");
 		}
+		
 
 		text[count++] = strdup("#define DEFINE_GL_FRAGCOLOR 1\n");
 		text[count++] = strdup("#define FXAA_GLSL_130 1\n");

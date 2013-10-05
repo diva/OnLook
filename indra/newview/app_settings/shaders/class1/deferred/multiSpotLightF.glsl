@@ -31,7 +31,7 @@ out vec4 frag_color;
 
 //class 1 -- no shadows
 
-#extension GL_ARB_texture_rectangle : enable
+//#extension GL_ARB_texture_rectangle : enable
 
 uniform sampler2DRect diffuseRect;
 uniform sampler2DRect specularRect;
