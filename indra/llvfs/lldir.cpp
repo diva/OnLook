@@ -133,47 +133,55 @@ S32 LLDir::deleteFilesInDir(const std::string &dirname, const std::string &mask)
 		llassert(!"Invalid file mask");
 	}
 
-	LLDirIterator iter(dirname, mask);
-	while (iter.next(filename))
+	try
 	{
-		fullpath = add(dirname, filename);
-
-		if(LLFile::isdir(fullpath))
+		LLDirIterator iter(dirname, mask);
+		while (iter.next(filename))
 		{
-			// skipping directory traversal filenames
-			count++;
-			continue;
-		}
+			fullpath = add(dirname, filename);
 
-		S32 retry_count = 0;
-		while (retry_count < 5)
-		{
-			if (0 != LLFile::remove(fullpath))
+			if(LLFile::isdir(fullpath))
 			{
-				retry_count++;
-				result = errno;
-				llwarns << "Problem removing " << fullpath << " - errorcode: "
+				// skipping directory traversal filenames
+				count++;
+				continue;
+			}
+
+			S32 retry_count = 0;
+			while (retry_count < 5)
+			{
+				if (0 != LLFile::remove(fullpath))
+				{
+					retry_count++;
+					result = errno;
+					llwarns << "Problem removing " << fullpath << " - errorcode: "
 						<< result << " attempt " << retry_count << llendl;
 
-				if(retry_count >= 5)
-				{
-					llwarns << "Failed to remove " << fullpath << llendl ;
-					return count ;
-				}
+					if(retry_count >= 5)
+					{
+						llwarns << "Failed to remove " << fullpath << llendl ;
+						return count ;
+					}
 
-				ms_sleep(100);
-			}
-			else
-			{
-				if (retry_count)
-				{
-					llwarns << "Successfully removed " << fullpath << llendl;
+					ms_sleep(100);
 				}
-				break;
-			}			
+				else
+				{
+					if (retry_count)
+					{
+						llwarns << "Successfully removed " << fullpath << llendl;
+					}
+					break;
+				}			
+			}
+			count++;
 		}
-		count++;
 	}
+	catch(...)
+	{
+		llwarns << "Unable to remove some files from " + dirname  << llendl;
+	}
+
 	return count;
 }
 
@@ -189,7 +197,7 @@ U32 LLDir::deleteDirAndContents(const std::string& dir_name)
 	}
 	catch(const boost::filesystem::filesystem_error& e)
 	{
-		llinfos << "boost::filesystem::remove_all(\"" + dir_name + "\") failed: '" + e.code().message() + "'" << llendl;
+		llwarns << "boost::filesystem::remove_all(\"" + dir_name + "\") failed: '" + e.code().message() + "'" << llendl;
 	}
 
 	return res;
