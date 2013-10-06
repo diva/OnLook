@@ -221,30 +221,30 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>d1af5f9ae7740566a184b9af40af36da</string>
+            <string>4e0030cf15d4697e971eb6643286de3b</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-darwin-20110420.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-darwin-20131006.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>c8c56c032bc39d174876ab25c72a05d8</string>
+            <string>2c7cc60e4377c07ad100a194fcb5a522</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-20110621.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-20131005.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>bab6e7fea2411dd375d76bb4ce9118a5</string>
+            <string>e4d0d1ad3b9677e474cf4160626e2e19</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-x86_64-20120719.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux64-20131006.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>5c5d071338dcf9d504c2cc2eed8b025a</string>
+            <string>514742a082f922f1ad8d9bf08ea22bbc</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-windows-20110413.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-windows-20131006.tar.bz2</uri>
           </map>
         </map>
       </map>
