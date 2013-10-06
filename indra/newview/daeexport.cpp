@@ -26,38 +26,9 @@
 #include "daeexport.h"
 
 //colladadom includes
-#if LL_MSVC
-#pragma warning (disable : 4018)
-#pragma warning (push)
-#pragma warning (disable : 4068)
-#pragma warning (disable : 4263)
-#pragma warning (disable : 4264)
-#endif
-#pragma GCC diagnostic ignored "-Woverloaded-virtual"
 #include "dae.h"
-//#include "dom.h"
-#include "dom/domAsset.h"
-#include "dom/domBind_material.h"
 #include "dom/domCOLLADA.h"
-#include "dom/domConstants.h"
-#include "dom/domController.h"
-#include "dom/domEffect.h"
-#include "dom/domGeometry.h"
-#include "dom/domInstance_geometry.h"
-#include "dom/domInstance_material.h"
-#include "dom/domInstance_node.h"
-#include "dom/domInstance_effect.h"
-#include "dom/domMaterial.h"
 #include "dom/domMatrix.h"
-#include "dom/domNode.h"
-#include "dom/domProfile_COMMON.h"
-#include "dom/domRotate.h"
-#include "dom/domScale.h"
-#include "dom/domTranslate.h"
-#include "dom/domVisual_scene.h"
-#if LL_MSVC
-#pragma warning (pop)
-#endif
 
 // library includes
 #include "aifilepicker.h"
@@ -358,7 +329,7 @@ public:
 		scroll_container->addChild(panel);
 		panel->setEnabled(FALSE);
 		S32 img_nr = 0;
-		for (S32 i=0; i < mSaver.mTextures.size(); i++)
+		for (U32 i=0; i < mSaver.mTextures.size(); i++)
 		{
 			if (mSaver.mTextureNames[i].empty()) continue;
 
@@ -375,7 +346,7 @@ public:
 	void saveTextures()
 	{
 		mTexturesToSave.clear();
-		for (S32 i=0; i < mSaver.mTextures.size(); i++)
+		for (U32 i=0; i < mSaver.mTextures.size(); i++)
 		{
 			if (mSaver.mTextureNames[i].empty()) continue;
 			mTexturesToSave[mSaver.mTextures[i]] = mSaver.mTextureNames[i];
@@ -613,7 +584,7 @@ void DAESaver::addSource(daeElement* mesh, const char* src_id, std::string param
 	src_array->setAttribute("id", llformat("%s-%s", src_id, "array").c_str());
 	src_array->setAttribute("count", llformat("%d", vals.size()).c_str());
 
-	for (S32 i = 0; i < vals.size(); i++)
+	for (U32 i = 0; i < vals.size(); i++)
 	{
 		((domFloat_array*)src_array)->getValue().append(vals[i]);
 	}
@@ -870,7 +841,7 @@ bool DAESaver::saveDAE(std::string filename)
 		// Add triangles
 		if (gSavedSettings.getBOOL("DAEExportConsolidateMaterials"))
 		{
-			for (S32 objMaterial = 0; objMaterial < objMaterials.size(); objMaterial++)
+			for (U32 objMaterial = 0; objMaterial < objMaterials.size(); objMaterial++)
 			{
 				int_list_t faces;
 				getFacesWithMaterial(obj, objMaterials[objMaterial], &faces);
@@ -913,7 +884,7 @@ bool DAESaver::saveDAE(std::string filename)
 
 		// Bind materials
 		daeElement* tq = nodeGeometry->add("bind_material technique_common");
-		for (S32 objMaterial = 0; objMaterial < objMaterials.size(); objMaterial++)
+		for (U32 objMaterial = 0; objMaterial < objMaterials.size(); objMaterial++)
 		{
 			std::string matName = objMaterials[objMaterial].name;
 			daeElement* instanceMaterial = tq->add("instance_material");
@@ -929,7 +900,7 @@ bool DAESaver::saveDAE(std::string filename)
 	generateEffects(effects);
 
 	// Materials
-	for (S32 objMaterial = 0; objMaterial < mAllMaterials.size(); objMaterial++)
+	for (U32 objMaterial = 0; objMaterial < mAllMaterials.size(); objMaterial++)
 	{
 		daeElement* mat = materials->add("material");
 		mat->setAttribute("id", (mAllMaterials[objMaterial].name + "-material").c_str());
@@ -955,7 +926,7 @@ DAESaver::MaterialInfo DAESaver::getMaterial(LLTextureEntry* te)
 {
 	if (gSavedSettings.getBOOL("DAEExportConsolidateMaterials"))
 	{
-		for (S32 i=0; i < mAllMaterials.size(); i++)
+		for (U32 i=0; i < mAllMaterials.size(); i++)
 		{
 			if (mAllMaterials[i].matches(te))
 			{
@@ -1010,7 +981,7 @@ void DAESaver::generateEffects(daeElement *effects)
 	// Effects (face color, alpha)
 	bool export_textures = gSavedSettings.getBOOL("DAEExportTextures");
 
-	for (S32 mat = 0; mat < mAllMaterials.size(); mat++)
+	for (U32 mat = 0; mat < mAllMaterials.size(); mat++)
 	{
 		LLColor4 color = mAllMaterials[mat].color;
 		domEffect* effect = (domEffect*)effects->add("effect");
@@ -1021,7 +992,7 @@ void DAESaver::generateEffects(daeElement *effects)
 		if (export_textures)
 		{
 			LLUUID textID;
-			S32 i = 0;
+			U32 i = 0;
 			for (; i < mTextures.size(); i++)
 			{
 				if (mAllMaterials[mat].textureID == mTextures[i])
@@ -1068,7 +1039,7 @@ void DAESaver::generateEffects(daeElement *effects)
 
 void DAESaver::generateImagesSection(daeElement* images)
 {
-	for (S32 i=0; i < mTextureNames.size(); i++)
+	for (U32 i=0; i < mTextureNames.size(); i++)
 	{
 		std::string name = mTextureNames[i];
 		if (name.empty()) continue;
