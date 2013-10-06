@@ -60,7 +60,7 @@ else (STANDALONE)
         debug boost_thread-mt-d.a)
   elseif (DARWIN)
     set(Boost_CONTEXT_LIBRARY
-        optimized boost_context-mtOA
+        optimized boost_context-mt
         debug boost_context-mt-d)
     set(Boost_FILESYSTEM_LIBRARY
         optimized boost_filesystem-mt
