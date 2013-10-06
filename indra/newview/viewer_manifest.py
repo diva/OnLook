@@ -858,7 +858,6 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libexpat.so*")
             self.path("libglod.so")
             self.path("libhunspell-1.3.so*")
-            self.path("libpcre.so.3");
             self.path("libminizip.so.1.2.3", "libminizip.so");
             self.path("libssl.so*")
             self.path("libuuid.so*")

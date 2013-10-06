@@ -244,7 +244,9 @@ void LLCrashLogger::gatherFiles()
 
 	mCrashInfo["DebugLog"] = mDebugLog;
 	mFileMap["StatsLog"] = gDirUtilp->getExpandedFilename(LL_PATH_DUMP,"stats.log");
-	
+	// Singu Note: we have just started again, log has been renamed
+	mFileMap["SecondLifeLog"] = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "Singularity.old");
+
 	llinfos << "Encoding files..." << llendl;
 
 	for(std::map<std::string, std::string>::iterator itr = mFileMap.begin(); itr != mFileMap.end(); ++itr)

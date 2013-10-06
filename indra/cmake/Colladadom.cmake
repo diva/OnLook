@@ -28,10 +28,6 @@ else (STANDALONE)
 	  set(COLLADADOM_LIBRARIES 
 		  debug libcollada14dom22-d
 		  optimized libcollada14dom22
-		  debug libboost_filesystem-vc100-mt-gd-1_45.lib
-		  optimized libboost_filesystem-vc100-mt-1_45.lib
-		  debug libboost_system-vc100-mt-gd-1_45.lib
-		  optimized libboost_system-vc100-mt-1_45.lib
 		  )
   else (WINDOWS)
 	  set(COLLADADOM_LIBRARIES 

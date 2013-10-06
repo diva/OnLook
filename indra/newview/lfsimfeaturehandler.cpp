@@ -26,6 +26,9 @@
 
 LFSimFeatureHandler::LFSimFeatureHandler()
 : mSupportsExport(false)
+, mSayRange(20)
+, mShoutRange(100)
+, mWhisperRange(10)
 {
 	if (!gHippoGridManager->getCurrentGrid()->isSecondLife()) // Remove this line if we ever handle SecondLife sim features
 		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
@@ -61,15 +64,22 @@ void LFSimFeatureHandler::setSupportedFeatures()
 		{
 			// For definition of OpenSimExtras please see
 			// http://opensimulator.org/wiki/SimulatorFeatures_Extras
-			mSupportsExport = info["OpenSimExtras"].has("ExportSupported") ? info["OpenSimExtras"]["ExportSupported"].asBoolean() : false;
-			mMapServerURL = info["OpenSimExtras"].has("map-server-url") ? info["OpenSimExtras"]["map-server-url"].asString() : "";
-			mSearchURL = info["OpenSimExtras"].has("search-server-url") ? info["OpenSimExtras"]["search-server-url"].asString() : "";
+			const LLSD& extras(info["OpenSimExtras"]);
+			mSupportsExport = extras.has("ExportSupported") ? extras["ExportSupported"].asBoolean() : false;
+			mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
+			mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
+			mSayRange = extras.has("say-range") ? extras["say-range"].asInteger() : 20;
+			mShoutRange = extras.has("shout-range") ? extras["shout-range"].asInteger() : 100;
+			mWhisperRange = extras.has("whisper-range") ? extras["whisper-range"].asInteger() : 10;
 		}
 		else // OpenSim specifics are unsupported reset all to default
 		{
 			mSupportsExport = false;
 			mMapServerURL = "";
 			mSearchURL = "";
+			mSayRange = 20;
+			mShoutRange = 100;
+			mWhisperRange = 10;
 		}
 	}
 }
@@ -84,3 +94,17 @@ boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const boos
 	return mSearchURL.connect(slot);
 }
 
+boost::signals2::connection LFSimFeatureHandler::setSayRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mSayRange.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mShoutRange.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+{
+	return mWhisperRange.connect(slot);
+}

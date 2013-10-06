@@ -273,6 +273,7 @@ target_link_libraries(
     ${EXPAT_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
+    ${Boost_CONTEXT_LIBRARY}
     ${Boost_REGEX_LIBRARY}
     ${CORESERVICES_LIBRARY}
     )
