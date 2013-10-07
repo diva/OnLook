@@ -52,7 +52,7 @@ class AIHTTPView : public LLContainerView
 	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
 
-	U32 updateColumn(int col, U32 start);
+	U32 updateColumn(U32 col, U32 start);
 	void setWidth(S32 width) { mWidth = width; }
 
   private:

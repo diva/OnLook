@@ -552,7 +552,8 @@ class DarwinManifest(ViewerManifest):
                 for libfile in ("libllcommon.dylib",
                                 "libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.1.5.2.dylib"):
+                                "libexpat.1.5.2.dylib",
+                                "libexception_handler.dylib"):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %
                                      {'target': target_lib,
@@ -857,7 +858,6 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libexpat.so*")
             self.path("libglod.so")
             self.path("libhunspell-1.3.so*")
-            self.path("libpcre.so.3");
             self.path("libminizip.so.1.2.3", "libminizip.so");
             self.path("libssl.so*")
             self.path("libuuid.so*")

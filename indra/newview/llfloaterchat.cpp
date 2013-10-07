@@ -650,13 +650,12 @@ void LLFloaterChat::onClickToggleActiveSpeakers(void* userdata)
 	//self->childSetVisible("active_speakers_panel", !self->childIsVisible("active_speakers_panel"));
 }
 
+void show_log_browser(const std::string& name = "chat", const std::string& id = "chat");
+
 // static
 void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
 {
-	std::string command("\"" + LLLogChat::makeLogFileName("chat") + "\"");
-	gViewerWindow->getWindow()->ShellEx(command);
-
-	llinfos << command << llendl;
+	show_log_browser();
 }
 
 //static 

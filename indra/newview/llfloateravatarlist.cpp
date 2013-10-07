@@ -61,6 +61,7 @@
 #include "llviewermenu.h"
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -617,7 +618,7 @@ void LLFloaterAvatarList::updateAvatarList()
 
 			// Announce position
 			F32 dist = (F32)(position - mypos).magVec();
-			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < 20.0, dist < 96.0);
+			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < LFSimFeatureHandler::getInstance()->sayRange(), dist < LFSimFeatureHandler::getInstance()->shoutRange());
 
 			// Mark as typing if they are typing
 			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
@@ -876,10 +877,10 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 		else
 		{
-			if (distance <= 96.0)
+			if (distance <= LFSimFeatureHandler::getInstance()->shoutRange())
 			{
 				snprintf(temp, sizeof(temp), "%.1f", distance);
-				if (distance > 20.0f)
+				if (distance > LFSimFeatureHandler::getInstance()->sayRange())
 				{
 					color = sRadarTextShoutRange;
 				}

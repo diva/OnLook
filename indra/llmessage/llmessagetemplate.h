@@ -364,22 +364,7 @@ public:
 	{
 		if (mHandlerFunc)
 		{
-
-			// <FS:ND> Handle invalid packets by throwing an exception and a graceful continue
-
-			// mHandlerFunc(msgsystem, mUserData);
-
-			try
-			{
 			mHandlerFunc(msgsystem, mUserData);
-			}
-			catch( std::string &why )
-			{
-				llwarns << why << llendl;
-			}
-
-			// </FS:ND>
-
 			return TRUE;
 		}
 		return FALSE;
