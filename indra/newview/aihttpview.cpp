@@ -109,14 +109,14 @@ void AIServiceBar::draw()
 	{
 	  if (col < 2)
 	  {
-		text = llformat(" | %hu-%hu-%lu,{%hu/%hu,%u}/%u",
+		text = llformat(" | %hu-%hd-%lu,{%hu/%hu,%u}/%u",
 			ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(),
 			ct.mAdded, ct.mConcurrentConnections, ct.mDownloading,
 			ct.mMaxPipelinedRequests);
 	  }
 	  else
 	  {
-		text = llformat(" | --%hu-%lu,{%hu/%hu,%u}",
+		text = llformat(" | --%hd-%lu,{%hu/%hu,%u}",
 			ct.mQueuedCommands, ct.mQueuedRequests.size(),
 			ct.mAdded, ct.mConcurrentConnections, ct.mDownloading);
 	  }

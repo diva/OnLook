@@ -8,7 +8,7 @@ if (STANDALONE)
   include(FindBoost)
 
   set(Boost_USE_MULTITHREADED ON)
-  find_package(Boost 1.40.0 COMPONENTS date_time filesystem program_options regex system thread wave)
+  find_package(Boost 1.51.0 COMPONENTS date_time filesystem program_options regex system thread wave context)
 else (STANDALONE)
   use_prebuilt_binary(boost)
   set(Boost_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
