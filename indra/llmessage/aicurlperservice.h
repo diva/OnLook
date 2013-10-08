@@ -145,7 +145,8 @@ class AIPerService {
 
 	  queued_request_type mQueuedRequests;		// Waiting (throttled) requests.
 	  U16 mApprovedRequests;					// The number of approved requests for this CT by approveHTTPRequestFor that were not added to the command queue yet.
-	  U16 mQueuedCommands;						// Number of add commands (minus remove commands), for this service, in the command queue.
+	  S16 mQueuedCommands;						// Number of add commands (minus remove commands), for this service, in the command queue.
+	  											// This value can temporarily become negative when remove commands are added to the queue for add requests that were already processed.
 	  U16 mAdded;								// Number of active easy handles with this service.
 	  U16 mFlags;								// ctf_empty: Set to true when the queue becomes precisely empty.
 	  											// ctf_full : Set to true when the queue is popped and then still isn't empty;
@@ -268,7 +269,7 @@ class AIPerService {
 
   public:
 	void added_to_command_queue(AICapabilityType capability_type) { ++mCapabilityType[capability_type].mQueuedCommands; mark_inuse(capability_type); }
-	void removed_from_command_queue(AICapabilityType capability_type) { llassert(mCapabilityType[capability_type].mQueuedCommands > 0); --mCapabilityType[capability_type].mQueuedCommands; }
+	void removed_from_command_queue(AICapabilityType capability_type) { --mCapabilityType[capability_type].mQueuedCommands; }
 	void added_to_multi_handle(AICapabilityType capability_type, bool event_poll);		// Called when an easy handle for this service has been added to the multi handle.
 	void removed_from_multi_handle(AICapabilityType capability_type, bool event_poll,
 								   bool downloaded_something, bool success);			// Called when an easy handle for this service is removed again from the multi handle.

@@ -1089,6 +1089,11 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 
 void show_log_browser(const std::string& name, const std::string& id)
 {
+	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
+	{
+		gViewerWindow->getWindow()->ShellEx("\"" + LLLogChat::makeLogFileName(name) + "\"");
+		return;
+	}
 	LLFloaterWebContent::Params p;
 	p.url("file:///" + LLLogChat::makeLogFileName(name));
 	p.id(id);
