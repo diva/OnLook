@@ -9,15 +9,15 @@ if (NOT STANDALONE)
   set(ARCH_PREBUILT_DIRS_RELEASE ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/lib/release)
   set(ARCH_PREBUILT_DIRS_DEBUG ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/lib/debug)
 
-  if(WINDOWS OR DARWIN)
+  if(WINDOWS OR ${CMAKE_GENERATOR} MATCHES Xcode)
     # the cmake xcode and VS generators implicitly append ${CMAKE_CFG_INTDIR} to the library paths for us
     # fortunately both windows and darwin are case insensitive filesystems so this works.
     set(ARCH_PREBUILT_LINK_DIRS "${ARCH_PREBUILT_DIRS}")
-  else(WINDOWS OR DARWIN)
+  else(WINDOWS OR ${CMAKE_GENERATOR} MATCHES Xcode)
     # else block is for linux and any other makefile based generators
     string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
     set(ARCH_PREBUILT_LINK_DIRS ${ARCH_PREBUILT_DIRS}/${CMAKE_BUILD_TYPE_LOWER})
-  endif(WINDOWS OR DARWIN)
+  endif(WINDOWS OR ${CMAKE_GENERATOR} MATCHES Xcode)
 
   if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     # When we're building something other than Release, append the
