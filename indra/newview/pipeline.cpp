@@ -7556,12 +7556,9 @@ void LLPipeline::renderDeferredLighting()
 			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
 			mDeferredVB->allocateBuffer(8, 0, true);
 		}
+
 		LLStrider<LLVector3> vert; 
 		mDeferredVB->getVertexStrider(vert);
-		LLStrider<LLVector2> tc0;
-		LLStrider<LLVector2> tc1;
-		mDeferredVB->getTexCoord0Strider(tc0);
-		mDeferredVB->getTexCoord1Strider(tc1);
 
 		vert[0].set(-1,1,0);
 		vert[1].set(-1,-3,0);
@@ -7711,10 +7708,6 @@ void LLPipeline::renderDeferredLighting()
 		stop_glerror();
 		gGL.popMatrix();
 		stop_glerror();
-
-		//copy depth and stencil from deferred screen
-		//mScreen.copyContents(mDeferredScreen, 0, 0, mDeferredScreen.getWidth(), mDeferredScreen.getHeight(),
-		//					0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 
 		mScreen.bindTarget();
 		// clear color buffer here - zeroing alpha (glow) is important or it will accumulate against sky
