@@ -8738,7 +8738,7 @@ BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector
 	pp.push_back(LLVector3(max.mV[0], max.mV[1], max.mV[2]));
 
 	//add corners of camera frustum
-	for (U32 i = 0; i < 8; i++)
+	for (U32 i = 0; i < LLCamera::AGENT_FRUSTRUM_NUM; i++)
 	{
 		pp.push_back(camera.mAgentFrustum[i]);
 	}
@@ -8765,7 +8765,7 @@ BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector
 
 	for (U32 i = 0; i < 12; i++)
 	{ //for each line segment in bounding box
-		for (U32 j = 0; j < 6; j++) 
+		for (U32 j = 0; j < LLCamera::AGENT_PLANE_NO_USER_CLIP_NUM; j++) 
 		{ //for each plane in camera frustum
 			const LLPlane& cp = camera.getAgentPlane(j);
 			const LLVector3& v1 = pp[bs[i*2+0]];
@@ -8851,7 +8851,7 @@ BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector
 			}
 		}
 				
-		for (U32 j = 0; j < 6; ++j)
+		for (U32 j = 0; j < LLCamera::AGENT_PLANE_NO_USER_CLIP_NUM; ++j)
 		{
 			const LLPlane& cp = camera.getAgentPlane(j);
 			F32 dist = cp.dist(pp[i]);
