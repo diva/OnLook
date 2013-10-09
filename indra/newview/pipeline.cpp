@@ -956,7 +956,13 @@ void LLPipeline::releaseLUTBuffers()
 {
 	if (mLightFunc)
 	{
-		LLImageGL::deleteTextures(LLTexUnit::TT_TEXTURE, GL_R8, 0, 1, &mLightFunc);
+		U32 pix_format = GL_R16F;
+#if LL_DARWIN
+		// Need to work around limited precision with 10.6.8 and older drivers
+		//
+		pix_format = GL_R32F;
+#endif
+		LLImageGL::deleteTextures(LLTexUnit::TT_TEXTURE, pix_format, 0, 1, &mLightFunc);
 		mLightFunc = 0;
 	}
 }
@@ -1078,8 +1084,9 @@ void LLPipeline::createLUTBuffers()
 		{
 			U32 lightResX = gSavedSettings.getU32("RenderSpecularResX");
 			U32 lightResY = gSavedSettings.getU32("RenderSpecularResY");
-			U8* ls = new U8[lightResX*lightResY];
-			static const LLCachedControl<F32> specExp("RenderSpecularExponent");
+			//U8* ls = new U8[lightResX*lightResY];
+			F32* ls = new F32[lightResX*lightResY];
+			//static const LLCachedControl<F32> specExp("RenderSpecularExponent");
             // Calculate the (normalized) Blinn-Phong specular lookup texture.
 			for (U32 y = 0; y < lightResY; ++y)
 			{
@@ -1088,7 +1095,7 @@ void LLPipeline::createLUTBuffers()
 					ls[y*lightResX+x] = 0;
 					F32 sa = (F32) x/(lightResX-1);
 					F32 spec = (F32) y/(lightResY-1);
-					F32 n = spec * spec * specExp;
+					F32 n = spec * spec * 368;//specExp;
 					
 					// Nothing special here.  Just your typical blinn-phong term.
 					spec = powf(sa, n);
@@ -1103,6 +1110,7 @@ void LLPipeline::createLUTBuffers()
 					// Always sample at a 1.0/2.2 curve.
 					// This "Gamma corrects" our specular term, boosting our lower exponent reflections.
 					spec = powf(spec, 1.f/2.2f);
+					ls[y*lightResX+x] = spec;
 					
 					// Easy fix for our dynamic range problem: divide by 6 here, multiply by 6 in our shaders.
 					// This allows for our specular term to exceed a value of 1 in our shaders.
@@ -1110,15 +1118,24 @@ void LLPipeline::createLUTBuffers()
 					// Technically, we could just use an R16F texture, but driver support for R16F textures can be somewhat spotty at times.
 					// This works remarkably well for higher specular exponents, though banding can sometimes be seen on lower exponents.
 					// Combined with a bit of noise and trilinear filtering, the banding is hardly noticable.
-					ls[y*lightResX+x] = (U8)(llclamp(spec * (1.f / 6), 0.f, 1.f) * 255);
+					//ls[y*lightResX+x] = (U8)(llclamp(spec * (1.f / 6), 0.f, 1.f) * 255);
 				}
 			}
 			
-			LLImageGL::generateTextures(LLTexUnit::TT_TEXTURE, GL_R8, 1, &mLightFunc);
+			U32 pix_format = GL_R16F;
+#if LL_DARWIN
+			// Need to work around limited precision with 10.6.8 and older drivers
+			//
+			pix_format = GL_R32F;
+#endif
+			LLImageGL::generateTextures(LLTexUnit::TT_TEXTURE, pix_format, 1, &mLightFunc);
 			gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mLightFunc);
-			LLImageGL::setManualImage(LLTexUnit::getInternalType(LLTexUnit::TT_TEXTURE), 0, GL_R8, lightResX, lightResY, GL_RED, GL_UNSIGNED_BYTE, ls, false);
+			LLImageGL::setManualImage(LLTexUnit::getInternalType(LLTexUnit::TT_TEXTURE), 0, pix_format, lightResX, lightResY, GL_RED, GL_FLOAT, ls, false);
+			//LLImageGL::setManualImage(LLTexUnit::getInternalType(LLTexUnit::TT_TEXTURE), 0, GL_UNSIGNED_BYTE, lightResX, lightResY, GL_RED, GL_UNSIGNED_BYTE, ls, false);
 			gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_CLAMP);
 			gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_TRILINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			
 			delete [] ls;
 		}
