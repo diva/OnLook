@@ -137,6 +137,11 @@ private:
 	// Called by UI methods.
 	void onSendMsg();
 
+	// Build the flyout list
+	void rebuildDynamics(LLComboBox* flyout) { removeDynamics(flyout); addDynamics(flyout); }
+	void removeDynamics(LLComboBox* flyout);
+	void addDynamics(LLComboBox* flyout);
+
 	// Called by handleKeyHere
 	void closeIfNotPinned();
 

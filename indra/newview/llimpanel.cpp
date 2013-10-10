@@ -502,8 +502,7 @@ BOOL LLFloaterIMPanel::postBuild()
 		if (LLComboBox* flyout = findChild<LLComboBox>("instant_message_flyout"))
 		{
 			flyout->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, flyout, _2));
-			flyout->add(getString("ding off"), 6);
-			flyout->add(getString("rp mode off"), 7);
+			addDynamics(flyout);
 		}
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("tp_btn"))
 			ctrl->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
@@ -985,6 +984,17 @@ bool LLFloaterIMPanel::isInviteAllowed() const
 			 || (IM_SESSION_INVITE == mDialog) );
 }
 
+void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)
+{
+	flyout->remove(mDing ? getString("ding on") : getString("ding off"));
+	flyout->remove(mRPMode ? getString("rp mode on") : getString("rp mode off"));
+}
+
+void LLFloaterIMPanel::addDynamics(LLComboBox* flyout)
+{
+	flyout->add(mDing ? getString("ding on") : getString("ding off"), 6);
+	flyout->add(mRPMode ? getString("rp mode on") : getString("rp mode off"), 7);
+}
 
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
@@ -1000,29 +1010,17 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	else if (option == 3) LLAvatarActions::teleportRequest(mOtherParticipantUUID);
 	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
 	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
-	else if (option >= 6) // Options that change labels need to stay in order at the end
+	else if (option >= 6) // Options that use dynamic items
 	{
-		std::string ding_label(mDing ? getString("ding on") : getString("ding off"));
-		std::string rp_label(mRPMode ? getString("rp mode on") : getString("rp mode off"));
 		// First remove them all
-		flyout->remove(ding_label);
-		flyout->remove(rp_label);
+		removeDynamics(flyout);
 
 		// Toggle as requested, adjust the strings
-		if (option == 6)
-		{
-			mDing = !mDing;
-			ding_label = mDing ? getString("ding on") : getString("ding off");
-		}
-		else if (option == 7)
-		{
-			mRPMode = !mRPMode;
-			rp_label = mRPMode ? getString("rp mode on") : getString("rp mode off");
-		}
+		if (option == 6) mDing = !mDing;
+		else if (option == 7) mRPMode = !mRPMode;
 
 		// Last add them back
-		flyout->add(ding_label, 6);
-		flyout->add(rp_label, 7);
+		addDynamics(flyout);
 	}
 }
 
