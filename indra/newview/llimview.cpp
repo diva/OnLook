@@ -505,25 +505,9 @@ void LLIMMgr::addMessage(
 		}
 	}
 
-	LLFloaterChatterBox* chat_floater = LLFloaterChatterBox::getInstance(LLSD());
-
-	if( !chat_floater->getVisible() && !floater->getVisible())
+	if (!gIMMgr->getFloaterOpen() && floater->getParent() != gFloaterView)
 	{
-		//if the IM window is not open and the floater is not visible (i.e. not torn off)
-		LLFloater* previouslyActiveFloater = chat_floater->getActiveFloater();
-
-		// select the newly added floater (or the floater with the new line added to it).
-		// it should be there.
-		chat_floater->selectFloater(floater);
-
-		//there was a previously unseen IM, make that old tab flashing
-		//it is assumed that the most recently unseen IM tab is the one current selected/active
-		if ( previouslyActiveFloater && getIMReceived() )
-		{
-			chat_floater->setFloaterFlashing(previouslyActiveFloater, TRUE);
-		}
-
-		//notify of a new IM
+		// If the chat floater is closed and not torn off) notify of a new IM
 		mIMUnreadCount++;
 	}
 }
