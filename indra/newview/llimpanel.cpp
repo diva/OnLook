@@ -318,68 +318,45 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	}
 
 	// set P2P type by default
-
-	// [Ansariel: Display name support]
-	mProfileButtonEnabled = FALSE;
-	// [/Ansariel: Display name support]
-
 	static LLCachedControl<bool> concise_im("UseConciseIMButtons");
-	static LLCachedControl<bool> concise_group("UseConciseGroupChatButtons");
-	static LLCachedControl<bool> concise_conf("UseConciseConferenceButtons");
-	std::string xml_filename;
+	std::string xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
+
+
 	switch(mDialog)
 	{
 	case IM_SESSION_GROUP_START:
-		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
-		xml_filename = concise_group ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
-		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
-		break;
 	case IM_SESSION_INVITE:
-		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
+	case IM_SESSION_CONFERENCE_START:
+		// determine whether it is group or conference session
 		if (gAgent.isInGroup(mSessionUUID))
 		{
-			xml_filename = concise_group ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
+			static LLCachedControl<bool> concise("UseConciseGroupChatButtons");
+			xml_filename = concise ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
+			mSessionType = GROUP_SESSION;
 		}
-		else // must be invite to ad hoc IM
+		else
 		{
-			xml_filename = concise_conf ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
+			static LLCachedControl<bool> concise("UseConciseConferenceButtons");
+			xml_filename = concise ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
+			mSessionType = ADHOC_SESSION;
 		}
-		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
-		break;
-	case IM_SESSION_P2P_INVITE:
-		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
-		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mSessionLabel, mOtherParticipantUUID);
-		break;
-	case IM_SESSION_CONFERENCE_START:
 		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
-		xml_filename = concise_conf ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
-		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
+		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mLogLabel);
 		break;
 	// just received text from another user
 	case IM_NOTHING_SPECIAL:
-
-		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
-		
 		mTextIMPossible = LLVoiceClient::getInstance()->isSessionTextIMPossible(mSessionUUID);
-		mProfileButtonEnabled = LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID);
 		mCallBackEnabled = LLVoiceClient::getInstance()->isSessionCallBackPossible(mSessionUUID);
-		
-		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mSessionLabel, mOtherParticipantUUID);
+		// fallthrough
+	case IM_SESSION_P2P_INVITE:
+		if (LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID))
+			LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _2));
+		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mLogLabel, mOtherParticipantUUID);
 		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
 		break;
 	default:
 		llwarns << "Unknown session type" << llendl;
-		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
 		break;
-	}
-
-	if ( (IM_NOTHING_SPECIAL != mDialog) && (IM_SESSION_P2P_INVITE != mDialog) )
-	{
-		// determine whether it is group or conference session
-		if (gAgent.isInGroup(mSessionUUID))
-			mSessionType = GROUP_SESSION;
-		else
-			mSessionType = ADHOC_SESSION;
 	}
 
 	mSpeakers = new LLIMSpeakerMgr(mVoiceChannel);
@@ -390,14 +367,6 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 								FALSE);
 
 	setTitle(mLogLabel);
-
-	// [Ansariel: Display name support]
-	if (mProfileButtonEnabled)
-	{
-		lookupName();
-	}	
-	// [/Ansariel: Display name support]
-	
 
 	// enable line history support for instant message bar
 	mInputEditor->setEnableLineHistory(TRUE);
@@ -437,12 +406,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	}
 }
 
-void LLFloaterIMPanel::lookupName()
-{
-	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _1, _2));
-}
-
-void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name)
+void LLFloaterIMPanel::onAvatarNameLookup(const LLAvatarName& avatar_name)
 {
 	std::string title;
 	LLAvatarNameCache::getPNSName(avatar_name, title);

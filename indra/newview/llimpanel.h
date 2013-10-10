@@ -63,8 +63,7 @@ public:
 					 const LLDynamicArray<LLUUID>& ids = LLDynamicArray<LLUUID>());
 	virtual ~LLFloaterIMPanel();
 
-	void lookupName();
-	void onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name);
+	void onAvatarNameLookup(const LLAvatarName& avatar_name);
 
 	/*virtual*/ void changed(U32 mask); // From LLFriendObserver, check friend status
 	/*virtual*/ BOOL postBuild();
@@ -223,8 +222,6 @@ private:
 	bool mSentTypingState;
 
 	bool mShowSpeakersOnConnect;
-
-	BOOL mProfileButtonEnabled;
 
 	bool mDing; // Whether or not to play a ding on new messages
 	bool mRPMode;
