@@ -41,7 +41,6 @@
 
 class LLFloaterChatterBox;
 class LLFloaterIMPanel;
-class LLFriendObserver;
 
 class LLIMMgr : public LLSingleton<LLIMMgr>
 {
@@ -125,17 +124,12 @@ public:
 	void processIMTypingStart(const LLIMInfo* im_info);
 	void processIMTypingStop(const LLIMInfo* im_info);
 
-	// Rebuild stuff
-	void refresh();
-
-	void notifyNewIM();
 	void clearNewIMNotification();
 
 	// automatically start a call once the session has initialized
 	void autoStartCallOnStartup(const LLUUID& session_id);
 
 	// IM received that you haven't seen yet
-	BOOL getIMReceived() const;
 	int getIMUnreadCount();
 
 	void		setFloaterOpen(BOOL open);		/*Flawfinder: ignore*/
@@ -150,10 +144,6 @@ public:
 	void disconnectAllSessions();
 
 	static void	toggle(void*);
-
-	// This is a helper function to determine what kind of im session
-	// should be used for the given agent.
-	static EInstantMessage defaultIMTypeForAgent(const LLUUID& agent_id);
 
 	BOOL hasSession(const LLUUID& session_id);
 
@@ -225,10 +215,8 @@ private:
 
 private:
 	std::set<LLHandle<LLFloater> > mFloaters;
-	LLFriendObserver* mFriendObserver;
 
 	// An IM has been received that you haven't seen yet.
-	BOOL mIMReceived;
 	int		mIMUnreadCount;
 
 	LLSD mPendingInvitations;
@@ -241,14 +229,7 @@ public:
 	S32 getIgnoreGroupListCount() { return mIgnoreGroupList.size(); }
 };
 
-
-class LLFloaterIM : public LLMultiFloater
-{
-public:
-	LLFloaterIM();
-};
-
 // Globals
 extern LLIMMgr *gIMMgr;
 
-#endif  // LL_LLIMView_H
+#endif  // LL_LLIMVIEW_H

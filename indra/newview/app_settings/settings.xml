@@ -6942,22 +6942,6 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>100</integer>
       </array>
     </map>
-    <key>FloaterIMRect</key>
-    <map>
-      <key>Comment</key>
-      <string>Rectangle for IM window</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Rect</string>
-      <key>Value</key>
-      <array>
-        <integer>0</integer>
-        <integer>160</integer>
-        <integer>500</integer>
-        <integer>0</integer>
-      </array>
-    </map>
     <key>FloaterInspectRect</key>
     <map>
       <key>Comment</key>

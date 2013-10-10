@@ -900,19 +900,6 @@ void LLFloaterIMPanel::setInputFocus( BOOL b )
 	mInputEditor->setFocus( b );
 }
 
-
-void LLFloaterIMPanel::selectAll()
-{
-	mInputEditor->selectAll();
-}
-
-
-void LLFloaterIMPanel::selectNone()
-{
-	mInputEditor->deselect();
-}
-
-
 BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 {
 	BOOL handled = FALSE;
@@ -1040,13 +1027,6 @@ BOOL LLFloaterIMPanel::isInviteAllowed() const
 }
 
 
-// static
-void LLFloaterIMPanel::onTabClick(void* userdata)
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	self->setInputFocus(TRUE);
-}
-
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
 	if (value.isUndefined())
@@ -1111,14 +1091,6 @@ void LLFloaterIMPanel::onClickHistory()
 		show_log_browser(mSessionLabel, mOtherParticipantUUID.asString());
 		// [/Ansariel: Display name support]
 	}
-}
-
-// static
-void LLFloaterIMPanel::onClickStartCall(void* userdata)
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-
-	self->mVoiceChannel->activate();
 }
 
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)

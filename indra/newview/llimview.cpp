@@ -243,42 +243,6 @@ LLUUID LLIMMgr::computeSessionID(
 	return session_id;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// LLFloaterIM
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-LLFloaterIM::LLFloaterIM() 
-{
-	// autoresize=false is necessary to avoid resizing of the IM window whenever 
-	// a session is opened or closed (it would otherwise resize the window to match
-	// the size of the im-sesssion when they were created.  This happens in 
-	// LLMultiFloater::resizeToContents() when called through LLMultiFloater::addFloater())
-	this->mAutoResize = FALSE;
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_im.xml");
-}
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLIMViewFriendObserver
-//
-// Bridge to suport knowing when the inventory has changed.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLIMViewFriendObserver : public LLFriendObserver
-{
-public:
-	LLIMViewFriendObserver(LLIMMgr* tv) : mTV(tv) {}
-	virtual ~LLIMViewFriendObserver() {}
-	virtual void changed(U32 mask)
-	{
-		if(mask & (LLFriendObserver::ADD | LLFriendObserver::REMOVE | LLFriendObserver::ONLINE))
-		{
-			mTV->refresh();
-		}
-	}
-protected:
-	LLIMMgr* mTV;
-};
-
 
 bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 {
@@ -378,22 +342,6 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 // Public Static Member Functions
 //
 
-// This is a helper function to determine what kind of im session
-// should be used for the given agent.
-// static
-EInstantMessage LLIMMgr::defaultIMTypeForAgent(const LLUUID& agent_id)
-{
-	EInstantMessage type = IM_NOTHING_SPECIAL;
-	if (LLAvatarActions::isFriend(agent_id))
-	{
-		if(LLAvatarTracker::instance().isBuddyOnline(agent_id))
-		{
-			type = IM_SESSION_CONFERENCE_START;
-		}
-	}
-	return type;
-}
-
 // static
 //void LLIMMgr::onPinButton(void*)
 //{
@@ -447,26 +395,14 @@ void LLIMMgr::toggle(void*)
 //
 
 LLIMMgr::LLIMMgr() :
-	mFriendObserver(NULL),
-	mIMReceived(FALSE),
 	mIMUnreadCount(0)
 {
-	mFriendObserver = new LLIMViewFriendObserver(this);
-	LLAvatarTracker::instance().addObserver(mFriendObserver);
-
-	// *HACK: use floater to initialize string constants from xml file
-	// then delete it right away
-	LLFloaterIM* dummy_floater = new LLFloaterIM();
-	delete dummy_floater;
-
 	mPendingInvitations = LLSD::emptyMap();
 	mPendingAgentListUpdates = LLSD::emptyMap();
 }
 
 LLIMMgr::~LLIMMgr()
 {
-	LLAvatarTracker::instance().removeObserver(mFriendObserver);
-	delete mFriendObserver;
 	// Children all cleaned up by default view destructor.
 }
 
@@ -616,7 +552,6 @@ void LLIMMgr::addMessage(
 		}
 
 		//notify of a new IM
-		notifyNewIM();
 		mIMUnreadCount++;
 	}
 }
@@ -647,23 +582,9 @@ void LLIMMgr::addSystemMessage(const LLUUID& session_id, const std::string& mess
 	}
 }
 
-void LLIMMgr::notifyNewIM()
-{
-	if(!gIMMgr->getFloaterOpen())
-	{
-		mIMReceived = TRUE;
-	}
-}
-
 void LLIMMgr::clearNewIMNotification()
 {
-	mIMReceived = FALSE;
 	mIMUnreadCount = 0;
-}
-
-BOOL LLIMMgr::getIMReceived() const
-{
-	return mIMReceived;
 }
 
 int LLIMMgr::getIMUnreadCount()
@@ -952,10 +873,6 @@ void LLIMMgr::onInviteNameLookup(const LLUUID& id, const std::string& full_name,
 		args, 
 		payload,
 		&inviteUserResponse);
-}
-
-void LLIMMgr::refresh()
-{
 }
 
 void LLIMMgr::setFloaterOpen(BOOL set_open)

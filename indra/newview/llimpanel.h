@@ -34,7 +34,6 @@
 
 #include "llfloater.h"
 #include "lllogchat.h"
-#include "llstyle.h"
 
 class LLAvatarName;
 class LLButton;
@@ -89,8 +88,6 @@ public:
 
 	void setInputFocus( BOOL b );
 
-	void selectAll();
-	void selectNone();
 	void setVisible(BOOL b);
 
 	S32 getNumUnreadMessages() { return mNumUnreadMessages; }
@@ -107,12 +104,9 @@ public:
 	void			onInputEditorFocusReceived();
 	void			onInputEditorFocusLost();
 	void			onInputEditorKeystroke(LLLineEditor* caller);
-	static void		onTabClick( void* userdata );
 
 	void			onClickHistory();
 	void			onFlyoutCommit(class LLComboBox* flyout, const LLSD& value);
-	static void		onClickStartCall( void* userdata );
-	static void		onClickEndCall( void* userdata );
 	void			onClickToggleActiveSpeakers(const LLSD& value);
 	static void*	createSpeakersPanel(void* data);
 
@@ -120,11 +114,9 @@ public:
 	void onClickMuteVoice();
 
 	const LLUUID& getSessionID() const { return mSessionUUID; }
-	const LLUUID& getOtherParticipantID() const { return mOtherParticipantUUID; }
 	void processSessionUpdate(const LLSD& update);
 	LLVoiceChannel* getVoiceChannel() { return mVoiceChannel; }
 	LLIMSpeakerMgr* getSpeakerManager() const { return mSpeakers; } // Singu TODO: LLIMModel::getSpeakerManager
-	EInstantMessage getDialogType() const { return mDialog; }
 
 	void sessionInitReplyReceived(const LLUUID& im_session_id);
 
@@ -147,9 +139,6 @@ public:
 		GROUP_SESSION,
 		ADHOC_SESSION
 	} SType;
-	bool isP2PSessionType() const { return mSessionType == P2P_SESSION;}
-	bool isAdHocSessionType() const { return mSessionType == ADHOC_SESSION;}
-	bool isGroupSessionType() const { return mSessionType == GROUP_SESSION;}
 	SType mSessionType;
 
 	// LLIMModel Functionality
@@ -257,13 +246,6 @@ private:
 	CachedUICtrl<LLButton> mStartCallBtn;
 	CachedUICtrl<LLButton> mSendBtn;
 	CachedUICtrl<LLButton> mMuteBtn;
-
-	void disableWhileSessionStarting();
-
-	typedef std::map<LLUUID, LLStyleSP> styleMap;
-	static styleMap mStyleMap;
-	
-	static std::set<LLFloaterIMPanel*> sFloaterIMPanels;
 };
 
 
