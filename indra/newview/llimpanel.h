@@ -137,6 +137,9 @@ private:
 	// Called by UI methods.
 	void onSendMsg();
 
+	// Called by handleKeyHere
+	void closeIfNotPinned();
+
 	// for adding agents via the UI. Return TRUE if possible, do it if 
 	BOOL dropCallingCard(LLInventoryItem* item, BOOL drop);
 	BOOL dropCategory(LLInventoryCategory* category, BOOL drop);
