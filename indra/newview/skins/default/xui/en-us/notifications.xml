@@ -6725,6 +6725,14 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
 (Keep)/(Discard) won't send an accepted/declined message.
     <form name="form">
       <button
+       index="0"
+       name="Keep"
+       text="Keep"/>
+      <button
+       index="1"
+       name="Discard"
+       text="Discard"/>
+      <button
        index="2"
        name="Mute"
        text="Mute"/>
@@ -6740,14 +6748,6 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        index="4"
        name="Profile"
        text="Profile"/>
-      <button
-       index="0"
-       name="Keep"
-       text="Keep"/>
-      <button
-       index="1"
-       name="Discard"
-       text="Discard"/>
     </form>
   </notification>
 
