@@ -450,29 +450,9 @@ void LLIMMgr::addMessage(
 	// create IM window as necessary
 	if(!floater)
 	{
-		if (gIMMgr->getIgnoreGroupListCount() > 0 && gAgent.isInGroup(session_id))
-		{
-			// Check to see if we're blocking this group's chat
-			LLGroupData* group_data = NULL;
-			
-			// Search for this group in the agent's groups list
-			LLDynamicArray<LLGroupData>::iterator i;
-
-			for (i = gAgent.mGroups.begin(); i != gAgent.mGroups.end(); i++)
-			{
-				if (i->mID == session_id)
-				{
-					group_data = &*i;
-					break;
-				}
-			}
-
-			// If the group is in our list then return
-			if (group_data && gIMMgr->getIgnoreGroup(group_data->mID))
-			{
-				return;
-			}
-		}
+		// Return now if we're blocking this group's chat
+		if (getIgnoreGroup(session_id) && gAgent.isInGroup(session_id))
+			return;
 
 		std::string name = from;
 		if(!session_name.empty() && session_name.size()>1)
