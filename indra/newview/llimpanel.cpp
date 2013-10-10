@@ -216,17 +216,10 @@ bool send_start_session_messages(
 			other_participant_id,
 			dialog);
 
-		switch(dialog)
-		{
-		case IM_SESSION_GROUP_START:
-			gMessageSystem->addBinaryDataFast(
-				_PREHASH_BinaryBucket,
-				EMPTY_BINARY_BUCKET,
-				EMPTY_BINARY_BUCKET_SIZE);
-			break;
-		default:
-			break;
-		}
+		gMessageSystem->addBinaryDataFast(
+			_PREHASH_BinaryBucket,
+			EMPTY_BINARY_BUCKET,
+			EMPTY_BINARY_BUCKET_SIZE);
 		gAgent.sendReliableMessage();
 
 		return true;
@@ -470,7 +463,7 @@ BOOL LLFloaterIMPanel::postBuild()
 	{
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
-		mFocusLostSignal = mInputEditor->setFocusLostCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusLost, this) );
+		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
 		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
 		mInputEditor->setCommitCallback( boost::bind(&LLFloaterIMPanel::onSendMsg,this) );
 		mInputEditor->setCommitOnFocusLost( FALSE );
@@ -502,11 +495,6 @@ BOOL LLFloaterIMPanel::postBuild()
 		mHistoryEditor->setParseHTML(TRUE);
 		mHistoryEditor->setParseHighlights(TRUE);
 
-		if ( IM_SESSION_GROUP_START == mDialog )
-		{
-			childSetEnabled("profile_btn", FALSE);
-		}
-		
 		sTitleString = getString("title_string");
 		sTypingStartString = getString("typing_start_string");
 		sSessionStartString = getString("session_start_string");
@@ -593,7 +581,8 @@ void LLFloaterIMPanel::draw()
 	// show speakers window when voice first connects
 	if (mShowSpeakersOnConnect && mVoiceChannel->isActive())
 	{
-		childSetVisible("active_speakers_panel", true);
+		if (mSpeakerPanel) mSpeakerPanel->setVisible(true);
+		mShowSpeakersOnConnect = false;
 	}
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("toggle_active_speakers_btn"))
 		ctrl->setValue(getChildView("active_speakers_panel")->getVisible());
@@ -1043,11 +1032,6 @@ void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 void LLFloaterIMPanel::onInputEditorFocusReceived()
 {
 	mHistoryEditor->setCursorAndScrollToEnd();
-}
-
-void LLFloaterIMPanel::onInputEditorFocusLost()
-{
-	setTyping(FALSE);
 }
 
 void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)

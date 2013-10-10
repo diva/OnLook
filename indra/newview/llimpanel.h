@@ -37,7 +37,6 @@
 #include "lllogchat.h"
 
 class LLAvatarName;
-class LLButton;
 class LLIMSpeakerMgr;
 class LLIMInfo;
 class LLInventoryCategory;
@@ -99,7 +98,6 @@ public:
 
 	void            onFocusReceived();
 	void			onInputEditorFocusReceived();
-	void			onInputEditorFocusLost();
 	void			onInputEditorKeystroke(LLLineEditor* caller);
 
 	void			onClickHistory();
@@ -245,10 +243,10 @@ private:
 
 
 	CachedUICtrl<LLUICtrl> mVolumeSlider;
-	CachedUICtrl<LLButton> mEndCallBtn;
-	CachedUICtrl<LLButton> mStartCallBtn;
-	CachedUICtrl<LLButton> mSendBtn;
-	CachedUICtrl<LLButton> mMuteBtn;
+	CachedUICtrl<LLUICtrl> mEndCallBtn;
+	CachedUICtrl<LLUICtrl> mStartCallBtn;
+	CachedUICtrl<LLUICtrl> mSendBtn;
+	CachedUICtrl<LLUICtrl> mMuteBtn;
 };
 
 

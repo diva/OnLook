@@ -427,20 +427,19 @@ void LLIMMgr::addMessage(
 		return;
 	}
 
-	LLFloaterIMPanel* floater;
 	LLUUID new_session_id = session_id;
 	if (new_session_id.isNull())
 	{
 		//no session ID...compute new one
 		new_session_id = computeSessionID(dialog, other_participant_id);
 	}
-	floater = findFloaterBySession(new_session_id);
+	LLFloaterIMPanel* floater = findFloaterBySession(new_session_id);
 	if (!floater)
 	{
 		floater = findFloaterBySession(other_participant_id);
 		if (floater)
 		{
-			llinfos << "found the IM session " << session_id 
+			llinfos << "found the IM session " << new_session_id
 				<< " by participant " << other_participant_id << llendl;
 		}
 	}
@@ -454,11 +453,7 @@ void LLIMMgr::addMessage(
 		if (getIgnoreGroup(session_id) && gAgent.isInGroup(session_id))
 			return;
 
-		std::string name = from;
-		if(!session_name.empty() && session_name.size()>1)
-		{
-			name = session_name;
-		}
+		std::string name = (session_name.size() > 1) ? session_name : from;
 
 		floater = createFloater(new_session_id, other_participant_id, name, dialog);
 
