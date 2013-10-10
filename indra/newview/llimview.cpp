@@ -157,10 +157,13 @@ public:
 
 			if ((mInvitiationType == LLIMMgr::INVITATION_TYPE_VOICE
 				|| mInvitiationType == LLIMMgr::INVITATION_TYPE_IMMEDIATE)
-				&& gIMMgr->hasSession(mSessionID))
+				&& floater)
 			{
 				// always open IM window when connecting to voice
-				LLFloaterChatterBox::showInstance(TRUE);
+				if (floater->getParent() == gFloaterView)
+					floater->open();
+				else
+					LLFloaterChatterBox::showInstance(TRUE);
 			}
 
 			gIMMgr->clearPendingAgentListUpdates(mSessionID);

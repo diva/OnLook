@@ -226,6 +226,7 @@ bool send_start_session_messages(
 	}
 	else if ( dialog == IM_SESSION_CONFERENCE_START )
 	{
+		if (ids.empty()) return true;
 		LLSD agents;
 		for (int i = 0; i < (S32) ids.size(); i++)
 		{
@@ -234,10 +235,9 @@ bool send_start_session_messages(
 
 		//we have a new way of starting conference calls now
 		LLViewerRegion* region = gAgent.getRegion();
-		if (region)
+		std::string url(region ? region->getCapability("ChatSessionRequest") : "");
+		if (!url.empty())
 		{
-			std::string url = region->getCapability(
-				"ChatSessionRequest");
 			LLSD data;
 			data["method"] = "start conference";
 			data["session-id"] = temp_session_id;
