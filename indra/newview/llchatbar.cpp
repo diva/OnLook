@@ -404,6 +404,63 @@ LLWString LLChatBar::stripChannelNumber(const LLWString &mesg, S32* channel)
 	}
 }
 
+// Returns whether or not this is an action
+bool convert_roleplay_text(std::string& utf8text)
+{
+	bool action(true); // Using /me with autoclose /me ((does something ooc))
+	// Allow CAPSlock /me here
+	if (utf8text.find("/ME'") == 0 || utf8text.find("/ME ") == 0)
+	{
+		utf8text.replace(1, 2, "me");
+	}
+	// Convert MU*s style poses into IRC emotes here.
+	else if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8text.length() > 3 && utf8text.find(":") == 0)
+	{
+		if (utf8text[1] == '\'')
+			utf8text.replace(0, 1, "/me");
+		else if (isalpha(utf8text[1]))	// Do not prevent smileys and such.
+			utf8text.replace(0, 1, "/me ");
+		else
+			action = false;
+	}
+	else if (utf8text.find("/me'") != 0 && utf8text.find("/me ") != 0)
+	{
+		action = false;
+	}
+
+	if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 3))
+	{
+		const U32 pos(action ? 4 : 0);
+		//Check if it needs the end-of-chat brackets -HgB
+		if (utf8text.find("((") == pos && utf8text.find("))") == std::string::npos)
+		{
+			if (*utf8text.rbegin() == ')')
+				utf8text += " ";
+			utf8text += "))";
+		}
+		else if (utf8text.find("[[") == pos && utf8text.find("]]") == std::string::npos)
+		{
+			if (*utf8text.rbegin() == ']')
+				utf8text += " ";
+			utf8text += "]]";
+		}
+		// Check if it needs start-of-chat brackets
+		else if (utf8text.find("((") == std::string::npos && utf8text.find("))") == (utf8text.length() - 2))
+		{
+			if (utf8text.at(pos) == '(')
+				utf8text.insert(pos, " ");
+			utf8text.insert(pos, "((");
+		}
+		else if (utf8text.find("[[") == std::string::npos && utf8text.find("]]") == (utf8text.length() - 2))
+		{
+			if (utf8text.at(pos) == '[')
+				utf8text.insert(pos, " ");
+			utf8text.insert(pos, "[[");
+		}
+	}
+	return action;
+}
+
 // <dogmode>
 void LLChatBar::sendChat( EChatType type )
 {
@@ -423,47 +480,7 @@ void LLChatBar::sendChat( EChatType type )
 			std::string utf8_revised_text;
 			if (0 == channel)
 			{
-				if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1))
-				{
-					//Check if it needs the end-of-chat brackets -HgB
-					if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
-					{
-						if(utf8text.at(utf8text.length() - 1) == ')')
-							utf8text+=" ";
-						utf8text+="))";
-					}
-					else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
-					{
-						if(utf8text.at(utf8text.length() - 1) == ']')
-							utf8text+=" ";
-						utf8text+="]]";
-					}
-
-					if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
-					{
-						if(utf8text.at(0) == '(')
-							utf8text.insert(0," ");
-						utf8text.insert(0,"((");
-					}
-					else if (utf8text.find("[[") == -1 && utf8text.find("]]") == (utf8text.length() - 2))
-					{
-						if(utf8text.at(0) == '[')
-							utf8text.insert(0," ");
-						utf8text.insert(0,"[[");
-					}
-				}
-				// Convert MU*s style poses into IRC emotes here.
-				if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8text.find(":") == 0 && utf8text.length() > 3)
-				{
-					if (utf8text.find(":'") == 0)
-					{
-						utf8text.replace(0, 1, "/me");
-	 				}
-					else if (isalpha(utf8text.at(1)))	// Do not prevent smileys and such.
-					{
-						utf8text.replace(0, 1, "/me ");
-					}
-				}
+				convert_roleplay_text(utf8text);
 				// discard returned "found" boolean
 				LLGestureMgr::instance().triggerAndReviseString(utf8text, &utf8_revised_text);
 			}
@@ -473,11 +490,7 @@ void LLChatBar::sendChat( EChatType type )
 			}
 
 			utf8_revised_text = utf8str_trim(utf8_revised_text);
-			EChatType nType;
-			if(type == CHAT_TYPE_OOC)
-				nType=CHAT_TYPE_NORMAL;
-			else
-				nType=type;
+			EChatType nType(type == CHAT_TYPE_OOC ? CHAT_TYPE_NORMAL : type);
 			if (!utf8_revised_text.empty() && cmd_line_chat(utf8_revised_text, nType))
 			{
 				// Chat with animation

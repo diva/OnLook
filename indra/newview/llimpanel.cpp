@@ -1176,6 +1176,8 @@ void deliver_message(const std::string& utf8_text,
 	}
 }
 
+bool convert_roleplay_text(std::string& text); // Returns true if text is an action
+
 void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
@@ -1195,55 +1197,9 @@ void LLFloaterIMPanel::onSendMsg()
 			if (mInputEditor) mInputEditor->updateHistory();
 			// Truncate and convert to UTF8 for transport
 			std::string utf8_text = wstring_to_utf8str(text);
-			// Convert MU*s style poses into IRC emotes here.
-			if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8_text.length() > 3 && utf8_text[0] == ':')
-			{
-				if (utf8_text[1] == '\'')
-				{
-					utf8_text.replace(0, 1, "/me");
- 				}
-				else if (isalpha(utf8_text[1]))	// Do not prevent smileys and such.
-				{
-					utf8_text.replace(0, 1, "/me ");
-				}
-			}
-			if (utf8_text.find("/ME'") == 0 || utf8_text.find("/ME ") == 0)	//Allow CAPSlock /me
-				utf8_text.replace(1, 2, "me");
-			std::string prefix = utf8_text.substr(0, 4);
-			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8_text.length() > 1) && !mRPMode)
-			{
-				//Check if it needs the end-of-chat brackets -HgB
-				if (utf8_text.find("((") == 0 && utf8_text.find("))") == std::string::npos)
-				{
-					if(*utf8_text.rbegin() == ')')
-						utf8_text+=" ";
-					utf8_text+="))";
-				}
-				else if(utf8_text.find("[[") == 0 && utf8_text.find("]]") == std::string::npos)
-				{
-					if(*utf8_text.rbegin() == ']')
-						utf8_text+=" ";
-					utf8_text+="]]";
-				}
-
-				if (prefix != "/me " && prefix != "/me'")   //Allow /me to end with )) or ]]
-				{
-					if (utf8_text.find("((") == std::string::npos && utf8_text.find("))") == (utf8_text.length() - 2))
-					{
-						if(utf8_text[0] == '(')
-							utf8_text.insert(0," ");
-						utf8_text.insert(0,"((");
-					}
-					else if (utf8_text.find("[[") == std::string::npos && utf8_text.find("]]") == (utf8_text.length() - 2))
-					{
-						if(utf8_text[0] == '[')
-							utf8_text.insert(0," ");
-						utf8_text.insert(0,"[[");
-					}
-				}
-			}
-			if (mRPMode && prefix != "/me " && prefix != "/me'")
-				utf8_text = "[[" + utf8_text + "]]";
+			bool action = convert_roleplay_text(utf8_text);
+			if (!action && mRPMode)
+				utf8_text = "((" + utf8_text + "))";
 // [RLVa:KB] - Checked: 2011-09-17 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
 			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
 			{
@@ -1344,9 +1300,8 @@ LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_E
 					std::string name;
 					gAgent.buildFullname(name);
 
-					// Look for IRC-style emotes here.
-					std::string prefix = utf8_text.substr(0, 4);
-					if (prefix == "/me " || prefix == "/me'")
+					// Look for actions here.
+					if (action)
 					{
 						utf8_text.replace(0,3,"");
 					}
