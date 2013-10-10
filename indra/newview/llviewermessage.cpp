@@ -1605,9 +1605,10 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 
 	case -2: // decline silently
 	{
-		log_message = "You silently decline " + mDesc + " from " + mFromName + ".";
-		chat.mText = log_message;
-		LLFloaterChat::addChatHistory(chat);
+		LLStringUtil::format_map_t args;
+		args["[DESC]"] = mDesc;
+		args["[NAME]"] = mFromName;
+		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferDeclineSilent", args));
 	}
 	break;
 	case -1: // accept silently
@@ -1622,9 +1623,10 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		{
 			opener = open_agent_offer;
 		}
-		log_message = "You silently accept " + mDesc + " from " + mFromName + ".";
-		chat.mText = log_message;
-		LLFloaterChat::addChatHistory(chat);
+		LLStringUtil::format_map_t args;
+		args["[DESC]"] = mDesc;
+		args["[NAME]"] = mFromName;
+		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferAcceptSilent", args));
 	}
 	break;
 	
