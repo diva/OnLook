@@ -34,8 +34,6 @@ else (STANDALONE)
 		  collada14dom
 		  minizip
 		  xml2
-		  pcrecpp
-		  pcre
 		  )
   endif (WINDOWS)
 endif (STANDALONE)

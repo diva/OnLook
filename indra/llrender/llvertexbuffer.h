@@ -173,7 +173,7 @@ public:
 		TYPE_TEXCOORD3,
 		TYPE_COLOR,
 		TYPE_EMISSIVE,
-		TYPE_BINORMAL,
+		TYPE_TANGENT,
 		TYPE_WEIGHT,
 		TYPE_WEIGHT4,
 		TYPE_CLOTHWEIGHT,
@@ -191,7 +191,7 @@ public:
 		MAP_COLOR = (1<<TYPE_COLOR),
 		MAP_EMISSIVE = (1<<TYPE_EMISSIVE),
 		// These use VertexAttribPointer and should possibly be made generic
-		MAP_BINORMAL = (1<<TYPE_BINORMAL),
+		MAP_TANGENT = (1<<TYPE_TANGENT),
 		MAP_WEIGHT = (1<<TYPE_WEIGHT),
 		MAP_WEIGHT4 = (1<<TYPE_WEIGHT4),
 		MAP_CLOTHWEIGHT = (1<<TYPE_CLOTHWEIGHT),
@@ -251,7 +251,8 @@ public:
 	bool getTexCoord0Strider(LLStrider<LLVector2>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getTexCoord1Strider(LLStrider<LLVector2>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getNormalStrider(LLStrider<LLVector3>& strider, S32 index=0, S32 count = -1, bool map_range = false);
-	bool getBinormalStrider(LLStrider<LLVector3>& strider, S32 index=0, S32 count = -1, bool map_range = false);
+	bool getTangentStrider(LLStrider<LLVector3>& strider, S32 index=0, S32 count = -1, bool map_range = false);
+	bool getTangentStrider(LLStrider<LLVector4a>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getColorStrider(LLStrider<LLColor4U>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getEmissiveStrider(LLStrider<LLColor4U>& strider, S32 index=0, S32 count = -1, bool map_range = false);
 	bool getWeightStrider(LLStrider<F32>& strider, S32 index=0, S32 count = -1, bool map_range = false);
