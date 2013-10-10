@@ -6721,6 +6721,8 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
    name="UserGiveItem"
    type="notify">
 [NAME] has given you a [OBJECTTYPE] named &apos;[OBJECTNAME]&apos;.
+
+(Keep)/(Discard) won't send an accepted/declined message.
     <form name="form">
       <button
        index="0"
@@ -6734,6 +6736,14 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        index="2"
        name="Mute"
        text="Mute"/>
+      <button
+       index="-1"
+       name="(Keep)"
+       text="(Keep)"/>
+      <button
+       index="-2"
+       name="(Discard)"
+       text="(Discard)"/>
       <button
        index="4"
        name="Profile"
