@@ -1243,7 +1243,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		}
 		else if (mSentRequest == UNSENT && mCanUseNET)
 		{
-			LL_WARNS("Texture") << mID << " moving to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
+			LL_DEBUGS("Texture") << mID << " moving to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
 			setState(SEND_UDP_REQ);
 			setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
 			if(mWriteToCacheState != NOT_WRITE)
@@ -1311,7 +1311,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			return true ; //abort
 		}
 
-		LL_WARNS("Texture") << mID << " sendind to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
+		LL_DEBUGS("Texture") << mID << " sending to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
 
 		mRequestedSize = mDesiredSize;
 		mRequestedDiscard = mDesiredDiscard;
