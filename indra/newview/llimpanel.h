@@ -32,6 +32,7 @@
 #ifndef LL_IMPANEL_H
 #define LL_IMPANEL_H
 
+#include "llcallingcard.h"
 #include "llfloater.h"
 #include "lllogchat.h"
 
@@ -46,7 +47,7 @@ class LLParticipantList;
 class LLViewerTextEditor;
 class LLVoiceChannel;
 
-class LLFloaterIMPanel : public LLFloater
+class LLFloaterIMPanel : public LLFloater, public LLFriendObserver
 {
 public:
 
@@ -65,6 +66,7 @@ public:
 	void lookupName();
 	void onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name);
 
+	/*virtual*/ void changed(U32 mask); // From LLFriendObserver, check friend status
 	/*virtual*/ BOOL postBuild();
 
 	// Check typing timeout timer.
@@ -74,7 +76,7 @@ public:
 
 	// add target ids to the session. 
 	// Return TRUE if successful, otherwise FALSE.
-	BOOL inviteToSession(const LLDynamicArray<LLUUID>& agent_ids);
+	bool inviteToSession(const LLDynamicArray<LLUUID>& agent_ids);
 
 	void addHistoryLine(const std::string &utf8msg, 
 						LLColor4 incolor = LLColor4::white, 

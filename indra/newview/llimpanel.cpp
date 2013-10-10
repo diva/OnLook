@@ -365,6 +365,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		mCallBackEnabled = LLVoiceClient::getInstance()->isSessionCallBackPossible(mSessionUUID);
 		
 		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mSessionLabel, mOtherParticipantUUID);
+		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
 		break;
 	default:
 		llwarns << "Unknown session type" << llendl;
@@ -482,6 +483,20 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 	mFocusLostSignal.disconnect();
 }
 
+// virtual
+void LLFloaterIMPanel::changed(U32 mask)
+{
+	if (mask & REMOVE|ADD) // Fix remove/add friend choices
+		rebuildDynamics(getChild<LLComboBox>("instant_message_flyout"));
+	/* Singu TODO: Chat UI - Online icons?
+	if (mask & ONLINE)
+		// Show online icon here
+	else if (mask & NONE)
+		// Show offline icon here
+	*/
+}
+
+// virtual
 BOOL LLFloaterIMPanel::postBuild() 
 {
 	requires<LLLineEditor>("chat_editor");
@@ -988,12 +1003,16 @@ void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)
 {
 	flyout->remove(mDing ? getString("ding on") : getString("ding off"));
 	flyout->remove(mRPMode ? getString("rp mode on") : getString("rp mode off"));
+	flyout->remove(LLAvatarActions::isFriend(mOtherParticipantUUID) ? getString("remove friend") : getString("add friend"));
+	//flyout->remove(LLAvatarActions::isBlocked(mOtherParticipantUUID) ? getString("unmute") : getString("mute"));
 }
 
 void LLFloaterIMPanel::addDynamics(LLComboBox* flyout)
 {
 	flyout->add(mDing ? getString("ding on") : getString("ding off"), 6);
 	flyout->add(mRPMode ? getString("rp mode on") : getString("rp mode off"), 7);
+	flyout->add(LLAvatarActions::isFriend(mOtherParticipantUUID) ? getString("remove friend") : getString("add friend"), 8);
+	//flyout->add(LLAvatarActions::isBlocked(mOtherParticipantUUID) ? getString("unmute") : getString("mute"), 9);
 }
 
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
@@ -1018,6 +1037,8 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 		// Toggle as requested, adjust the strings
 		if (option == 6) mDing = !mDing;
 		else if (option == 7) mRPMode = !mRPMode;
+		else if (option == 8) LLAvatarActions::isFriend(mOtherParticipantUUID) ? LLAvatarActions::removeFriendDialog(mOtherParticipantUUID) : LLAvatarActions::requestFriendshipDialog(mOtherParticipantUUID);
+		//else if (option == 9) LLAvatarActions::toggleBlock(mOtherParticipantUUID);
 
 		// Last add them back
 		addDynamics(flyout);
