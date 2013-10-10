@@ -80,6 +80,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "hippogridmanager.h"
+#include "hippolimits.h"
 
 const S32 SLM_SUPPORTED_VERSION = 3;
 
@@ -3331,6 +3332,8 @@ void LLModelPreview::rebuildUploadData()
 		}
 	}
 
+
+	const F32 DEFAULT_MAX_PRIM_SCALE(gHippoLimits->getMaxPrimScale());
 	F32 max_import_scale = (DEFAULT_MAX_PRIM_SCALE-0.1f)/max_scale;
 
 	F32 max_axis = llmax(mPreviewScale.mV[0], mPreviewScale.mV[1]);
@@ -3338,7 +3341,8 @@ void LLModelPreview::rebuildUploadData()
 	max_axis *= 2.f;
 
 	//clamp scale so that total imported model bounding box is smaller than 240m on a side
-	max_import_scale = llmin(max_import_scale, 240.f/max_axis);
+	if (gHippoGridManager->getConnectedGrid()->isSecondLife()) // on SecondLife only
+		max_import_scale = llmin(max_import_scale, 240.f/max_axis);
 
 	scale_spinner->setMaxValue(max_import_scale);
 
