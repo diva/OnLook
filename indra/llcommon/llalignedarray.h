@@ -116,14 +116,14 @@ void LLAlignedArray<T, alignment>::resize(U32 size)
 template <class T, U32 alignment>
 T& LLAlignedArray<T, alignment>::operator[](int idx)
 {
-	llassert(idx < mElementCount);
+	llassert((U32)idx < mElementCount);
 	return mArray[idx];
 }
 
 template <class T, U32 alignment>
 const T& LLAlignedArray<T, alignment>::operator[](int idx) const
 {
-	llassert(idx < mElementCount);
+	llassert((U32)idx < mElementCount);
 	return mArray[idx];
 }
 
