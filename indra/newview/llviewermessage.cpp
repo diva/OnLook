@@ -2938,7 +2938,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
 		{
-			switch (pIMFloater->mSessionType)
+			switch (pIMFloater->getSessionType())
 			{
 				case LLFloaterIMPanel::GROUP_SESSION:	// Group chat
 					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(session_id)) )

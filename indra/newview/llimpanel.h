@@ -108,6 +108,13 @@ public:
 	//callbacks for P2P muting and volume control
 	void onClickMuteVoice();
 
+	enum SType
+	{
+		P2P_SESSION,
+		GROUP_SESSION,
+		ADHOC_SESSION
+	};
+	const SType& getSessionType() const { return mSessionType; }
 	const LLUUID& getSessionID() const { return mSessionUUID; }
 	void processSessionUpdate(const LLSD& update);
 	LLVoiceChannel* getVoiceChannel() { return mVoiceChannel; }
@@ -174,12 +181,6 @@ private:
 	// Where does the "Starting session..." line start?
 	S32 mSessionStartMsgPos;
 
-	enum SType
-	{
-		P2P_SESSION,
-		GROUP_SESSION,
-		ADHOC_SESSION
-	};
 	SType mSessionType;
 
 	// The value of the mSessionUUID depends on how the IM session was started:

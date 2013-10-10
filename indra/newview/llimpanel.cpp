@@ -647,7 +647,7 @@ private:
 	LLUUID mSessionID;
 };
 
-BOOL LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
+bool LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 {
 	LLViewerRegion* region = gAgent.getRegion();
 	if (!region)
