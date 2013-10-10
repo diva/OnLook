@@ -278,87 +278,46 @@ bool send_start_session_messages(
 // LLFloaterIMPanel
 //
 LLFloaterIMPanel::LLFloaterIMPanel(
-	const std::string& session_label,
+	const std::string& log_label,
 	const LLUUID& session_id,
 	const LLUUID& other_participant_id,
-	EInstantMessage dialog) :
-	LLFloater(session_label, LLRect(), session_label),
+	const EInstantMessage& dialog,
+	const LLDynamicArray<LLUUID>& ids) :
+	LLFloater(log_label, LLRect(), log_label),
+	mStartCallOnInitialize(false),
 	mInputEditor(NULL),
 	mHistoryEditor(NULL),
-	mSessionUUID(session_id),
-	mVoiceChannel(NULL),
-	mSessionInitialized(FALSE),
+	mSessionInitialized(false),
 	mSessionStartMsgPos(0),
+	mSessionType(P2P_SESSION),
+	mSessionUUID(session_id),
+	mLogLabel(log_label),
+	mQueuedMsgsForInit(),
 	mOtherParticipantUUID(other_participant_id),
 	mDialog(dialog),
-	mTyping(FALSE),
-	mOtherTyping(FALSE),
+	mTyping(false),
 	mTypingLineStartIndex(0),
-	mSentTypingState(TRUE),
+	mOtherTyping(false),
+	mOtherTypingName(),
 	mNumUnreadMessages(0),
-	mShowSpeakersOnConnect(TRUE),
-	mStartCallOnInitialize(false),
-	mTextIMPossible(TRUE),
-	mProfileButtonEnabled(TRUE),
-	mCallBackEnabled(TRUE),
+	mSentTypingState(true),
+	mShowSpeakersOnConnect(true),
+	mDing(false),
+	mRPMode(false),
+	mTextIMPossible(true),
+	mCallBackEnabled(true),
 	mSpeakers(NULL),
 	mSpeakerPanel(NULL),
-	mFirstKeystrokeTimer(),
-	mLastKeystrokeTimer()
-{
-	if(mOtherParticipantUUID.isNull()) 
-	{
-		llwarns << "Other participant is NULL" << llendl;
-	}
-
-	init(session_label);
-}
-
-LLFloaterIMPanel::LLFloaterIMPanel(
-	const std::string& session_label,
-	const LLUUID& session_id,
-	const LLUUID& other_participant_id,
-	const LLDynamicArray<LLUUID>& ids,
-	EInstantMessage dialog) :
-	LLFloater(session_label, LLRect(), session_label),
-	mInputEditor(NULL),
-	mHistoryEditor(NULL),
-	mSessionUUID(session_id),
 	mVoiceChannel(NULL),
-	mSessionInitialized(FALSE),
-	mSessionStartMsgPos(0),
-	mOtherParticipantUUID(other_participant_id),
-	mDialog(dialog),
-	mTyping(FALSE),
-	mOtherTyping(FALSE),
-	mTypingLineStartIndex(0),
-	mSentTypingState(TRUE),
-	mShowSpeakersOnConnect(TRUE),
-	mStartCallOnInitialize(false),
-	mTextIMPossible(TRUE),
-	mProfileButtonEnabled(TRUE),
-	mCallBackEnabled(TRUE),
-	mSpeakers(NULL),
-	mSpeakerPanel(NULL),
 	mFirstKeystrokeTimer(),
 	mLastKeystrokeTimer()
 {
-	if(mOtherParticipantUUID.isNull()) 
+	if (mOtherParticipantUUID.isNull())
 	{
 		llwarns << "Other participant is NULL" << llendl;
 	}
 
-	mSessionInitialTargetIDs = ids;
-	init(session_label);
-}
-
-
-void LLFloaterIMPanel::init(const std::string& session_label)
-{
 	// set P2P type by default
-	mSessionType = P2P_SESSION;
-
-	mSessionLabel = session_label;
 
 	// [Ansariel: Display name support]
 	mProfileButtonEnabled = FALSE;
@@ -429,7 +388,7 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 								&getFactoryMap(),
 								FALSE);
 
-	setTitle(mSessionLabel);
+	setTitle(mLogLabel);
 
 	// [Ansariel: Display name support]
 	if (mProfileButtonEnabled)
@@ -444,7 +403,7 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 
 	if ( gSavedPerAccountSettings.getBOOL("LogShowHistory") )
 	{
-		LLLogChat::loadHistory(mSessionLabel,
+		LLLogChat::loadHistory(mLogLabel,
 				       &chatFromLogFile,
 				       (void *)this);
 	}
@@ -454,13 +413,12 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 		if ( !send_start_session_messages(
 				 mSessionUUID,
 				 mOtherParticipantUUID,
-				 mSessionInitialTargetIDs,
+				 ids,
 				 mDialog) )
 		{
 			//we don't need to need to wait for any responses
 			//so we're already initialized
-			mSessionInitialized = TRUE;
-			mSessionStartMsgPos = 0;
+			mSessionInitialized = true;
 		}
 		else
 		{
@@ -468,8 +426,7 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 			LLUIString session_start = sSessionStartString;
 
 			session_start.setArg("[NAME]", getTitle());
-			mSessionStartMsgPos = 
-				mHistoryEditor->getWText().length();
+			mSessionStartMsgPos = mHistoryEditor->getWText().length();
 
 			addHistoryLine(
 				session_start,
@@ -489,6 +446,7 @@ void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& ava
 	std::string title;
 	LLAvatarNameCache::getPNSName(avatar_name, title);
 	setTitle(title);
+	// Singu Note: We could set tab name here, too now.
 }
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
@@ -531,9 +489,6 @@ BOOL LLFloaterIMPanel::postBuild()
 
 	if (checkRequirements())
 	{
-		mDing = false;
-		mRPMode = false;
-
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusLost, this) );
@@ -629,7 +584,7 @@ void LLFloaterIMPanel::draw()
 {	
 	LLViewerRegion* region = gAgent.getRegion();
 	
-	BOOL enable_connect = (region && region->getCapability("ChatSessionRequest") != "")
+	bool enable_connect = (region && !region->getCapability("ChatSessionRequest").empty())
 					  && mSessionInitialized
 					  && LLVoiceClient::getInstance()->voiceEnabled()
 					  && mCallBackEnabled;
@@ -661,7 +616,6 @@ void LLFloaterIMPanel::draw()
 	if (mShowSpeakersOnConnect && mVoiceChannel->isActive())
 	{
 		childSetVisible("active_speakers_panel", true);
-		mShowSpeakersOnConnect = FALSE;
 	}
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("toggle_active_speakers_btn"))
 		ctrl->setValue(getChildView("active_speakers_panel")->getVisible());
@@ -671,7 +625,7 @@ void LLFloaterIMPanel::draw()
 		// Time out if user hasn't typed for a while.
 		if (mLastKeystrokeTimer.getElapsedTimeF32() > LLAgent::TYPING_TIMEOUT_SECS)
 		{
-			setTyping(FALSE);
+			setTyping(false);
 		}
 
 		// If we are typing, and it's been a little while, send the
@@ -679,8 +633,8 @@ void LLFloaterIMPanel::draw()
 		if (!mSentTypingState
 			&& mFirstKeystrokeTimer.getElapsedTimeF32() > 1.f)
 		{
-			sendTypingState(TRUE);
-			mSentTypingState = TRUE;
+			sendTypingState(true);
+			mSentTypingState = true;
 		}
 	}
 
@@ -864,9 +818,9 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 
 		// [Ansariel: Display name support]
 		// Floater title contains display name -> bad idea to use that as filename
-		// mSessionLabel, however, should still be the old legacy name
+		// mLogLabel, however, is the old legacy name
 		//LLLogChat::saveHistory(getTitle(),histstr);
-		LLLogChat::saveHistory(mSessionLabel, histstr);
+		LLLogChat::saveHistory(mLogLabel, histstr);
 		// [/Ansariel: Display name support]
 	}
 
@@ -895,7 +849,7 @@ void LLFloaterIMPanel::setVisible(BOOL b)
 }
 
 
-void LLFloaterIMPanel::setInputFocus( BOOL b )
+void LLFloaterIMPanel::setInputFocus(bool b)
 {
 	mInputEditor->setFocus( b );
 }
@@ -1024,7 +978,7 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 	return rv;
 }
 
-BOOL LLFloaterIMPanel::isInviteAllowed() const
+bool LLFloaterIMPanel::isInviteAllowed() const
 {
 
 	return ( (IM_SESSION_CONFERENCE_START == mDialog) 
@@ -1093,7 +1047,7 @@ void LLFloaterIMPanel::onClickHistory()
 	{
 		// [Ansariel: Display name support]
 		//show_log_browser(getTitle(), mOtherParticipantUUID.asString());
-		show_log_browser(mSessionLabel, mOtherParticipantUUID.asString());
+		show_log_browser(mLogLabel, mOtherParticipantUUID.asString());
 		// [/Ansariel: Display name support]
 	}
 }
@@ -1115,21 +1069,13 @@ void LLFloaterIMPanel::onInputEditorFocusLost()
 
 void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
 {
-	std::string text = caller->getText();
-	if (!text.empty())
-	{
-		setTyping(TRUE);
-	}
-	else
-	{
-		// Deleting all text counts as stopping typing.
-		setTyping(FALSE);
-	}
+	// Deleting all text counts as stopping typing.
+	setTyping(!caller->getText().empty());
 }
 
 void LLFloaterIMPanel::onClose(bool app_quitting)
 {
-	setTyping(FALSE);
+	setTyping(false);
 
 	if(mSessionUUID.notNull())
 	{
@@ -1429,8 +1375,8 @@ LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_E
 
 	// Don't need to actually send the typing stop message, the other
 	// client will infer it from receiving the message.
-	mTyping = FALSE;
-	mSentTypingState = TRUE;
+	mTyping = false;
+	mSentTypingState = true;
 }
 
 void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
@@ -1439,15 +1385,15 @@ void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
 		session_update.has("moderated_mode") &&
 		session_update["moderated_mode"].has("voice") )
 	{
-		BOOL voice_moderated = session_update["moderated_mode"]["voice"];
+		bool voice_moderated = session_update["moderated_mode"]["voice"];
 
 		if (voice_moderated)
 		{
-			setTitle(mSessionLabel + std::string(" ") + getString("moderated_chat_label"));
+			setTitle(mLogLabel + std::string(" ") + getString("moderated_chat_label"));
 		}
 		else
 		{
-			setTitle(mSessionLabel);
+			setTitle(mLogLabel);
 		}
 
 
@@ -1460,18 +1406,16 @@ void LLFloaterIMPanel::sessionInitReplyReceived(const LLUUID& session_id)
 {
 	mSessionUUID = session_id;
 	mVoiceChannel->updateSessionID(session_id);
-	mSessionInitialized = TRUE;
+	mSessionInitialized = true;
 
 	//we assume the history editor hasn't moved at all since
 	//we added the starting session message
 	//so, we count how many characters to remove
-	S32 chars_to_remove = mHistoryEditor->getWText().length() -
-		mSessionStartMsgPos;
+	S32 chars_to_remove = mHistoryEditor->getWText().length() - mSessionStartMsgPos;
 	mHistoryEditor->removeTextFromEnd(chars_to_remove);
 
 	//and now, send the queued msg
-	LLSD::array_iterator iter;
-	for ( iter = mQueuedMsgsForInit.beginArray();
+	for (LLSD::array_iterator iter = mQueuedMsgsForInit.beginArray();
 		  iter != mQueuedMsgsForInit.endArray();
 		  ++iter)
 	{
@@ -1489,7 +1433,7 @@ void LLFloaterIMPanel::sessionInitReplyReceived(const LLUUID& session_id)
 	}
 }
 
-void LLFloaterIMPanel::setTyping(BOOL typing)
+void LLFloaterIMPanel::setTyping(bool typing)
 {
 	if (typing)
 	{
@@ -1502,7 +1446,7 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 			mFirstKeystrokeTimer.reset();
 
 			// Will send typing state after a short delay.
-			mSentTypingState = FALSE;
+			mSentTypingState = false;
 		}
 
 		mSpeakers->setSpeakerTyping(gAgent.getID(), TRUE);
@@ -1512,8 +1456,8 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 		if (mTyping)
 		{
 			// you just stopped typing, send state immediately
-			sendTypingState(FALSE);
-			mSentTypingState = TRUE;
+			sendTypingState(false);
+			mSentTypingState = true;
 		}
 		mSpeakers->setSpeakerTyping(gAgent.getID(), FALSE);
 	}
@@ -1521,7 +1465,7 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 	mTyping = typing;
 }
 
-void LLFloaterIMPanel::sendTypingState(BOOL typing)
+void LLFloaterIMPanel::sendTypingState(bool typing)
 {
 	if(gSavedSettings.getBOOL("AscentHideTypingNotification"))
 		return;
@@ -1547,7 +1491,7 @@ void LLFloaterIMPanel::sendTypingState(BOOL typing)
 }
 
 
-void LLFloaterIMPanel::processIMTyping(const LLIMInfo* im_info, BOOL typing)
+void LLFloaterIMPanel::processIMTyping(const LLIMInfo* im_info, bool typing)
 {
 	if (typing)
 	{
@@ -1574,7 +1518,7 @@ void LLFloaterIMPanel::addTypingIndicator(const std::string &name)
 		typing_start.setArg("[NAME]", name);
 		addHistoryLine(typing_start, gSavedSettings.getColor4("SystemChatColor"), false);
 		mOtherTypingName = name;
-		mOtherTyping = TRUE;
+		mOtherTyping = true;
 	}
 	// MBW -- XXX -- merge from release broke this (argument to this function changed from an LLIMInfo to a name)
 	// Richard will fix.
@@ -1587,7 +1531,7 @@ void LLFloaterIMPanel::removeTypingIndicator(const LLIMInfo* im_info)
 	if (mOtherTyping)
 	{
 		// Must do this first, otherwise addHistoryLine calls us again.
-		mOtherTyping = FALSE;
+		mOtherTyping = false;
 
 		S32 chars_to_remove = mHistoryEditor->getWText().length() - mTypingLineStartIndex;
 		mHistoryEditor->removeTextFromEnd(chars_to_remove);
@@ -1710,7 +1654,7 @@ const bool LLFloaterIMPanel::isModerator(const LLUUID& speaker_id)
 		LLPointer<LLSpeaker> speakerp = mSpeakers->findSpeaker(speaker_id);
 		return speakerp && speakerp->mIsModerator;
 	}
-	return FALSE;
+	return false;
 }
 
 BOOL LLFloaterIMPanel::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )

@@ -55,15 +55,11 @@ public:
 	// the default. For example, if you open a session though a
 	// calling card, a new session id will be generated, but the
 	// target_id will be the agent referenced by the calling card.
-	LLFloaterIMPanel(const std::string& session_label,
+	LLFloaterIMPanel(const std::string& log_label,
 					 const LLUUID& session_id,
 					 const LLUUID& target_id,
-					 EInstantMessage dialog);
-	LLFloaterIMPanel(const std::string& session_label,
-					 const LLUUID& session_id,
-					 const LLUUID& target_id,
-					 const LLDynamicArray<LLUUID>& ids,
-					 EInstantMessage dialog);
+					 const EInstantMessage& dialog,
+					 const LLDynamicArray<LLUUID>& ids = LLDynamicArray<LLUUID>());
 	virtual ~LLFloaterIMPanel();
 
 	void lookupName();
@@ -86,7 +82,7 @@ public:
 						const LLUUID& source = LLUUID::null,
 						const std::string& name = LLStringUtil::null);
 
-	void setInputFocus( BOOL b );
+	void setInputFocus(bool b);
 
 	void setVisible(BOOL b);
 
@@ -121,7 +117,7 @@ public:
 	void sessionInitReplyReceived(const LLUUID& im_session_id);
 
 	// Handle other participant in the session typing.
-	void processIMTyping(const LLIMInfo* im_info, BOOL typing);
+	void processIMTyping(const LLIMInfo* im_info, bool typing);
 	static void chatFromLogFile(LLLogChat::ELogLineType type, std::string line, void* userdata);
 
 	//show error statuses to the user
@@ -133,22 +129,11 @@ public:
 
 	static bool onConfirmForceCloseError(const LLSD& notification, const LLSD& response);
 
-	typedef enum e_session_type
-	{
-		P2P_SESSION,
-		GROUP_SESSION,
-		ADHOC_SESSION
-	} SType;
-	SType mSessionType;
-
 	// LLIMModel Functionality
 	bool getSessionInitialized() const { return mSessionInitialized; }
 	bool mStartCallOnInitialize;
 
 private:
-	// called by constructors
-	void init(const std::string& session_label);
-
 	// Called by UI methods.
 	void onSendMsg();
 
@@ -157,11 +142,11 @@ private:
 	BOOL dropCategory(LLInventoryCategory* category, BOOL drop);
 
 	// test if local agent can add agents.
-	BOOL isInviteAllowed() const;
+	bool isInviteAllowed() const;
 
 	// Called whenever the user starts or stops typing.
 	// Sends the typing state to the other user if necessary.
-	void setTyping(BOOL typing);
+	void setTyping(bool typing);
 
 	// Add the "User is typing..." indicator.
 	void addTypingIndicator(const std::string &name);
@@ -169,13 +154,26 @@ private:
 	// Remove the "User is typing..." indicator.
 	void removeTypingIndicator(const LLIMInfo* im_info);
 
-	void sendTypingState(BOOL typing);
+	void sendTypingState(bool typing);
 
 	const bool isModerator(const LLUUID& speaker_id);
 	
 private:
 	LLLineEditor* mInputEditor;
 	LLViewerTextEditor* mHistoryEditor;
+
+	bool mSessionInitialized;
+
+	// Where does the "Starting session..." line start?
+	S32 mSessionStartMsgPos;
+
+	enum SType
+	{
+		P2P_SESSION,
+		GROUP_SESSION,
+		ADHOC_SESSION
+	};
+	SType mSessionType;
 
 	// The value of the mSessionUUID depends on how the IM session was started:
 	//   one-on-one  ==> random id
@@ -184,10 +182,9 @@ private:
 	//   911 ==> Gaurdian_Angel_Group_ID ^ gAgent.getID()
 	LLUUID mSessionUUID;
 
-	std::string mSessionLabel;
-	LLVoiceChannel*	mVoiceChannel;
+	// mLogLabel is the name of the log file before directories and extensions
+	std::string mLogLabel;
 
-	BOOL mSessionInitialized;
 	LLSD mQueuedMsgsForInit;
 
 	// The value mOtherParticipantUUID depends on how the IM session was started:
@@ -196,39 +193,38 @@ private:
 	//   inventory folder ==> first target id in list
 	//   911 ==> sender
 	LLUUID mOtherParticipantUUID;
-	LLDynamicArray<LLUUID> mSessionInitialTargetIDs;
 
 	EInstantMessage mDialog;
 
 	// Are you currently typing?
-	BOOL mTyping;
+	bool mTyping;
+
+	// Where does the "User is typing..." line start?
+	S32 mTypingLineStartIndex;
 
 	// Is other user currently typing?
-	BOOL mOtherTyping;
+	bool mOtherTyping;
 
 	// name of other user who is currently typing
 	std::string mOtherTypingName;
 
-	// Where does the "User is typing..." line start?
-	S32 mTypingLineStartIndex;
-	// Where does the "Starting session..." line start?
-	S32 mSessionStartMsgPos;
-	
 	S32 mNumUnreadMessages;
 
-	BOOL mSentTypingState;
+	bool mSentTypingState;
 
-	BOOL mShowSpeakersOnConnect;
+	bool mShowSpeakersOnConnect;
 
-	BOOL mTextIMPossible;
 	BOOL mProfileButtonEnabled;
-	BOOL mCallBackEnabled;
 
 	bool mDing; // Whether or not to play a ding on new messages
 	bool mRPMode;
 
+	bool mTextIMPossible;
+	bool mCallBackEnabled;
+
 	LLIMSpeakerMgr* mSpeakers;
 	LLParticipantList* mSpeakerPanel;
+	LLVoiceChannel*	mVoiceChannel;
 	
 	// Optimization:  Don't send "User is typing..." until the
 	// user has actually been typing for a little while.  Prevents

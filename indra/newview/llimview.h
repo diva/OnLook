@@ -192,15 +192,9 @@ private:
 	LLFloaterIMPanel* createFloater(const LLUUID& session_id,
 									const LLUUID& target_id,
 									const std::string& name,
-									EInstantMessage dialog,
-									BOOL user_initiated = FALSE);
-
-	LLFloaterIMPanel* createFloater(const LLUUID& session_id,
-									const LLUUID& target_id,
-									const std::string& name,
-									const LLDynamicArray<LLUUID>& ids,
-									EInstantMessage dialog,
-									BOOL user_initiated = FALSE);
+									const EInstantMessage& dialog,
+									const LLDynamicArray<LLUUID>& ids = LLDynamicArray<LLUUID>(),
+									bool user_initiated = false);
 
 	// This simple method just iterates through all of the ids, and
 	// prints a simple message if they are not online. Used to help

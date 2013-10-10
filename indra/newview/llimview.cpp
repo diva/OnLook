@@ -480,13 +480,7 @@ void LLIMMgr::addMessage(
 			name = session_name;
 		}
 
-		
-		floater = createFloater(
-			new_session_id,
-			other_participant_id,
-			name,
-			dialog,
-			FALSE);
+		floater = createFloater(new_session_id, other_participant_id, name, dialog);
 
 		// When we get a new IM, and if you are a god, display a bit
 		// of information about the source. This is to help liaisons
@@ -651,13 +645,7 @@ LLUUID LLIMMgr::addSession(
 		LLDynamicArray<LLUUID> ids;
 		ids.put(other_participant_id);
 
-		floater = createFloater(
-			session_id,
-			other_participant_id,
-			name,
-			ids,
-			dialog,
-			TRUE);
+		floater = createFloater(session_id, other_participant_id, name, dialog, ids, true);
 
 		noteOfflineUsers(floater, ids);
 		LLFloaterChatterBox::showInstance(session_id);
@@ -714,13 +702,7 @@ LLUUID LLIMMgr::addSession(
 	{
 		// On creation, use the first element of ids as the
 		// "other_participant_id"
-		floater = createFloater(
-			session_id,
-			other_participant_id,
-			name,
-			ids,
-			dialog,
-			TRUE);
+		floater = createFloater(session_id, other_participant_id, name, dialog, ids, true);
 
 		if ( !floater ) return LLUUID::null;
 
@@ -1094,52 +1076,9 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	const LLUUID& session_id,
 	const LLUUID& other_participant_id,
 	const std::string& session_label,
-	EInstantMessage dialog,
-	BOOL user_initiated)
-{
-	if (session_id.isNull())
-	{
-		llwarns << "Creating LLFloaterIMPanel with null session ID" << llendl;
-	}
-
-	llinfos << "LLIMMgr::createFloater: from " << other_participant_id 
-			<< " in session " << session_id << llendl;
-	LLFloaterIMPanel* floater = new LLFloaterIMPanel(session_label,
-													 session_id,
-													 other_participant_id,
-													 dialog);
-	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
-	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
-	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
-	if (tear_off)
-	{
-		LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater); // removal sets up relationship for re-attach
-		gFloaterView->addChild(floater); // reparent to floater view
-		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
-		floater->open(); // make the new chat floater appear
-		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
-		if (focused_floater != NULL) // there was a focused floater
-		{
-			floater->setMinimized(minimize); // so minimize this one, for now, if desired
-			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
-		}
-		else if (minimize)
-		{
-			floater->setFocus(false); // work around focus being granted to new floater
-			floater->setMinimized(true);
-		}
-	}
-	mFloaters.insert(floater->getHandle());
-	return floater;
-}
-
-LLFloaterIMPanel* LLIMMgr::createFloater(
-	const LLUUID& session_id,
-	const LLUUID& other_participant_id,
-	const std::string& session_label,
+	const EInstantMessage& dialog,
 	const LLDynamicArray<LLUUID>& ids,
-	EInstantMessage dialog,
-	BOOL user_initiated)
+	bool user_initiated)
 {
 	if (session_id.isNull())
 	{
@@ -1148,11 +1087,7 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 
 	llinfos << "LLIMMgr::createFloater: from " << other_participant_id 
 			<< " in session " << session_id << llendl;
-	LLFloaterIMPanel* floater = new LLFloaterIMPanel(session_label,
-													 session_id,
-													 other_participant_id,
-													 ids,
-													 dialog);
+	LLFloaterIMPanel* floater = new LLFloaterIMPanel(session_label, session_id, other_participant_id, dialog, ids);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
 	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
 	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
