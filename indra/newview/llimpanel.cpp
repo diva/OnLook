@@ -903,17 +903,15 @@ void LLFloaterIMPanel::setInputFocus( BOOL b )
 BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 {
 	BOOL handled = FALSE;
-	if( KEY_RETURN == key && mask == MASK_NONE)
+	if (KEY_RETURN == key)
 	{
 		onSendMsg();
 		handled = TRUE;
 
 		// Close talk panels on hitting return
-		// but not shift-return or control-return
-		if ( !gSavedSettings.getBOOL("PinTalkViewOpen") && !(mask & MASK_CONTROL) && !(mask & MASK_SHIFT) )
-		{
-			gIMMgr->toggle(NULL);
-		}
+		// without holding a modifier key
+		if (mask == MASK_NONE)
+			closeIfNotPinned();
 	}
 	else if (KEY_ESCAPE == key && mask == MASK_NONE)
 	{
@@ -921,15 +919,22 @@ BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 		gFocusMgr.setKeyboardFocus(NULL);
 
 		// Close talk panel with escape
-		if( !gSavedSettings.getBOOL("PinTalkViewOpen") )
-		{
-			gIMMgr->toggle(NULL);
-		}
+		closeIfNotPinned();
 	}
 
 	// May need to call base class LLPanel::handleKeyHere if not handled
 	// in order to tab between buttons.  JNC 1.2.2002
 	return handled;
+}
+
+void LLFloaterIMPanel::closeIfNotPinned()
+{
+	if (gSavedSettings.getBOOL("PinTalkViewOpen")) return;
+
+	if (getParent() == gFloaterView) // Just minimize, if popped out
+		setMinimized(true);
+	else
+		gIMMgr->toggle();
 }
 
 BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,

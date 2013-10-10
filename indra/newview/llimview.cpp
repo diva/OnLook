@@ -349,14 +349,12 @@ bool inviteUserResponse(const LLSD& notification, const LLSD& response)
 //	gSavedSettings.setBOOL( "PinTalkViewOpen", !state );
 //}
 
-// static 
-void LLIMMgr::toggle(void*)
+void LLIMMgr::toggle()
 {
 	static BOOL return_to_mouselook = FALSE;
 
 	// Hide the button and show the floater or vice versa.
-	llassert( gIMMgr );
-	BOOL old_state = gIMMgr->getFloaterOpen();
+	bool old_state = getFloaterOpen();
 	
 	// If we're in mouselook and we triggered the Talk View, we want to talk.
 	if( gAgentCamera.cameraMouselook() && old_state )
@@ -387,7 +385,7 @@ void LLIMMgr::toggle(void*)
 		return_to_mouselook = FALSE;
 	}
 
-	gIMMgr->setFloaterOpen( new_state );
+	setFloaterOpen(new_state);
 }
 
 //

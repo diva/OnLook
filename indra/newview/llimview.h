@@ -143,7 +143,7 @@ public:
 	// good connection.
 	void disconnectAllSessions();
 
-	static void	toggle(void*);
+	void toggle();
 
 	BOOL hasSession(const LLUUID& session_id);
 
