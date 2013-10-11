@@ -136,6 +136,8 @@ LLFloaterPay::LLFloaterPay(const std::string& name,
 // Destroys the object
 LLFloaterPay::~LLFloaterPay()
 {
+	// In case this floater is currently waiting for a reply.
+	gMessageSystem->setHandlerFuncFast(_PREHASH_PayPriceReply, 0, 0);
 }
 
 // static
