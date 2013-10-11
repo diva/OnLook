@@ -41,6 +41,8 @@
     <string name="ding off" value="Timbre en Nuevos Mensajes (Apagado)"/>
 	<string name="rp mode on" value="Modo RP (Encendido)"/>
 	<string name="rp mode off" value="Modo RP (Apagado)"/>
+	<string name="add friend" value="Añadir Contacto"/>
+	<string name="remove friend" value="Eliminar Contacto"/>
 	<button name="tp_btn" label="TP"/>
 	<button name="pay_btn" label="Pagar"/>
 	<button name="history_btn" label="Historial" width="60" />
