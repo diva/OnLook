@@ -405,6 +405,8 @@ void LLFloaterIMPanel::onAvatarNameLookup(const LLAvatarName& avatar_name)
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
 {
+	LLAvatarTracker::instance().removeParticularFriendObserver(mOtherParticipantUUID, this);
+
 	delete mSpeakers;
 	mSpeakers = NULL;
 	
