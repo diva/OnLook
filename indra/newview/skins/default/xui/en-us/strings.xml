@@ -3371,6 +3371,8 @@ The
 	<string name="InvOfferOwnedByUnknownUser">owned by an unknown user</string>
 	<string name="InvOfferGaveYou">gave you</string>
 	<string name="InvOfferDecline">You decline [DESC] from [NAME].</string>
+	<string name="InvOfferDeclineSilent">You silently decline [DESC] from [NAME].</string>
+	<string name="InvOfferAcceptSilent">You silently accept [DESC] from [NAME].</string>
 
 	<!-- group money -->
 	<string name="GroupMoneyTotal">Total</string>

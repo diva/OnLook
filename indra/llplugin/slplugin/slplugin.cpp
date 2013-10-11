@@ -244,8 +244,8 @@ int main(int argc, char **argv)
 	  signal(SIGBUS, &crash_handler);		// bus error
 	  signal(SIGSEGV, &crash_handler);	// segmentation violation
 	  signal(SIGSYS, &crash_handler);		// non-existent system call invoked
-#endif
 	}
+#endif
 
 #if LL_DARWIN
 	setupCocoa();

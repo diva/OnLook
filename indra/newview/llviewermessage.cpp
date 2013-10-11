@@ -1603,6 +1603,33 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		}	// end switch (mIM)
 		break;
 
+	case -2: // decline silently
+	{
+		LLStringUtil::format_map_t args;
+		args["[DESC]"] = mDesc;
+		args["[NAME]"] = mFromName;
+		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferDeclineSilent", args));
+	}
+	break;
+	case -1: // accept silently
+	{
+		LLOpenAgentOffer* open_agent_offer = new LLOpenAgentOffer(mObjectID, from_string);
+		open_agent_offer->startFetch();
+		if(catp || (itemp && itemp->isFinished()))
+		{
+			open_agent_offer->done();
+		}
+		else
+		{
+			opener = open_agent_offer;
+		}
+		LLStringUtil::format_map_t args;
+		args["[DESC]"] = mDesc;
+		args["[NAME]"] = mFromName;
+		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferAcceptSilent", args));
+	}
+	break;
+	
 	case IOR_BUSY:
 		//Busy falls through to decline.  Says to make busy message.
 		busy=TRUE;
@@ -2913,7 +2940,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
 		{
-			switch (pIMFloater->mSessionType)
+			switch (pIMFloater->getSessionType())
 			{
 				case LLFloaterIMPanel::GROUP_SESSION:	// Group chat
 					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(session_id)) )
