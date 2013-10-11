@@ -30,4 +30,7 @@
 	<string name="media_play_tooltip">
 		Display Web content at this location.
 	</string>
+	<string name="Title">Title</string>
+	<string name="Artist">Artist</string>
+	<string name="Now_playing">Now playing</string>
 </panel>
