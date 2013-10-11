@@ -342,8 +342,6 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		mCallBackEnabled = LLVoiceClient::getInstance()->isSessionCallBackPossible(mSessionUUID);
 		// fallthrough
 	case IM_SESSION_P2P_INVITE:
-		if (LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID))
-			LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _2));
 		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mLogLabel, mOtherParticipantUUID);
 		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
 		break;
@@ -358,8 +356,6 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 								xml_filename,
 								&getFactoryMap(),
 								FALSE);
-
-	setTitle(mLogLabel);
 
 	// enable line history support for instant message bar
 	mInputEditor->setEnableLineHistory(TRUE);
@@ -461,6 +457,10 @@ BOOL LLFloaterIMPanel::postBuild()
 
 	if (checkRequirements())
 	{
+		setTitle(mLogLabel);
+		if (mSessionType == P2P_SESSION && LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID))
+			LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _2));
+
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
