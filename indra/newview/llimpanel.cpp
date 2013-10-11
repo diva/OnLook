@@ -1254,7 +1254,7 @@ void LLFloaterIMPanel::onSendMsg()
 
 					std::string send = utf8_text.substr(pos, next_split);
 					pos += next_split;
-LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_ENDL;
+					LL_DEBUGS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_ENDL;
 
 					deliver_message(send,
 									mSessionUUID,
