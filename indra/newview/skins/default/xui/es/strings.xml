@@ -3906,6 +3906,8 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="InvOfferOwnedByUnknownUser">propiedad de un usuario desconocido</string>
 	<string name="InvOfferGaveYou">te ha dado</string>
 	<string name="InvOfferDecline">Has rechazado [DESC] de [NAME].</string>
+	<string name="InvOfferDeclineSilent">Has rechazado [DESC] sin notificar a [NAME].</string>
+	<string name="InvOfferAcceptSilent">Has aceptado [DESC] sin notificar a [NAME].</string>
 
 	<!-- group money -->
 	<string name="GroupMoneyTotal">Total</string>
