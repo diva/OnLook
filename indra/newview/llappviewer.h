@@ -210,6 +210,8 @@ private:
 	// update avatar SLID and display name caches
 	void idleNameCache();
     void idleNetwork();
+	void idleAudio();
+	void shutdownAudio();
 
     void sendLogoutRequest();
     void disconnectViewer();

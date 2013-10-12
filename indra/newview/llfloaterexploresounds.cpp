@@ -304,6 +304,7 @@ void LLFloaterExploreSounds::handle_play_locally(void* user_data)
 		if(std::find(asset_list.begin(), asset_list.end(), item.mAssetID) == asset_list.end())
 		{
 			asset_list.push_back(item.mAssetID);
+			if(gAudiop)
 			gAudiop->triggerSound(item.mAssetID, LLUUID::null, 1.0f, LLAudioEngine::AUDIO_TYPE_UI);
 		}
 	}
