@@ -1425,7 +1425,7 @@ BOOL LLViewerWindow::handleActivate(LLWindow *window, BOOL activated)
 		}
 
 		// Unmute audio
-		audio_update_volume();
+		audio_update_volume(false);
 	}
 	else
 	{
@@ -1450,7 +1450,7 @@ BOOL LLViewerWindow::handleActivate(LLWindow *window, BOOL activated)
 			stopGL();
 		}
 		// Mute audio
-		audio_update_volume();
+		audio_update_volume(false);
 	}
 	return TRUE;
 }

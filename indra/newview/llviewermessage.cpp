@@ -5228,8 +5228,6 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
 	LLAudioSource *sourcep = objectp->getAudioSource(owner_id);
 	if (!sourcep) return;
 	
-	LLAudioData *datap = gAudiop->getAudioData(sound_id);
-
 	// Note that I don't actually do any loading of the
 	// audio data into a buffer at this point, as it won't actually
 	// help us out.
@@ -5238,8 +5236,8 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
 	LLVector3d pos_global = objectp->getPositionGlobal();
 	if (gAgent.canAccessMaturityAtGlobal(pos_global))
 	{
-		// Add audioData starts a transfer internally.
-		sourcep->addAudioData(datap, FALSE);
+		// Preload starts a transfer internally.
+		sourcep->preload(sound_id);
 	}
 }
 

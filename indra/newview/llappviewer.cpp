@@ -1511,33 +1511,6 @@ bool LLAppViewer::cleanup()
 
 	llinfos << "Global stuff deleted" << llendflush;
 
-	if (gAudiop)
-	{
-		// shut down the streaming audio sub-subsystem first, in case it relies on not outliving the general audio subsystem.
-
-		LLStreamingAudioInterface *sai = gAudiop->getStreamingAudioImpl();
-		delete sai;
-		gAudiop->setStreamingAudioImpl(NULL);
-
-		// shut down the audio subsystem
-
-		bool want_longname = false;
-		if (gAudiop->getDriverName(want_longname) == "FMOD")
-		{
-			// This hack exists because fmod likes to occasionally
-			// crash or hang forever when shutting down, for no
-			// apparent reason.
-			llwarns << "Hack, skipping FMOD audio engine cleanup" << llendflush;
-		}
-		else
-		{
-			gAudiop->shutdown();
-		}
-
-		delete gAudiop;
-		gAudiop = NULL;
-	}
-
 	// Note: this is where LLFeatureManager::getInstance()-> used to be deleted.
 
 	// Patch up settings for next time
@@ -3955,6 +3928,9 @@ void LLAppViewer::idle()
 
 	gViewerWindow->updateUI();
 
+	//updateUI may have created sounds (clicks, etc). Call idleAudio to dispatch asap.
+	idleAudio();
+
 	///////////////////////////////////////
 	// Agent and camera movement
 	//
@@ -4131,22 +4107,6 @@ void LLAppViewer::idle()
 	{
 		LLFastTimer t(FTM_LOD_UPDATE);
 		gObjectList.updateApparentAngles(gAgent);
-	}
-
-	{
-		gFrameStats.start(LLFrameStats::AUDIO);
-		LLFastTimer t(FTM_AUDIO_UPDATE);
-		
-		if (gAudiop)
-		{
-		    audio_update_volume(false);
-			audio_update_listener();
-			audio_update_wind(false);
-
-			// this line actually commits the changes we've made to source positions, etc.
-			const F32 max_audio_decode_time = 0.002f; // 2 ms decode time
-			gAudiop->idle(max_audio_decode_time);
-		}
 	}
 
 	// Execute deferred tasks.
@@ -4453,6 +4413,51 @@ void LLAppViewer::idleNetwork()
 	}
 }
 
+void LLAppViewer::idleAudio()
+{
+	gFrameStats.start(LLFrameStats::AUDIO);
+	LLFastTimer t(FTM_AUDIO_UPDATE);
+	
+	if (gAudiop)
+	{
+	    audio_update_volume();
+		audio_update_listener();
+
+		// this line actually commits the changes we've made to source positions, etc.
+		const F32 max_audio_decode_time = 0.002f; // 2 ms decode time
+		gAudiop->idle(max_audio_decode_time);
+	}
+}
+void LLAppViewer::shutdownAudio()
+{
+	if (gAudiop)
+	{
+		// shut down the streaming audio sub-subsystem first, in case it relies on not outliving the general audio subsystem.
+
+		LLStreamingAudioInterface *sai = gAudiop->getStreamingAudioImpl();
+		delete sai;
+		gAudiop->setStreamingAudioImpl(NULL);
+
+		// shut down the audio subsystem
+
+		bool want_longname = false;
+		if (gAudiop->getDriverName(want_longname) == "FMOD")
+		{
+			// This hack exists because fmod likes to occasionally
+			// crash or hang forever when shutting down, for no
+			// apparent reason.
+			llwarns << "Hack, skipping FMOD audio engine cleanup" << llendflush;
+		}
+		else
+		{
+			gAudiop->shutdown();
+		}
+
+		delete gAudiop;
+		gAudiop = NULL;
+	}
+}
+
 void LLAppViewer::disconnectViewer()
 {
 	if (gDisconnected)
@@ -4553,6 +4558,9 @@ void LLAppViewer::disconnectViewer()
 	LLDestroyClassList::instance().fireCallbacks();
 
 	cleanup_xfer_manager();
+
+	shutdownAudio();
+
 	gDisconnected = TRUE;
 }
 
