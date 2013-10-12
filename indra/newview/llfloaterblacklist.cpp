@@ -174,7 +174,8 @@ void LLFloaterBlacklist::addEntry(LLUUID key, LLSD data)
 				std::string wav_path= gDirUtilp->getExpandedFilename(LL_PATH_CACHE,sound_id.asString()) + ".dsf";
 				if(LLAPRFile::isExist(wav_path, LL_APR_RPB))
 					LLAPRFile::remove(wav_path);
-				gAudiop->removeAudioData(sound_id);
+				if(gAudiop)
+					gAudiop->removeAudioData(sound_id);
 			}
 			blacklist_entries.insert(std::pair<LLUUID,LLSD>(key,data));
 			updateBlacklists();
