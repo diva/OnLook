@@ -375,6 +375,88 @@ void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
 	LLFloaterAvatarList::sound_trigger_hook(msg,NULL);
 }
 
+void init_audio()
+{
+	if (FALSE == gSavedSettings.getBOOL("NoAudio"))
+	{
+		gAudiop = NULL;
+
+#ifdef LL_FMODEX		
+		if (!gAudiop
+#if !LL_WINDOWS
+		    && NULL == getenv("LL_BAD_FMODEX_DRIVER")
+#endif // !LL_WINDOWS
+		)
+		{
+			gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX(gSavedSettings.getBOOL("SHEnableFMODExProfiler"),gSavedSettings.getBOOL("SHEnableFMODEXVerboseDebugging"));
+		}
+#endif
+
+#ifdef LL_OPENAL
+		if (!gAudiop
+#if !LL_WINDOWS
+			&& NULL == getenv("LL_BAD_OPENAL_DRIVER")
+#endif // !LL_WINDOWS
+		)
+		{
+			gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
+		}
+#endif
+
+#ifdef LL_FMOD			
+		if (!gAudiop
+#if !LL_WINDOWS
+			&& NULL == getenv("LL_BAD_FMOD_DRIVER")
+#endif // !LL_WINDOWS
+		)
+		{
+			gAudiop = (LLAudioEngine *) new LLAudioEngine_FMOD();
+		}
+#endif
+
+		if (gAudiop)
+		{
+#if LL_WINDOWS
+			// FMOD on Windows needs the window handle to stop playing audio
+			// when window is minimized. JC
+			void* window_handle = (HWND)gViewerWindow->getPlatformWindow();
+#else
+			void* window_handle = NULL;
+#endif
+			bool init = gAudiop->init(kAUDIO_NUM_SOURCES, window_handle);
+			if(init)
+			{
+				gAudiop->setMuted(TRUE);
+				if(gSavedSettings.getBOOL("AllowLargeSounds"))
+					gAudiop->setAllowLargeSounds(true);
+			}
+			else
+			{
+				LL_WARNS("AppInit") << "Unable to initialize audio engine" << LL_ENDL;
+				delete gAudiop;
+				gAudiop = NULL;
+			}
+
+			if (gAudiop)
+			{
+				// if the audio engine hasn't set up its own preferred handler for streaming audio then set up the generic streaming audio implementation which uses media plugins
+				if (NULL == gAudiop->getStreamingAudioImpl())
+				{
+					LL_INFOS("AppInit") << "Using media plugins to render streaming audio" << LL_ENDL;
+					gAudiop->setStreamingAudioImpl(new LLStreamingAudio_MediaPlugins());
+				}
+				// Unmute audio if desired and setup volumes.
+				// This is a not-uncommon crash site, so surround it with
+				// llinfos output to aid diagnosis.
+				LL_INFOS("AppInit") << "Doing first audio_update_volume..." << LL_ENDL;
+				audio_update_volume(false);
+				LL_INFOS("AppInit") << "Done first audio_update_volume." << LL_ENDL;
+			}
+		}
+	}
+	LL_INFOS("AppInit") << "Audio Engine Initialized." << LL_ENDL;
+}
+
 // Returns false to skip other idle processing. Should only return
 // true when all initialization done.
 bool idle_startup()
@@ -674,85 +756,6 @@ bool idle_startup()
 		//-------------------------------------------------
 
 		AIFilePicker::loadFile("filepicker_contexts.xml");
-
-		//-------------------------------------------------
-		// Init audio, which may be needed for prefs dialog
-		// or audio cues in connection UI.
-		//-------------------------------------------------
-
-		if (FALSE == gSavedSettings.getBOOL("NoAudio"))
-		{
-			gAudiop = NULL;
-
-#ifdef LL_FMODEX		
-			if (!gAudiop
-#if !LL_WINDOWS
-			    && NULL == getenv("LL_BAD_FMODEX_DRIVER")
-#endif // !LL_WINDOWS
-			    )
-			{
-				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX(gSavedSettings.getBOOL("SHEnableFMODExProfiler"),gSavedSettings.getBOOL("SHEnableFMODEXVerboseDebugging"));
-			}
-#endif
-
-#ifdef LL_OPENAL
-			if (!gAudiop
-#if !LL_WINDOWS
-			    && NULL == getenv("LL_BAD_OPENAL_DRIVER")
-#endif // !LL_WINDOWS
-			    )
-			{
-				gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
-			}
-#endif
-
-#ifdef LL_FMOD			
-			if (!gAudiop
-#if !LL_WINDOWS
-			    && NULL == getenv("LL_BAD_FMOD_DRIVER")
-#endif // !LL_WINDOWS
-			    )
-			{
-				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMOD();
-			}
-#endif
-
-			if (gAudiop)
-			{
-#if LL_WINDOWS
-				// FMOD on Windows needs the window handle to stop playing audio
-				// when window is minimized. JC
-				void* window_handle = (HWND)gViewerWindow->getPlatformWindow();
-#else
-				void* window_handle = NULL;
-#endif
-				bool init = gAudiop->init(kAUDIO_NUM_SOURCES, window_handle);
-				if(init)
-				{
-					gAudiop->setMuted(TRUE);
-					if(gSavedSettings.getBOOL("AllowLargeSounds"))
-						gAudiop->setAllowLargeSounds(true);
-				}
-				else
-				{
-					LL_WARNS("AppInit") << "Unable to initialize audio engine" << LL_ENDL;
-					delete gAudiop;
-					gAudiop = NULL;
-				}
-
-				if (gAudiop)
-				{
-					// if the audio engine hasn't set up its own preferred handler for streaming audio then set up the generic streaming audio implementation which uses media plugins
-					if (NULL == gAudiop->getStreamingAudioImpl())
-					{
-						LL_INFOS("AppInit") << "Using media plugins to render streaming audio" << LL_ENDL;
-						gAudiop->setStreamingAudioImpl(new LLStreamingAudio_MediaPlugins());
-					}
-				}
-			}
-		}
-		
-		LL_INFOS("AppInit") << "Audio Engine Initialized." << LL_ENDL;
 		
 		if (LLTimer::knownBadTimer())
 		{
@@ -889,15 +892,13 @@ bool idle_startup()
 			if (login_history.size() > 0)
 			{
 				LLPanelLogin::setFields(*login_history.getEntries().rbegin());
-				display_startup();
 			}
 			else
 			{
 				LLPanelLogin::setFields(firstname, lastname, password);
-				display_startup();
-				LLPanelLogin::giveFocus();
 			}
-			
+			display_startup();
+			LLPanelLogin::giveFocus();
 
 			gSavedSettings.setBOOL("FirstRunThisInstall", FALSE);
 
@@ -2356,7 +2357,7 @@ bool idle_startup()
 
 		if (!gNoRender)
 		{
-			// JC: Initializing audio requests many sounds for download.
+			//Now that we're loading the world, initialize the audio engine.
 			init_audio();
 			display_startup();
 
@@ -2535,6 +2536,8 @@ bool idle_startup()
 				LLViewerShaderMgr::instance()->setShaders();
 				display_startup();
 			}
+			//Precache UI sounds.
+			precache_audio();
 		}
 
 		return TRUE;
@@ -2677,13 +2680,8 @@ bool idle_startup()
 			gSavedSettings.setF32("RenderFarClip", 32.0f);
 		}
 
-		// Unmute audio if desired and setup volumes.
-		// Unmute audio if desired and setup volumes.
-		// This is a not-uncommon crash site, so surround it with
-		// llinfos output to aid diagnosis.
-		LL_INFOS("AppInit") << "Doing first audio_update_volume..." << LL_ENDL;
-		audio_update_volume();
-		LL_INFOS("AppInit") << "Done first audio_update_volume." << LL_ENDL;
+		//Agent avatar is ready. Create the listener.
+		audio_update_listener();	
 
 		// reset keyboard focus to sane state of pointing at world
 		gFocusMgr.setKeyboardFocus(NULL);

@@ -498,6 +498,7 @@ void LLFloaterChat::triggerAlerts(const std::string& text)
 			{
 				if ((std::string)highlight["sound_lluuid"] != LLUUID::null.asString())
 				{
+					if(gAudiop)
 					gAudiop->triggerSound(highlight["sound_lluuid"].asUUID(), 
 						gAgent.getID(),
 						1.f,

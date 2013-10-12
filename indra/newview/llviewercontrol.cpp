@@ -355,7 +355,7 @@ static bool handleChatPersistTimeChanged(const LLSD& newvalue)
 
 static void handleAudioVolumeChanged(const LLSD& newvalue)
 {
-	audio_update_volume(true);
+	audio_update_volume(false);
 }
 
 static bool handleJoystickChanged(const LLSD& newvalue)
