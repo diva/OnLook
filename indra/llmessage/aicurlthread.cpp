@@ -1312,7 +1312,7 @@ void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
 		*command_being_processed_w = command_queue_w->commands.front();
 		command = command_being_processed_w->command();
 	  }
-	  // Update the size: the number netto number of pending requests in the command queue.
+	  // Update the size: the netto number of pending requests in the command queue.
 	  command_queue_w->commands.pop_front();
 	  if (command == cmd_add)
 	  {

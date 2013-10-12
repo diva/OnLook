@@ -731,6 +731,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>LiruLegacyLogLaunch</key>
+    <map>
+      <key>Comment</key>
+      <string>When opening a chat log, open in an external text editor instead of a browser floater(Windows Only).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
     <key>LiruLegacyOutfitStoreObjChanges</key>
     <map>
       <key>Comment</key>
@@ -6931,22 +6942,6 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>100</integer>
       </array>
     </map>
-    <key>FloaterIMRect</key>
-    <map>
-      <key>Comment</key>
-      <string>Rectangle for IM window</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Rect</string>
-      <key>Value</key>
-      <array>
-        <integer>0</integer>
-        <integer>160</integer>
-        <integer>500</integer>
-        <integer>0</integer>
-      </array>
-    </map>
     <key>FloaterInspectRect</key>
     <map>
       <key>Comment</key>
@@ -10045,6 +10040,28 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>MiniMapPrimMaxAltitudeDelta</key>
+    <map>
+      <key>Comment</key>
+      <string>Max allowed altitude difference between your avatar and prims others own for them to be displayed on the minimap (0 means unlimited).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>256</real>
+    </map>
+    <key>MiniMapPrimMaxAltitudeDeltaOwn</key>
+    <map>
+      <key>Comment</key>
+      <string>Max allowed altitude difference between your avatar and prims you own for them to be displayed on the minimap (0 means unlimited).</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <real>0</real>
     </map>
     <key>MiniMapPrimMaxRadius</key>
     <map>

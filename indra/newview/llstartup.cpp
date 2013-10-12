@@ -1404,9 +1404,9 @@ bool idle_startup()
 			message_response = response["message"].asString();
 			message_id = response["message_id"].asString();
 			{
-			std::stringstream dump_str;
-			dump_str << response;
-			llinfos << dump_str.str() << llendl;
+				std::stringstream dump_str;
+				dump_str << response;
+				LL_DEBUGS("AppInit") << dump_str.str() << LL_ENDL;
 			}
 			
 			if(login_response == "true")

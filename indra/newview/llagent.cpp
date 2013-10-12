@@ -3312,12 +3312,6 @@ void update_group_floaters(const LLUUID& group_id)
 		fa->resetGroupList();
 	}
 
-	if (gIMMgr)
-	{
-		// update the talk view
-		gIMMgr->refresh();
-	}
-
 	gAgent.fireEvent(new LLOldEvents::LLEvent(&gAgent, "new group"), "");
 }
 

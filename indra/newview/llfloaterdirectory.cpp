@@ -161,7 +161,9 @@ private:
 	std::string mMarketplaceURL;
 };
 
-static void* createWebPanel(void* data)
+namespace {
+
+void* createWebPanel(void* data)
 {
 	struct LLPanelDirWeb : public LLPanelDirFind
 	{
@@ -174,6 +176,8 @@ static void* createWebPanel(void* data)
 	};
 	return new LLPanelDirWeb(static_cast<LLFloaterDirectory*>(data));
 }
+
+} // namespace
 
 LLFloaterDirectory* LLFloaterDirectory::sInstance = NULL;
 //static
