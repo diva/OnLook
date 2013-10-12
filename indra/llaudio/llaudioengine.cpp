@@ -277,11 +277,6 @@ void LLAudioEngine::updateChannels()
 					}
 				}
 				llassert(found_buffer);
-				if(!mChannels[i]->mCurrentBufferp->mInUse)
-				{
-					llassert(!mChannels[i]->isPlaying());
-					llassert(!mChannels[i]->isWaiting());
-				}
 			}
 #endif //SHOW_ASSERT
 		}

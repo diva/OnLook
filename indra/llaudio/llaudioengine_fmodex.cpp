@@ -178,7 +178,7 @@ public:
 	}
 	void removeChannel(FMOD::Channel* channel)
 	{
-		gSoundCheck.assertActiveState(channel,true);
+		assertActiveState(channel,true);
 
 		active_channels_t::const_iterator it = mActiveChannels.find(channel);
 		llassert(it != mActiveChannels.end());
@@ -208,7 +208,7 @@ public:
 		if(try_log && sVerboseDebugging)
 #endif
 		{
-			CFMODSoundChecks::STATUS chan = gSoundCheck.getPtrStatus(ptr);
+			CFMODSoundChecks::STATUS chan = getPtrStatus(ptr);
 			if(try_log && sVerboseDebugging)
 			{
 				if(active)
