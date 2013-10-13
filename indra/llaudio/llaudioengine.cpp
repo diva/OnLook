@@ -277,11 +277,6 @@ void LLAudioEngine::updateChannels()
 					}
 				}
 				llassert(found_buffer);
-				if(!mChannels[i]->mCurrentBufferp->mInUse)
-				{
-					llassert(!mChannels[i]->isPlaying());
-					llassert(!mChannels[i]->isWaiting());
-				}
 			}
 #endif //SHOW_ASSERT
 		}
@@ -328,7 +323,7 @@ void LLAudioEngine::idle(F32 max_decode_time)
 	//Also add sources that might be able to start playing to a priority queue.
 	//Only sources without channels, or are waiting for a syncmaster, should be added to this queue.
 	std::priority_queue<audio_source_t,std::vector<audio_source_t,boost::pool_allocator<audio_source_t> >,SourcePriorityComparator> queue;
-	for (source_map::iterator iter = mAllSources.begin(); iter != mAllSources.end(); ++iter)
+	for (source_map::iterator iter = mAllSources.begin(); iter != mAllSources.end();)
 	{
 		LLAudioSource *sourcep = iter->second;
 
@@ -343,6 +338,9 @@ void LLAudioEngine::idle(F32 max_decode_time)
 			mAllSources.erase(iter++);
 			continue;
 		}
+
+		// Increment iter here (it is not used anymore), so we can use continue below to move on to the next source.
+		++iter;
 
 		LLAudioData *adp = sourcep->getCurrentData();
 		//If there is no current data at all, or if it hasn't loaded, we must skip this source.
