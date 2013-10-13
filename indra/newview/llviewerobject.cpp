@@ -4901,11 +4901,7 @@ void LLViewerObject::setAttachedSound(const LLUUID &audio_uuid, const LLUUID& ow
 		mAudioSourcep->setSyncMaster(flags & LL_SOUND_FLAG_SYNC_MASTER);
 		mAudioSourcep->setSyncSlave(flags & LL_SOUND_FLAG_SYNC_SLAVE);
 		mAudioSourcep->setQueueSounds(queue);
-		if(!queue) // stop any current sound first to avoid "farts of doom" (SL-1541) -MG
-		{
-			mAudioSourcep->play(LLUUID::null);
-		}
-		
+
 		// Play this sound if region maturity permits
 		if( gAgent.canAccessMaturityAtGlobal(this->getPositionGlobal()) )
 		{
