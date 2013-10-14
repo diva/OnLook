@@ -58,25 +58,26 @@
 					MM/DD/YYYY
 				</combo_item>
 			</combo_box>
-			<check_box bottom_delta="0" left="240" follows="top" control_name="SecondsInLog" label="Segundos en el registro de tiempo" name="seconds_in_log"/>		
-		</panel>			
+			<check_box bottom_delta="0" left="240" label="Segundos en el registro de tiempo" name="seconds_in_log"/>
+		</panel>
 		<!-- =========================== -->
-		<panel height="525" label="Chat UI" left="1" name="ChatUI" width="418">
+		<panel label="Chat UI" name="ChatUI">
 			<check_box label="Usar Pestañas Verticales (Requiere reiniciar)" name="use_vertical_ims_check"/>		
 			<check_box label="Abrir nuevos MIs en ventanas separadas" name="chats_torn_off"/>
-			<check_box label="Foco en nuevo mensaje instantáneo" name="chat_steal_focus"/>			
+			<check_box label="Foco en nuevo mensaje instantáneo" name="chat_steal_focus"/>
 			<check_box label="Mostrar barra de chat local en ventana flotante (Requiere reiniciar)" tool_tip="Mostrar o no la barra de entrada de texto inferior en la barra flotante de chat." name="show_local_chat_floater_bar"/>
-			<check_box label="Usar botones horizontales para la ventana de contactos (Requiere Reiniciar)" tool_tip="Habilitado, los botones en los paneles de Amigos y Grupos se colocarán en la parte inferior del panel, ordendados horizontalmente, en vez de verticales a la derecha." name="horiz_butt"/>	  
+			<check_box label="Usar botones horizontales para la ventana de contactos (Requiere Reiniciar)" tool_tip="Habilitado, los botones en los paneles de Amigos y Grupos se colocarán en la parte inferior del panel, ordendados horizontalmente, en vez de verticales a la derecha." name="horiz_butt"/>
+			<check_box label="Usar Nombres antiguos en la lista de participantes (Afecta a nuevos participantes)" tool_tip="Permite una mejor moderación de chats mostrando solo los nombres de usuario" name="legacy_speaker_names"/>
 			<check_box label="Colocar los Botones en la misma línea del nombre en los IMs (Sólo afecta en Nuevos MIs)" name="im_concise_butt"/>
 			<check_box label="Botones en chat de grupo en la línea del nombre del grupo (Afecta nuevos chats de grupo)" name="group_concise_butt"/>
-			<check_box label="Botones en la misma línea de título de conferencia (Afecta nuevas conferencias de Chat)" name="conf_concise_butt"/>			
-			<check_box label="Deshabilitar apertura atajo de Comunicación fuera de la lista de amigos" control_name="CommunicateSpecificShortcut" name="only_comm"/>
+			<check_box label="Botones en la misma línea de título de conferencia (Afecta nuevas conferencias de Chat)" name="conf_concise_butt"/>
+			<check_box label="Deshabilitar apertura atajo de Comunicación fuera de la lista de amigos" name="only_comm"/>
 			<check_box label="Mensajes de acción en Itálica (/me)" name="italicize_actions"/>
 		</panel>
-		<!-- =========================== -->	 
+		<!-- =========================== -->
 		<panel label="Respuesta Automática" name="Autoresponse">
 			<text name="Autoresponse Info">
-Esta funcionalidad hace que el visor envíe una respuesta personalizada a quienes te envíen un mensaje. 
+Esta funcionalidad hace que el visor envíe una respuesta personalizada a quienes te envíen un mensaje.
 Puedes usar los siguientes comodines para personalizar tus respuestas: #n para nombre de usuario,
 #d para su nombre mostrado, #r para SLURL a tu ubicación, #i para tu tiempo ausente, en minutos.
 			</text>
@@ -104,7 +105,7 @@ Puedes usar los siguientes comodines para personalizar tus respuestas: #n para n
 		</panel>	 
 		<!-- =========================== -->
 		<panel label="Spam" name="Spam">
-			<check_box control_name="AntiSpamEnabled" label="Habilitar Antispam" name="enable_as"/>		
+			<check_box label="Habilitar Antispam" name="enable_as"/>
 			<button label="Reiniciar colas antispam" label_selected="Reiniciar colas antispam" name="reset_antispam" width="230"/>
 			<check_box label="Sin Mensajes específicos en la cola de Spam" name="spammsg_checkbox" width="256"/>			
 			<spinner label="Tiempo Antispam (segundos):" name="antispamtime" tool_tip="Mas bajo es menos sensible"/>
@@ -120,12 +121,16 @@ Puedes usar los siguientes comodines para personalizar tus respuestas: #n para n
 			<check_box label="Alertas" name="Alerts"/>
 			<check_box label="Ofertas de Amistad" name="Friendship Offers"/>
 			<check_box label="Invitación a Grupos" name="Group Invites"/>
-			<check_box control_name="AntiSpamGroupFeeInvites" label="Invit. Grupos c/Pago" name="Group Fee Invites"/>			
+			<check_box label="Invit. Grupos c/Pago" name="Group Fee Invites"/>
 			<check_box label="Oferta de Ítems" name="Item Offers"/>
 			<check_box label="Scripts" name="Scripts"/>
 			<check_box label="Ofertas de Teleporte" name="Teleport Offers"/>
 			<check_box label="Avisos de Grupos" name="Group Notices"/>
-			<check_box control_name="EnableGestureSounds" label="Habilitar Sonidos de Gestos" name="Enable Gesture Sounds"/>
+			<check_box label="Solicitudes de Teleporte" name="Teleport Requests"/>
+			<text name="Except those from:" >Excepto de :</text>
+			<check_box label="Mis objetos" name="My objects"/>
+			<check_box label="Mis amigos" name="My friends"/>
+			<check_box label="Habilitar Sonidos de Gestos" name="Enable Gesture Sounds"/>
 		</panel>
 		<!-- ============================= -->
 		<panel label="Opciones de Texto" name="TextOptions">

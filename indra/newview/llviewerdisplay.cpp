@@ -214,7 +214,7 @@ void display_update_camera(bool tiling=false)
 // Write some stats to llinfos
 void display_stats()
 {
-	if (gNoRender || !gViewerWindow->mWindow->getVisible() || !gFocusMgr.getAppHasFocus())
+	if (gNoRender || !gViewerWindow->getWindow()->getVisible() || !gFocusMgr.getAppHasFocus())
 	{
 		// Do not keep FPS statistics while yielding cooperatively
 		// (i;e. when not running as foreground window)

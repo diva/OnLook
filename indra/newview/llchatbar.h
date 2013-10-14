@@ -84,7 +84,6 @@ public:
 	// callbacks
 	void onClickSay(LLUICtrl* ctrl);
 
-	static void	onTabClick( void* userdata );
 	void	onInputEditorKeystroke();
 	static void	onInputEditorFocusLost();
 	static void	onInputEditorGainFocus();

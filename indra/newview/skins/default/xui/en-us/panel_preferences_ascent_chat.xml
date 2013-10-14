@@ -55,6 +55,7 @@
       <check_box bottom_delta="-20" follows="top" control_name="PhoenixIMAnnounceStealFocus" label="Focus new instant messages" name="chat_steal_focus"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="ShowLocalChatFloaterBar" label="Show chat bar in torn-off local chat floater" name="show_local_chat_floater_bar"/>
       <check_box bottom_delta="-20" control_name="ContactsUseHorizontalButtons" follows="top" height="16" label="Use horizontal buttons for contacts floater (Needs restart)" tool_tip="When enabled, the buttons on the Friends and Groups panels will be at the bottom, horizontally arranged, instead of vertically arranged on the right." name="horiz_butt"/>	  
+      <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacySpeakerNames" label="Use legacy names for speaker lists (Affects new speakers)" tool_tip="Allows for easier moderation of chats by showing only the account names" name="legacy_speaker_names"/>
       <check_box bottom_delta="-20" control_name="UseConciseIMButtons" follows="top" height="16" label="Buttons on the same line as name for IMs (Affects new IMs)" name="im_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseGroupChatButtons" follows="top" height="16" label="Buttons on group chat name line (Affects new group chats)" name="group_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseConferenceButtons" follows="top" height="16" label="Buttons on conference title line (Affects new conferences)" name="conf_concise_butt"/>
@@ -74,21 +75,21 @@ The following wildcards are available to enhance your autoresponses: #n for user
     <check_box bottom_delta="0" left_delta="100" follows="left|top" control_name="AutoresponseAnyoneItem" name="AutoresponseAnyoneItem" label="Send item"/>
     <check_box bottom_delta="0" left_delta="80" follows="left|top" control_name="AutoresponseAnyoneShow" name="AutoresponseAnyoneShow" label="Show that this was sent"/>
     <text_editor bottom_delta="-47" left="8" font="SansSerifSmall" follows="left|top" height="45" max_length="1100" control_name="AutoresponseAnyoneMessage" name="AutoresponseAnyoneMessage" width="480" word_wrap="true" spell_check="true" hide_scrollbar="true"/>
-    <drop_target bottom_delta="-122" left="10" height="15" width="476" control_name="AutoresponseAnyoneItemID" name="AutoresponseAnyoneItemID" tool_tip="Drop an item here to have it sent with the above response."/>
-    <check_box bottom_delta="80" left="6" follows="left|top" control_name="AutoresponseNonFriends" name="AutoresponseNonFriends" label="Autorespond to nonfriends" tool_tip="Send the message in the box below to people who are not your friends"/>
+    <drop_target bottom_delta="-124" left="8" height="17" width="480" control_name="AutoresponseAnyoneItemID" name="AutoresponseAnyoneItemID" tool_tip="Drop an item here to have it sent with the above response."/>
+    <check_box bottom_delta="82" left="6" follows="left|top" control_name="AutoresponseNonFriends" name="AutoresponseNonFriends" label="Autorespond to nonfriends" tool_tip="Send the message in the box below to people who are not your friends"/>
     <check_box bottom_delta="0" left_delta="250" follows="left|top" control_name="AutoresponseNonFriendsItem" name="AutoresponseNonFriendsItem" label="Send item"/>
     <check_box bottom_delta="0" left_delta="80" follows="left|top" control_name="AutoresponseNonFriendsShow" name="AutoresponseNonFriendsShow" label="Show that this was sent"/>
     <text_editor bottom_delta="-47" left="8" font="SansSerifSmall" follows="left|top" height="45" max_length="1100" control_name="AutoresponseNonFriendsMessage" name="AutoresponseNonFriendsMessage" width="480" word_wrap="true" spell_check="true" hide_scrollbar="true"/>
-    <drop_target bottom_delta="-122" left="10" height="15" width="476" control_name="AutoresponseNonFriendsItemID" name="AutoresponseNonFriendsItemID" tool_tip="Drop an item here to have it sent with the above response."/>
-    <check_box bottom_delta="80" left="6" follows="left|top" control_name="AutoresponseMuted" name="AutoresponseMuted" label="Autorespond to people you have muted" tool_tip="Send the message in the box below to people you have muted."/>
+    <drop_target bottom_delta="-124" left="8" height="17" width="480" control_name="AutoresponseNonFriendsItemID" name="AutoresponseNonFriendsItemID" tool_tip="Drop an item here to have it sent with the above response."/>
+    <check_box bottom_delta="82" left="6" follows="left|top" control_name="AutoresponseMuted" name="AutoresponseMuted" label="Autorespond to people you have muted" tool_tip="Send the message in the box below to people you have muted."/>
     <check_box bottom_delta="0" left_delta="250" follows="left|top" control_name="AutoresponseMutedItem" name="AutoresponseMutedItem" label="Send item"/>
     <text_editor bottom_delta="-47" left="8" font="SansSerifSmall" follows="left|top" height="45" max_length="1100" control_name="AutoresponseMutedMessage" name="AutoresponseMutedMessage" width="480" word_wrap="true" spell_check="true" hide_scrollbar="true"/>
-    <drop_target bottom_delta="-122" left="10" height="15" width="476" control_name="AutoresponseMutedItemID" name="AutoresponseMutedItemID" tool_tip="Drop an item here to have it sent with the above response."/>
-    <text bottom_delta="86" left="8" follows="left|top" name="BusyModeResponseText" tool_tip="Send the message in the box below to people who message when you are busy.">Busy Mode Response:</text>
+    <drop_target bottom_delta="-124" left="8" height="17" width="480" control_name="AutoresponseMutedItemID" name="AutoresponseMutedItemID" tool_tip="Drop an item here to have it sent with the above response."/>
+    <text bottom_delta="88" left="8" follows="left|top" name="BusyModeResponseText" tool_tip="Send the message in the box below to people who message when you are busy.">Busy Mode Response:</text>
     <check_box bottom_delta="-5" left_delta="250" follows="left|top" control_name="BusyModeResponseItem" name="BusyModeResponseItem" label="Send item"/>
     <check_box bottom_delta="0" left_delta="80" follows="left|top" control_name="BusyModeResponseShow" name="BusyModeResponseShow" label="Show that this was sent"/>
     <text_editor bottom_delta="-47" left="8" font="SansSerifSmall" follows="left|top" height="45" max_length="1100" control_name="BusyModeResponse" name="BusyModeResponse" width="480" word_wrap="true" spell_check="true" hide_scrollbar="true"/>
-    <drop_target bottom_delta="-122" left="10" height="15" width="476" control_name="BusyModeResponseItemID" name="BusyModeResponseItemID" tool_tip="Drop an item here to have it sent with the above response."/>
+    <drop_target bottom_delta="-124" left="8" height="17" width="480" control_name="BusyModeResponseItemID" name="BusyModeResponseItemID" tool_tip="Drop an item here to have it sent with the above response."/>
   </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Spam" name="Spam">
@@ -112,6 +113,9 @@ The following wildcards are available to enhance your autoresponses: #n for user
       <check_box control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
       <check_box control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
       <check_box control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
+      <text name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
+      <check_box control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
+      <check_box control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
       <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3" bottom_delta="-20"/>
     </panel>
 

@@ -86,6 +86,7 @@
 #include "llvlcomposition.h"
 #include "llwaterparammanager.h"
 #include "llagentui.h"
+#include "hippogridmanager.h"
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -1300,8 +1301,8 @@ BOOL LLPanelRegionTerrainInfo::sendUpdate()
 	// =======================================
 	// Assemble and send texturedetail message
 
-	// Make sure user hasn't chosen wacky textures.
-	if (!validateTextureSizes())
+	// Make sure user hasn't chosen wacky textures on sl grids.
+	if (gHippoGridManager->getConnectedGrid()->isSecondLife() && !validateTextureSizes())
 	{
 		return FALSE;
 	}

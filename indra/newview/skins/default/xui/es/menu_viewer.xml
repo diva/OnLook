@@ -13,8 +13,7 @@
 		<menu_item_call label="Minimizar todas las Ventanas" name="Minimize All Windows"/>	
 		<menu_item_call label="Cerrar Ventana" name="Close Window"/>
 		<menu_item_call label="Cerrar todas las Ventanas" name="Close All Windows"/>
-		<menu_item_call label="Guardar Vista Previa Como (TGA)..." name="Save Preview As..."/>
-		<menu_item_call label="Guardar Vista Previa Como (PNG)..." name="Save Preview AsPNG..."/>
+		<menu_item_call label="Guardar Vista Previa Como..." name="Save Preview As..."/>
 		<menu_item_call label="Hacer una Foto" name="Take Snapshot"/>
 		<menu_item_call label="Guardar Foto en Disco" name="Snapshot to Disk"/>
 		<menu_item_call label="Salir" name="Quit"/>

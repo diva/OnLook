@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="voice_effects" title="Stimmenverstellung">
+<floater name="voice_effects" title="Voice-Morphing">
   <string name="no_voice_effect">(Kein Voice-Morphing)</string>
   <string name="active_voice_effect">(Aktiv)</string>
   <string name="unsubscribed_voice_effect">(nicht abonniert)</string>
@@ -34,7 +34,7 @@
   <string name="effect_Nightmare">Alptraum</string>
   <string name="effect_PopBot">PopBot</string>
   <string name="effect_Rachel">Rachel</string>
-  <string name="effect_Radio">Radio</string>
+  <string name="effect_Radio">Radiobutton</string>
   <string name="effect_Robot">Roboter</string>
   <string name="effect_Roxanne">Roxanne</string>
   <string name="effect_Rumble">Rumpeln</string>
@@ -53,15 +53,9 @@
 
  <text name="preview_text">Zur Vorschau</text>
   <text name="status_text">Stimme aufnehmen und auf einen Effekt klicken, um diesen auf Ihre Stimme anzuwenden.</text>
-  <button label="Aufnehmen" name="record_btn" tool_tip="Nehmen Sie Ihre Stimme auf.">
-    
-  </button>
-  <button label="Stop" name="record_stop_btn">
-    
-  </button>
-  <button label="Aktivieren" name="activate_btn">
-    
-  </button>
+  <button label="Aufnehmen" name="record_btn" tool_tip="Nehmen Sie Ihre Stimme auf."/>
+  <button label="Stop" name="record_stop_btn"/>
+  <button label="Aktivieren" name="activate_btn"/>
   <text_editor name="voice_morphing_link">Jetzt eintragen</text_editor>
   <scroll_list name="voice_effect_list" tool_tip="Nehmen Sie Ihre Stimme auf und klicken Sie dann auf einen Effekt, um diesen auszuprobieren.">
     <column label="Bezeichnung" name="name"/>

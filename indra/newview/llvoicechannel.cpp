@@ -685,6 +685,13 @@ void LLVoiceChannelProximal::activate()
 		// we're connected to a non-spatial channel, so disconnect.
 		LLVoiceClient::getInstance()->leaveNonSpatialChannel();
 	}
+
+	// Singu Note: Mic default state is OFF for local voice
+	if (LLVoiceClient::getInstance()->getUserPTTState() && LLVoiceClient::getInstance()->getPTTIsToggle() && gSavedSettings.getBOOL("AutoDisengageMic"))
+	{
+		LLVoiceClient::getInstance()->inputUserControlState(true);
+	}
+
 	LLVoiceChannel::activate();
 
 }

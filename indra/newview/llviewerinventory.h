@@ -162,6 +162,11 @@ public:
 	// If this is a broken link, try to fix it and any other identical link.
 	BOOL regenerateLink();
 
+	//<singu>
+	// Change WT_UNKNOWN to the type retrieved from the asset.
+	void setWearableType(LLWearableType::EType type);
+	//</singu>
+
 public:
 	BOOL mIsComplete;
 	LLTransactionID mTransactionID;

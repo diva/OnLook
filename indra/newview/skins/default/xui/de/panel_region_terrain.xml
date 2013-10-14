@@ -9,7 +9,7 @@
     <spinner label="Untere Terraingrenze" name="terrain_lower_spin"/>
     <button label="?" name="terrain_lower_help"/>
     
-    <text name="detail_texture_text">Terrain Textures</text>
+    <text name="detail_texture_text">Terrain-Texturen</text>
     
     
     
@@ -52,5 +52,5 @@ MINIMUM height of Texture #4.</text>
     <button label="?" name="upload_raw_help"/>
     <button label="Terrain formen" name="bake_terrain_btn" tool_tip="Das aktuelle Terrain zum Mittelpunkt für die oberen/unteren Terraingrenzen machen"/>
     <button label="?" name="bake_terrain_help"/>
-    <button label="Übernehmen" name="apply_btn"/>
+    <button label="Anwenden" name="apply_btn"/>
 </panel>

@@ -12,7 +12,7 @@
     <string name="Close">Schließen</string>
 
 	<tab_container name="ResidentChooserTabs">
-		<panel name="SearchPanel" label="Suche">
+		<panel name="SearchPanel" label="Suchen">
 			<text name="InstructSearchResidentName">Geben Sie einen Teil des Namens des
 Einwohners ein:</text>
 			

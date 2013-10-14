@@ -860,6 +860,32 @@ void LLLineEditor::removeChar()
 	}
 }
 
+// Remove a word (set of characters up to next space/punctuation) from the text
+void LLLineEditor::removeWord(bool prev)
+{
+	const U32 pos(getCursor());
+	if (prev ? pos > 0 : static_cast<S32>(pos) < getLength())
+	{
+		U32 new_pos(prev ? prevWordPos(pos) : nextWordPos(pos));
+		if (new_pos == pos) // Other character we don't jump over
+			new_pos = prev ? prevWordPos(new_pos-1) : nextWordPos(new_pos+1);
+
+		const U32 diff(labs(pos - new_pos));
+		if (prev)
+		{
+			mText.erase(new_pos, diff);
+			setCursor(new_pos);
+		}
+		else
+		{
+			mText.erase(pos, diff);
+		}
+	}
+	else
+	{
+		reportBadKeystroke();
+	}
+}
 
 void LLLineEditor::addChar(const llwchar uni_char)
 {
@@ -1318,7 +1344,10 @@ BOOL LLLineEditor::handleSpecialKey(KEY key, MASK mask)
 			else
 			if( 0 < getCursor() )
 			{
-				removeChar();
+				if (mask == MASK_CONTROL)
+					removeWord(true);
+				else
+					removeChar();
 			}
 			else
 			{
@@ -1326,6 +1355,14 @@ BOOL LLLineEditor::handleSpecialKey(KEY key, MASK mask)
 			}
 		}
 		handled = TRUE;
+		break;
+
+	case KEY_DELETE:
+		if (!mReadOnly && mask == MASK_CONTROL)
+		{
+			removeWord(false);
+			handled = true;
+		}
 		break;
 
 	case KEY_PAGE_UP:

@@ -34,6 +34,7 @@
 
 #include "lluictrlfactory.h"
 
+#include "lffloaterinvpanel.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentwearables.h"
@@ -78,6 +79,7 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
+#include "llworldmap.h"
 #include "llwearable.h"
 #include "llwearablelist.h"
 
@@ -2770,6 +2772,14 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		
 		return;
 	}
+	else if ("open_in_new_window" == action)
+	{
+		LLInventoryModel* model = getInventoryModel();
+		LLViewerInventoryCategory* cat = getCategory();
+		if (!model || !cat) return;
+		LFFloaterInvPanel::show(mUUID, model, cat->getName());
+		return;
+	}
 	else if ("paste" == action)
 	{
 		pasteFromClipboard();
@@ -3370,6 +3380,8 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 	if (!isAgentInventory()) return;
 	if (isOutboxFolder()) return;
 
+	mItems.push_back(std::string("Open Folder In New Window"));
+
 	LLFolderType::EType type = category->getPreferredType();
 	const bool is_system_folder = LLFolderType::lookupIsProtectedType(type);
 	// calling card related functionality for folders.
@@ -3428,6 +3440,7 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 
 			mItems.push_back(std::string("Replace Outfit"));
 		}
+		mItems.push_back(std::string("Replace Remove Separator"));
 		mItems.push_back(std::string("Remove From Outfit"));
 		if (!LLAppearanceMgr::getCanRemoveFromCOF(mUUID))
 		{
@@ -4254,6 +4267,22 @@ void LLTextureBridge::openItem()
 	}
 }
 
+bool LLTextureBridge::canSaveTexture()
+{
+	const LLInventoryModel* model = getInventoryModel();
+	if (!model)
+	{
+		return false;
+	}
+
+	const LLViewerInventoryItem* item = model->getItem(mUUID);
+	if (item)
+	{
+		return item->checkPermissionsSet(PERM_ITEM_UNRESTRICTED);
+	}
+	return false;
+}
+
 void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 {
 	lldebugs << "LLTextureBridge::buildContextMenu()" << llendl;
@@ -4274,13 +4303,12 @@ void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		getClipboardEntries(true, items, disabled_items, flags);
 
-		/* Singu TODO
 		items.push_back(std::string("Texture Separator"));
 		items.push_back(std::string("Save As"));
 		if (!canSaveTexture())
 		{
 			disabled_items.push_back(std::string("Save As"));
-		}*/
+		}
 	}
 	hide_context_entries(menu, items, disabled_items);	
 }
@@ -4288,17 +4316,18 @@ void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 // virtual
 void LLTextureBridge::performAction(LLInventoryModel* model, std::string action)
 {
-	/* Singu TODO
 	if ("save_as" == action)
 	{
-		LLFloaterReg::showInstance("preview_texture", LLSD(mUUID), TAKE_FOCUS_YES);
-		LLPreviewTexture* preview_texture = LLFloaterReg::findTypedInstance<LLPreviewTexture>("preview_texture", mUUID);
+		const LLViewerInventoryItem* item(getItem());
+		if (!item) return;
+		open_texture(mUUID, std::string("Texture: ") + item->getName(), FALSE);
+		LLPreview* preview_texture = LLPreview::find(mUUID);
 		if (preview_texture)
 		{
-			preview_texture->openToSave();
+			preview_texture->saveAs();
 		}
 	}
-	else*/ LLItemBridge::performAction(model, action);
+	else LLItemBridge::performAction(model, action);
 }
 
 // +=================================================+
@@ -4421,6 +4450,7 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		items.push_back(std::string("Landmark Separator"));
 		items.push_back(std::string("Teleport To Landmark"));
+		items.push_back(std::string("Show On Map"));
 	}
 
 	// Disable "About Landmark" menu item for
@@ -4429,6 +4459,7 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	if ((flags & FIRST_SELECTED_ITEM) == 0)
 	{
 		disabled_items.push_back(std::string("Teleport To Landmark"));
+		disabled_items.push_back(std::string("Show On Map"));
 	}
 
 	hide_context_entries(menu, items, disabled_items);
@@ -4466,6 +4497,14 @@ void LLLandmarkBridge::performAction(LLInventoryModel* model, std::string action
 		if(item)
 		{
 			open_landmark(item, std::string("  Landmark: ") + item->getName(), FALSE);
+		}
+	}
+	else if ("show_on_map" == action)
+	{
+		if (const LLViewerInventoryItem* item = getItem())
+		{
+			gFloaterWorldMap->trackLandmark(item->getUUID());
+			LLFloaterWorldMap::show(true);
 		}
 	}
 	else
@@ -4604,6 +4643,13 @@ void LLCallingCardBridge::performAction(LLInventoryModel* model, std::string act
 			LLAvatarActions::teleportRequest(item->getCreatorUUID());
 		}
 	}
+	else if ("web_profile" == action)
+	{
+		if (LLViewerInventoryItem* item = getItem())
+		{
+			LLAvatarActions::showProfile(item->getCreatorUUID(), true);
+		}
+	}
 
 	else LLItemBridge::performAction(model, action);
 }
@@ -4686,6 +4732,8 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			user_online = (LLAvatarTracker::instance().isBuddyOnline(item->getCreatorUUID()));
 		}
 		items.push_back(std::string("Send Instant Message Separator"));
+		if (!gSavedSettings.getString("WebProfileURL").empty() && !gSavedSettings.getBOOL("UseWebProfiles"))
+			items.push_back(std::string("Web Profile"));
 		items.push_back(std::string("Send Instant Message"));
 		items.push_back(std::string("Offer Teleport..."));
 		items.push_back(std::string("Request Teleport..."));

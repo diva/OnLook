@@ -66,6 +66,7 @@ class LLInvPanelComplObserver;
 class LLInventoryPanel : public LLPanel
 {
 protected:
+	friend class LFFloaterInvPanel;
 	LLInventoryPanel(const std::string& name,
 			const std::string& sort_order_setting,
 			const std::string& start_folder,

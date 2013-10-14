@@ -23,7 +23,7 @@
       </text>
       <combo_box bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-24"
          font="SansSerif" handle_edit_keys_directly="true" height="20" left="4"
-         max_chars="64" mouse_opaque="true" name="name_combo"
+         max_chars="64" mouse_opaque="true" name="username_combo"
          select_all_on_focus_received="true" width="155" allow_text_entry="true" />
       <check_box bottom="0" control_name="RememberName"
          follows="left|bottom" font="SansSerifSmall" height="16"
@@ -53,8 +53,8 @@
 	     left="0" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="120">
         Grid:
       </text>
-      <combo_box allow_text_entry="false" bottom_delta="-24" follows="left|bottom" height="20"
-           left="0" mouse_opaque="true" name="grids_combo" width="120" />
+      <combo_box allow_text_entry="true" max_chars="128" bottom_delta="-24" follows="left|bottom" height="20"
+           left="0" mouse_opaque="true" width="120" name="grids_combo" tool_tip="Input the name/nick for a known grid or any login uri, or pick one from the list"/>
       <button name="grids_btn" label="Grid Manager"
           bottom_delta="-20" left_delta="10" height="16" width="100"
           follows="left|bottom" font="SansSerifSmall" halign="center"

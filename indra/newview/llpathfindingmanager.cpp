@@ -165,7 +165,6 @@ public:
 
 	/*virtual*/ void result(const LLSD &pContent);
 	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
-	/*virtual*/ bool followRedir(void) const { return true; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return agentStateResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "AgentStateResponder"; }
 

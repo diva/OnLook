@@ -24,7 +24,7 @@ region to see.  More info</text>
     <combo_item name="item0">-Voreinstellung auswählen-</combo_item>
    </combo_box>
  </panel>
- <button label="Übernehmen" name="apply_btn"/>
+ <button label="Anwenden" name="apply_btn"/>
  <button label="Abbrechen" name="cancel_btn"/> 
  
  <text name="progress_indicator">Applying</text>

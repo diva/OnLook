@@ -24,7 +24,7 @@
 	<button label="?" name="agent_limit_help"/>
 	<spinner label="Objektbonus" name="object_bonus_spin"/>
 	<button label="?" name="object_bonus_help"/>
-	<text label="Alterseinstufung" name="access_text">Einstufung:</text>
+	<text label="Alterseinstufung" name="access_text">Einstuf.:</text>
 	<combo_box label="Mature" name="access_combo">
 		<combo_item name="Adult">Adult</combo_item>
 		<combo_item name="Mature">Mature</combo_item>
@@ -37,7 +37,7 @@
     <button label="?" name="fixed_sun_help"/>
     
     <slider label="Phase" name="sun_hour_slider"/>
-	<button label="Übernehmen" name="apply_btn"/>
+	<button label="Anwenden" name="apply_btn"/>
 	<button label="Einen Benutzer nach Hause teleportieren..." name="kick_btn"/>
 	<button label="Alle Benutzer nach Hause teleportieren..." name="kick_all_btn"/>
 	<button label="Nachricht an Region senden..." name="im_btn"/>

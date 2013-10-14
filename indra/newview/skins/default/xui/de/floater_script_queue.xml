@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="queue" title="Rückgängig">
+<floater name="queue" title="Zurücksetzen">
 	<string name="Starting">[START] von [COUNT] Objekt(en).</string>
 	<string name="Done">Fertig.</string>
 	<string name="Resetting">Wird zurückgesetzt</string>

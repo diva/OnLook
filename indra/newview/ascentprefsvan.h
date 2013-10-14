@@ -71,6 +71,7 @@ protected:
     BOOL mShowSelfClientTag;
     BOOL mShowSelfClientTagColor;
     BOOL mShowFriendsTag;
+    BOOL mDisplayClientTagOnNewLine;
     BOOL mCustomTagOn;
     std::string mCustomTagLabel;
     LLColor4 mCustomTagColor;
@@ -84,6 +85,7 @@ protected:
     LLColor4 mEstateOwnerColor;
     LLColor4 mLindenColor;
     LLColor4 mMutedColor;
+	LLColor4 mMapAvatarColor;
 	LLColor4 mCustomColor;
 	bool mColorFriendChat;
 	bool mColorEOChat;

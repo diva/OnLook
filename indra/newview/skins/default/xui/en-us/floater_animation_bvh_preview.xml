@@ -164,13 +164,13 @@
 		</combo_item>
 	</combo_box>
 	<spinner bottom_delta="-25" follows="left|top" height="18" increment="0.01"
-	     initial_val="0" label="Ease In (sec)" label_width="65" left="10"
-	     max_val="10" min_val="0" name="ease_in_time"
+	     label="Ease In (sec)" label_width="65" left="10"
+	     max_val="10" min_val="0" name="ease_in_time" control_name="SinguDefaultEaseIn"
 	     tool_tip="Amount of time (in seconds) over which animations blends in."
 	     width="125" />
 	<spinner bottom_delta="0" follows="left|top" height="18" increment="0.01"
-	     initial_val="0" label="Ease Out (sec)" label_width="75" left="150"
-	     max_val="10" min_val="0" name="ease_out_time"
+	     label="Ease Out (sec)" label_width="75" left="150"
+	     max_val="10" min_val="0" name="ease_out_time" control_name="SinguDefaultEaseOut"
 	     tool_tip="Amount of time (in seconds) over which animations blends out."
 	     width="135" />
 	<button bottom_delta="-42" follows="top|right" height="28" label="" left="10"

@@ -309,7 +309,10 @@ void init_start_screen(S32 location_id);
 void release_start_screen();
 void reset_login();
 void apply_udp_blacklist(const std::string& csv);
-bool process_login_success_response(std::string &password);
+// <FS:CR> Aurora Sim
+//bool process_login_success_response(std::string& password);
+bool process_login_success_response(std::string& password, U32& first_sim_size_x);
+// </FS:CR> Aurora Sim
 void transition_back_to_login_panel(const std::string& emsg);
 
 void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is_group)
@@ -479,6 +482,9 @@ bool idle_startup()
 	static std::vector<const char*> requested_options;
 	static std::string redirect_uri;
 
+// <FS:CR> Aurora Sim
+	static U32 first_sim_size_x = 256;
+// </FS:CR> Aurora Sim
 	static LLVector3 initial_sun_direction(1.f, 0.f, 0.f);
 	static LLVector3 agent_start_position_region(10.f, 10.f, 10.f);		// default for when no space server
 
@@ -1399,9 +1405,9 @@ bool idle_startup()
 			message_response = response["message"].asString();
 			message_id = response["message_id"].asString();
 			{
-			std::stringstream dump_str;
-			dump_str << response;
-			llinfos << dump_str.str() << llendl;
+				std::stringstream dump_str;
+				dump_str << response;
+				LL_DEBUGS("AppInit") << dump_str.str() << LL_ENDL;
 			}
 			
 			if(login_response == "true")
@@ -1544,7 +1550,7 @@ bool idle_startup()
 		if (successful_login)
 		{
 			// unpack login data needed by the application
-			if(process_login_success_response(password))
+			if (process_login_success_response(password, first_sim_size_x))
 			{
 				std::string name = firstname;
 				if (!gHippoGridManager->getCurrentGrid()->isSecondLife() ||
@@ -1552,6 +1558,7 @@ bool idle_startup()
 				{
 					name += " " + lastname;
 				}
+				if (gSavedSettings.getBOOL("LiruGridInTitle")) gWindowTitle += "- " + gHippoGridManager->getCurrentGrid()->getGridName() + " ";
 				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
@@ -1662,6 +1669,9 @@ bool idle_startup()
 		gAgent.initOriginGlobal(from_region_handle(gFirstSimHandle));
 		display_startup();
 
+// <FS:CR> Aurora Sim
+		LLWorld::getInstance()->setRegionWidth(first_sim_size_x);
+// </FS:CR> Aurora Sim
 		LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim);
 		display_startup();
 
@@ -1884,7 +1894,7 @@ bool idle_startup()
 		// Make sure agent knows correct aspect ratio
 		// FOV limits depend upon aspect ratio so this needs to happen before initializing the FOV below
 		LLViewerCamera::getInstance()->setViewHeightInPixels(gViewerWindow->getWindowDisplayHeight());
-		if (gViewerWindow->mWindow->getFullscreen())
+		if (gViewerWindow->getWindow()->getFullscreen())
 		{
 			LLViewerCamera::getInstance()->setAspect(gViewerWindow->getDisplayAspectRatio());
 		}
@@ -3434,6 +3444,9 @@ void reset_login()
 		gLoginMenuBarView->setEnabled( TRUE );
 	}
 
+	// Clear the console
+	if (gConsole) gConsole->clear();
+
 	// Hide any other stuff
 	LLFloaterMap::hideInstance();
 }
@@ -3838,7 +3851,7 @@ void apply_udp_blacklist(const std::string& csv)
 	
 }
 
-bool process_login_success_response(std::string& password)
+bool process_login_success_response(std::string& password, U32& first_sim_size_x)
 {
 	LLSD response = LLUserAuth::getInstance()->getResponse();
 
@@ -3978,7 +3991,12 @@ bool process_login_success_response(std::string& password)
 		U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
 		gFirstSimHandle = to_region_handle(region_x, region_y);
 	}
-	
+
+// <FS:CR> Aurora Sim
+	text = response["region_size_x"].asString();
+	if (!text.empty()) LLViewerParcelMgr::getInstance()->init(first_sim_size_x = atoi(text.c_str()));
+// </FS:CR> Aurora Sim	
+
 	const std::string look_at_str = response["look_at"];
 	if (!look_at_str.empty())
 	{

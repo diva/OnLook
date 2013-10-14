@@ -169,7 +169,7 @@ Detalles del error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado e
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Sí"/>
 	</notification>
 	
-	<notification name="GenericAlertYesNoCancel" type="alertmodal">
+	<notification name="GenericAlertYesNoCancel">
 		[MESSAGE]
 		<usetemplate name="yesnocancelbuttons" notext="No" yestext="Si" canceltext="Cancelar"/>
 	</notification>
@@ -655,7 +655,7 @@ Necesitas una cuenta para entrar en [SECOND_LIFE]. ¿Quieres crear una ahora?
 		<usetemplate name="okcancelbuttons" notext="Reintentar" yestext="Crear una Cuenta Nueva"/>
 	</notification>
 	
-	<notification name="MustHaveAccountToLogInNoLinks" type="alertmodal">
+	<notification name="MustHaveAccountToLogInNoLinks">
 		Debes escribir el nombre y apellido o el nombre de usuario de tu avatar.
 
 Necesitas una cuenta para entrar en [SECOND_LIFE_GRID].
@@ -718,34 +718,34 @@ No se reembolsan las cuotas pagadas.
 		Las configuraciones del puerto tendrán efecto cuando reinicies [APP_NAME].
 	</notification>
 	
-	<notification name="ProxyNeedRestart" type="notify">
+	<notification name="ProxyNeedRestart">
 		Las configuraciones de Sockets del proxy tendrán efecto cuando reinicies [APP_NAME].
 	</notification>
 	
-	<notification name="SOCKS_CONNECT_OK" type="alertmodal">
+	<notification name="SOCKS_CONNECT_OK">
 		La conexión a través del Proxy Socks5 [PROXY] fué satisfactoria.
 	</notification>	
-	<notification name="SOCKS_NOT_PERMITTED" type="alertmodal">
+	<notification name="SOCKS_NOT_PERMITTED">
 		El Proxy Socks5 "[PROXY]" rechazó la conexión, no permitido por el conjunto de reglas.
 	</notification>
 	
-	<notification name="SOCKS_CONNECT_ERROR" type="alertmodal">
+	<notification name="SOCKS_CONNECT_ERROR">
 		El Proxy Socks5 "[PROXY]" rechazó la conexión,no se puede abrir el canal TCP
 	</notification>
 	
-	<notification name="SOCKS_NOT_ACCEPTABLE" type="alertmodal">
+	<notification name="SOCKS_NOT_ACCEPTABLE">
 		El Proxy Socks5 "[PROXY]" rechazó el sistema de autenticación seleccionado.
 	</notification>
 	
-	<notification name="SOCKS_AUTH_FAIL" type="alertmodal">
+	<notification name="SOCKS_AUTH_FAIL">
 		El Proxy Socks5 "[PROXY]" ha reportado que tus credenciales son inválidas
 	</notification>
 	
-	<notification name="SOCKS_UDP_FWD_NOT_GRANTED" type="alertmodal">
+	<notification name="SOCKS_UDP_FWD_NOT_GRANTED">
 El Proxy Socks5 "[PROXY]" rechazó el requerimiento UDP
 	</notification>
 	
-	<notification name="SOCKS_HOST_CONNECT_FAILED" type="alertmodal">
+	<notification name="SOCKS_HOST_CONNECT_FAILED">
 		No se puede conectar al Servidor proxy Socks5 "[PROXY]"
 	</notification>	
 	
@@ -1448,7 +1448,7 @@ No tienes el permiso de comprar terreno para el grupo que tienes activado actual
 
 ¿Ofrecer a [NAME] que sea tu amigo?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				¿Quieres formar parte de mis amigos?
 			</input>
 			<button name="Offer" text="OK"/>
@@ -1966,7 +1966,7 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 	<notification name="KickUser">
 		¿Con qué mensaje se expulsará a este usuario?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Un administrador te ha desconectado.
 			</input>
 			<button name="OK" text="OK"/>
@@ -1977,7 +1977,7 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 	<notification name="KickAllUsers">
 		¿Con qué mensaje se expulsará a cualquiera que esté actualmente en el grid?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Un administrador te ha desconectado.
 			</input>
 			<button name="OK" text="OK"/>
@@ -1988,7 +1988,7 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 	<notification name="FreezeUser">
 		¿Con qué mensaje se congelará a este usuario?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Has sido congelado. No puedes moverte o escribir en el chat. Un administrador contactará contigo a través de un mensaje instantáneo (MI).
 			</input>
 			<button name="OK" text="OK"/>
@@ -1999,7 +1999,7 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 	<notification name="UnFreezeUser">
 		¿Con qué mensaje se descongelará a este usuario?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Ya no estás congelado.
 			</input>
 			<button name="OK" text="OK"/>
@@ -2061,13 +2061,25 @@ Por favor, intenta con un nombre diferente.
 	<notification name="OfferTeleport">
 		¿Ofrecer teleporte a tu posición con este mensaje?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Ven conmigo a [REGION]
 			</input>
 			<button name="OK" text="OK"/>
 			<button name="Cancel" text="Cancelar"/>
 		</form>
 	</notification>
+	
+	<notification name="TeleportRequestPrompt">
+		Solicitar Teleporte a [NAME] con el mensaje siguiente
+		<tag>confirm</tag>
+		<form name="form">
+			<input name="message">
+				Por favor, Telepórtame a tu ubicación.
+			</input>
+			<button name="OK" text="OK"/>
+			<button name="Cancel" text="Cancelar"/>
+		</form>
+	</notification>	
 	
 	<notification name="TooManyTeleportOffers">
 		Has intentado enviar [OFFERS] ofertas de teleporte
@@ -2080,7 +2092,7 @@ lo cual excede el límite de [LIMIT].
 	<notification name="OfferTeleportFromGod">
 		¿Convocar a este usuario a tu posición?
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Ven conmigo a [REGION]
 			</input>
 			<button name="OK" text="OK"/>
@@ -2096,7 +2108,7 @@ lo cual excede el límite de [LIMIT].
 	<notification label="Mensaje a todo el estado" name="MessageEstate">
 		Escribe un anuncio breve que se enviará a todo el que esté en tu estado.
 		<form name="form">
-			<input name="message" type="text"/>
+			<input name="message"/>
 			<button name="OK" text="OK"/>
 			<button name="Cancel" text="Cancelar"/>
 		</form>
@@ -2391,7 +2403,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	<notification label="Mensaje a toda la región" name="MessageRegion">
 		Escribe un anuncio breve que se enviará a todo el que esté en esta región.
 		<form name="form">
-			<input name="message" type="text"/>
+			<input name="message"/>
 			<button name="OK" text="OK"/>
 			<button name="Cancel" text="Cancelar"/>
 		</form>
@@ -2731,14 +2743,14 @@ Serán copiados a tu inventario.
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
 	</notification>
 	
-	<notification name="ConfirmPurchasePassword" type="password">
+	<notification name="ConfirmPurchasePassword">
 		Esta transacción hará que:
 [ACTION]
 
 ¿Está seguro de querer hacer esta compra?
 Por favor, vuelve a escribir tu contraseña y pulsa OK.
 		<form name="form">
-			<input name="message" type="password"/>
+			<input name="message"/>
 			<button name="ConfirmPurchase" text="OK"/>
 			<button name="Cancel" text="Cancelar"/>
 		</form>
@@ -3161,7 +3173,7 @@ Pero, vaya, diviértete si quieres.
 	<notification name="NewSkyPreset">
 		Dame un nombre para el cielo nuevo.
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Preselección nueva
 			</input>
 			<button name="OK" text="OK"/>
@@ -3176,7 +3188,7 @@ Pero, vaya, diviértete si quieres.
 	<notification name="NewDaycyclePreset">
 		Define un nombre para el nuevo Ciclo del Día.
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Nuevo Día
 			</input>
 			<button name="OK" text="OK"/>
@@ -3191,7 +3203,7 @@ Pero, vaya, diviértete si quieres.
 	<notification name="NewWaterPreset">
 		Dame un nombre para la nueva preselección de agua.
 		<form name="form">
-			<input name="message" type="text">
+			<input name="message">
 				Preselección nueva
 			</input>
 			<button name="OK" text="OK"/>
@@ -3785,10 +3797,15 @@ Por favor, reinténtalo en unos momentos.
 	
 	<notification name="UserGiveItem">
 		[NAME] te ha dado un/a [OBJECTTYPE] de nombre &apos;[OBJECTNAME]&apos;.
+		
+(Guardar)/(Descartar) no enviará mensaje de aceptado/rechazado.
 		<form name="form">
 			<button name="Keep" text="Guardar"/>
 			<button name="Discard" text="Descartar"/>
 			<button name="Mute" text="Ignorar"/>
+			<button name="(Keep)" text="(Guardar)"/>
+			<button name="(Discard)" text="(Descartar)"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 	
@@ -3814,6 +3831,20 @@ Por favor, reinténtalo en unos momentos.
 		<form name="form">
 			<button name="Teleport" text="Teleportar"/>
 			<button name="Cancel" text="Cancelar"/>
+			<button name="Profile" text="Perfil"/>
+		</form>
+	</notification>
+	
+	<notification name="TeleportRequest">
+		[NAME] está solicitando ser teleportado a tu ubicación.
+[MESSAGE]
+
+¿Ofrecerle Teleporte?
+		<tag>confirm</tag>
+		<form name="form">
+			<button name="Yes" text="Si"/>
+			<button name="No" text="No"/>
+			<button name="Profile" text="Perfil"/>
 		</form>
 	</notification>
 	
@@ -4684,7 +4715,7 @@ Por favor intenta nuevamente en unos minutos.
 el server está lleno.
 	</notification>
 
-	<notificationname="SaveBackToInvDisabled">
+	<notification name="SaveBackToInvDisabled">
 		<tag>fail</tag>
 			Recuperar al inventario ha sido deshabilitado.
 	</notification>
@@ -4694,7 +4725,7 @@ el server está lleno.
 			No se puede guardar '[OBJ_NAME]' en el contenido del objeto porque el objeto rezeado ya no existe más.
 	</notification>
 
-	<notificationname="NoModNoSaveToContents">
+	<notification name="NoModNoSaveToContents">
 		<tag>fail</tag>
 			No se puede guardar '[OBJ_NAME]' en el contenido del objeto proque no tienes permisos para modificar el objeto '[DEST_NAME]'.
 	</notification>
@@ -4820,7 +4851,7 @@ el server está lleno.
 			No tienes permisos para modificar este objeto
 	</notification>
 
-	 <notificationname="CantEnablePhysObjContributesToNav">
+	 <notification name="CantEnablePhysObjContributesToNav">
 			<tag>fail</tag>
 				No se puede habilitar la física en un objeto que es parte del navmesh.
 	</notification>
@@ -5001,7 +5032,7 @@ la región está llena.
 			Has sido teleportado a tu base por el objeto '[OBJECT_NAME]' de la parcela '[PARCEL_NAME]'
 	</notification>
 
-   <notificationname="TeleportedHomeByObject">
+   <notification name="TeleportedHomeByObject">
 		<tag>fail</tag>
 			Has sido teleportado a tu base por el objeto '[OBJECT_NAME]'
 	</notification>

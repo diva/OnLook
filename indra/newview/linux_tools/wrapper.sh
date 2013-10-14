@@ -148,7 +148,13 @@ else
 	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib:$LD_LIBRARY_PATH"'
 fi
 export SL_CMD='$LL_WRAPPER bin/$VIEWER_BINARY'
-export SL_OPT="`cat gridargs.dat` $@"
+
+if [ -n "$AITESTPLUGIN" ]; then
+	SL_CMD="$LL_WRAPPER bin/SLPlugin"
+	SL_OPT="TESTPLUGIN"
+else
+	SL_OPT="`cat gridargs.dat` $@"
+fi
 
 # Run the program.
 eval ${SL_ENV} ${SL_CMD} ${SL_OPT} || LL_RUN_ERR=runerr

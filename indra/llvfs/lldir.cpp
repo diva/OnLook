@@ -1,3 +1,4 @@
+
 /** 
  * @file lldir.cpp
  * @brief implementation of directory utilities base class
@@ -42,6 +43,7 @@
 
 #include "lldiriterator.h"
 #include "stringize.h"
+#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -69,6 +71,8 @@ LLDir_Linux gDirUtil;
 
 LLDir *gDirUtilp = (LLDir *)&gDirUtil;
 
+static const char* const empty = "";
+std::string LLDir::sDumpDir = "";
 LLDir::LLDir()
 :	mAppName(""),
 	mExecutablePathAndName(""),
@@ -89,7 +93,32 @@ LLDir::~LLDir()
 {
 }
 
-
+std::vector<std::string> LLDir::getFilesInDir(const std::string &dirname)
+{
+    //Returns a vector of fullpath filenames.
+    
+    boost::filesystem::path p (dirname);
+    std::vector<std::string> v;
+    
+    if (exists(p))
+    {
+        if (is_directory(p))
+        {
+            boost::filesystem::directory_iterator end_iter;
+            for (boost::filesystem::directory_iterator dir_itr(p);
+                 dir_itr != end_iter;
+                 ++dir_itr)
+            {
+                if (boost::filesystem::is_regular_file(dir_itr->status()))
+                {
+                    v.push_back(dir_itr->path().filename().string());
+                }
+            }
+        }
+    }
+    return v;
+}   
+            
 S32 LLDir::deleteFilesInDir(const std::string &dirname, const std::string &mask)
 {
 	S32 count = 0;
@@ -104,48 +133,74 @@ S32 LLDir::deleteFilesInDir(const std::string &dirname, const std::string &mask)
 		llassert(!"Invalid file mask");
 	}
 
-	LLDirIterator iter(dirname, mask);
-	while (iter.next(filename))
+	try
 	{
-		fullpath = add(dirname, filename);
-
-		if(LLFile::isdir(fullpath))
+		LLDirIterator iter(dirname, mask);
+		while (iter.next(filename))
 		{
-			// skipping directory traversal filenames
-			count++;
-			continue;
-		}
+			fullpath = add(dirname, filename);
 
-		S32 retry_count = 0;
-		while (retry_count < 5)
-		{
-			if (0 != LLFile::remove(fullpath))
+			if(LLFile::isdir(fullpath))
 			{
-				retry_count++;
-				result = errno;
-				llwarns << "Problem removing " << fullpath << " - errorcode: "
+				// skipping directory traversal filenames
+				count++;
+				continue;
+			}
+
+			S32 retry_count = 0;
+			while (retry_count < 5)
+			{
+				if (0 != LLFile::remove(fullpath))
+				{
+					retry_count++;
+					result = errno;
+					llwarns << "Problem removing " << fullpath << " - errorcode: "
 						<< result << " attempt " << retry_count << llendl;
 
-				if(retry_count >= 5)
-				{
-					llwarns << "Failed to remove " << fullpath << llendl ;
-					return count ;
-				}
+					if(retry_count >= 5)
+					{
+						llwarns << "Failed to remove " << fullpath << llendl ;
+						return count ;
+					}
 
-				ms_sleep(100);
-			}
-			else
-			{
-				if (retry_count)
-				{
-					llwarns << "Successfully removed " << fullpath << llendl;
+					ms_sleep(100);
 				}
-				break;
-			}			
+				else
+				{
+					if (retry_count)
+					{
+						llwarns << "Successfully removed " << fullpath << llendl;
+					}
+					break;
+				}			
+			}
+			count++;
 		}
-		count++;
 	}
+	catch(...)
+	{
+		llwarns << "Unable to remove some files from " + dirname  << llendl;
+	}
+
 	return count;
+}
+
+U32 LLDir::deleteDirAndContents(const std::string& dir_name)
+{
+	//Removes the directory and its contents.  Returns number of files removed.
+	// Singu Note: boost::filesystem throws exceptions
+	S32 res = 0;
+
+	try 
+	{
+		res = boost::filesystem::remove_all(dir_name);
+	}
+	catch(const boost::filesystem::filesystem_error& e)
+	{
+		llwarns << "boost::filesystem::remove_all(\"" + dir_name + "\") failed: '" + e.code().message() + "'" << llendl;
+	}
+
+	return res;
 }
 
 const std::string LLDir::findFile(const std::string &filename, 
@@ -233,6 +288,34 @@ const std::string &LLDir::getLindenUserDir(bool empty_ok) const
 const std::string &LLDir::getChatLogsDir() const
 {
 	return mChatLogsDir;
+}
+
+void LLDir::setDumpDir( const std::string& path )
+{
+    LLDir::sDumpDir = path;
+    if (! sDumpDir.empty() && sDumpDir.rbegin() == mDirDelimiter.rbegin() )
+    {
+        sDumpDir.erase(sDumpDir.size() -1);
+    }
+}
+
+const std::string &LLDir::getDumpDir() const
+{
+    if (sDumpDir.empty() )
+    {
+		/* Singu Note: don't generate a different dump dir each time
+        LLUUID uid;
+        uid.generate();
+        
+        sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "")
+                    + "dump-" + uid.asString();
+		*/
+
+		sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
+        dir_exists_or_crash(sDumpDir);  
+    }
+
+	return LLDir::sDumpDir;
 }
 
 const std::string &LLDir::getPerAccountChatLogsDir() const
@@ -396,12 +479,29 @@ std::string LLDir::getExpandedFilename(ELLPath location, const std::string& subd
 		prefix = getCacheDir();
 		break;
 		
+    case LL_PATH_DUMP:
+        prefix=getDumpDir();
+        break;
+            
 	case LL_PATH_USER_SETTINGS:
 		prefix = add(getOSUserAppDir(), "user_settings");
 		break;
 
 	case LL_PATH_PER_SL_ACCOUNT:
 		prefix = getLindenUserDir();
+		if (prefix.empty())
+		{
+			// if we're asking for the per-SL-account directory but we haven't
+			// logged in yet (or otherwise don't know the account name from
+			// which to build this string), then intentionally return a blank
+			// string to the caller and skip the below warning about a blank
+			// prefix.
+			LL_DEBUGS("LLDir") << "getLindenUserDir() not yet set: "
+							   << ELLPathToString(location)
+							   << ", '" << subdir1 << "', '" << subdir2 << "', '" << in_filename
+							   << "' => ''" << LL_ENDL;
+			return std::string();
+		}
 		break;
 		
 	case LL_PATH_CHAT_LOGS:

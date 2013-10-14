@@ -74,7 +74,7 @@ Hover your mouse over the options for more help.
 		(Owners are shown in bold)
 	</text>
 	<name_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-88"
-	     column_padding="0" draw_border="true" draw_heading="true"
+	     column_padding="0" draw_border="true" draw_heading="true" multi_select="true"
 	     follows="left|top" heading_font="SansSerifSmall" heading_height="14"
 	     height="80" left="7" mouse_opaque="true" menu_file="menu_avs_list.xml"
 	     name="visible_members" width="404">

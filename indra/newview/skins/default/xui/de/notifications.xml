@@ -69,6 +69,25 @@
     </form>
   </template>
 
+  <notification name="AIXMLExportWriteError">Export Failure: could not open file "[FILE]" for writing.</notification>
+
+  <notification name="AIXMLImportGridMismatch">Import Warning: could not apply textures: [FILE] was exported on grid "[GRIDNAME]" while the currentgrid is "[CURGRID]".</notification>
+
+  <notification name="AIXMLImportParseError">Import Failure: could not read or parse wearable import file "[FILE]".</notification>
+
+  <notification name="AIXMLImportRootTypeError">Import Failure: the file "[FILE]" is not a linden_genepool XML file.</notification>
+
+  <notification name="AIXMLImportRootVersionError">Import Failure: the file "[FILE]" contains linden_genepool XML data with the wrong [TAG]. Version "[VERSIONMAJOR].0" or less is required.</notification>
+
+  <notification name="AIXMLImportInvalidError">Import Failure: the file "[FILE]" contains invalid data.</notification>
+
+  <notification name="AIXMLImportDifferentGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!</notification>
+
+  <notification name="AIXMLImportMixedGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have been applied but might not exist here!</notification>
+
+  <notification name="AIXMLImportWearableTypeMismatch">Import Warning: the file "[FILE]" does not contain a wearable of type [TYPE].
+It contains an archetype of type [ARCHETYPENAME]. Please select the correct type before importing.</notification>
+
   <notification name="MediaAlert">Der Besitzer der Parzelle m&#xF6;chte Ihren Viewer anweisen die folgende [TYPE] URL zu laden:[URL]Sie k&#xF6;nnen die korrespondierende Dom&#xE4;ne oder In-Welt Objekt-Skript-Server erlauben oder ablehnen."Erlauben" und "Verweigern" gelten nur f&#xFC;r die aktuelle Sitzung, w&#xE4;hrend "Immer sperren" bzw. "Immer erlauben" dann immer gelten.<form name="form">
     <button name="Allow" text="erlauben"/>
 	<button name="Deny" text="verbieten"/>
@@ -612,8 +631,7 @@ Zu kurze Begriffe wurden entfernt.
 
 Ihre Suchanfrage: [FINALQUERY]</notification>
 
-  <notification name="SeachFilteredOnShortWordsEmpty">Ihre Suchbegriffe sind zu kurz.
-Es wurde keine Suche durchgef&#xFC;hrt.</notification>
+  <notification name="SeachFilteredOnShortWordsEmpty">Die eingebenen Suchbegriffe waren zu kurz, so dass keine Suche durchgef&#xFC;hrt wurde.</notification>
 
   <!-- Generic Teleport failure modes - strings will be inserted from
        teleport_strings.xml if available. -->
@@ -1153,6 +1171,11 @@ Bitte versuche einen anderen Namen.</notification>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
 
+  <notification name="TeleportRequestPrompt">Request a teleport to [NAME] with the following message<tag>Best&#xE4;tigen</tag><form name="form">
+      <input name="message">Teleport me to your location, please.</input>
+      <button name="OK" text="OK"/>
+      <button name="Cancel" text="Abbrechen"/>
+    </form></notification>
   <notification name="TooManyTeleportOffers">Du versuchst  [OFFERS] Teleport anfragen zu senden
 welches die maximale anzahl an gleichzeitigen anfragen von [LIMIT] &#xFC;bersteigt.<tag>Gruppe</tag><tag>fehlgeschlagen</tag><usetemplate name="okbutton" yestext="OK"/></notification>
 
@@ -1418,7 +1441,7 @@ Standard: deaktiviert</notification>
 
   <notification label="Top-Kollisionsobjekte" name="HelpRegionTopColliders">Zeigt eine Liste der Objekte mit den potenziell meisten Objekt-Objekt-Kollisionen an.  Diese Objekte k&#xF6;nnen die Leistung beeintr&#xE4;chtigen.  W&#xE4;hlen Sie &#x201E;Ansicht&#x201C; &gt; &#x201E;Statistikleiste&#x201C; aus und sehen Sie unter &#x201E;Simulator&#x201C; &gt; &#x201E;Time&#x201C; &gt; &#x201E;Sim Time (Physics)&#x201C; nach, ob die Physikberechnung l&#xE4;nger als 20 ms dauert.</notification>
 
-  <notification label="Top-Skripts" name="HelpRegionTopScripts">Zeigt eine Liste der Objekte an, die die meiste Zeit ben&#xF6;tigen, um LSL-Skripts auszuf&#xFC;hren.  Diese Objekte k&#xF6;nnen die Leistung beeintr&#xE4;chtigen.
+  <notification label="Top-Skripte" name="HelpRegionTopScripts">Zeigt eine Liste der Objekte an, die die meiste Zeit ben&#xF6;tigen, um LSL-Skripts auszuf&#xFC;hren.  Diese Objekte k&#xF6;nnen die Leistung beeintr&#xE4;chtigen.
 W&#xE4;hlen Sie &#x201E;Ansicht&#x201C; &gt; &#x201E;Statistikleiste&#x201C; und sehen Sie unter &#x201E;Simulator&#x201C; &gt; &#x201E;Time&#x201C; &gt; &#x201E;Script Time&#x201C; nach, ob mehr als 25 ms f&#xFC;r Skripts ben&#xF6;tigt werden.</notification>
 
   <notification label="Region neu starten" name="HelpRegionRestart">Starten Sie den Serverprozess f&#xFC;r diese Region nach der 2-Minuten-Warnung neu. Die Verbindung aller Einwohner in dieser Region wird getrennt.  Die Region wird gespeichert und sollte nach 90 Sekunden wieder verf&#xFC;gbar sein.
@@ -1878,9 +1901,9 @@ Ein Grid mit dem gleichen Namen existiert bereits.</notification>
 
   <notification name="GroupNotice">Betreff: [SUBJECT], Nachricht: [MESSAGE]</notification>
 
-  <notification name="FriendOnline">[FIRST] [LAST] ist online</notification>
+  <notification name="FriendOnline">[NAME] ist online</notification>
 
-  <notification name="FriendOffline">[FIRST] [LAST] ist offline</notification>
+  <notification name="FriendOffline">[NAME] ist offline</notification>
 
   <notification name="AddSelfFriend">Sie k&#xF6;nnen sich nicht selbst als Freund hinzuf&#xFC;gen.</notification>
 
@@ -1929,7 +1952,7 @@ Da dies Auswirkung auf die Kennworteingabe hat, sollten Sie die Taste besser aus
 
   <notification name="CannotRemoveProtectedCategories">Gesch&#xFC;tzte Kategorien k&#xF6;nnen nicht entfernt werden.</notification>
 
-  <notification name="OfferedCard">Sie haben [FIRST] [LAST] eine Visitenkarte angeboten.</notification>
+  <notification name="OfferedCard">Sie haben [NAME] eine Visitenkarte angeboten.</notification>
 
   <notification name="UnableToBuyWhileDownloading">Kauf nicht m&#xF6;glich. Objektdaten werden noch geladen.
 Bitte versuchen Sie es erneut.</notification>
@@ -1967,7 +1990,7 @@ Klicken Sie die Karte doppelt an, w&#xE4;hlen Sie &#x201E;Instant Message&#x201C
   <notification name="CantSelectLandFromMultipleRegions">Land kann nicht &#xFC;ber Servergrenzen hinweg ausgew&#xE4;hlt werden.
 W&#xE4;hlen Sie eine kleinere Landfl&#xE4;che.</notification>
 
-  <notification name="SearchWordBanned">Einige Begriffe in Ihrer Suchanfrage wurden ausgeschlossen, aufgrund von in den Community Standards definierten Inhaltsbeschr&#xE4;nkungen.</notification>
+  <notification name="SearchWordBanned">Einige Begriffe der Suchabfrage wurden aufgrund von Einschr&#xE4;nkungen, die in den Community Standards festgelegt wurden, von der Suche ausgeschlossen.</notification>
 
   <notification name="NoContentToSearch">Bitte w&#xE4;hlen Sie mindestens eine Inhaltsart f&#xFC;r die Suche aus (PG, Mature oder Adult).</notification>
 
@@ -2010,9 +2033,9 @@ Bitte Installiere das Plugin neu oder wende dich an den Verk&#xE4;ufer wenn du w
     </form></notification>
   <notification name="OwnedObjectsReturned">Ihre Objekte auf der ausgew&#xE4;hlten Parzelle wurden in Ihr Inventar transferiert.</notification>
 
-  <notification name="OtherObjectsReturned">Die Objekte von [FIRST] [LAST] auf dieser Parzelle wurden in das Inventar dieser Person transferiert.</notification>
+  <notification name="OtherObjectsReturned">Die Objekte von [NAME] auf dieser Parzelle wurden in das Inventar dieser Person transferiert.</notification>
 
-  <notification name="OtherObjectsReturned2">Die Objekte von [FIRST] [LAST] auf dieser
+  <notification name="OtherObjectsReturned2">Die Objekte von [NAME] auf dieser
 Parzelle von &#x201E;[NAME]&#x201C; wurden an ihren Eigent&#xFC;mer zur&#xFC;ckgegeben.</notification>
 
   <notification name="GroupObjectsReturned">Die mit der Gruppe [GROUPNAME] gemeinsam genutzten Objekte auf dieser Parzelle wurden in das Inventar ihrer Eigent&#xFC;mer transferiert.
@@ -2109,7 +2132,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
 
   <notification name="NoValidParcel">Es konnte keine g&#xFC;ltige Parzelle gefunden werden.</notification>
 
-  <notification name="ObjectGiveItem">Das Objekt [OBJECTFROMNAME] von [FIRST] [LAST] hat Ihnen Folgendes &#xFC;bergeben: [OBJECTTYPE] ([OBJECTNAME]).<form name="form">
+  <notification name="ObjectGiveItem">Das Objekt [OBJECTFROMNAME] von [NAME] hat Ihnen Folgendes &#xFC;bergeben: [OBJECTTYPE] ([OBJECTNAME]).<form name="form">
       <button name="Keep" text="Behalten"/>
       <button name="Discard" text="Verwerfen"/>
       <button name="Mute" text="Blockieren"/>
@@ -2143,6 +2166,15 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
 
+  <notification name="TeleportRequest">[NAME] is requesting to be teleported to your location.
+[MESSAGE]
+
+Offer a teleport?<tag>Best&#xE4;tigen</tag><form name="form">
+      <button name="Yes" text="Ja"/>
+      <button name="No" text="Nein"/>
+      <button name="Profile" text="Profil"/>
+    </form></notification>
+
   <notification name="GotoURL">[MESSAGE]
 [URL]<form name="form">
       <button name="Later" text="Sp&#xE4;ter"/>
@@ -2157,6 +2189,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Ignore" text="Ignorieren"/>
+      <button name="Profile" text="Profil"/>
     </form></notification>
 
   <notification name="FriendshipOffered">Sie haben [TO_NAME] die Freundschaft angeboten.</notification>
@@ -2167,6 +2200,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
       <button name="Ignore" text="Ignorieren"/>
+      <button name="Profile" text="Profil"/>
     </form></notification>
 
   <notification name="FriendshipAccepted">[NAME] hat Ihr Freundschaftsangebot akzeptiert.</notification>
@@ -2175,7 +2209,7 @@ Versuchen Sie es in einigen Minuten erneut.</notification>
 
   <notification name="FriendshipDissolved">[NAME] hat Ihr Freundschaftsangebot abgelehnt.</notification>
 
-  <notification name="OfferCallingCard">[FIRST] [LAST] bietet Ihnen eine Visitenkarte an.
+  <notification name="OfferCallingCard">[NAME] bietet Ihnen eine Visitenkarte an.
 Dies erstellt ein Lesezeichen in Ihrem Inventar, damit Sie diesen Einwohner jederzeit &#xFC;ber IM erreichen.<form name="form">
       <button name="Accept" text="Akzeptieren"/>
       <button name="Decline" text="Ablehnen"/>
@@ -2223,7 +2257,7 @@ Anfrage gestatten?<form name="form">
       <button name="Details" text="Info..."/>
     </form></notification>
 
-  <notification name="ScriptDialog">[FIRST] [LAST]s &#x201E;[TITLE]&#x201C;
+  <notification name="ScriptDialog">[NAME]s &#x201E;[TITLE]&#x201C;
 [MESSAGE]<form name="form">
       <button name="Ignore" text="Ignorieren"/>
     </form></notification>
@@ -2307,15 +2341,15 @@ Bitte beachte, dieses deaktiviert ebenfalls die Funktion "Anziehen" von jeder Pr
 
 F&#xFC;r mehr Informationen suche nach "Restrained Life" im SL wiki</notification>
 
-  <notification name="FirstRLVFartouch">You have been fartouch restricted: you will be unable to touch objects farther than 1.5m from your avatar until the restriction is lifted.
+  <notification name="FirstRLVFartouch">Sie sind 'Fartouch'-beschr&#xE4;nkt: Sie k&#xF6;nnen keine Objekte weiter als 1,5m entfernt ber&#xFC;hren, bis die Beschr&#xE4;nkung aufgehoben wird.
 
-Tip: if an object is out of range the mouse cursor will not change as you hover over it and you'll hear an error sound if you try to right-click it.</notification>
+Tip: Wenn ein Objekt ausser Ihrer Reichweite ist, ver&#xE4;ndert sich der Mauszeiger nicht und Sie h&#xF6;ren den Fehlersound beim Anklicken.</notification>
 
-  <notification name="FirstRLVGiveToRLV">Folders starting with '#RLV/~' can automatically be placed under your #RLV shared folder after you accept the inventory offer.
+  <notification name="FirstRLVGiveToRLV">Ordner, die mit '#RLV/~' beginnen, k&#xF6;nnen automatisch unterhalb Ihrer mit anderen geteilten #RLV Ordner plaziert werden, nachdem Sie das Inventar-Angebot angenommen haben.
 
-Please note that - if enabled - the accepted inventory items will instantly be available to scripts and will have full use of the RLV API which may cause unexpected or undesirable situations.
+Bitte beachten Sie, da&#xDF; - sofern aktiviert - die akzeptierten Inventargegenst&#xE4;nde sofort f&#xFC;r Skripte mit der vollen Nutzung der RLV-API was zu unerwarteten bzw. unwillkommenen Situationen f&#xFC;hren kann.
 
-Do you want to enable this feature?<usetemplate name="okcancelbuttonscanceldefault" yestext="Ja"/></notification>
+M&#xF6;chten Sie diese Funktion wirklich aktivieren?<usetemplate name="okcancelbuttonscanceldefault" yestext="Ja"/></notification>
 
   <notification name="MaxListSelectMessage">Sie k&#xF6;nnen maximal [MAX_SELECT] Objekte
 von der Liste ausw&#xE4;hlen.</notification>
@@ -2327,11 +2361,11 @@ Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, o
       <button name="Mute" text="Blockieren"/>
     </form></notification>
 
-  <notification name="AutoUnmuteByIM">[FIRST] [LAST] hat eine Instant Message erhalten; die Stummschaltung wurde aufgehoben.</notification>
+  <notification name="AutoUnmuteByIM">[NAME] hat eine Instant Message erhalten; die Stummschaltung wurde aufgehoben.</notification>
 
-  <notification name="AutoUnmuteByMoney">[FIRST] [LAST] hat Geld erhalten; die Stummschaltung wurde aufgehoben.</notification>
+  <notification name="AutoUnmuteByMoney">[NAME] hat Geld erhalten; die Stummschaltung wurde aufgehoben.</notification>
 
-  <notification name="AutoUnmuteByInventory">[FIRST] [LAST] wurde ein Inventarobjekt angeboten; die Stummschaltung wurde aufgehoben.</notification>
+  <notification name="AutoUnmuteByInventory">[NAME] wurde ein Inventarobjekt angeboten; die Stummschaltung wurde aufgehoben.</notification>
 
   <notification name="VoiceInviteGroup">[NAME] ist einem Voice-Chat mit der Gruppe [GROUP] beigetreten.
 Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Gespr&#xE4;ch beizutreten, oder auf &#x201E;Ablehnen&#x201C;, um die Einladung auszuschlagen. Klicken Sie auf &#x201E;Stummschalten&#x201C;, um diesen Anrufer stumm zu schalten.<form name="form">
@@ -2370,16 +2404,15 @@ Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Chat beizutreten, oder auf &
 
   <notification name="VoiceLoginRetry">Wir erstellen einen Voice-Kanal f&#xFC;r Sie. Bitte warten Sie einen Moment.</notification>
 
-  <notification name="VoiceEffectsExpired">One or more of your subscribed Voice Morphs has expired.
-[[URL] Click here] to renew your subscription.<tag>fehlgeschlagen</tag><tag>voice</tag></notification>
+  <notification name="VoiceEffectsExpired">Eine oder mehrere deiner Abbonierten Sprachpakete ist ausgelaufen.\[[URL] Click here] um dein Abo zu erneuern.<tag>fehlgeschlagen</tag><tag>Sprache</tag></notification>
 
-  <notification name="VoiceEffectsExpiredInUse">The active Voice Morph has expired, your normal voice settings have been applied.
-[[URL] Click here] to renew your subscription.<tag>fehlgeschlagen</tag><tag>voice</tag></notification>
+  <notification name="VoiceEffectsExpiredInUse">Dein Aktives Sprach Abo ist ausgelaufen, deine normalen Spracheinstellungen sind wieder aktiviert worden.
+[[URL] Click here] um dein Abo zu erneuern.<tag>fehlgeschlagen</tag><tag>Sprache</tag></notification>
 
-  <notification name="VoiceEffectsWillExpire">One or more of your Voice Morphs will expire in less than [INTERVAL] days.
-[[URL] Click here] to renew your subscription.<tag>fehlgeschlagen</tag><tag>voice</tag></notification>
+  <notification name="VoiceEffectsWillExpire">Eine oder mehrere deine Sprach Abos wird in weniger als [INTERVAL] Tagen ablaufen.
+[[URL] Click here] um dein Abo zu verl&#xE4;ngern.<tag>fehlgeschlagen</tag><tag>Sprache</tag></notification>
 
-  <notification name="VoiceEffectsNew">New Voice Morphs are available!<tag>voice</tag></notification>
+  <notification name="VoiceEffectsNew">Neue Sprachver&#xE4;nderungen sind verf&#xFC;gbar!<tag>Sprache</tag></notification>
 
   <notification name="Cannot enter parcel: not a group member">Zugang zur Parzelle verweigert, Sie geh&#xF6;ren keiner berechtigten Gruppe an.</notification>
 
@@ -2391,142 +2424,141 @@ Klicken Sie auf &#x201E;Akzeptieren&#x201C;, um dem Chat beizutreten, oder auf &
 
   <notification name="VoiceCallGenericError">Fehler beim Versuch, eine Voice-Chat-Verbindung zu [VOICE_CHANNEL_NAME] herzustellen.  Bitte versuchen Sie es erneut.</notification>
 
- <notification name="UnsupportedCommandSLURL">The SLurl you clicked on is not supported.<tag>fehlgeschlagen</tag></notification>
+ <notification name="UnsupportedCommandSLURL">Die SLurl die du angeklickt hast wird nicht unterst&#xFC;tzt.<tag>fehlgeschlagen</tag></notification>
 
- <notification name="BlockedSLURL">A SLurl was received from an untrusted browser and has been blocked for your security.<tag>security</tag></notification>
+ <notification name="BlockedSLURL">Eine SLurl wurde von einem nicht vertrauten Browser gesendet und wurde aus sicherheitsgr&#xFC;nden blockiert.<tag>Sicherheit</tag></notification>
 
-  <notification name="ThrottledSLURL">Multiple SLurls were received from an untrusted browser within a short period.
-They will be blocked for a few seconds for your security.<tag>security</tag></notification>
+  <notification name="ThrottledSLURL">Mehrere SLurls wurden von einem nicht vertrauten Browser innerhalb einer kurzen Zeitspanne empfangen.
+Sie wurden aus Sicherheitsgr&#xFC;nden geblockt f&#xFC;r ein paar Minuten.<tag>Sicherheit</tag></notification>
 
   <notification name="ServerVersionChanged">Die Region, die Sie betreten haben, verwendet eine andere Simulatorversion. Klicken Sie auf diese Nachricht, um weitere Informationen zu erhalten.</notification>
-     <notification name="ObjectMediaFailure">Server Error: Media update or get failed.
+     <notification name="ObjectMediaFailure">Server Fehler: Media update oder download fehlgeschlagen.
 '[ERROR]'<tag>fehlgeschlagen</tag><usetemplate name="okbutton" yestext="OK"/></notification>
 
-  <notification name="MeshUploadError">[LABEL] failed to upload: [MESSAGE] [IDENTIFIER]
+  <notification name="MeshUploadError">[LABEL] Fehler beim Upload: [MESSAGE] [IDENTIFIER]
 
-See the log file for details.</notification>
+Mehr Details im Logfile.</notification>
 
-  <notification name="MeshUploadPermError">Error while requesting mesh upload permissions.</notification>
+  <notification name="MeshUploadPermError">Fehler beim abrufen der Mesh Hochladeberechtigungen.</notification>
 
-  <notification name="RegionCapabilityRequestError">Could not get region capability '[CAPABILITY]'.</notification>
+  <notification name="RegionCapabilityRequestError">Konnte die Regionsf&#xE4;higkeiten nicht abrufen  '[CAPABILITY]'.</notification>
 
-  <notification name="AvatarRezNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' declouded after [TIME] seconds.</notification>
+  <notification name="AvatarRezNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' entwolkt nach [TIME] Sekunden.</notification>
 
-  <notification name="AvatarRezSelfBakedDoneNotification">( [EXISTENCE] seconds alive )
-You finished baking your outfit after [TIME] seconds.</notification>
+  <notification name="AvatarRezSelfBakedDoneNotification">( [EXISTENCE] Sekunden am Leben )
+Das Baking von Ihrem Outfit wurde nach  [TIME] Sekunden beendet.</notification>
 
-  <notification name="AvatarRezSelfBakedUpdateNotification">( [EXISTENCE] seconds alive )
-You sent out an update of your appearance after [TIME] seconds.
+  <notification name="AvatarRezSelfBakedUpdateNotification">( [EXISTENCE] Sekunden am Leben )
+Sie haben ein Update Ihres Ausehens nach [TIME] Sekunden gesendet.
 [STATUS]</notification>
 
-  <notification name="AvatarRezCloudNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' became cloud.</notification>
+  <notification name="AvatarRezCloudNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' wurde zur Wolke.</notification>
 
-  <notification name="AvatarRezArrivedNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' appeared.</notification>
+  <notification name="AvatarRezArrivedNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' is online gekommen.</notification>
 
-  <notification name="AvatarRezLeftCloudNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' left after [TIME] seconds as cloud.</notification>
+  <notification name="AvatarRezLeftCloudNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' hat ausgeloggt nach [TIME] Sekunden als Wolke.</notification>
 
-  <notification name="AvatarRezEnteredAppearanceNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' entered appearance mode.</notification>
+  <notification name="AvatarRezEnteredAppearanceNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' ist in Aussehen Modus gegangen.</notification>
 
-  <notification name="NoVoiceConnect">We're having trouble connecting to your voice server:
+  <notification name="NoVoiceConnect">Wir haben Probleme eine Verbindung zu deinem Voice Server auf zu bauen.
 
 [HOSTID]
+Voice steht nicht zur Verf&#xFC;gung.
+Bitte &#xFC;berpr&#xFC;fe deine Netzwerk und Firewall Einstellungen.<tag>Sprache</tag><tag>fehlgeschlagen</tag><usetemplate name="okbutton" yestext="OK"/></notification>
 
-Voice communications will not be available.
-Please check your network and firewall setup.<tag>voice</tag><tag>fehlgeschlagen</tag><usetemplate name="okbutton" yestext="OK"/></notification>
+  <notification name="AvatarRezLeftAppearanceNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' hat den Aussehen Modus verlassen.</notification>
+  <notification name="AvatarRezLeftNotification">( [EXISTENCE] Sekunden am Leben )
+Avatar '[NAME]' verlassen als vollst&#xE4;ndig geladen.</notification>
 
-  <notification name="AvatarRezLeftAppearanceNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' left appearance mode.</notification>
-  <notification name="AvatarRezLeftNotification">( [EXISTENCE] seconds alive )
-Avatar '[NAME]' left as fully loaded.</notification>
+  <notification name="AvatarRezSelfBakedTextureUploadNotification">( [EXISTENCE] Sekunden am Leben )
+Du hast eine [RESOLUTION] Textur hochgeladen '[BODYREGION]' nach [TIME] Sekunden.</notification>
 
-  <notification name="AvatarRezSelfBakedTextureUploadNotification">( [EXISTENCE] seconds alive )
-You uploaded a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] seconds.</notification>
+  <notification name="AvatarRezSelfBakedTextureUpdateNotification">( [EXISTENCE] Sekunden am Leben )
+Du hast eine [RESOLUTION] Textur lokal upgedated '[BODYREGION]' nach [TIME] Sekunden.</notification>
 
-  <notification name="AvatarRezSelfBakedTextureUpdateNotification">( [EXISTENCE] seconds alive )
-You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] seconds.</notification>
+  <notification name="FirstAO">F&#xFC;r die Anleitung, mache ein neues Template in der AO. Benutze die Toolbar um das AO an und aus zu schalten.</notification>
 
-  <notification name="FirstAO">For instructions, make a new template in the AO. Use the toolbar to toggle the AO on/off.</notification>
+  <notification name="SGIncompleteAppearance">Dein Aussehen ist noch nicht geladen. Andere sehen dich evtl. als eine Wolke.
 
-  <notification name="SGIncompleteAppearance">Sending incomplete appearance. You may appear to others as a cloud.
+Dein Skin, Shape, Haare oder Augen sind evtl. besch&#xE4;digt.<usetemplate name="okbutton" yestext="OK"/></notification>
 
-Your shape, skin, hair or eyes might be defect.<usetemplate name="okbutton" yestext="OK"/></notification>
-
-  <notification name="PopupAttempt">A pop-up was prevented from opening.<form name="form">
-      <ignore name="ignore" invert_control="true" text="Enable all pop-ups"/>
-      <button name="open" text="Open pop-up window"/>
+  <notification name="PopupAttempt">Ein Popup Fenster wurde blockiert.<form name="form">
+      <ignore name="ignore" invert_control="true" text="Alle Popups aktivieren..."/>
+      <button name="open" text="&#xD6;ffne Pop-up Fenster"/>
     </form></notification>
 
-  <notification label="All settings reset" name="ResetSettingsComplete">Settings have been reset. You should relog to ensure this takes full effect.</notification>
+  <notification label="Alle Einstellungen zur&#xFC;ck setzen." name="ResetSettingsComplete">Einstellungen wurden zur&#xFC;ck gesetzt. Du solltest dich neu Einloggen damit alle Einstellungen &#xFC;bernommen werden k&#xF6;nnen.</notification>
 
-  <notification label="Reset all settings" name="ResetSystemSettingsPrompt">Resetting all settings may be helpful if you are experiencing problems; however, you will need to redo any changes you have made to the default configuration.
+  <notification label="Setze alle Einstellungen zur&#xFC;ck" name="ResetSystemSettingsPrompt">Zur&#xFC;cksetzen deiner Einstellungen, kann Probleme beheben; trotzdem musst du alle Einstellungen die du get&#xE4;tigt hast, danach wieder neu vornehmen.
 
-    Would you like to reset system settings?<form>
+M&#xF6;chtest du alles auf Standard setzen?<form>
       <button name="all" text="OK"/>
       <button name="cancel" text="Abbrechen"/>
     </form></notification>
 
 
-  <notification label="Reset all settings" name="ResetAllSettingsPrompt">Resetting all settings may be helpful if you are experiencing problems; however, you will need to redo any changes you have made to the default configuration.
+  <notification label="Setze alle Einstellungen zur&#xFC;ck" name="ResetAllSettingsPrompt">Zur&#xFC;cksetzen deiner Einstellungen, kann Probleme beheben; trotzdem musst du alle Einstellungen die du get&#xE4;tigt hast, danach wieder neu vornehmen.
 
-    Which settings would you like to reset?<form>
-      <button name="all" text="ALL"/>
+Welche Einstellung m&#xF6;chtest du zur&#xFC;ck setzen?<form>
+      <button name="all" text="alle"/>
       <button name="system" text="System"/>
-      <button name="user" text="User"/>
+      <button name="user" text="Benutzer"/>
       <button name="cancel" text="Abbrechen"/>
     </form></notification>
 
-  <notification name="BulkTemporaryUpload">Would you like to bulk upload the files as temporary files?
-Only textures will upload as temporary on Agni and Aditi.
+  <notification name="BulkTemporaryUpload">M&#xF6;chtest du den Mehrfachupload als Tempor&#xE4;r hochladen?
+Nur Texturen werden als Tempor&#xE4;r auf Agni und Aditi hoch geladen.
 
-WARNING: Each upload costs [UPLOADCOST] if it's not temporary<usetemplate name="yesnocancelbuttons" yestext="Tempor&#xE4;r" canceltext="Abbrechen"/></notification>
+Warunung: Jeder Upload costet [UPLOADCOST] wenn es nicht Tempor&#xE4;r ist.<usetemplate name="yesnocancelbuttons" yestext="Tempor&#xE4;r" canceltext="Abbrechen"/></notification>
 
-  <notification name="BulkTemporaryUploadFree">Would you like to bulk upload the files as temporary files?
-Only textures will upload as temporary on Agni and Aditi.<usetemplate name="yesnocancelbuttons" yestext="Tempor&#xE4;r" canceltext="Abbrechen"/></notification>
+  <notification name="BulkTemporaryUploadFree">M&#xF6;chtest du den Mehrfachupload als Tempor&#xE4;r hochladen?
+Nur Texturen werden als Tempor&#xE4;r auf Agni und Aditi hoch geladen.<usetemplate name="yesnocancelbuttons" yestext="Tempor&#xE4;r" canceltext="Abbrechen"/></notification>
 
-  <notification name="PathfindingLinksets_WarnOnPhantom">Some selected linksets will have the Phantom flag toggled.
+  <notification name="PathfindingLinksets_WarnOnPhantom">Bei einigen ausgew&#xE4;hlten Linksets, wird sich die Option Phantom &#xE4;ndern.
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+M&#xF6;chtest du fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-  <notification name="PathfindingLinksets_MismatchOnRestricted">Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+  <notification name="PathfindingLinksets_MismatchOnRestricted">Einige ausgew&#xE4;hlte Linksets k&#xF6;nnen nicht auf '[REQUESTED_TYPE]'gesetzt werden, wegen fehlender Berechtigungen vom Linkset. Diese werden stattdessen auf '[RESTRICTED_TYPE]' gesetzt.
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+M&#xF6;chtest du fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-  <notification name="PathfindingLinksets_MismatchOnVolume">Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex.
+  <notification name="PathfindingLinksets_MismatchOnVolume">Einige ausgew&#xE4;hlte Linksets k&#xF6;nnen nicht auf '[REQUESTED_TYPE]'gesetzt werden, die Form ist nicht gew&#xF6;lbt.
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+M&#xF6;chtest du fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-  <notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted">Some selected linksets will have the Phantom flag toggled.
+  <notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted">Einige der ausgew&#xE4;hlten Linksets bekommen das Phantomflag umeschaltent.
 
-Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+Einge der ausgew&#xE4;hlten Linksets k&#xF6;nnen jedoch nicht auf '[REQUESTED_TYPE]' gesetzt werden, da sie unterschiedliche Permissions haben. Diese Linksets werden stattdessen auf '[RESTRICTED_TYPE]' gesetzt.
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+M&#xF6;chten Sie fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-  <notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnVolume">Some selected linksets will have the Phantom flag toggled.
+  <notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnVolume">Einige der ausgew&#xE4;hlten Linksets bekommen das Phantomflag umgeschaltet.
 
-Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex.
+Einige der gew&#xE4;hlten Linksets k&#xF6;nnen jedoch nicht auf '[REQUESTED_TYPE]' gesetzt werden, da ihre Form nicht-konvex ist.
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+M&#xF6;chten Sie fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-  <notification name="PathfindingLinksets_MismatchOnRestricted_MismatchOnVolume">Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+  <notification name="PathfindingLinksets_MismatchOnRestricted_MismatchOnVolume">Einge der ausgew&#xE4;hlten Linksets k&#xF6;nnen nicht auf '[REQUESTED_TYPE]' gesetzt werden, da sie beschr&#xE4;nkte Berechtigungen haben. Diese Linksets werden stattdessen auf '[RESTRICTED_TYPE]' gesetzt.
 
-Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex. These linksets' use types will not change.
+Einige ausgew&#xE4;hlte Linksets k&#xF6;nnen nicht auf '[REQUESTED_TYPE]'gesetzt werden, die Form ist nicht gew&#xF6;lbt.
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+M&#xF6;chten Sie fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-  <notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted_MismatchOnVolume">Some selected linksets will have the Phantom flag toggled.
+  <notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted_MismatchOnVolume">Einige der ausgew&#xE4;hlten Linksets bekommen das Phantomflag umgeschaltet.
 
-Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because of permission restrictions on the linkset.  These linksets will be set to be '[RESTRICTED_TYPE]' instead.
+Einge der ausgew&#xE4;hlten Linksets k&#xF6;nnen nicht auf '[REQUESTED_TYPE]' gesetzt werden, da sie beschr&#xE4;nkte Berechtigungen haben. Diese Linksets werden stattdessen auf '[RESTRICTED_TYPE]' gesetzt.
 
-Some selected linksets cannot be set to be '[REQUESTED_TYPE]' because the shape is non-convex. These linksets' use types will not change.
+Einige der gew&#xE4;hlten Linksets k&#xF6;nnen jedoch nicht auf '[REQUESTED_TYPE]' gesetzt werden, da ihre Form nicht-konvex ist. Diese werden nicht neu gesetzt.
+ 
+M&#xF6;chten Sie fortfahren?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
-Do you wish to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
-
-  <notification name="PathfindingLinksets_ChangeToFlexiblePath">The selected object affects the navmesh.  Changing it to a Flexible Path will remove it from the navmesh.<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
+  <notification name="PathfindingLinksets_ChangeToFlexiblePath">Das ausgew&#xE4;hlte Objekt beeinflusst das Navmesh. Es in einen flexiblen Pfad zu &#xE4;ndern wird es aus dem Navmesh entfernen.<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="OK"/></notification>
 
   <global name="UnsupportedGLRequirements">Ihr Computer entspricht nicht den Hardwareanforderungen von Second Life. Second Life setzt eine OpenGL-Grafikkarte mit Multitextur-Unterst&#xFC;tzung voraus. Falls Ihre Grafikkarte diese Funktion unterst&#xFC;tzt, installieren Sie die neuesten Treiber sowie die aktuellen Service Packs und Patches f&#xFC;r Ihr Betriebssystem.
 
@@ -2538,9 +2570,9 @@ Sollte das Problem fortbestehen, finden Sie weitere Hilfestellung unter: http://
 
   <global name="UnsupportedCPU">- Ihre CPU-Geschwindigkeit entspricht nicht den Mindestanforderungen.</global>
 
-  <global name="UnsupportedCPUSSE2">You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires a CPU that supports SSE2</global>
+  <global name="UnsupportedCPUSSE2">Du besitzt wahrscheinlich nicht die erforderliche Hardware f&#xFC;r [APP_NAME]. Der Viewer ben&#xF6;tigt eine CPU mit SSE2 Unterst&#xFC;tzung</global>
 
-  <global name="UnsupportedCPUSSE">You do not appear to have the proper hardware requirements for [APP_NAME]. The viewer requires a CPU that supports SSE</global>
+  <global name="UnsupportedCPUSSE">Du besitzt wahrscheinlich nicht die erforderliche Hardware f&#xFC;r [APP_NAME]. Der Viewer ben&#xF6;tigt eine CPU mit SSE2 Unterst&#xFC;tzung</global>
 
   <global name="UnsupportedGPU">- Ihre Grafikkarte entspricht nicht den Mindestanforderungen.</global>
 
@@ -2548,455 +2580,451 @@ Sollte das Problem fortbestehen, finden Sie weitere Hilfestellung unter: http://
 
 <!-- these are alert strings from server. the name needs to match entire the server string, and needs to be changed
 	whenever the server string changes -->
-   <global name="You can only set your 'Home Location' on your land or at a mainland Infohub.">If you own a piece of land, you can make it your home location.
-Otherwise, you can look at the Map and find places marked "Infohub".</global>
-  <global name="You died and have been teleported to your home location">You died and have been teleported to your home location.</global>
+   <global name="You can only set your 'Home Location' on your land or at a mainland Infohub.">Wenn du ein St&#xFC;ck Land besitzt kannst du deinen Heimatpunkt setzen.
+Au&#xDF;erdem kannst du auf der Karte nach Pl&#xE4;tzen wie "Infohub" suchen.</global>
+  <global name="You died and have been teleported to your home location">Du bist gestorben und wurdest nach Hause teleportiert.</global>
 
-  <notification name="LocalBitmapsUpdateFileNotFound">[FNAME] could not be updated because the file could no longer be found.
-Disabling future updates for this file.</notification>
+  <notification name="LocalBitmapsUpdateFileNotFound">[FNAME] Update fehl geschlagen, das file konnte nicht gefunden werden.
+Sp&#xE4;tere updates wurden f&#xFC;r dieses File deaktiviert.</notification>
 
-  <notification name="LocalBitmapsUpdateFailedFinal">[FNAME] could not be opened or decoded for [NRETRIES] attempts, and is now considered broken.
-Disabling future updates for this file.</notification>
+  <notification name="LocalBitmapsUpdateFailedFinal">[FNAME] konnte nicht gelesen oder entpackt werden nach [NRETRIES] Versuchen, und scheint fehlerhaft zu sein.
+Sp&#xE4;tere updates wurden f&#xFC;r dieses File deaktiviert.</notification>
 
-  <notification name="LocalBitmapsVerifyFail">Attempted to add an invalid or unreadable image file [FNAME] which could not be opened or decoded.
-Attempt cancelled.</notification>
+  <notification name="LocalBitmapsVerifyFail">Fehler beim Versuch das Bild [FNAME] zu &#xF6;ffnen
+Versuch wurde abgebrochen.</notification>
 
-  <notification name="PathfindingReturnMultipleItems">You are returning [NUM_ITEMS] items.  Are you sure you want to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="Ja"/></notification>
+  <notification name="PathfindingReturnMultipleItems">Du schickst [NUM_ITEMS] Objekte zur&#xFC;ck. Bist du sicher das du fortfahren willst?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="Ja"/></notification>
 
-  <notification name="PathfindingDeleteMultipleItems">You are deleting [NUM_ITEMS] items.  Are you sure you want to continue?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="Ja"/></notification>
+  <notification name="PathfindingDeleteMultipleItems">Du l&#xF6;schst [NUM_ITEMS] Objekte. Bist du sicher das du fortfahren willst?<tag>Best&#xE4;tigen</tag><usetemplate name="okcancelignore" yestext="Ja"/></notification>
 
 
-  <notification name="AvatarFrozen">[AV_FREEZER] has frozen you. You cannot move or interact with the world.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarFrozen">[AV_FREEZER] hat dich eingefroren. Du kannst dich nicht bewegen oder andere sachen innerhalb der Welt machen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarFrozenDuration">[AV_FREEZER] has frozen you for [AV_FREEZE_TIME] seconds. You cannot move or interact with the world.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarFrozenDuration">[AV_FREEZER] hat dich f&#xFC;r [AV_FREEZE_TIME] Sekunden eingefroren. Du kannst dich nicht bewegen oder andere Sachen innerhalb der Welt machen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="YouFrozeAvatar">Avatar frozen.<tag>fehlgeschlagen</tag></notification>
+  <notification name="YouFrozeAvatar">Avatar eingefroren.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarHasUnFrozenYou">[AV_FREEZER] has unfrozen you.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarHasUnFrozenYou">[AV_FREEZER] hat dich aufgetaut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarUnFrozen">Avatar unfrozen.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarUnFrozen">Avatar aufgetaut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarFreezeFailure">Freeze failed because you don't have admin permission for that parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarFreezeFailure">Einfrieren fehlgeschlagen, du hast nicht die Berechtigungen daf&#xFC;r auf diesem Land.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarFreezeThaw">Your freeze expired, go about your business.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarFreezeThaw">Die Zeit f&#xFC;rs einfrieren ist abgelaufen. Du kannst weiter deinen Gesch&#xE4;ften nach gehen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarCantFreeze">Sorry, can't freeze that user.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarCantFreeze">Entschuldigung, ich kann diesen User nicht einfrieren.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NowOwnObject">You are now the owner of object [OBJECT_NAME]<tag>fehlgeschlagen</tag></notification>
+  <notification name="NowOwnObject">Du bist nicht der Besitzer von [OBJECT_NAME]<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantRezOnLand">Can't rez object at [OBJECT_POS] because the owner of this land does not allow it.  Use the land tool to see land ownership.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantRezOnLand">Du kannst hier [OBJECT_POS] nicht bauen. Der Besitzer vom Land hat es nicht erlaubt. Benutze die Landinfo um zu sehen, wer der Besitzer ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RezFailTooManyRequests">Object can not be rezzed because there are too many requests.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RezFailTooManyRequests">Objekt kann nicht gebaut werden, zu viele Anfragen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SitFailCantMove">You cannot sit because you cannot move at this time.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SitFailCantMove">Du kannst nicht sitzen weil du dich derzeit nicht bewegen kannst.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SitFailNotAllowedOnLand">You cannot sit because you are not allowed on that land.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SitFailNotAllowedOnLand">Du kannst hier nicht sitzen weil du auf dem Land nicht erlaubt bist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SitFailNotSameRegion">Try moving closer.  Can't sit on object because
-it is not in the same region as you.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SitFailNotSameRegion">Versuch n&#xE4;her zu kommen. Du kannst nicht auf dem Objekt sitzen weil 
+sich das Objekt nicht auf der gleichen Region befindet.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoNewObjectRegionFull">Unable to create new object. The region is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoNewObjectRegionFull">Fehler beim erstellen vom Objekt. Die Region ist voll.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="FailedToPlaceObject">Failed to place object at specified location.  Please try again.<tag>fehlgeschlagen</tag></notification>
+  <notification name="FailedToPlaceObject">Fehler beim bauen an dieser Stelle. Bitte versuche es erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoOwnNoGardening">You Can't create trees and grass on land you don't own.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoOwnNoGardening">Du kannst keine B&#xE4;ume und Gras pflanzen auf Land was dir nicht geh&#xF6;rt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoCopyPermsNoObject">Copy failed because you lack permission to copy the object '[OBJ_NAME]'.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoCopyPermsNoObject">Kopieren fehlgeschlagen, du hast nicht die erforderlichen Berechtigungen f&#xFC;r das Objekt '[OBJ_NAME]'.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoTransPermsNoObject">Copy failed because the object '[OBJ_NAME]' cannot be transferred to you.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoTransPermsNoObject">Kopieren fehlgeschlagen, das Objekt '[OBJ_NAME]' kann nicht an dich &#xFC;bertragen werden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AddToNavMeshNoCopy">Copy failed because the object '[OBJ_NAME]' contributes to navmesh.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AddToNavMeshNoCopy">Kopieren fehlgeschlagen, da Objekt '[OBJ_NAME]' Teil des Navmesh ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="DupeWithNoRootsSelected">Duplicate with no root objects selected.<tag>fehlgeschlagen</tag></notification>
+  <notification name="DupeWithNoRootsSelected">Dublizieren ohne Basisprim gew&#xE4;hlt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDupeCuzRegionIsFull">Can't duplicate objects because the region is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDupeCuzRegionIsFull">Kann das Objekt nicht kopieren weil die Region voll ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDupeCuzParcelNotFound">Can't duplicate objects - Can't find the parcel they are on.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDupeCuzParcelNotFound">Kann das Objekt nicht dublizieren. Kann die Parzelle nicht finden wo es ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateCuzParcelFull">Can't create object because
-the parcel is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateCuzParcelFull">Kann das Objekt nicht erstellen. Die Parzelle ist voll.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RezAttemptFailed">Attempt to rez an object failed.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RezAttemptFailed">Versuch ein Objekt zu erstellen ist fehl geschlagen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="ToxicInvRezAttemptFailed">Unable to create item that has caused problems on this region.<tag>fehlgeschlagen</tag></notification>
+  <notification name="ToxicInvRezAttemptFailed">Ein Objekt konnte nicht erstellt werden, weil es in dieser Region Probleme verursacht hat.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="InvItemIsBlacklisted">That inventory item has been blacklisted.<tag>fehlgeschlagen</tag></notification>
+  <notification name="InvItemIsBlacklisted">Das Inventarobjekt wurde auf die Schwarze Liste gesetzt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoCanRezObjects">You are not currently allowed to create objects.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoCanRezObjects">Sie k&#xF6;nnen derzeit keine Objekte erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LandSearchBlocked">Land Search Blocked.
-You have performed too many land searches too quickly.
-Please try again in a minute.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LandSearchBlocked">Land suche geblockt.
+Du hast zu viele Suchen ausgef&#xFC;hrt
+Bitte versuche es in einer Minute erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NotEnoughResourcesToAttach">Not enough script resources available to attach object!<tag>fehlgeschlagen</tag></notification>
+  <notification name="NotEnoughResourcesToAttach">Nicht genug Scriptressourcen verf&#xFC;gbar um das Objekt an zu ziehen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="YouDiedAndGotTPHome">You died and have been teleported to your home location<tag>fehlgeschlagen</tag></notification>
+  <notification name="YouDiedAndGotTPHome">Du bist gestorben und wurdest nach Hause teleportiert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="EjectComingSoon">You are no longer allowed here and have [EJECT_TIME] seconds to leave.<tag>fehlgeschlagen</tag></notification>
+  <notification name="EjectComingSoon">Du bist hier nicht l&#xE4;nger erlaubt und hast  [EJECT_TIME] zum verlassen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoEnterServerFull">You can't enter this region because
-the server is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoEnterServerFull">Du kannst diese Region nicht betreten weil der Server voll ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SaveBackToInvDisabled">Save Back To Inventory has been disabled.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SaveBackToInvDisabled">Zur&#xFC;ck in Inventar speichern wurde deaktiviert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoExistNoSaveToContents">Cannot save '[OBJ_NAME]' to object contents because the object it was rezzed from no longer exists.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoExistNoSaveToContents">Kann '[OBJ_NAME]' nicht zu Objektinhalten speichern, da das Objekt von dem es gerezzt wurde nicht mehr existiert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoModNoSaveToContents">Cannot save '[OBJ_NAME]' to object contents because you do not have permission to modify the object '[DEST_NAME]'.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoModNoSaveToContents">Kann '[OBJ_NAME]' nicht zu Objektinhalten speichern, da Sie keine Berechtigung zum &#xE4;ndern des Objekts '[DEST_NAME]' haben.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoSaveBackToInvDisabled">Cannot save '[OBJ_NAME]' back to inventory -- this operation has been disabled.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoSaveBackToInvDisabled">Kann '[OBJ_NAME]' nicht zur&#xFC;ck ins Inventar speichern -- Diese Funktion ist deaktiviert worden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoCopyNoSelCopy">You cannot copy your selection because you do not have permission to copy the object '[OBJ_NAME]'.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoCopyNoSelCopy">Sie k&#xF6;nnen Ihre Auswahl nicht kopieren, da Sie nicht die Berichtung zum kopieren von Objekt '[OBJ_NAME]' haben.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoTransNoSelCopy">You cannot copy your selection because the object '[OBJ_NAME]' is not transferable.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoTransNoSelCopy">Sie k&#xF6;nnen Ihre Auswahl nicht kopieren, da Objekt '[OBJ_NAME]' nicht transferierbar ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoTransNoCopy">You cannot copy your selection because the object '[OBJ_NAME]' is not transferable.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoTransNoCopy">Sie k&#xF6;nnen Ihre Auswahl nicht kopieren, da Objekt '[OBJ_NAME]' nicht transferierbar ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPermsNoRemoval">Removal of the object '[OBJ_NAME]' from the simulator is disallowed by the permissions system.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPermsNoRemoval">Entfernen des Objekts '[OBJ_NAME]' aus der Simulation ist nicht erlaubt durch das Berechtigungssystem.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoModNoSaveSelection">Cannot save your selection because you do not have permission to modify the object '[OBJ_NAME]'.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoModNoSaveSelection">Kann Auswahl nicht speichern, da Sie nicht die Berechtigung zum Bearbeiten des Objekts '[OBJ_NAME]' haben.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoCopyNoSaveSelection">Cannot save your selection because the object '[OBJ_NAME]' is not copyable.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoCopyNoSaveSelection">Kann Ihre Auswahl nicht speichern, da Objekt '[OBJ_NAME]' nicht kopierbar ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoModNoTaking">You cannot take your selection because you do not have permission to modify the object '[OBJ_NAME]'.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoModNoTaking">Sie k&#xF6;nnen Ihre Auswahlen nicht aufnehmen, da Sie nicht die Berechtigung zum Berarbeiten von Objekt '[OBJ_NAME]' haben.<tag>fehlgeschlagen</tag></notification>
 
   <notification name="RezDestInternalError">Internal Error: Unknown destination type.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="DeleteFailObjNotFound">Delete failed because object not found<tag>fehlgeschlagen</tag></notification>
+  <notification name="DeleteFailObjNotFound">L&#xF6;schen fehlgeschlagen da Objekt nicht gefunden wurde<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SorryCantEjectUser">Sorry, can't eject that user.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SorryCantEjectUser">Entschuldigung, kann diesen Bewohner nicht hinauswerfen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RegionSezNotAHome">This region does not allow you to set your home location here.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RegionSezNotAHome">Die Region erlaubt nicht Ihr Zuhause hierher zu verlegen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="HomeLocationLimits">You can only set your 'Home Location' on your land or at a mainland Infohub.<tag>fehlgeschlagen</tag></notification>
+  <notification name="HomeLocationLimits">Sie k&#xF6;nnen Ihr Zuhause nur auf Ihr eigenes Land oder auf ein Mainland Infohub setzen.<tag>fehlgeschlagen</tag></notification>
 
   <notification name="HomePositionSet">Position f&#xFC;r Zuhause festgelegt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarEjected">Avatar ejected.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarEjected">Avatar hinausgeworfen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AvatarEjectFailed">Eject failed because you don't have admin permission for that parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AvatarEjectFailed">Rauswurf fehlgeschlagen, weil Sie keine Admin-Berechtigung auf dieser Parzelle haben.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantMoveObjectParcelFull">Can't move object '[OBJECT_NAME]' to
-[OBJ_POSITION] in region [REGION_NAME] because the parcel is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantMoveObjectParcelFull">Kann Objekt '[OBJECT_NAME]' nicht nach [OBJ_POSITION] in Region [REGION_NAME] bewegen, da die Parzelle bereits voll ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantMoveObjectParcelPerms">Can't move object '[OBJECT_NAME]' to
-[OBJ_POSITION] in region [REGION_NAME] because your objects are not allowed on this parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantMoveObjectParcelPerms">Kann Objekt '[OBJECT_NAME]' nicht nach [OBJ_POSITION] in Region [REGION_NAME] bewegen, da Ihre Objekte auf dieser Parzelle nicht erlaubt sind.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantMoveObjectParcelResources">Can't move object '[OBJECT_NAME]' to
-[OBJ_POSITION] in region [REGION_NAME] because there are not enough resources for this object on this parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantMoveObjectParcelResources">Kann Objekt '[OBJECT_NAME]' nicht nach [OBJ_POSITION] in Region [REGION_NAME] bewegen, da die Parzelle nicht gen&#xFC;gend Ressourcen hat.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantMoveObjectRegionVersion">Can't move object '[OBJECT_NAME]' to
-[OBJ_POSITION] in region [REGION_NAME] because the other region is running an older version which does not support receiving this object via region crossing.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantMoveObjectRegionVersion">Kann Objekt '[OBJECT_NAME]' nicht nach [OBJ_POSITION] in Region [REGION_NAME] verschieben, da die andere Region auf einer &#xE4;lteren Software-Version l&#xE4;uft, die dieses Objekt nicht durch Grenz&#xFC;bertritt empfangen kann.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantMoveObjectNavMesh">Can't move object '[OBJECT_NAME]' to
-[OBJ_POSITION] in region [REGION_NAME] because you cannot modify the navmesh across region boundaries.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantMoveObjectNavMesh">Kann Objekt '[OBJECT_NAME]' nicht nach [OBJ_POSITION] in Region [REGION_NAME] verschieben, da Navmeshes nicht regions&#xFC;bergreifend ver&#xE4;ndert werden k&#xF6;nnen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantMoveObjectWTF">Can't move object '[OBJECT_NAME]' to
-[OBJ_POSITION] in region [REGION_NAME] because of an unknown reason. ([FAILURE_TYPE])<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantMoveObjectWTF">Kann Objekt '[OBJECT_NAME]' nicht nach [OBJ_POSITION] in Region [REGION_NAME] verschieben. Ubekannter Fehler. ([FAILURE_TYPE])<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPermModifyObject">You don't have permission to modify that object<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPermModifyObject">Sie sind nicht berechtigt, dieses Objekt zu bearbeiten.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantEnablePhysObjContributesToNav">Can't enable physics for an object that contributes to the navmesh.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantEnablePhysObjContributesToNav">Kann Physik nicht auf einem Objekt aktivieren das Teil des Navmesh ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantEnablePhysKeyframedObj">Can't enable physics for keyframed objects.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantEnablePhysKeyframedObj">Kann Physik nicht f&#xFC;r keyframed Objekte aktivieren.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantEnablePhysNotEnoughLandResources">Can't enable physics for object -- insufficient land resources.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantEnablePhysNotEnoughLandResources">Kann Physik nicht f&#xFC;r Objekt aktivieren -- unzureichende Ressourcen<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantEnablePhysCostTooGreat">Can't enable physics for object with physics resource cost greater than [MAX_OBJECTS]<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantEnablePhysCostTooGreat">Kann Physik nicht f&#xFC;r Objekte aktivieren, deren Physik-Ressourcen-Kosten gr&#xF6;&#xDF;er als [MAX_OBJECTS] sind.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="PhantomWithConcavePiece">This object cannot have a concave piece because it is phantom and contributes to the navmesh.<tag>fehlgeschlagen</tag></notification>
+  <notification name="PhantomWithConcavePiece">Dieses Objekt kann keine konkaven Teile haben, da es phantom und Teil des Navmesh ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableAddItem">Unable to add item!<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableAddItem">Element kann nicht hinzugef&#xFC;gt werden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableEditItem">Unable to edit this!<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableEditItem">Bearbeiten nicht m&#xF6;glich!<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPermToEdit">Not permitted to edit this.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPermToEdit">Nicht erlaubt, dieses zu &#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPermToCopyInventory">Not permitted to copy that inventory.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPermToCopyInventory">Dieses Inventar darf nicht kopiert werden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSaveItemDoesntExist">Cannot save to object contents: Item no longer exists.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSaveItemDoesntExist">Kann den Inhalt vom Objekt nicht speichern: Objekt existiert nicht mehr.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSaveItemAlreadyExists">Cannot save to object contents: Item with that name already exists in inventory<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSaveItemAlreadyExists">Kann Objekt nicht wieder im Inhalt speichern. Ein Objekt mit diesem namen existiert bereits im Inventar<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSaveModifyAttachment">Cannot save to object contents: This would modify the attachment permissions.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSaveModifyAttachment">Kann Objekt nicht im Inhalt speichern: Dieses w&#xFC;rde die Rechte vom Anhang &#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TooManyScripts">Too many scripts.<tag>fehlgeschlagen</tag></notification>
+  <notification name="TooManyScripts">Zu viele Scripte.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableAddScript">Unable to add script!<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableAddScript">Kann Script nicht hinzuf&#xFC;gen!<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AssetServerTimeoutObjReturn">Asset server didn't respond in a timely fashion.  Object returned to sim.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AssetServerTimeoutObjReturn">Asset Server reagierte nicht in einer angemessenen Zeit. Objekt auf die Sim zur&#xFC;ck geschickt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RegionDisablePhysicsShapes">This region does not have physics shapes enabled.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RegionDisablePhysicsShapes">Diese Region hat keine Physische Shapes aktiviert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoModNavmeshAcrossRegions">You cannot modify the navmesh across region boundaries.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoModNavmeshAcrossRegions">Kann Navmesh nicht &#xFC;ber Regionsgrenzen hinweg &#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoSetPhysicsPropertiesOnObjectType">Cannot set physics properties on that object type.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoSetPhysicsPropertiesOnObjectType">Kann Physische Eigenschaften in diesem Objekt nicht setzen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoSetRootPrimWithNoShape">Cannot set root prim to have no shape.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoSetRootPrimWithNoShape">Kann Hauptprim nicht auf Keine Form setzen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoRegionSupportPhysMats">This region does not have physics materials enabled.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoRegionSupportPhysMats">Diese Region hat Physische Materialien nicht aktiviert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="OnlyRootPrimPhysMats">Only root prims may have their physics materials adjusted.<tag>fehlgeschlagen</tag></notification>
+  <notification name="OnlyRootPrimPhysMats">Only Root-Prims d&#xFC;rfen ihr Physics-Material eingestellt bekommen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoSupportCharacterPhysMats">Setting physics materials on characters is not yet supported.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoSupportCharacterPhysMats">Das Setzen von Physics-Materialien auf Buchstaben ist noch nicht unterst&#xFC;tzt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="InvalidPhysMatProperty">One or more of the specified physics material properties was invalid.<tag>fehlgeschlagen</tag></notification>
+  <notification name="InvalidPhysMatProperty">Eine oder mehrere der spezifizierten Physics-Material-Eigenschaften war ung&#xFC;ltig.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPermsAlterStitchingMeshObj">You may not alter the stitching type of a mesh object.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPermsAlterStitchingMeshObj">Sie d&#xFC;rfen den Stitching-Typ eines Mesh nicht ver&#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPermsAlterShapeMeshObj">You may not alter the shape of a mesh object<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPermsAlterShapeMeshObj">Sie d&#xFC;rfen das Profil eines Mesh-Objekts nicht &#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="FullRegionCantEnter">You can't enter this region because
-the region is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="FullRegionCantEnter">Du kannst diese Region nicht betragen weil die Region voll ist.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedOwnersDiffer">Link failed -- owners differ<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedOwnersDiffer">Verkn&#xFC;pfung fehlgeschlagen - unterschiedliche Besitzer<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedNoModNavmeshAcrossRegions">Link failed -- cannot modify the navmesh across region boundaries.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedNoModNavmeshAcrossRegions">Verbindung fehlgeschlagen -- Sie k&#xF6;nnen ein Navmesh nicht &#xFC;ber Regionsgrenzen hinweg &#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedNoPermToEdit">Link failed because you do not have edit permission.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedNoPermToEdit">Verkn&#xFC;pfen fehlgeschlagen, du hast nicht die bearbeitungsrechte.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedTooManyPrims">Link failed -- too many primitives<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedTooManyPrims">Verkn&#xFC;pfen fehlgeschlagen - zu viele Objekte<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedCantLinkNoCopyNoTrans">Link failed -- cannot link no-copy with no-transfer<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedCantLinkNoCopyNoTrans">Verkn&#xFC;pfen fehlgeschlagen - kann nicht no copy mit no transfer verbinden<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedNothingLinkable">Link failed -- nothing linkable.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedNothingLinkable">Verkn&#xFC;pfen fehlgeschlagen - nicht zum verkn&#xFC;pfen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedTooManyPathfindingChars">Link failed -- too many pathfinding characters<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedTooManyPathfindingChars">Verkn&#xFC;pfen fehlgeschlagen -- zu viele Pathfinding Charaktere<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedInsufficientLand">Link failed -- insufficient land resources<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedInsufficientLand">Verkn&#xFC;pfung fehlgeschlagen - fehlerhafte Landressourcen<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LinkFailedTooMuchPhysics">Object uses too many physics resources -- its dynamics have been disabled.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LinkFailedTooMuchPhysics">Objekt benutzt zu viele Physische Ressourcen - physic wurde deaktiviert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TeleportedHomeByObjectOnParcel">You have been teleported home by the object '[OBJECT_NAME]' on the parcel '[PARCEL_NAME]'<tag>fehlgeschlagen</tag></notification>
+  <notification name="TeleportedHomeByObjectOnParcel">Du wurdest vom Objekt '[OBJECT_NAME]'auf der Parzelle '[PARCEL_NAME]' nach Hause teleportiert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TeleportedHomeByObject">You have been teleported home by the object '[OBJECT_NAME]'<tag>fehlgeschlagen</tag></notification>
+  <notification name="TeleportedHomeByObject">Du wurdest von  '[OBJECT_NAME]' nach hause teleportiert. <tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TeleportedByAttachment">You have been teleported by an attachment on [ITEM_ID]<tag>fehlgeschlagen</tag></notification>
+  <notification name="TeleportedByAttachment">Soe wurden von einem attachment auf [ITEM_ID] teleportiert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TeleportedByObjectOnParcel">You have been teleported by the object '[OBJECT_NAME]' on the parcel '[PARCEL_NAME]'<tag>fehlgeschlagen</tag></notification>
+  <notification name="TeleportedByObjectOnParcel">Sie wurden vom Objekt '[OBJECT_NAME]' auf der Parzelle 'PARCEL_NAME]' teleportiert<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TeleportedByObjectOwnedBy">You have been teleported by the object '[OBJECT_NAME]' owned by [OWNER_ID]<tag>fehlgeschlagen</tag></notification>
+  <notification name="TeleportedByObjectOwnedBy">Du wurdest Teleportiert von dem Objekt '[OBJECT_NAME]' Besitzer ist [OWNER_ID]<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TeleportedByObjectUnknownUser">You have been teleported by the object '[OBJECT_NAME]' owned by an unknown user.<tag>fehlgeschlagen</tag></notification>
+  <notification name="TeleportedByObjectUnknownUser">Du wurdest Teleportiert von dem Objekt '[OBJECT_NAME]' Besitzer ist ein unbekannter Benutzer.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateObjectRegionFull">Unable to create requested object. The region is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateObjectRegionFull">Das angeforderte Objekte kann nicht erstellt werden. Die Region ist voll.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttackMultipleObjOneSpot">You can't attach multiple objects to one spot.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttackMultipleObjOneSpot">Du kannst nicht mehrere Objekte an einen Punkt anh&#xE4;ngen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateMultipleObjAtLoc">You can't create multiple objects here.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateMultipleObjAtLoc">Du kannst nicht mehrere Objekte hier erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableToCreateObjTimeOut">Unable to create requested object. Object is missing from database.<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableToCreateObjTimeOut">Objekt kann nicht erstellt werden. Objekt fehlt in der Datenbank.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableToCreateObjUnknown">Unable to create requested object. The request timed out. Please try again.<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableToCreateObjUnknown">Objekt konnte nicht erstellt werden. Die Anforderung ist ausgelaufen. Bitte versuchen Sie es erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableToCreateObjMissingFromDB">Unable to create requested object. Please try again.<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableToCreateObjMissingFromDB">Objekt konnte nicht erstellt werden.  Bitte versuchen Sie es erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RezFailureTookTooLong">Rez failed, requested object took too long to load.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RezFailureTookTooLong">Bauen fehlgeschlagen, angefordertes Objekt brauchte zu lange zum laden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="FailedToPlaceObjAtLoc">Failed to place object at specified location.  Please try again.<tag>fehlgeschlagen</tag></notification>
+  <notification name="FailedToPlaceObjAtLoc">Fehler beim bauen an dieser Stelle. Bitte versuche es erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreatePlantsOnLand">You cannot create plants on this land.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreatePlantsOnLand">Du kannst auf diesem Land keine Pflanzen bauen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantRestoreObjectNoWorldPos">Cannot restore object. No world position found.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantRestoreObjectNoWorldPos">Kann Objekt nicht wiederherstellen. Position nicht gefunden in der Welt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantRezObjectInvalidMeshData">Unable to rez object because its mesh data is invalid.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantRezObjectInvalidMeshData">Objekt kann nicht gerezzt werden weil die Mesh Daten fehlerhaft sind.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantRezObjectTooManyScripts">Unable to rez object because there are already too many scripts in this region.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantRezObjectTooManyScripts">Objekt kann nicht erstellt werden, es gibt bereits zu viele Scripte in dieser Region.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateObjectNoAccess">Your access privileges don't allow you to create objects there.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateObjectNoAccess">Deine Zugangsberechtigungen erlauben dir nicht, hier Objekte zu erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateObject">You are not currently allowed to create objects.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateObject">Sie k&#xF6;nnen derzeit keine Objekte erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="InvalidObjectParams">Invalid object parameters<tag>fehlgeschlagen</tag></notification>
+  <notification name="InvalidObjectParams">Ung&#xFC;ltige Objekt Parameter<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDuplicateObjectNoAcess">Your access privileges don't allow you to duplicate objects here.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDuplicateObjectNoAcess">Deine Zugangsberechtigungen erlauben dir nicht Objekte hier zu Kopieren.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantChangeShape">You are not allowed to change this shape.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantChangeShape">Du hast keine Berechtigung diese Form zu &#xE4;ndern.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoAccessToClaimObjects">Your access privileges don't allow you to claim objects here.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoAccessToClaimObjects">Deine Zugangsberechtigungen erlauben dir nicht hier Objekte in Besitz zu nehmen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="DeedFailedNoPermToDeedForGroup">Deed failed because you do not have permission to deed objects for your group.<tag>fehlgeschlagen</tag></notification>
+  <notification name="DeedFailedNoPermToDeedForGroup">&#xDC;bertragen fehlgeschlagen, du hast keine Berechtigung Objekte der Gruppe zu &#xFC;bertragen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="NoPrivsToBuyObject">Your access privileges don't allow you to buy objects here.<tag>fehlgeschlagen</tag></notification>
+  <notification name="NoPrivsToBuyObject">Deine Zugriffsberechtigung erlaubt dir nicht hier Objekte zu kaufen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttachObjectAvatarSittingOnIt">Cannot attach object because an avatar is sitting on it.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttachObjectAvatarSittingOnIt">Kann das Objekt nicht anziehen, ein Avatar sitzt auf dem Objekt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="WhyAreYouTryingToWearShrubbery">Trees and grasses cannot be worn as attachments.<tag>fehlgeschlagen</tag></notification>
+  <notification name="WhyAreYouTryingToWearShrubbery">B&#xE4;ume und Grass k&#xF6;nnen nicht als Anhang getragen werden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttachGroupOwnedObjs">Cannot attach group-owned objects.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttachGroupOwnedObjs">Gruppeneigene k&#xF6;nnen nicht angezogen werden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttachObjectsNotOwned">Cannot attach objects that you don't own.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttachObjectsNotOwned">Du kannst keine Objekte anziehen die dir nicht geh&#xF6;ren.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttachNavmeshObjects">Cannot attach objects that contribute to navmesh.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttachNavmeshObjects">Kann keine Objekte anziehen die "Navmesh" enthalten<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttachObjectNoMovePermissions">Cannot attach object because you do not have permission to move it.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttachObjectNoMovePermissions">Kann das Objekt nicht anziehen, du hast keine Berechtigungen das Objekt zu bewegen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantAttachNotEnoughScriptResources">Not enough script resources available to attach object!<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantAttachNotEnoughScriptResources">Nicht genug Scriptressourcen verf&#xFC;gbar um das Objekt an zu ziehen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDropItemTrialUser">You can't drop objects here; try the Free Trial area.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDropItemTrialUser">Sie k&#xF6;nnen hier keine Objekte hinstellen; versuchen Sie in der Sandbox<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDropMeshAttachment">You can't drop mesh attachments. Detach to inventory and then rez in world.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDropMeshAttachment">Du kannst Mesh Objekte nicht losl&#xF6;sen. Ziehe es aus ins Inventar und rezze es inworld. <tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDropAttachmentNoPermission">Failed to drop attachment: you don't have permission to drop there.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDropAttachmentNoPermission">Fehler beim Anhang hinlegen; du hast keine Berechtigung zum ablegen hier.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDropAttachmentInsufficientLandResources">Failed to drop attachment: insufficient available land resource.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDropAttachmentInsufficientLandResources">Fehler beim Ablegen vom Anhang; zu wenig Land Ressourcen verf&#xFC;gbar.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDropAttachmentInsufficientResources">Failed to drop attachments: insufficient available resources.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDropAttachmentInsufficientResources">Fehler beim Ablegen vom Anhang; zu wenig Ressourcen verf&#xFC;gbar.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDropObjectFullParcel">Cannot drop object here.  Parcel is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDropObjectFullParcel">Kann Objekt hier nicht ablegen. Parzelle ist zu voll.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantTouchObjectBannedFromParcel">Can't touch/grab this object because you are banned from the land parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantTouchObjectBannedFromParcel">Kann das Objekt nicht Ber&#xFC;hren oder anklicken, du bist auf dem Land gebannt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="PlzNarrowDeleteParams">Please narrow your delete parameters.<tag>fehlgeschlagen</tag></notification>
+  <notification name="PlzNarrowDeleteParams">Bitte die L&#xF6;schparameter eingrenzen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UnableToUploadAsset">Unable to upload asset.<tag>fehlgeschlagen</tag></notification>
+  <notification name="UnableToUploadAsset">Datei Upload fehlgeschlagen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantTeleportCouldNotFindUser">Could not find user to teleport home<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantTeleportCouldNotFindUser">Kann den User nicht finden den du nach Hause teleportieren m&#xF6;chtest<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="GodlikeRequestFailed">godlike request failed<tag>fehlgeschlagen</tag></notification>
+  <notification name="GodlikeRequestFailed">G&#xF6;ttliche Anforderung fehlgeschlagen<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="GenericRequestFailed">generic request failed<tag>fehlgeschlagen</tag></notification>
+  <notification name="GenericRequestFailed">Allgemeine Anfrage fehlgeschlagen<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantUploadPostcard">Unable to upload postcard.  Try again later.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantUploadPostcard">Fehler beim Hochladen der Postkarte. Bitte versuch es sp&#xE4;ter erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantFetchInventoryForGroupNotice">Unable to fetch inventory details for the group notice.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantFetchInventoryForGroupNotice">Fehler beim abrufen der Inventardetails f&#xFC;r die Gruppennachricht.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSendGroupNoticeNotPermitted">Unable to send group notice -- not permitted.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSendGroupNoticeNotPermitted">Fehler beim Gruppennachrichten Versand -- nicht erlaubt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSendGroupNoticeCantConstructInventory">Unable to send group notice -- could not construct inventory.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSendGroupNoticeCantConstructInventory">Fehler beim Gruppennachrichten Versand - kann Inventar nicht finden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantParceInventoryInNotice">Unable to parse inventory in notice.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantParceInventoryInNotice">Inventarobjekt in Notiz kann nicht analysiert werden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TerrainUploadFailed">Terrain upload failed.<tag>fehlgeschlagen</tag></notification>
+  <notification name="TerrainUploadFailed">Terrain hochladen fehlgeschlagen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TerrainFileWritten">Terrain file written.<tag>fehlgeschlagen</tag></notification>
+  <notification name="TerrainFileWritten">Terrain Datei geschrieben.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TerrainFileWrittenStartingDownload">Terrain file written, starting download...<tag>fehlgeschlagen</tag></notification>
+  <notification name="TerrainFileWrittenStartingDownload">Terrain Datei geschrieben, starte herunterladen...<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TerrainBaked">Terrain baked.<tag>fehlgeschlagen</tag></notification>
+  <notification name="TerrainBaked">Terrain festgelegt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="TenObjectsDisabledPlzRefresh">Only the first 10 selected objects have been disabled. Refresh and make additional selections if required.<tag>fehlgeschlagen</tag></notification>
+  <notification name="TenObjectsDisabledPlzRefresh">Nur die ersten 1 ausgew&#xE4;hlten Objekte wurden deaktiviert. Lade neu und w&#xE4;hle erneut Objekte aus wenn notwendig.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UpdateViewerBuyParcel">You need to update your viewer to buy this parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="UpdateViewerBuyParcel">Du musst deinen Viewer updaten um diese Parzelle kaufen zu k&#xF6;nnen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantBuyParcelNotForSale">Unable to buy, this parcel is not for sale.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantBuyParcelNotForSale">Kaufen dieser Parzelle nicht m&#xF6;glich, sie steht nicht zum verkauf.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantBuySalePriceOrLandAreaChanged">Unable to buy, the sale price or land area has changed.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantBuySalePriceOrLandAreaChanged">Kauf fehlgeschlagen, der verkaufspreis oder Landregion hat sich ge&#xE4;ndert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantBuyParcelNotAuthorized">You are not the authorized buyer for this parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantBuyParcelNotAuthorized">Du bist nicht der autorisierte K&#xE4;ufer f&#xFC;r dieses Land.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantBuyParcelAwaitingPurchaseAuth">You cannot purchase this parcel because it is already awaiting purchase aut<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantBuyParcelAwaitingPurchaseAuth">Du kannst dieses Land nicht akufen, es ist bereits im Verkaufsprozess.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantBuildOverflowParcel">You cannot build objects here because doing so would overflow the parcel.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantBuildOverflowParcel">Du kannst hier keine Objekte bauen, es w&#xFC;rde die Parzelle &#xFC;berf&#xFC;llen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SelectedMultipleOwnedLand">You selected land with different owners. Please select a smaller area and try again.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SelectedMultipleOwnedLand">Du hast Land mit unterschiedlichen Besitzern ausgew&#xE4;hlt. Bitte w&#xE4;hle einen kleineren Bereich und versuche es erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantJoinTooFewLeasedParcels">Not enough leased parcels in selection to join.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantJoinTooFewLeasedParcels">Nicht genug Parzellen in der Auswahl zum zusammen f&#xFC;hren.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDivideLandMultipleParcelsSelected">Can't divide land.
-There is more than one parcel selected.
-Try selecting a smaller piece of land.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDivideLandMultipleParcelsSelected">Kann Land nicht unterteilen.
+Es wurde mehr als 1 Land ausgew&#xE4;hlt.
+Versuch es mit einem kleineren St&#xFC;ck Land.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDivideLandCantFindParcel">Can't divide land.
-Can't find the parcel.
-Please report with Help -&gt; Report Bug...<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDivideLandCantFindParcel">Kann land nicht unterteilen.
+Kann Parzelle nicht finden.
+Bitte berichten unter Hilfe -&gt; Fehler einreichen<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDivideLandWholeParcelSelected">Can't divide land. Whole parcel is selected.
-Try selecting a smaller piece of land.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDivideLandWholeParcelSelected">Kann Land nicht teilen. Das gesamte Land wurde ausgew&#xE4;hlt.
+Bitte versuche es mit einem kleineren St&#xFC;ck Land.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LandHasBeenDivided">Land has been divided.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LandHasBeenDivided">Land wurde unterteilt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="PassPurchased">You purchased a pass.<tag>fehlgeschlagen</tag></notification>
+  <notification name="PassPurchased">Du kaufst einen Zugangspass.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RegionDisallowsClassifieds">Region does not allow classified advertisements.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RegionDisallowsClassifieds">Region erlaubt keine Anzeigen Werbung.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LandPassExpireSoon">Your pass to this land is about to expire.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LandPassExpireSoon">Dein Zugangspass f&#xFC;r dieses Land l&#xE4;uft bald aus.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSitNoSuitableSurface">There is no suitable surface to sit on, try another spot.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSitNoSuitableSurface">Hier ist keine fl&#xE4;che zum sitzen, bitte versuche eine andere Fl&#xE4;che.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSitNoRoom">No room to sit here, try another spot.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSitNoRoom">Kein raum zum sitzen, bitte versuche einen anderen Punkt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="ClaimObjectFailedNoPermission">Claim object failed because you don't have permission<tag>fehlgeschlagen</tag></notification>
+  <notification name="ClaimObjectFailedNoPermission">Kopieren aufgrund fehlender Kopierrechte fehlgeschlagen<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="ClaimObjectFailedNoMoney">Claim object failed because you don't have enough L$.<tag>fehlgeschlagen</tag></notification>
+  <notification name="ClaimObjectFailedNoMoney">Objekt &#xFC;bernehmen fehlgeschlage, du hast zu wenig L$.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDeedGroupLand">Cannot deed group-owned land.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDeedGroupLand">Kann gruppeneigenes Land nicht &#xFC;bertragen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="BuyObjectFailedNoMoney">Buy object failed because you don't have enough L$.<tag>fehlgeschlagen</tag></notification>
+  <notification name="BuyObjectFailedNoMoney">Kauf vom Objekt fehlgeschlagen, du hast nicht genug L$.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="BuyInventoryFailedNoMoney">Buy inventory failed because you do not have enough L$<tag>fehlgeschlagen</tag></notification>
+  <notification name="BuyInventoryFailedNoMoney">Kauf vom Inventar fehlgeschlagen du hast nicht genug L$<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="BuyPassFailedNoMoney">You don't have enough L$ to buy a pass to this land.<tag>fehlgeschlagen</tag></notification>
+  <notification name="BuyPassFailedNoMoney">Du hast nicht genug L$ um den Zugangspass f&#xFC;r das Land zu kaufen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantBuyPassTryAgain">Unable to buy pass right now.  Try again later.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantBuyPassTryAgain">Zugang konnte nicht gekauft werden. Bitte versuch es sp&#xE4;ter noch einmal.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateObjectParcelFull">Can't create object because
-the parcel is full.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateObjectParcelFull">Kann das Objekt nicht erstellen. Die Parzelle ist voll.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="FailedPlacingObject">Failed to place object at specified location.  Please try again.<tag>fehlgeschlagen</tag></notification>
+  <notification name="FailedPlacingObject">Fehler beim bauen an dieser Stelle. Bitte versuche es erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateLandmarkForEvent">Unable to create landmark for event.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateLandmarkForEvent">Fehler beim Landmarke erstellen f&#xFC;r das Event.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="GodBeatsFreeze">Your godlike powers break the freeze!<tag>fehlgeschlagen</tag></notification>
+  <notification name="GodBeatsFreeze">Deine Gottpower durchbrecht die einfrieren Aktion.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="SpecialPowersRequestFailedLogged">Request for special powers failed. This request has been logged.<tag>fehlgeschlagen</tag></notification>
+  <notification name="SpecialPowersRequestFailedLogged">Anfrage nach besonderen Berechtigungen fehlgeschlagen. Dieser versuch wurde aufgezeichnet.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="ExpireExplanation">The system is currently unable to process your request. The request timed out.<tag>fehlgeschlagen</tag></notification>
+  <notification name="ExpireExplanation">Das System kann deine Anfrage derzeit nicht beantworten. Die Anfrage ist abgelaufen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="DieExplanation">The system is unable to process your request.<tag>fehlgeschlagen</tag></notification>
+  <notification name="DieExplanation">Das System kann deine Anfrage derzeit nicht beantworten.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="AddPrimitiveFailure">Insufficient funds to create primitive.<tag>fehlgeschlagen</tag></notification>
+  <notification name="AddPrimitiveFailure">Unzureichende Geldmittel um einen Prim zu erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="RezObjectFailure">Insufficient funds to create object.<tag>fehlgeschlagen</tag></notification>
+  <notification name="RezObjectFailure">Zu wenig Guthaben um Objekt zu erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="ResetHomePositionNotLegal">Reset Home position since Home wasn't legal.<tag>fehlgeschlagen</tag></notification>
+  <notification name="ResetHomePositionNotLegal">Heimatort zur&#xFC;ckgesetzt weil der vorherige Heimatort nicht legal war.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantInviteRegionFull">You cannot currently invite anyone to your location because the region is full. Try again later.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantInviteRegionFull">Du kannst derzeit niemand zu deiner Position einladen, die Region ist voll. Versuch es sp&#xE4;ter erneut.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantSetHomeAtRegion">This region does not allow you to set your home location here.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantSetHomeAtRegion">Die Region erlaubt nicht Ihr Zuhause hierher zu verlegen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="ListValidHomeLocations">You can only set your 'Home Location' on your land or at a mainland Infohub.<tag>fehlgeschlagen</tag></notification>
+  <notification name="ListValidHomeLocations">Sie k&#xF6;nnen Ihr Zuhause nur auf Ihr eigenes Land oder auf ein Mainland Infohub setzen.<tag>fehlgeschlagen</tag></notification>
 
   <notification name="SetHomePosition">Position f&#xFC;r Zuhause festgelegt.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDerezInventoryError">Cannot derez object due to inventory fault.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDerezInventoryError">Kann Objekt nicht entfernen wegen Inventarfehler.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateRequestedInv">Cannot create requested inventory.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateRequestedInv">Kann angefordertes Inventar nicht erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateRequestedInvFolder">Cannot create requested inventory folder.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateRequestedInvFolder">Kann angeforderten Inventarordner nicht erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateInventory">Cannot create that inventory.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateInventory">Kann das Inventar nicht erstellen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateLandmark">Cannot create landmark.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateLandmark">Landmarken erstellen fehlgeschlagen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantCreateOutfit">Cannot create outfit right now. Try again in a minute.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantCreateOutfit">Kann das Outfit derzeit nicht erstellen. Bitte versuche es in einer Minute.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="InventoryNotForSale">Inventory is not for sale.<tag>fehlgeschlagen</tag></notification>
+  <notification name="InventoryNotForSale">Inventar ist nicht zum verkauf.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantFindInvItem">Unable to find inventory item.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantFindInvItem">Kann Inventarobjekt nicht finden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantFindObject">Unable to find object.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantFindObject">Objekt nicht gefunden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantTransfterMoneyRegionDisabled">Money transfers to objects are currently disabled in this region.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantTransfterMoneyRegionDisabled">Geldtransver zu objekten ist derzeit in dieser Region deaktiviert.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantPayNoAgent">Could not figure out who to pay.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantPayNoAgent">Kann den Geldempf&#xE4;nger nicht herausfinden.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="CantDonateToPublicObjects">You cannot give L$ to public objects.<tag>fehlgeschlagen</tag></notification>
+  <notification name="CantDonateToPublicObjects">Du kannst keine L$ an &#xF6;ffentliche Objekte geben.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="InventoryCreationInWorldObjectFailed">Inventory creation on in-world object failed.<tag>fehlgeschlagen</tag></notification>
+  <notification name="InventoryCreationInWorldObjectFailed">Objekt erstellen im Inventar aus Inworld Objekt fehlgeschlagen.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="UserBalanceOrLandUsageError">An internal error prevented us from properly updating your viewer.  The L$ balance or parcel holdings displayed in your viewer may not reflect your actual balance on the servers.<tag>fehlgeschlagen</tag></notification>
+  <notification name="UserBalanceOrLandUsageError">Ein Internet Fehler verhinderte das update von deinem Viewer. Die angezeigten L$ entsprechen wom&#xF6;glich nicht der auf de Server gespeicherten Anzahl.<tag>fehlgeschlagen</tag></notification>
 
-  <notification name="LargePrimAgentIntersect">Cannot create large prims that intersect other players.  Please re-try when other players have moved.<tag>fehlgeschlagen</tag></notification>
+  <notification name="LargePrimAgentIntersect">Kann keine &#xFC;bergrossen Objekte erstellen wie andere Spieler behindern. Bitte versuche es wenn die Spieler sich weg bewegt haben.<tag>fehlgeschlagen</tag></notification>
 
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->
 <!-- Singu TODO: Migrate our special notifications to here -->
-  <notification name="AntiSpamBlock">AntiSpam: Blocked [SOURCE] for spamming [TYPE]s [AMOUNT] times in [TIME] seconds.</notification>
+  <notification name="AntiSpamBlock">AntiSpam: Blockiert [SOURCE] wegen Spams [TYPE]s [AMOUNT] Zeit in [TIME] Sekunden.</notification>
 
-  <notification name="AntiSpamNewlineFlood">AntiSpam: Blocked newline flood from [SOURCE] (over [AMOUNT] newlines).</notification>
+  <notification name="AntiSpamNewlineFlood">AntiSpam: Blockiert neue Zeile Flood Spam from [SOURCE] (mit [AMOUNT] Zeilen).</notification>
 
 
-  <notification name="RadarChatKeysRequest">An object owned by you has requested keys from your radar.
-Would you like to enable announcing keys to objects in the sim?<usetemplate name="yesnocancelbuttons" yestext="Ja" canceltext="No, don't ask again!"/></notification>
+  <notification name="RadarChatKeysRequest">Ein Objekt von dir hat Informationen von deinem Radar angefordert.
+M&#xF6;chtest du Radarinformationen zu Objekten in der Sim aktivieren?<usetemplate name="yesnocancelbuttons" yestext="Ja" canceltext="Nein, frag nicht erneut!"/></notification>
+
+  <notification name="WavefrontExportPartial">Unable to include [FAILED] out of [TOTAL] objects in export due to insufficient permissions.
+
+Do you wish to export anyway?<usetemplate name="okcancelbuttons" yestext="Proceed"/></notification>
+
+  <notification name="WavefrontExportSuccess">Object successfully exported to: [FILENAME]</notification>
 
 </notifications>

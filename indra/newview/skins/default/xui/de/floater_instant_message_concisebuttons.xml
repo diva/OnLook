@@ -11,15 +11,19 @@
 	<string name="default_text_label">Für Instant Message hier klicken.</string>
 	<string name="unavailable_text_label">Für diese Verbindung ist kein Text-Chat verfügbar.</string>
 	<string name="inventory_item_offered">Inventarobjekt angeboten</string>
-	<button label="Profil" name="profile_callee_btn"/>
-	<button label="Verlauf" name="history_btn"/>
-	<button label="Teleportieren" name="profile_tele_btn"/>
+    <flyout_button label="Profil" name="instant_message_flyout">
+      <flyout_button_item label="Verlauf" name="history_btn"/>
+      <flyout_button_item label="Teleport anbieten" name="profile_tele_btn"/>
+      <!--flyout_button_item label="Request Teleport" name="profile_tele_btn" value="3"/-->
+      <flyout_button_item label="Bezahlen" name="profile_tele_btn"/>
+      <flyout_button_item label="Gruppeneinladung schicken" name="profile_tele_btn"/>
+    </flyout_button>
 	<check_box name="rp_mode">RP Modus</check_box>
 	<button label="Anrufen" name="start_call_btn"/>
 	<button label="End" name="end_call_btn"/>
 	<panel name="speaker_controls">
 		
-		<button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="mute_btn" tool_tip="Voice stummschalten"/>
+		<button name="mute_btn" tool_tip="Voice stummschalten"/>
 	</panel>
 	
 	<line_editor label="Für Instant Message hier klicken" name="chat_editor"/>

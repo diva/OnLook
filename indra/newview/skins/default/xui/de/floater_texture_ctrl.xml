@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="texture picker" title="Auswählen: Textur">
-	<string name="choose_picture">Zum Auswählen eines Bildes hier klicken</string>
+	<string name="choose_picture">Klicken, um ein Bild auszuwählen</string>
 	<text name="Multiple">Mehrfach</text>
 	<text name="unknown">Maße: [DIMENSIONS]</text>
 	<button label="Standard" label_selected="Standard" name="Default"/>
@@ -10,7 +10,7 @@
   <button label="Keine" label_selected="Keine" name="None"/>
 	<check_box label="Ordner anzeigen" name="show_folders_check"/>
 	<check_box label="Sofort übernehmen" name="apply_immediate_check"/>
-	<button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" label_selected="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="Pipette"/>
+	
 	<button label="Abbrechen" label_selected="Abbrechen" name="Cancel"/>
 	<button label="Auswählen" label_selected="Auswählen" name="Select"/>
 	

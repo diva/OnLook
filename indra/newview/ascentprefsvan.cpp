@@ -174,6 +174,7 @@ void LLPrefsAscentVan::refreshValues()
     mShowSelfClientTag		= gSavedSettings.getBOOL("AscentShowSelfTag");
     mShowSelfClientTagColor = gSavedSettings.getBOOL("AscentShowSelfTagColor");
     mShowFriendsTag         = gSavedSettings.getBOOL("AscentShowFriendsTag");
+    mDisplayClientTagOnNewLine		= gSavedSettings.getBOOL("SLBDisplayClientTagOnNewLine");
     mCustomTagOn			= gSavedSettings.getBOOL("AscentUseCustomTag");
     mCustomTagLabel			= gSavedSettings.getString("AscentCustomTagLabel");
     mCustomTagColor			= gSavedSettings.getColor4("AscentCustomTagColor");
@@ -187,6 +188,7 @@ void LLPrefsAscentVan::refreshValues()
     mEstateOwnerColor		= gSavedSettings.getColor4("AscentEstateOwnerColor");
     mLindenColor			= gSavedSettings.getColor4("AscentLindenColor");
     mMutedColor				= gSavedSettings.getColor4("AscentMutedColor");
+	mMapAvatarColor			= gSavedSettings.getColor4("MapAvatar");
     mCustomColor			= gSavedSettings.getColor4("MoyMiniMapCustomColor");
 	mColorFriendChat        = gSavedSettings.getBOOL("ColorFriendChat");
 	mColorEOChat            = gSavedSettings.getBOOL("ColorEstateOwnerChat");
@@ -245,6 +247,7 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setBOOL("AscentShowSelfTag",          mShowSelfClientTag);
     gSavedSettings.setBOOL("AscentShowSelfTagColor",     mShowSelfClientTagColor);
     gSavedSettings.setBOOL("AscentShowFriendsTag",       mShowFriendsTag);
+    gSavedSettings.setBOOL("SLBDisplayClientTagOnNewLine",       mDisplayClientTagOnNewLine);
     gSavedSettings.setBOOL("AscentUseCustomTag",         mCustomTagOn);
     gSavedSettings.setString("AscentCustomTagLabel",     mCustomTagLabel);
     gSavedSettings.setColor4("AscentCustomTagColor",     mCustomTagColor);
@@ -258,6 +261,7 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setColor4("AscentEstateOwnerColor",   mEstateOwnerColor);
     gSavedSettings.setColor4("AscentLindenColor",        mLindenColor);
     gSavedSettings.setColor4("AscentMutedColor",         mMutedColor);
+	gSavedSettings.setColor4("MapAvatar",                mMapAvatarColor);
     gSavedSettings.setColor4("MoyMiniMapCustomColor",    mCustomColor);
     gSavedSettings.setBOOL("ColorFriendChat",            mColorFriendChat);
     gSavedSettings.setBOOL("ColorEstateOwnerChat",       mColorEOChat);

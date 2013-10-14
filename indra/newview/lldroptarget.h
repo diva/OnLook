@@ -44,11 +44,13 @@ class LLDropTarget : public LLView
 public:
 	struct Params : public LLInitParam::Block<Params, LLView::Params>
 	{
+		Optional<bool> border_visible; // Whether or not to display the border
 		Optional<std::string> control_name; // Control to change on item drop (Per Account only)
 		Optional<std::string> label; // Label for the LLTextBox, used when label doesn't dynamically change on drop
 		Optional<bool> fill_parent; // Whether or not to fill the direct parent, to have a larger drop target.  If true, the next sibling must explicitly define its rect without deltas.
 		Params()
-		:	control_name("control_name", "")
+		:	border_visible("border_visible", true)
+		,	control_name("control_name", "")
 		,	label("label", "")
 		,	fill_parent("fill_parent", false)
 		{
@@ -74,6 +76,7 @@ public:
 protected:
 	LLUUID mEntityID;
 private:
+	class LLViewBorder* mBorder;
 	LLControlVariable* mControl;
 	class LLTextBox* mText;
 };

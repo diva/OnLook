@@ -351,5 +351,5 @@ void LLFloaterTeleportHistory::onCopySLURL(void* data)
 
 	// get SLURL of the selected entry and copy it to the clipboard
 	std::string SLURL = self->mPlacesList->getFirstSelected()->getColumn(LIST_SLURL)->getValue().asString();
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(SLURL));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(SLURL));
 }

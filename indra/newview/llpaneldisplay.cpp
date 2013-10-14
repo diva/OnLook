@@ -1010,8 +1010,8 @@ void LLPanelDisplay::onCommitAutoDetectAspect(const LLSD& value)
 		S32 denominator = 0;
 		
 		// clear any aspect ratio override
-		gViewerWindow->mWindow->setNativeAspectRatio(0.f);
-		fractionFromDecimal(gViewerWindow->mWindow->getNativeAspectRatio(), numerator, denominator);
+		gViewerWindow->getWindow()->setNativeAspectRatio(0.f);
+		fractionFromDecimal(gViewerWindow->getWindow()->getNativeAspectRatio(), numerator, denominator);
 
 		std::string aspect;
 		if (numerator != 0)
@@ -1020,12 +1020,12 @@ void LLPanelDisplay::onCommitAutoDetectAspect(const LLSD& value)
 		}
 		else
 		{
-			aspect = llformat("%.3f", gViewerWindow->mWindow->getNativeAspectRatio());
+			aspect = llformat("%.3f", gViewerWindow->getWindow()->getNativeAspectRatio());
 		}
 
 		mCtrlAspectRatio->setLabel(aspect);
 
-		ratio = gViewerWindow->mWindow->getNativeAspectRatio();
+		ratio = gViewerWindow->getWindow()->getNativeAspectRatio();
 		gSavedSettings.setF32("FullScreenAspectRatio", ratio);
 	}
 }

@@ -218,7 +218,6 @@ public:
 	virtual BOOL	canSaveAs() const { return FALSE; }
 
 	virtual void	saveAs() {}
-	virtual void	saveAsType(BOOL type=false) {}
 	
 	void			setSnapTarget(LLHandle<LLFloater> handle) { mSnappedTo = handle; }
 	void			clearSnapTarget() { mSnappedTo.markDead(); }

@@ -187,10 +187,10 @@
 			</line_editor>
 			<spinner bottom="-126" decimal_digits="3" follows="top|right" height="16"
 			     increment="0.1" initial_val="1" left="308" max_val="4" min_val="0"
-			     mouse_opaque="true" name="billable factor" width="80">
-			       <spinner.commit_callback
-					function="RegionTools.ChangeAnything" />
-			</spinner>
+			     mouse_opaque="true" name="billable factor" label_width="20" width="80">
+                          <spinner.commit_callback
+                           function="RegionTools.ChangeAnything" />
+                        </spinner>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-126" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerif" h_pad="0" halign="left" height="16" left_delta="-108"
@@ -199,10 +199,10 @@
 			</text>
 			<spinner bottom="-146" decimal_digits="3" follows="top|right" height="16" increment="1"
 			     initial_val="1" left="308" max_val="100" min_val="0" mouse_opaque="true"
-			     name="land cost" width="80">
-			       <spinner.commit_callback
-					function="RegionTools.ChangeAnything" />
-			</spinner>
+			     name="land cost" label_width="20" width="80">
+                          <spinner.commit_callback
+                           function="RegionTools.ChangeAnything" />
+                        </spinner>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-146" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerif" h_pad="0" halign="left" height="16" left_delta="-108"

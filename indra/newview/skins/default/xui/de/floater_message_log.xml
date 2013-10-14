@@ -8,7 +8,7 @@
 	<button name="filter_choice_btn" label="…"/>
 	
 	<button name="filter_apply_btn" label="✔"/>
-	<button name="clear_log_btn" label="de_DE.UTF-8"/>
+	<button name="clear_log_btn" label="C"/>
 	<scroll_list name="message_log">
 		<column name="sequence" label="sequence"/>
 		<column name="type" label="type"/>

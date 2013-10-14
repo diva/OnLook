@@ -33,50 +33,32 @@
 
 #include "llimpanel.h"
 
-#include "indra_constants.h"
-#include "llfocusmgr.h"
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llerror.h"
-#include "llstring.h"
-#include "message.h"
-#include "lltextbox.h"
-#include "llnotificationsutil.h"
-
+#include "ascentkeyword.h"
 #include "llagent.h"
 #include "llavataractions.h"
+#include "llavatarnamecache.h"
 #include "llbutton.h"
-#include "llcallingcard.h"
-#include "llchat.h"
-#include "llconsole.h"
-#include "llgroupactions.h"
+#include "llcombobox.h"
 #include "llfloaterchat.h"
+#include "llfloaterinventory.h"
+#include "llfloaterwebcontent.h" // For web browser display of logs
+#include "llgroupactions.h"
+#include "llhttpclient.h"
 #include "llimview.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
-#include "llfloaterinventory.h"
-#include "llcheckboxctrl.h"
-#include "llkeyboard.h"
 #include "lllineeditor.h"
-#include "llnotify.h"
+#include "llmutelist.h"
+#include "llnotificationsutil.h"
 #include "llparticipantlist.h"
-#include "llresmgr.h"
 #include "llspeakers.h"
+#include "llstylemap.h"
 #include "lltrans.h"
-#include "lltabcontainer.h"
-#include "llviewertexteditor.h"
-#include "llviewermessage.h"
-#include "llviewerstats.h"
-#include "llviewercontrol.h"
 #include "lluictrlfactory.h"
+#include "llviewertexteditor.h"
+#include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llvoicechannel.h"
-#include "lllogchat.h"
-#include "llweb.h"
-#include "llhttpclient.h"
-#include "llmutelist.h"
-#include "llstylemap.h"
-#include "ascentkeyword.h"
 
 #include "boost/algorithm/string.hpp"
 
@@ -234,23 +216,17 @@ bool send_start_session_messages(
 			other_participant_id,
 			dialog);
 
-		switch(dialog)
-		{
-		case IM_SESSION_GROUP_START:
-			gMessageSystem->addBinaryDataFast(
-				_PREHASH_BinaryBucket,
-				EMPTY_BINARY_BUCKET,
-				EMPTY_BINARY_BUCKET_SIZE);
-			break;
-		default:
-			break;
-		}
+		gMessageSystem->addBinaryDataFast(
+			_PREHASH_BinaryBucket,
+			EMPTY_BINARY_BUCKET,
+			EMPTY_BINARY_BUCKET_SIZE);
 		gAgent.sendReliableMessage();
 
 		return true;
 	}
 	else if ( dialog == IM_SESSION_CONFERENCE_START )
 	{
+		if (ids.empty()) return true;
 		LLSD agents;
 		for (int i = 0; i < (S32) ids.size(); i++)
 		{
@@ -259,10 +235,9 @@ bool send_start_session_messages(
 
 		//we have a new way of starting conference calls now
 		LLViewerRegion* region = gAgent.getRegion();
-		if (region)
+		std::string url(region ? region->getCapability("ChatSessionRequest") : "");
+		if (!url.empty())
 		{
-			std::string url = region->getCapability(
-				"ChatSessionRequest");
 			LLSD data;
 			data["method"] = "start conference";
 			data["session-id"] = temp_session_id;
@@ -296,148 +271,83 @@ bool send_start_session_messages(
 // LLFloaterIMPanel
 //
 LLFloaterIMPanel::LLFloaterIMPanel(
-	const std::string& session_label,
+	const std::string& log_label,
 	const LLUUID& session_id,
 	const LLUUID& other_participant_id,
-	EInstantMessage dialog) :
-	LLFloater(session_label, LLRect(), session_label),
+	const EInstantMessage& dialog,
+	const LLDynamicArray<LLUUID>& ids) :
+	LLFloater(log_label, LLRect(), log_label),
+	mStartCallOnInitialize(false),
 	mInputEditor(NULL),
 	mHistoryEditor(NULL),
-	mSessionUUID(session_id),
-	mVoiceChannel(NULL),
-	mSessionInitialized(FALSE),
+	mSessionInitialized(false),
 	mSessionStartMsgPos(0),
+	mSessionType(P2P_SESSION),
+	mSessionUUID(session_id),
+	mLogLabel(log_label),
+	mQueuedMsgsForInit(),
 	mOtherParticipantUUID(other_participant_id),
 	mDialog(dialog),
-	mTyping(FALSE),
-	mOtherTyping(FALSE),
+	mTyping(false),
 	mTypingLineStartIndex(0),
-	mSentTypingState(TRUE),
+	mOtherTyping(false),
+	mOtherTypingName(),
 	mNumUnreadMessages(0),
-	mShowSpeakersOnConnect(TRUE),
-	mStartCallOnInitialize(false),
-	mTextIMPossible(TRUE),
-	mProfileButtonEnabled(TRUE),
-	mCallBackEnabled(TRUE),
+	mSentTypingState(true),
+	mShowSpeakersOnConnect(true),
+	mDing(false),
+	mRPMode(false),
+	mTextIMPossible(true),
+	mCallBackEnabled(true),
 	mSpeakers(NULL),
 	mSpeakerPanel(NULL),
-	mFirstKeystrokeTimer(),
-	mLastKeystrokeTimer()
-{
-	if(mOtherParticipantUUID.isNull()) 
-	{
-		llwarns << "Other participant is NULL" << llendl;
-	}
-
-	init(session_label);
-}
-
-LLFloaterIMPanel::LLFloaterIMPanel(
-	const std::string& session_label,
-	const LLUUID& session_id,
-	const LLUUID& other_participant_id,
-	const LLDynamicArray<LLUUID>& ids,
-	EInstantMessage dialog) :
-	LLFloater(session_label, LLRect(), session_label),
-	mInputEditor(NULL),
-	mHistoryEditor(NULL),
-	mSessionUUID(session_id),
 	mVoiceChannel(NULL),
-	mSessionInitialized(FALSE),
-	mSessionStartMsgPos(0),
-	mOtherParticipantUUID(other_participant_id),
-	mDialog(dialog),
-	mTyping(FALSE),
-	mOtherTyping(FALSE),
-	mTypingLineStartIndex(0),
-	mSentTypingState(TRUE),
-	mShowSpeakersOnConnect(TRUE),
-	mStartCallOnInitialize(false),
-	mTextIMPossible(TRUE),
-	mProfileButtonEnabled(TRUE),
-	mCallBackEnabled(TRUE),
-	mSpeakers(NULL),
-	mSpeakerPanel(NULL),
 	mFirstKeystrokeTimer(),
 	mLastKeystrokeTimer()
 {
-	if(mOtherParticipantUUID.isNull()) 
+	if (mOtherParticipantUUID.isNull())
 	{
 		llwarns << "Other participant is NULL" << llendl;
 	}
 
-	mSessionInitialTargetIDs = ids;
-	init(session_label);
-}
-
-
-void LLFloaterIMPanel::init(const std::string& session_label)
-{
 	// set P2P type by default
-	mSessionType = P2P_SESSION;
-
-	mSessionLabel = session_label;
-
-	// [Ansariel: Display name support]
-	mProfileButtonEnabled = FALSE;
-	// [/Ansariel: Display name support]
-
 	static LLCachedControl<bool> concise_im("UseConciseIMButtons");
-	static LLCachedControl<bool> concise_group("UseConciseGroupChatButtons");
-	static LLCachedControl<bool> concise_conf("UseConciseConferenceButtons");
-	std::string xml_filename;
+	std::string xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
+
+
 	switch(mDialog)
 	{
 	case IM_SESSION_GROUP_START:
-		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
-		xml_filename = concise_group ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
-		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
-		break;
 	case IM_SESSION_INVITE:
-		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
+	case IM_SESSION_CONFERENCE_START:
+		// determine whether it is group or conference session
 		if (gAgent.isInGroup(mSessionUUID))
 		{
-			xml_filename = concise_group ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
+			static LLCachedControl<bool> concise("UseConciseGroupChatButtons");
+			xml_filename = concise ? "floater_instant_message_group_concisebuttons.xml" : "floater_instant_message_group.xml";
+			mSessionType = GROUP_SESSION;
 		}
-		else // must be invite to ad hoc IM
+		else
 		{
-			xml_filename = concise_conf ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
+			static LLCachedControl<bool> concise("UseConciseConferenceButtons");
+			xml_filename = concise ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
+			mSessionType = ADHOC_SESSION;
 		}
-		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
-		break;
-	case IM_SESSION_P2P_INVITE:
-		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
-		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mSessionLabel, mOtherParticipantUUID);
-		break;
-	case IM_SESSION_CONFERENCE_START:
 		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
-		xml_filename = concise_conf ? "floater_instant_message_ad_hoc_concisebuttons.xml" : "floater_instant_message_ad_hoc.xml";
-		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mSessionLabel);
+		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mLogLabel);
 		break;
 	// just received text from another user
 	case IM_NOTHING_SPECIAL:
-
-		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
-		
 		mTextIMPossible = LLVoiceClient::getInstance()->isSessionTextIMPossible(mSessionUUID);
-		mProfileButtonEnabled = LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID);
 		mCallBackEnabled = LLVoiceClient::getInstance()->isSessionCallBackPossible(mSessionUUID);
-		
-		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mSessionLabel, mOtherParticipantUUID);
+		// fallthrough
+	case IM_SESSION_P2P_INVITE:
+		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mLogLabel, mOtherParticipantUUID);
+		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
 		break;
 	default:
 		llwarns << "Unknown session type" << llendl;
-		xml_filename = concise_im ? "floater_instant_message_concisebuttons.xml" : "floater_instant_message.xml";
 		break;
-	}
-
-	if ( (IM_NOTHING_SPECIAL != mDialog) && (IM_SESSION_P2P_INVITE != mDialog) )
-	{
-		// determine whether it is group or conference session
-		if (gAgent.isInGroup(mSessionUUID))
-			mSessionType = GROUP_SESSION;
-		else
-			mSessionType = ADHOC_SESSION;
 	}
 
 	mSpeakers = new LLIMSpeakerMgr(mVoiceChannel);
@@ -447,22 +357,12 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 								&getFactoryMap(),
 								FALSE);
 
-	setTitle(mSessionLabel);
-
-	// [Ansariel: Display name support]
-	if (mProfileButtonEnabled)
-	{
-		lookupName();
-	}	
-	// [/Ansariel: Display name support]
-	
-
 	// enable line history support for instant message bar
 	mInputEditor->setEnableLineHistory(TRUE);
 
 	if ( gSavedPerAccountSettings.getBOOL("LogShowHistory") )
 	{
-		LLLogChat::loadHistory(mSessionLabel,
+		LLLogChat::loadHistory(mLogLabel,
 				       &chatFromLogFile,
 				       (void *)this);
 	}
@@ -472,13 +372,12 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 		if ( !send_start_session_messages(
 				 mSessionUUID,
 				 mOtherParticipantUUID,
-				 mSessionInitialTargetIDs,
+				 ids,
 				 mDialog) )
 		{
 			//we don't need to need to wait for any responses
 			//so we're already initialized
-			mSessionInitialized = TRUE;
-			mSessionStartMsgPos = 0;
+			mSessionInitialized = true;
 		}
 		else
 		{
@@ -486,8 +385,7 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 			LLUIString session_start = sSessionStartString;
 
 			session_start.setArg("[NAME]", getTitle());
-			mSessionStartMsgPos = 
-				mHistoryEditor->getWText().length();
+			mSessionStartMsgPos = mHistoryEditor->getWText().length();
 
 			addHistoryLine(
 				session_start,
@@ -497,20 +395,18 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 	}
 }
 
-void LLFloaterIMPanel::lookupName()
-{
-	LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _1, _2));
-}
-
-void LLFloaterIMPanel::onAvatarNameLookup(const LLUUID&, const LLAvatarName& avatar_name)
+void LLFloaterIMPanel::onAvatarNameLookup(const LLAvatarName& avatar_name)
 {
 	std::string title;
 	LLAvatarNameCache::getPNSName(avatar_name, title);
 	setTitle(title);
+	// Singu Note: We could set tab name here, too now.
 }
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
 {
+	LLAvatarTracker::instance().removeParticularFriendObserver(mOtherParticipantUUID, this);
+
 	delete mSpeakers;
 	mSpeakers = NULL;
 	
@@ -542,6 +438,20 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 	mFocusLostSignal.disconnect();
 }
 
+// virtual
+void LLFloaterIMPanel::changed(U32 mask)
+{
+	if (mask & REMOVE|ADD) // Fix remove/add friend choices
+		rebuildDynamics(getChild<LLComboBox>("instant_message_flyout"));
+	/* Singu TODO: Chat UI - Online icons?
+	if (mask & ONLINE)
+		// Show online icon here
+	else if (mask & NONE)
+		// Show offline icon here
+	*/
+}
+
+// virtual
 BOOL LLFloaterIMPanel::postBuild() 
 {
 	requires<LLLineEditor>("chat_editor");
@@ -549,11 +459,13 @@ BOOL LLFloaterIMPanel::postBuild()
 
 	if (checkRequirements())
 	{
-		mRPMode = false;
+		setTitle(mLogLabel);
+		if (mSessionType == P2P_SESSION && LLVoiceClient::getInstance()->isParticipantAvatar(mSessionUUID))
+			LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _2));
 
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
-		mFocusLostSignal = mInputEditor->setFocusLostCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusLost, this) );
+		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
 		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
 		mInputEditor->setCommitCallback( boost::bind(&LLFloaterIMPanel::onSendMsg,this) );
 		mInputEditor->setCommitOnFocusLost( FALSE );
@@ -561,16 +473,19 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
 		mInputEditor->setPassDelete( TRUE );
 
-		if (LLUICtrl* ctrl = findChild<LLUICtrl>("instant_message_flyout"))
+		if (LLComboBox* flyout = findChild<LLComboBox>("instant_message_flyout"))
 		{
-			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, _2));
+			flyout->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, flyout, _2));
+			addDynamics(flyout);
 		}
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("tp_btn"))
+			ctrl->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("pay_btn"))
+			ctrl->setCommitCallback(boost::bind(LLAvatarActions::pay, mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("history_btn"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickHistory, this));
-		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
-			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
 		getChild<LLButton>("start_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::startCall, gIMMgr, mSessionUUID, LLVoiceChannel::OUTGOING_CALL));
 		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, mSessionUUID));
@@ -582,11 +497,6 @@ BOOL LLFloaterIMPanel::postBuild()
 		mHistoryEditor->setParseHTML(TRUE);
 		mHistoryEditor->setParseHighlights(TRUE);
 
-		if ( IM_SESSION_GROUP_START == mDialog )
-		{
-			childSetEnabled("profile_btn", FALSE);
-		}
-		
 		sTitleString = getString("title_string");
 		sTypingStartString = getString("typing_start_string");
 		sSessionStartString = getString("session_start_string");
@@ -642,7 +552,7 @@ void LLFloaterIMPanel::draw()
 {	
 	LLViewerRegion* region = gAgent.getRegion();
 	
-	BOOL enable_connect = (region && region->getCapability("ChatSessionRequest") != "")
+	bool enable_connect = (region && !region->getCapability("ChatSessionRequest").empty())
 					  && mSessionInitialized
 					  && LLVoiceClient::getInstance()->voiceEnabled()
 					  && mCallBackEnabled;
@@ -673,8 +583,8 @@ void LLFloaterIMPanel::draw()
 	// show speakers window when voice first connects
 	if (mShowSpeakersOnConnect && mVoiceChannel->isActive())
 	{
-		childSetVisible("active_speakers_panel", true);
-		mShowSpeakersOnConnect = FALSE;
+		if (mSpeakerPanel) mSpeakerPanel->setVisible(true);
+		mShowSpeakersOnConnect = false;
 	}
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("toggle_active_speakers_btn"))
 		ctrl->setValue(getChildView("active_speakers_panel")->getVisible());
@@ -684,7 +594,7 @@ void LLFloaterIMPanel::draw()
 		// Time out if user hasn't typed for a while.
 		if (mLastKeystrokeTimer.getElapsedTimeF32() > LLAgent::TYPING_TIMEOUT_SECS)
 		{
-			setTyping(FALSE);
+			setTyping(false);
 		}
 
 		// If we are typing, and it's been a little while, send the
@@ -692,8 +602,8 @@ void LLFloaterIMPanel::draw()
 		if (!mSentTypingState
 			&& mFirstKeystrokeTimer.getElapsedTimeF32() > 1.f)
 		{
-			sendTypingState(TRUE);
-			mSentTypingState = TRUE;
+			sendTypingState(true);
+			mSentTypingState = true;
 		}
 	}
 
@@ -739,7 +649,7 @@ private:
 	LLUUID mSessionID;
 };
 
-BOOL LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
+bool LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 {
 	LLViewerRegion* region = gAgent.getRegion();
 	if (!region)
@@ -796,6 +706,13 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 			{
 				incolor = mKeywordsColor;
 			}
+		}
+
+		if (mDing && (!hasFocus() || !gFocusMgr.getAppHasFocus()))
+		{
+			static const LLCachedControl<std::string> ding("LiruNewMessageSound");
+			static const LLCachedControl<std::string> dong("LiruNewMessageSoundForSystemMessages");
+			LLUI::sAudioCallback(LLUUID(source.notNull() ? ding : dong));
 		}
 	}
 
@@ -870,19 +787,19 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 
 		// [Ansariel: Display name support]
 		// Floater title contains display name -> bad idea to use that as filename
-		// mSessionLabel, however, should still be the old legacy name
+		// mLogLabel, however, is the old legacy name
 		//LLLogChat::saveHistory(getTitle(),histstr);
-		LLLogChat::saveHistory(mSessionLabel, histstr);
+		LLLogChat::saveHistory(mLogLabel, histstr);
 		// [/Ansariel: Display name support]
-	}
-
-	if (!isInVisibleChain())
-	{
-		mNumUnreadMessages++;
 	}
 
 	if (source.notNull())
 	{
+		if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
+		{
+			mNumUnreadMessages++;
+		}
+
 		mSpeakers->speakerChatted(source);
 		mSpeakers->setSpeakerTyping(source, FALSE);
 	}
@@ -901,38 +818,23 @@ void LLFloaterIMPanel::setVisible(BOOL b)
 }
 
 
-void LLFloaterIMPanel::setInputFocus( BOOL b )
+void LLFloaterIMPanel::setInputFocus(bool b)
 {
 	mInputEditor->setFocus( b );
 }
 
-
-void LLFloaterIMPanel::selectAll()
-{
-	mInputEditor->selectAll();
-}
-
-
-void LLFloaterIMPanel::selectNone()
-{
-	mInputEditor->deselect();
-}
-
-
 BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 {
 	BOOL handled = FALSE;
-	if( KEY_RETURN == key && mask == MASK_NONE)
+	if (KEY_RETURN == key)
 	{
 		onSendMsg();
 		handled = TRUE;
 
 		// Close talk panels on hitting return
-		// but not shift-return or control-return
-		if ( !gSavedSettings.getBOOL("PinTalkViewOpen") && !(mask & MASK_CONTROL) && !(mask & MASK_SHIFT) )
-		{
-			gIMMgr->toggle(NULL);
-		}
+		// without holding a modifier key
+		if (mask == MASK_NONE)
+			closeIfNotPinned();
 	}
 	else if (KEY_ESCAPE == key && mask == MASK_NONE)
 	{
@@ -940,15 +842,22 @@ BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 		gFocusMgr.setKeyboardFocus(NULL);
 
 		// Close talk panel with escape
-		if( !gSavedSettings.getBOOL("PinTalkViewOpen") )
-		{
-			gIMMgr->toggle(NULL);
-		}
+		closeIfNotPinned();
 	}
 
 	// May need to call base class LLPanel::handleKeyHere if not handled
 	// in order to tab between buttons.  JNC 1.2.2002
 	return handled;
+}
+
+void LLFloaterIMPanel::closeIfNotPinned()
+{
+	if (gSavedSettings.getBOOL("PinTalkViewOpen")) return;
+
+	if (getParent() == gFloaterView) // Just minimize, if popped out
+		setMinimized(true);
+	else
+		gIMMgr->toggle();
 }
 
 BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
@@ -1038,28 +947,30 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 	return rv;
 }
 
-BOOL LLFloaterIMPanel::isInviteAllowed() const
+bool LLFloaterIMPanel::isInviteAllowed() const
 {
 
 	return ( (IM_SESSION_CONFERENCE_START == mDialog) 
 			 || (IM_SESSION_INVITE == mDialog) );
 }
 
-
-// static
-void LLFloaterIMPanel::onTabClick(void* userdata)
+void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)
 {
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-	self->setInputFocus(TRUE);
+	flyout->remove(mDing ? getString("ding on") : getString("ding off"));
+	flyout->remove(mRPMode ? getString("rp mode on") : getString("rp mode off"));
+	flyout->remove(LLAvatarActions::isFriend(mOtherParticipantUUID) ? getString("remove friend") : getString("add friend"));
+	//flyout->remove(LLAvatarActions::isBlocked(mOtherParticipantUUID) ? getString("unmute") : getString("mute"));
 }
 
-
-void LLFloaterIMPanel::onRPMode(const LLSD& value)
+void LLFloaterIMPanel::addDynamics(LLComboBox* flyout)
 {
-	mRPMode = value.asBoolean();
+	flyout->add(mDing ? getString("ding on") : getString("ding off"), 6);
+	flyout->add(mRPMode ? getString("rp mode on") : getString("rp mode off"), 7);
+	flyout->add(LLAvatarActions::isFriend(mOtherParticipantUUID) ? getString("remove friend") : getString("add friend"), 8);
+	//flyout->add(LLAvatarActions::isBlocked(mOtherParticipantUUID) ? getString("unmute") : getString("mute"), 9);
 }
 
-void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
+void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
 	if (value.isUndefined())
 	{
@@ -1073,30 +984,46 @@ void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
 	else if (option == 3) LLAvatarActions::teleportRequest(mOtherParticipantUUID);
 	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
 	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
+	else if (option >= 6) // Options that use dynamic items
+	{
+		// First remove them all
+		removeDynamics(flyout);
+
+		// Toggle as requested, adjust the strings
+		if (option == 6) mDing = !mDing;
+		else if (option == 7) mRPMode = !mRPMode;
+		else if (option == 8) LLAvatarActions::isFriend(mOtherParticipantUUID) ? LLAvatarActions::removeFriendDialog(mOtherParticipantUUID) : LLAvatarActions::requestFriendshipDialog(mOtherParticipantUUID);
+		//else if (option == 9) LLAvatarActions::toggleBlock(mOtherParticipantUUID);
+
+		// Last add them back
+		addDynamics(flyout);
+	}
+}
+
+void show_log_browser(const std::string& name, const std::string& id)
+{
+	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
+	{
+		gViewerWindow->getWindow()->ShellEx("\"" + LLLogChat::makeLogFileName(name) + "\"");
+		return;
+	}
+	LLFloaterWebContent::Params p;
+	p.url("file:///" + LLLogChat::makeLogFileName(name));
+	p.id(id);
+	p.show_chrome(false);
+	p.trusted_content(true);
+	LLFloaterWebContent::showInstance("log", p); // If we passed id instead of "log", there would be no control over how many log browsers opened at once.
 }
 
 void LLFloaterIMPanel::onClickHistory()
 {
 	if (mOtherParticipantUUID.notNull())
 	{
-		char command[256];
 		// [Ansariel: Display name support]
-		//std::string fullname(gDirUtilp->getScrubbedFileName(getTitle()));
-		std::string fullname(gDirUtilp->getScrubbedFileName(mSessionLabel));
+		//show_log_browser(getTitle(), mOtherParticipantUUID.asString());
+		show_log_browser(mLogLabel, mOtherParticipantUUID.asString());
 		// [/Ansariel: Display name support]
-		sprintf(command, "\"%s%s%s.txt\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), gDirUtilp->getDirDelimiter().c_str(), fullname.c_str());
-		gViewerWindow->getWindow()->ShellEx(command);
-
-		llinfos << command << llendl;
 	}
-}
-
-// static
-void LLFloaterIMPanel::onClickStartCall(void* userdata)
-{
-	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
-
-	self->mVoiceChannel->activate();
 }
 
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
@@ -1109,28 +1036,15 @@ void LLFloaterIMPanel::onInputEditorFocusReceived()
 	mHistoryEditor->setCursorAndScrollToEnd();
 }
 
-void LLFloaterIMPanel::onInputEditorFocusLost()
-{
-	setTyping(FALSE);
-}
-
 void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
 {
-	std::string text = caller->getText();
-	if (!text.empty())
-	{
-		setTyping(TRUE);
-	}
-	else
-	{
-		// Deleting all text counts as stopping typing.
-		setTyping(FALSE);
-	}
+	// Deleting all text counts as stopping typing.
+	setTyping(!caller->getText().empty());
 }
 
 void LLFloaterIMPanel::onClose(bool app_quitting)
 {
-	setTyping(FALSE);
+	setTyping(false);
 
 	if(mSessionUUID.notNull())
 	{
@@ -1231,6 +1145,8 @@ void deliver_message(const std::string& utf8_text,
 	}
 }
 
+bool convert_roleplay_text(std::string& text); // Returns true if text is an action
+
 void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
@@ -1250,55 +1166,9 @@ void LLFloaterIMPanel::onSendMsg()
 			if (mInputEditor) mInputEditor->updateHistory();
 			// Truncate and convert to UTF8 for transport
 			std::string utf8_text = wstring_to_utf8str(text);
-			// Convert MU*s style poses into IRC emotes here.
-			if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8_text.length() > 3 && utf8_text[0] == ':')
-			{
-				if (utf8_text[1] == '\'')
-				{
-					utf8_text.replace(0, 1, "/me");
- 				}
-				else if (isalpha(utf8_text[1]))	// Do not prevent smileys and such.
-				{
-					utf8_text.replace(0, 1, "/me ");
-				}
-			}
-			if (utf8_text.find("/ME'") == 0 || utf8_text.find("/ME ") == 0)	//Allow CAPSlock /me
-				utf8_text.replace(1, 2, "me");
-			std::string prefix = utf8_text.substr(0, 4);
-			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8_text.length() > 1) && !mRPMode)
-			{
-				//Check if it needs the end-of-chat brackets -HgB
-				if (utf8_text.find("((") == 0 && utf8_text.find("))") == std::string::npos)
-				{
-					if(*utf8_text.rbegin() == ')')
-						utf8_text+=" ";
-					utf8_text+="))";
-				}
-				else if(utf8_text.find("[[") == 0 && utf8_text.find("]]") == std::string::npos)
-				{
-					if(*utf8_text.rbegin() == ']')
-						utf8_text+=" ";
-					utf8_text+="]]";
-				}
-
-				if (prefix != "/me " && prefix != "/me'")   //Allow /me to end with )) or ]]
-				{
-					if (utf8_text.find("((") == std::string::npos && utf8_text.find("))") == (utf8_text.length() - 2))
-					{
-						if(utf8_text[0] == '(')
-							utf8_text.insert(0," ");
-						utf8_text.insert(0,"((");
-					}
-					else if (utf8_text.find("[[") == std::string::npos && utf8_text.find("]]") == (utf8_text.length() - 2))
-					{
-						if(utf8_text[0] == '[')
-							utf8_text.insert(0," ");
-						utf8_text.insert(0,"[[");
-					}
-				}
-			}
-			if (mRPMode && prefix != "/me " && prefix != "/me'")
-				utf8_text = "[[" + utf8_text + "]]";
+			bool action = convert_roleplay_text(utf8_text);
+			if (!action && mRPMode)
+				utf8_text = "((" + utf8_text + "))";
 // [RLVa:KB] - Checked: 2011-09-17 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
 			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
 			{
@@ -1384,7 +1254,7 @@ void LLFloaterIMPanel::onSendMsg()
 
 					std::string send = utf8_text.substr(pos, next_split);
 					pos += next_split;
-LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_ENDL;
+					LL_DEBUGS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_ENDL;
 
 					deliver_message(send,
 									mSessionUUID,
@@ -1399,9 +1269,8 @@ LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_E
 					std::string name;
 					gAgent.buildFullname(name);
 
-					// Look for IRC-style emotes here.
-					std::string prefix = utf8_text.substr(0, 4);
-					if (prefix == "/me " || prefix == "/me'")
+					// Look for actions here.
+					if (action)
 					{
 						utf8_text.replace(0,3,"");
 					}
@@ -1430,8 +1299,8 @@ LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_E
 
 	// Don't need to actually send the typing stop message, the other
 	// client will infer it from receiving the message.
-	mTyping = FALSE;
-	mSentTypingState = TRUE;
+	mTyping = false;
+	mSentTypingState = true;
 }
 
 void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
@@ -1440,15 +1309,15 @@ void LLFloaterIMPanel::processSessionUpdate(const LLSD& session_update)
 		session_update.has("moderated_mode") &&
 		session_update["moderated_mode"].has("voice") )
 	{
-		BOOL voice_moderated = session_update["moderated_mode"]["voice"];
+		bool voice_moderated = session_update["moderated_mode"]["voice"];
 
 		if (voice_moderated)
 		{
-			setTitle(mSessionLabel + std::string(" ") + getString("moderated_chat_label"));
+			setTitle(mLogLabel + std::string(" ") + getString("moderated_chat_label"));
 		}
 		else
 		{
-			setTitle(mSessionLabel);
+			setTitle(mLogLabel);
 		}
 
 
@@ -1461,18 +1330,16 @@ void LLFloaterIMPanel::sessionInitReplyReceived(const LLUUID& session_id)
 {
 	mSessionUUID = session_id;
 	mVoiceChannel->updateSessionID(session_id);
-	mSessionInitialized = TRUE;
+	mSessionInitialized = true;
 
 	//we assume the history editor hasn't moved at all since
 	//we added the starting session message
 	//so, we count how many characters to remove
-	S32 chars_to_remove = mHistoryEditor->getWText().length() -
-		mSessionStartMsgPos;
+	S32 chars_to_remove = mHistoryEditor->getWText().length() - mSessionStartMsgPos;
 	mHistoryEditor->removeTextFromEnd(chars_to_remove);
 
 	//and now, send the queued msg
-	LLSD::array_iterator iter;
-	for ( iter = mQueuedMsgsForInit.beginArray();
+	for (LLSD::array_iterator iter = mQueuedMsgsForInit.beginArray();
 		  iter != mQueuedMsgsForInit.endArray();
 		  ++iter)
 	{
@@ -1490,7 +1357,7 @@ void LLFloaterIMPanel::sessionInitReplyReceived(const LLUUID& session_id)
 	}
 }
 
-void LLFloaterIMPanel::setTyping(BOOL typing)
+void LLFloaterIMPanel::setTyping(bool typing)
 {
 	if (typing)
 	{
@@ -1503,7 +1370,7 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 			mFirstKeystrokeTimer.reset();
 
 			// Will send typing state after a short delay.
-			mSentTypingState = FALSE;
+			mSentTypingState = false;
 		}
 
 		mSpeakers->setSpeakerTyping(gAgent.getID(), TRUE);
@@ -1513,8 +1380,8 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 		if (mTyping)
 		{
 			// you just stopped typing, send state immediately
-			sendTypingState(FALSE);
-			mSentTypingState = TRUE;
+			sendTypingState(false);
+			mSentTypingState = true;
 		}
 		mSpeakers->setSpeakerTyping(gAgent.getID(), FALSE);
 	}
@@ -1522,7 +1389,7 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 	mTyping = typing;
 }
 
-void LLFloaterIMPanel::sendTypingState(BOOL typing)
+void LLFloaterIMPanel::sendTypingState(bool typing)
 {
 	if(gSavedSettings.getBOOL("AscentHideTypingNotification"))
 		return;
@@ -1548,7 +1415,7 @@ void LLFloaterIMPanel::sendTypingState(BOOL typing)
 }
 
 
-void LLFloaterIMPanel::processIMTyping(const LLIMInfo* im_info, BOOL typing)
+void LLFloaterIMPanel::processIMTyping(const LLIMInfo* im_info, bool typing)
 {
 	if (typing)
 	{
@@ -1575,7 +1442,7 @@ void LLFloaterIMPanel::addTypingIndicator(const std::string &name)
 		typing_start.setArg("[NAME]", name);
 		addHistoryLine(typing_start, gSavedSettings.getColor4("SystemChatColor"), false);
 		mOtherTypingName = name;
-		mOtherTyping = TRUE;
+		mOtherTyping = true;
 	}
 	// MBW -- XXX -- merge from release broke this (argument to this function changed from an LLIMInfo to a name)
 	// Richard will fix.
@@ -1588,7 +1455,7 @@ void LLFloaterIMPanel::removeTypingIndicator(const LLIMInfo* im_info)
 	if (mOtherTyping)
 	{
 		// Must do this first, otherwise addHistoryLine calls us again.
-		mOtherTyping = FALSE;
+		mOtherTyping = false;
 
 		S32 chars_to_remove = mHistoryEditor->getWText().length() - mTypingLineStartIndex;
 		mHistoryEditor->removeTextFromEnd(chars_to_remove);
@@ -1711,7 +1578,7 @@ const bool LLFloaterIMPanel::isModerator(const LLUUID& speaker_id)
 		LLPointer<LLSpeaker> speakerp = mSpeakers->findSpeaker(speaker_id);
 		return speakerp && speakerp->mIsModerator;
 	}
-	return FALSE;
+	return false;
 }
 
 BOOL LLFloaterIMPanel::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
@@ -1727,6 +1594,7 @@ BOOL LLFloaterIMPanel::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash 
 
 void LLFloaterIMPanel::onFocusReceived()
 {
+	mNumUnreadMessages = 0;
 	if (getVisible() && mInputEditor->getVisible())
 	{
 		setInputFocus(true);

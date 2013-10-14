@@ -418,6 +418,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	buffer_ptr_t mOutput;
 	LLHTTPClient::ResponderPtr mResponder;
 	AICapabilityType mCapabilityType;
+	bool mIsEventPoll;
 	//U32 mBodyLimit;									// From the old LLURLRequestDetail::mBodyLimit, but never used.
 	U32 mStatus;										// HTTP status, decoded from the first header line.
 	std::string mReason;								// The "reason" from the same header line.
@@ -466,6 +467,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
 	// Return the capability type of this request.
 	AICapabilityType capability_type(void) const { llassert(mCapabilityType != number_of_capability_types); return mCapabilityType; }
+	bool is_event_poll(void) const { return mIsEventPoll; }
 
 	// Return true if any data was received.
 	bool received_data(void) const { return mTotalRawBytes > 0; }

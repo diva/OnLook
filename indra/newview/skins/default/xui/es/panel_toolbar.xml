@@ -3,6 +3,8 @@
 	<string name="Redock Windows">
 		Reacoplar Ventana
 	</string>
+	<string name="IMs">[COUNT] MIs</string>
+	<string name="IM">1 MI</string>
 	<panel bottom="0" filename="panel_bg_toolbar.xml" height="28" left="0" width="1024"/>
 	<layout_stack name="toolbar_stack">
 		<layout_panel name="panel1">

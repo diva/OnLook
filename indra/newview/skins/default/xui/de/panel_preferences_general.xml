@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Allgemein" name="general_panel">
+<panel label="Generell" name="general_panel">
   <radio_group name="default_start_location">
     <radio_item name="home" tool_tip="Als Standardeinstellung in Zuhauseposition anmelden.">Mein Heimatort</radio_item>
     <radio_item name="last" tool_tip="Als Standardeinstellung in letztem Standort anmelden.">Mein letzter Standort</radio_item>
@@ -12,9 +12,10 @@
 	</combo_box>
 	<combo_box name="namesystem_combobox">
 		<combo_item name="Old Names">Old Names</combo_item>
-		<combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+		<combo_item name="Display Names (with Username)">Display Namen (w/Benutzername)</combo_item>
 		<combo_item name="Display Names only">Anzeigename</combo_item>
 	</combo_box>
+	<check_box label="Show Resident" name="show_resident_checkbox"/>
 	<check_box label="Kleine Avatarnamen" name="small_avatar_names_checkbox"/>
 	<check_box label="Meinen Namen auf meinem Bildschirm ausblenden" name="show_my_name_checkbox"/>
 	<text name="group_titles_textbox">Gruppentitel:</text>
@@ -27,7 +28,7 @@
 	<spinner label="Timeout für Abwesenheit:" name="afk_timeout_spinner"/>
 	<check_box label="Notify when in-world currency is exchanged" name="notify_money_change_checkbox"/>
 	<check_box label="without filling up the corner" name="no_transaction_clutter_checkbox" tool_tip="Still present the notifications, but have them pop up in the bottom right momentarily, then leave, so the transaction draws attention but doesn't get in the way."/>
-	<text name="maturity_desired_label">Einstufung:</text>
+	<text name="maturity_desired_label">Einstuf.:</text>
 	<text name="maturity_desired_prompt">Ich möchte auf Inhalt mit folgender
 Alterseinstufung zugreifen:</text>
 	<combo_box name="maturity_desired_combobox">

@@ -54,9 +54,9 @@ um sie zu tragen. Sie können auch eine neue Haut erstellen
 und diese anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Haut:</text>
-      <texture_picker label="Kopftattoo" name="Head Tattoos" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-      <texture_picker label="Obere Tattoos" name="Upper Tattoos" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-      <texture_picker label="Untere Tattoos" name="Lower Tattoos" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Kopftattoo" name="Head Tattoos" tool_tip="Klicken, um ein Bild auszuwählen"/>
+      <texture_picker label="Obere Tattoos" name="Upper Tattoos" tool_tip="Klicken, um ein Bild auszuwählen"/>
+      <texture_picker label="Untere Tattoos" name="Lower Tattoos" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <button label="Neue Haut" label_selected="Neue Haut" name="Create New"/>
       <button label="Speichern" label_selected="Speichern" name="Save"/>
       <button label="Speichern unter..." label_selected="Speichern unter..." name="Save As"/>
@@ -80,7 +80,7 @@ um sie zu tragen. Sie können auch neue Haare erstellen
 und diese anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Haare:</text>
-			<texture_picker label="Textur" name="Texture" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker label="Textur" name="Texture" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			<button label="Neue Haare" label_selected="Neue Haare" name="Create New"/>
 			<button label="Speichern" label_selected="Speichern" name="Save"/>
 			<button label="Speichern unter..." label_selected="Speichern unter..." name="Save As"/>
@@ -100,7 +100,7 @@ um sie zu tragen. Sie können auch neue Augen erstellen
 und diese anziehen.</text>
 			<text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Augen:</text>
-      <texture_picker label="Iris" name="Iris" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Iris" name="Iris" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <button label="Neue Augen" label_selected="Neue Augen" name="Create New"/>
       <button label="Speichern" label_selected="Speichern" name="Save"/>
       <button label="Speichern unter..." label_selected="Speichern unter..." name="Save As"/>
@@ -111,7 +111,7 @@ und diese anziehen.</text>
     <panel label="Hemd" name="Shirt">
       
       
-      <texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
       <button label="Neues Hemd" label_selected="Neues Hemd" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -133,7 +133,7 @@ und dieses anziehen.</text>
     <panel label="Hose" name="Pants">
       
       
-      <texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
       <button label="Neue Hose" label_selected="Neue Hose" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -166,7 +166,7 @@ um sie zu tragen. Sie können auch neue Schuhe erstellen
 und diese anziehen.</text>
 			<text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Schuhe:</text>
-			<texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			<color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			<button label="Neue Schuhe" label_selected="Neue Schuhe" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -188,7 +188,7 @@ um sie zu tragen. Sie können auch neue Socken erstellen
 und diese anziehen.</text>
 			<text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Socken:</text>
-      <texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
       <button label="Neue Socken" label_selected="Neue Socken" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -210,8 +210,8 @@ um sie zu tragen. Sie können auch eine neue Jacke erstellen
 und diese anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Jacke:</text>
-      <texture_picker label="Obere Textur" name="Upper Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-      <texture_picker label="Untere Textur" name="Lower Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Obere Textur" name="Upper Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
+      <texture_picker label="Untere Textur" name="Lower Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
       <button label="Neue Jacke" label_selected="Neue Jacke" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -233,7 +233,7 @@ um sie zu tragen. Sie können auch neue Handschuhe erstellen
 und diese anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Handschuhe:</text>
-      <texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
       <button label="Neue Handschuhe" label_selected="Neue Handschuhe" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -255,7 +255,7 @@ um es zu tragen. Sie können auch ein neues Unterhemd erstellen
 und dieses anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Unterhemd:</text>
-      <texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
       <color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
       <button label="Neues Unterhemd" label_selected="Neues Unterhemd" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -277,7 +277,7 @@ um sie zu tragen. Sie können auch eine neue Unterhose erstellen
 und diese anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Unterhose:</text>
-			<texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+			<texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			<color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			<button label="Neue Unterhose" label_selected="Neue Unterhose" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -299,7 +299,7 @@ um ihn zu tragen. Sie können auch einen neuen Rock erstellen
 und diesen anziehen.</text>
       <text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
       <text name="Item Action Label">Rock:</text>
-      <texture_picker label="Textur" name="Fabric" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+      <texture_picker label="Textur" name="Fabric" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			<color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			<button label="Neuer Rock" label_selected="Neuer Rock" name="Create New"/>
       <button label="Ausziehen" label_selected="Ausziehen" name="Take Off"/>
@@ -321,9 +321,9 @@ um es zu tragen. Sie können auch eine neues Tattoo erstellen
 und dieses 'anziehen'.</text>
 			<text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
             <text name="Item Action Label">Tätowierung:</text>
-            <texture_picker name="Head Tattoo" label="Kopftätowierung" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-            <texture_picker name="Upper Tattoo" label="Obere Tätowierung" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-            <texture_picker name="Lower Tattoo" label="Untere Tätowierung" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+            <texture_picker name="Head Tattoo" label="Kopftätowierung" tool_tip="Klicken, um ein Bild auszuwählen"/>
+            <texture_picker name="Upper Tattoo" label="Obere Tätowierung" tool_tip="Klicken, um ein Bild auszuwählen"/>
+            <texture_picker name="Lower Tattoo" label="Untere Tätowierung" tool_tip="Klicken, um ein Bild auszuwählen"/>
 			<color_swatch label="Farbe/Ton" name="Color/Tint" tool_tip="Klicken, um die Farbauswahl zu öffnen"/>
 			<button name="Create New" label="Neue Hose" label_selected="Neue Hose"/>
             <button name="Take Off" label="Ausziehen" label_selected="Ausziehen"/>
@@ -345,14 +345,14 @@ um sie zu tragen. Sie können auch eine neue Alpha-Maske erstellen
 und diese anziehen.</text>
 			<text name="no modify instructions">Sie sind nicht berechtigt, diese Kleidung zu bearbeiten.</text>
             <text name="Item Action Label">Transparenz:</text>
-            <texture_picker name="Head Alpha" label="Kopf: Alpha" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-            <texture_picker name="Upper Alpha" label="Alpha: Oben" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-            <texture_picker name="Lower Alpha" label="Alpha: Unten" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+            <texture_picker name="Head Alpha" label="Kopf: Alpha" tool_tip="Klicken, um ein Bild auszuwählen"/>
+            <texture_picker name="Upper Alpha" label="Alpha: Oben" tool_tip="Klicken, um ein Bild auszuwählen"/>
+            <texture_picker name="Lower Alpha" label="Alpha: Unten" tool_tip="Klicken, um ein Bild auszuwählen"/>
             
             
             
-            <texture_picker name="Hair Alpha" label="Alpha: Haare" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
-            <texture_picker name="Eye Alpha" label="Alpha: Augen" tool_tip="Zum Auswählen eines Bildes hier klicken"/>
+            <texture_picker name="Hair Alpha" label="Alpha: Haare" tool_tip="Klicken, um ein Bild auszuwählen"/>
+            <texture_picker name="Eye Alpha" label="Alpha: Augen" tool_tip="Klicken, um ein Bild auszuwählen"/>
             
             
 			<button name="Create New" label="Erstelle neues Alpha" label_selected="Erstelle neues Alpha"/>
@@ -394,12 +394,13 @@ und dieses anziehen.</text>
 	<text name="AvatarHeightText">Avatar-Größe</text>
 	<text name="HeightTextM">(metrisch)</text>
 	<text name="HeightTextI">(zöllisch)</text>
-    <button name="Import" label="Import"/>
-    <button name="Export" label="Export"/>	
+    <button name="Import" label="Importieren" tool_tip="Importiere zu aktuell ausgewähltem Kleidungsteil; das Kleidungsteil muss veränderbar sein"/>
+    <button name="Export" label="Exportieren" tool_tip="Exportiere das gewählte Kleidungsteil; das Kleidungsteil muss copy/mod/trans sein, und sie müssen der Ersteller sein."/>
 	<button label="Abbrechen" label_selected="Abbrechen" name="Cancel"/>
 	<button label="OK" label_selected="OK" name="Ok"/>
 	<button label="Outfit erstellen..." label_selected="Outfit erstellen..." name="Make Outfit"/>
-    <button name="Save Outfit" label="Speichere Outfit"/>
-	<string name="No Outfit" value="Kein Outfit"/>
-	<string name="Changing outfits" value="Outfits ändern"/>
+    <button name="Save Outfit" label="Outfit speichern"/>
+    <string name="Save changes to" value="Änderungen zu [OUTFIT] speichern"/>
+    <string name="No Outfit" value="Kein Outfit"/>
+    <string name="Changing outfits" value="Outfits ändern"/>
 </floater>

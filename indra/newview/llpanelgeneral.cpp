@@ -87,7 +87,7 @@ BOOL LLPanelGeneral::postBuild()
 	childSetValue("ui_auto_scale", gSavedSettings.getBOOL("UIAutoScale"));
 
 	LLComboBox* crash_behavior_combobox = getChild<LLComboBox>("crash_behavior_combobox");
-	crash_behavior_combobox->setCurrentByIndex(gCrashSettings.getS32(CRASH_BEHAVIOR_SETTING));
+	crash_behavior_combobox->setCurrentByIndex(gSavedSettings.getS32(CRASH_BEHAVIOR_SETTING));
 	
 	childSetValue("language_combobox", 	gSavedSettings.getString("Language"));
 
@@ -174,7 +174,7 @@ void LLPanelGeneral::apply()
 	gSavedSettings.setString("Language", childGetValue("language_combobox"));
 
 	LLComboBox* crash_behavior_combobox = getChild<LLComboBox>("crash_behavior_combobox");
-	gCrashSettings.setS32(CRASH_BEHAVIOR_SETTING, crash_behavior_combobox->getCurrentIndex());
+	gSavedSettings.setS32(CRASH_BEHAVIOR_SETTING, crash_behavior_combobox->getCurrentIndex());
 }
 
 void LLPanelGeneral::cancel()

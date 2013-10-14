@@ -17,7 +17,7 @@
 			<check_box label="Deshabilitar la Distancia Mínima de la Cámara" tool_tip="Permite a la cámara acercarse a los objetos." name="disable_camera_zoom_check"/>
 			<check_box label="Habilitar la funcionalidad Super Usuario" tool_tip="Agrega funciones consideradas demasiado peligrosas para un uso normal. Estas características pueden causar estragos, o hacer daño si son mal utilizadas - Principalmente para ti o tus pertenencias. Si estás seguro, activa la casilla de verificación a continuación." name="power_user_check"/>
 			<check_box label="Confirmar funcionalidad Super Usuario" tool_tip="Confirmar la activación de Super Usuario. Activalo bajo tu propio riesgo, y utiliza cualquier característica habilitada en forma responsable. Los desarrolladores de Singularity no reemplazarán nada que hayas arruinado. Te recomendamos hacer una copia de seguridad de todo aquello que será víctima de dichos poderes. A diferencia del resto de los items a marcar, debes hacer click en Aplicar o en OK después de activar esta función." name="power_user_confirm_check"/>
-			<check_box label="Descargar automáticamente el inventario en segundo plano al de iniciar sesión" tool_tip="El inventario será precargado cuando inicies sesión, de esta manera no tienes que esperar que cargue cuando hagas una búsqueda por primera vez." name="fetch_inventory_on_login_check"/>
+			<check_box label="Descargar automáticamente el inventario en segundo plano al iniciar sesión" tool_tip="El inventario será precargado cuando inicies sesión, de esta manera no tienes que esperar que cargue cuando hagas una búsqueda por primera vez." name="fetch_inventory_on_login_check"/>
 			<check_box label="Activar Efectos del Viento" name="enable_wind"/>
 			<check_box label="Activar Nubes" name="enable_clouds"/>
 			<check_box label="Activar Nubes Clásicas" name="enable_classic_clouds"/>
@@ -157,11 +157,11 @@
 			</text>
 			<check_box label="Permiso de Copia" tool_tip="El próximo propietario puede realizar copias de las creaciones" name="next_owner_copy"/>
 			<check_box label="Permiso de Modific." tool_tip="El próximo propietario puede editar y modificar las creaciones" name="next_owner_modify"/>
-			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>			
+			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer"/>
 			<check_box label="Inmaterial" name="EmPhantomToggle"/>
 			<check_box label="Material" name="EmPhysicalToggle"/>
-			<check_box label="Temporal" name="EmTemporaryToggle"/>	
-			<texture_picker label="     Textura" name="texture control" tool_tip="Pulsa para seleccionar una textura"/>			
+			<check_box label="Temporal" name="EmTemporaryToggle"/>
+			<texture_picker label="     Textura" name="texture control" tool_tip="Pulsa para seleccionar una textura"/>
 			<color_swatch label="      Color" name="colorswatch" tool_tip="Pulsa para abrir el selector de color"/>
 			<spinner label="Alfa" name="alpha" />
 			<spinner label="Brillo" name="glow"/>
@@ -186,7 +186,7 @@
 			<check_box name="EmeraldBuildPrefsEmbedItem" label="Colocar un item dentro del nuevo objeto"/>
 			<drop_target name="build_item_add_disp_rect"/>
 			<check_box label="Activar resaltado de prims seleccionados" name="EmBuildPrefsRenderHighlight_toggle" />
-			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>			
+			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>
 		</panel>
 	</tab_container>
 </panel>

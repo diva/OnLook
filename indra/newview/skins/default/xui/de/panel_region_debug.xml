@@ -8,7 +8,7 @@
 	<button label="?" name="disable_collisions_help"/>
 	<check_box label="Physik deaktivieren" name="disable_physics_check" tool_tip="Physik in dieser Region deaktivieren"/>
 	<button label="?" name="disable_physics_help"/>
-	<button label="Übernehmen" name="apply_btn"/>
+	<button label="Anwenden" name="apply_btn"/>
 	<text name="objret_text_lbl">Objekt zurückgeben</text>
 	<text name="resident_text_lbl">Einwohner:</text>
 	<line_editor name="target_avatar_name">(keiner)</line_editor>

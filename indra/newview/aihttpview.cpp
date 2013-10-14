@@ -80,6 +80,7 @@ void AIServiceBar::draw()
   U32 is_used;
   U32 is_inuse;
   int total_added;
+  int event_polls;
   int established_connections;
   int concurrent_connections;
   size_t bandwidth;
@@ -88,6 +89,7 @@ void AIServiceBar::draw()
 	is_used = per_service_r->is_used();
 	is_inuse = per_service_r->is_inuse();
 	total_added = per_service_r->mTotalAdded;
+	event_polls = per_service_r->mEventPolls;
 	established_connections = per_service_r->mEstablishedConnections;
 	concurrent_connections = per_service_r->mConcurrentConnections;
 	bandwidth = per_service_r->bandwidth().truncateData(AIHTTPView::getTime_40ms());
@@ -107,14 +109,14 @@ void AIServiceBar::draw()
 	{
 	  if (col < 2)
 	  {
-		text = llformat(" | %hu-%hu-%lu,{%hu/%hu,%u}/%u",
+		text = llformat(" | %hu-%hd-%lu,{%hu/%hu,%u}/%u",
 			ct.mApprovedRequests, ct.mQueuedCommands, ct.mQueuedRequests.size(),
 			ct.mAdded, ct.mConcurrentConnections, ct.mDownloading,
 			ct.mMaxPipelinedRequests);
 	  }
 	  else
 	  {
-		text = llformat(" | --%hu-%lu,{%hu/%hu,%u}",
+		text = llformat(" | --%hd-%lu,{%hu/%hu,%u}",
 			ct.mQueuedCommands, ct.mQueuedRequests.size(),
 			ct.mAdded, ct.mConcurrentConnections, ct.mDownloading);
 	  }
@@ -148,7 +150,7 @@ void AIServiceBar::draw()
   }
   start = mHTTPView->updateColumn(mc_col, start);
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-  text = llformat(" | %d,%d/%d", total_added, established_connections, concurrent_connections);
+  text = llformat(" | %d,%d,%d/%d", total_added, event_polls, established_connections, concurrent_connections);
 #else
   text = llformat(" | %d/%d", total_added, concurrent_connections);
 #endif
@@ -227,6 +229,7 @@ void AIGLHTTPHeaderBar::draw(void)
   height -= sLineHeight;
   start = h_offset;
   text = "Service (host:port)";
+  // This must match AICapabilityType!
   static char const* caption[number_of_capability_types] = {
 	" | Textures", " | Inventory", " | Mesh", " | Other"
   };
@@ -288,9 +291,14 @@ AIHTTPView::~AIHTTPView()
   mGLHTTPHeaderBar = NULL;
 }
 
-U32 AIHTTPView::updateColumn(int col, U32 start)
+U32 AIHTTPView::updateColumn(U32 col, U32 start)
 {
-  llassert(col <= mStartColumn.size());
+  if (col > mStartColumn.size())
+  {
+	// This happens when AIGLHTTPHeaderBar::draw is called before AIServiceBar::draw, which
+	// happens when there are no services (visible) at the moment the HTTP console is opened.
+	return start;
+  }
   if (col == mStartColumn.size())
   {
 	mStartColumn.push_back(start);

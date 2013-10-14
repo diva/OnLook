@@ -309,6 +309,13 @@ public:
 		U32 ypos = 64;
 		const U32 y_inc = 20;
 
+		static const LLCachedControl<bool> slb_show_fps("SLBShowFPS");
+		if (slb_show_fps)
+		{
+			addText(xpos+280, ypos+5, llformat("FPS %3.1f", LLViewerStats::getInstance()->mFPSStat.getMeanPerSec()));
+			ypos += y_inc;
+		}
+
 		static const LLCachedControl<bool> debug_show_time("DebugShowTime");
 		if (debug_show_time)
 		{
@@ -4112,6 +4119,11 @@ LLViewerObject* LLViewerWindow::cursorIntersect(S32 mouse_x, S32 mouse_y, F32 de
 			found = gPipeline.lineSegmentIntersectInWorld(mw_start, mw_end, pick_transparent,
 														  face_hit, intersection, uv, normal, tangent);
 
+			if (found && !pick_transparent)
+			{
+				gDebugRaycastIntersection = *intersection;
+			}
+
 // [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Added: RLVa-1.1.0l
 #ifdef RLV_EXTENSION_CMD_INTERACT
 			if ( (rlv_handler_t::isEnabled()) && (found) && (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT)) )
@@ -4470,7 +4482,7 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 		LLCoordScreen new_size(new_width + BORDERWIDTH, 
 							   new_height + BORDERHEIGHT);
 		BOOL disable_sync = gSavedSettings.getBOOL("DisableVerticalSync");
-		if (gViewerWindow->mWindow->getFullscreen())
+		if (gViewerWindow->getWindow()->getFullscreen())
 		{
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();

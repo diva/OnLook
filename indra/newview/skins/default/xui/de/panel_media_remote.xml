@@ -3,6 +3,6 @@
 	
 	
 	<string name="Title">Titel</string>
-	<string name="Artist">Artist</string>
-	<string name="Now_playing">Now playing</string>
+	<string name="Artist">Künstler</string>
+	<string name="Now_playing">Derzeit spielt</string>
 </panel>

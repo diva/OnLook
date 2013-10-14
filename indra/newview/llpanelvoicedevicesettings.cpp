@@ -70,7 +70,11 @@ BOOL LLPanelVoiceDeviceSettings::postBuild()
 	volume_slider->setValue(mMicVolume);
 
 	mCtrlInputDevices = getChild<LLComboBox>("voice_input_device");
+	mCtrlInputDevices->add(getLocalizedDeviceName(mInputDevice), mInputDevice);
+	mCtrlInputDevices->setValue(mInputDevice);
 	mCtrlOutputDevices = getChild<LLComboBox>("voice_output_device");
+	mCtrlOutputDevices->add(getLocalizedDeviceName(mOutputDevice), mOutputDevice);
+	mCtrlOutputDevices->setValue(mOutputDevice);
 
 	mCtrlInputDevices->setCommitCallback(
 		boost::bind(&LLPanelVoiceDeviceSettings::onCommitInputDevice, this));

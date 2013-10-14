@@ -4,10 +4,11 @@
 	<text name="streaming_prefs_text">Streaming-Einstellungen:</text>
 	<text name="audio_prefs_text">Audio-Einstellungen:</text>
 	<panel label="Lautstärke" name="Volume Panel"/>
+  <check_box label="Streaming-Media abspielen, falls verfügbar (mehr Bandbreite)" name="media_filter_enable"/>
 	<check_box label="Streaming-Musik abspielen, falls verfügbar" name="streaming_music"/>
 	<check_box label="Play Streaming Media When Available (uses more bandwidth)" name="streaming_video"/>
-	<check_box label="Medien automatisch wiedergeben" name="auto_streaming_video"/>
-	<check_box label="Streaming-Media abspielen, falls verfügbar (mehr Bandbreite)" name="streaming_video"/>
+  <check_box label="Automatically play prim media" name="auto_prim_streaming_video"/>
+	<check_box label="Automatically play parcel media" name="auto_streaming_video"/>
 	<check_box label="Audio stummschalten, wenn Fenster minimiert ist" name="mute_when_minimized"/>
 	<slider label="Dopplereffekt" name="Doppler Effect"/>
 	<slider label="Rolloff-Faktor" name="Rolloff Factor"/>

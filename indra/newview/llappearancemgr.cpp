@@ -1163,10 +1163,40 @@ void LLWearableHoldingPattern::onWearableAssetFetch(LLViewerWearable *wearable)
 		if(wearable->getAssetID() == data.mAssetID)
 		{
 			// Failing this means inventory or asset server are corrupted in a way we don't handle.
-			if ((data.mWearableType >= LLWearableType::WT_COUNT) || (wearable->getType() != data.mWearableType))
+			if (data.mWearableType >= LLWearableType::WT_COUNT ||
+				wearable->getType() >= LLWearableType::WT_UNKNOWN ||
+				(data.mWearableType != wearable->getType() &&
+				 data.mWearableType != LLWearableType::WT_UNKNOWN &&
+				 data.mWearableType != LLWearableType::WT_SHAPE))
 			{
 				llwarns << self_av_string() << "recovered wearable but type invalid. inventory wearable type: " << data.mWearableType << " asset wearable type: " << wearable->getType() << llendl;
 				break;
+			}
+			else if (data.mWearableType == LLWearableType::WT_UNKNOWN ||
+				(data.mWearableType == LLWearableType::WT_SHAPE &&
+				 data.mWearableType != wearable->getType()))
+			{
+				if (data.mWearableType == LLWearableType::WT_UNKNOWN)
+				{
+					llinfos << "Wearing wearable '" << wearable->getName() << "' with an unknown inventory wearable type. Fixing inventory to have type " << wearable->getType() << llendl;
+				}
+				else
+				{
+					// This probably means that the inventory contains an item without wearable type information.
+					// We can still fix the type here, but we also have to fix that in the mean time we took off our real shape because of this!
+					llwarns << "Wearing wearable '" << wearable->getName() << "' with incorrect wearable type 'shape'! Trying to recover from this..." << llendl;
+				}
+				// Fix it!
+				data.mWearableType = wearable->getType();
+				LLViewerInventoryItem* item = gInventory.getItem(data.mItemID);
+				if (!item)
+				{
+					llwarns << "Can't find the broken item in the inventory?!" << llendl;
+					break;
+				}
+				llassert(item->getUUID() == data.mItemID);
+				item->setWearableType(wearable->getType());
+				gInventory.updateItem(item);
 			}
 
 			data.mWearable = wearable;

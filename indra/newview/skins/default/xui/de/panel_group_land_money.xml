@@ -11,10 +11,10 @@
 		<column label="Parzellenname" name="name"/>
 		<column label="Region" name="location"/>
 		<column label="Typ" name="type"/>
-		<column label="Gebiet" name="area"/>
-		<column label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="hidden"/>
+		<column label="Größe" name="area"/>
+		
 	</scroll_list>
-	<button label="Auf Karte zeigen" label_selected="Auf Karte zeigen" name="map_button"/>
+	<button label="Karte" label_selected="Karte" name="map_button"/>
 	<text name="total_contributed_land_label">Gesamtbeitrag:</text>
 	<text name="total_contributed_land_value">[AREA] qm</text>
 	<text name="total_land_in_use_label">Insgesamt verwendetes Land:</text>
@@ -38,7 +38,7 @@ das verwendete Land gehalten werden kann.</text>
 			<button label="&lt; Früher" label_selected="&lt; Früher" name="earlier_details_button" tool_tip="Zurück in der Zeit"/>
 			<button label="Später &gt;" label_selected="Später &gt;" name="later_details_button" tool_tip="Weiter in der Zeit"/>
 		</panel>
-		<panel label="Verkäufe" name="group_money_sales_tab">
+		<panel label="Verkauf" name="group_money_sales_tab">
 			<text_editor name="group_money_sales_text">Wird berechnet...</text_editor>
 			<button label="&lt; Früher" label_selected="&lt; Früher" name="earlier_sales_button" tool_tip="Zurück in der Zeit"/>
 			<button label="Später &gt;" label_selected="Später &gt;" name="later_sales_button" tool_tip="Weiter in der Zeit"/>

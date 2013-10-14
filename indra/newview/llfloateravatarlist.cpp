@@ -61,6 +61,7 @@
 #include "llviewermenu.h"
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -69,7 +70,7 @@
 /**
  * @brief How long to keep people who are gone in the list and in memory.
  */
-const F32 DEAD_KEEP_TIME = 10.0f;
+const F32 DEAD_KEEP_TIME = 0.5f;
 
 extern U32 gFrameCount;
 
@@ -372,7 +373,7 @@ namespace
 	{
 		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 		{
-			LLFloaterAvatarList::instance().focusOnPrev(userdata);
+			LLFloaterAvatarList::instance().focusOnPrev(userdata.asInteger());
 			return true;
 		}
 	};
@@ -381,7 +382,7 @@ namespace
 	{
 		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 		{
-			LLFloaterAvatarList::instance().focusOnNext(userdata);
+			LLFloaterAvatarList::instance().focusOnNext(userdata.asInteger());
 			return true;
 		}
 	};
@@ -617,7 +618,7 @@ void LLFloaterAvatarList::updateAvatarList()
 
 			// Announce position
 			F32 dist = (F32)(position - mypos).magVec();
-			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < 20.0, dist < 96.0);
+			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < LFSimFeatureHandler::getInstance()->sayRange(), dist < LFSimFeatureHandler::getInstance()->shoutRange());
 
 			// Mark as typing if they are typing
 			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
@@ -747,6 +748,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 	LLVector3d posagent;
 	posagent.setVec(gAgent.getPositionAgent());
 	LLVector3d simpos = mypos - posagent;
+	const S32 width(gAgent.getRegion() ? gAgent.getRegion()->getWidth() : 256);
 
 	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
@@ -875,10 +877,10 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 		else
 		{
-			if (distance <= 96.0)
+			if (distance <= LFSimFeatureHandler::getInstance()->shoutRange())
 			{
 				snprintf(temp, sizeof(temp), "%.1f", distance);
-				if (distance > 20.0f)
+				if (distance > LFSimFeatureHandler::getInstance()->sayRange())
 				{
 					color = sRadarTextShoutRange;
 				}
@@ -904,7 +906,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		S32 x = (S32)position.mdV[VX];
 		S32 y = (S32)position.mdV[VY];
-		if (x >= 0 && x <= 256 && y >= 0 && y <= 256)
+		if (x >= 0 && x <= width && y >= 0 && y <= width)
 		{
 			snprintf(temp, sizeof(temp), "%d, %d", x, y);
 		}
@@ -915,7 +917,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			{
 				strcat(temp, "S");
 			}
-			else if (y > 256)
+			else if (y > width)
 			{
 				strcat(temp, "N");
 			}
@@ -923,7 +925,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			{
 				strcat(temp, "W");
 			}
-			else if (x > 256)
+			else if (x > width)
 			{
 				strcat(temp, "E");
 			}
@@ -1296,7 +1298,7 @@ void LLFloaterAvatarList::onClickGetKey()
 
 	if (NULL == item) return;
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
+	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
 }
 
 void LLFloaterAvatarList::sendKeys()

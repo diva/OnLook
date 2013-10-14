@@ -513,25 +513,7 @@ void LLWorldMapView::draw()
 				static const LLCachedControl<bool> show_avs("LiruMapShowAvCount");
 				if (show_avs) mesg += llformat(" (%d)", info->getAgentCount());
 
-				U8 access = info->getAccess();
-				switch(access)
-				{
-				case SIM_ACCESS_MIN:
-					mesg += " (Min)";
-					break;
-				case SIM_ACCESS_PG:
-					mesg += " (PG)";
-					break;
-				case SIM_ACCESS_MATURE:
-					mesg += " (Mature)";
-					break;
-				case SIM_ACCESS_ADULT:
-					mesg += " (Adult)";
-					break;
-				default:
-					mesg += llformat(" (Access=%d)",access);
-					break;
-				}
+				mesg += llformat(" (%s)", info->getAccessString().c_str());
 			}
 //			if (!mesg.empty())
 // [RLVa:KB] - Checked: 2012-02-08 (RLVa-1.4.5) | Added: RLVa-1.4.5
@@ -1222,7 +1204,7 @@ void LLWorldMapView::drawAgents()
 {	
 	F32 agents_scale = (sMapScale * 0.9f) / 256.f;
 
-	LLColor4 avatar_color = gColors.getColor( "MapAvatar" );
+	LLColor4 avatar_color = gSavedSettings.getColor( "MapAvatar" );
 	//	LLColor4 friend_color = gColors.getColor( "MapFriend" );
 
 	for (handle_list_t::iterator iter = mVisibleRegions.begin(); iter != mVisibleRegions.end(); ++iter)
@@ -2155,6 +2137,7 @@ BOOL LLWorldMapView::handleDoubleClick( S32 x, S32 y, MASK mask )
 			}
 		default:
 			{
+				if (!gSavedSettings.getBOOL("DoubleClickTeleportMap")) return true;
 				if (LLWorldMap::getInstance()->isTracking())
 				{
 					LLWorldMap::getInstance()->setTrackingDoubleClick();

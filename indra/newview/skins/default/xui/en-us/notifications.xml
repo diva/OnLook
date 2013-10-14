@@ -1952,9 +1952,9 @@ Your search terms were too short so no search was performed.
   <!-- Generic Teleport failure modes - strings will be inserted from
        teleport_strings.xml if available. -->
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="CouldNotTeleportReason"
-   type="alertmodal">
+   type="notifytip">
 Could not teleport.
 [REASON]
   </notification>
@@ -1964,77 +1964,77 @@ Could not teleport.
        region-crossing :( ) - these paths should really be merged
        in the future. -->
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="invalid_tport"
-   type="alertmodal">
+   type="notifytip">
 Problem encountered processing your teleport request. You may need to log back in before you can teleport. If you continue to get this message, please check the Tech Support FAQ at:
 www.secondlife.com/support
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="invalid_region_handoff"
-   type="alertmodal">
+   type="notifytip">
 Problem encountered processing your region crossing. You may need to log back in before you can cross regions. If you continue to get this message, please check the Tech Support FAQ at:
 www.secondlife.com/support
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="blocked_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, teleport is currently blocked. Try again in a moment.  If you still cannot teleport, please log out and log back in to resolve the problem.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="nolandmark_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, but system was unable to locate landmark destination.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="timeout_tport"
    type="notifytip">
 Sorry, but system was unable to complete the teleport connection.  Try again in a moment.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="noaccess_tport"
-   type="alertmodal">
+   type="notifytip">
 Sorry, you do not have access to that teleport destination.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="missing_attach_tport"
-   type="alertmodal">
+   type="notifytip">
 Your attachments have not arrived yet. Try waiting for a few more seconds or log out and back in again before attempting to teleport.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="too_many_uploads_tport"
-   type="alertmodal">
+   type="notifytip">
 The asset queue in this region is currently clogged so your teleport request will not be able to succeed in a timely manner. Please try again in a few minutes or go to a less busy area.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="expired_tport"
    type="notifytip">
 Sorry, but the system was unable to complete your teleport request in a timely fashion. Please try again in a few minutes.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="expired_region_handoff"
-   type="alertmodal">
+   type="notifytip">
 Sorry, but the system was unable to complete your region crossing in a timely fashion. Please try again in a few minutes.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="no_host"
-   type="alertmodal">
+   type="notifytip">
 Unable to find teleport destination. The destination may be temporarily unavailable or no longer exists. Please try again in a few minutes.
   </notification>
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="no_inventory_host"
-   type="alertmodal">
+   type="notifytip">
 The inventory system is currently unavailable.
   </notification>
 
@@ -6512,80 +6512,80 @@ Your account cannot connect to this teen grid region.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="NoHelpIslandTP"
-	type="notify">
+	type="notifytip">
 You cannot teleport back to Help Island.
 Go to &apos;Help Island Public&apos; to repeat the tutorial.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="ImproperPaymentStatus"
-	type="notify">
+	type="notifytip">
 You do not have proper payment status to enter this region.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="MustGetAgeRegion"
-	type="notify">
+	type="notifytip">
 You must be age-verified to enter this region.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="MustGetAgeParcel"
-	type="notify">
+	type="notifytip">
 You must be age-verified to enter this parcel.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="NoDestRegion"
-	type="notify">
+	type="notifytip">
 No destination region found.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="NotAllowedInDest"
-	type="notify">
+	type="notifytip">
 You are not allowed into the destination.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="RegionParcelBan"
-	type="notify">
+	type="notifytip">
 Cannot region cross into banned parcel. Try another way.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="TelehubRedirect"
-	type="notify">
+	type="notifytip">
 You have been redirected to a telehub.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="CouldntTPCloser"
-	type="notify">
+	type="notifytip">
 Could not teleport closer to destination.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="TPCancelled"
-	type="notify">
+	type="notifytip">
 Teleport cancelled.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="FullRegionTryAgain"
-	type="notify">
+	type="notifytip">
 The region you are attempting to enter is currently full.
 Please try again in a few moments.
   </notification>
@@ -6598,9 +6598,9 @@ General failure.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="RoutedWrongRegion"
-	type="notify">
+	type="notifytip">
 Routed to wrong region. Please try again.
   </notification>
 
@@ -6647,9 +6647,9 @@ Internal error attempting to connect agent usher.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="NoGoodTPDestination"
-	type="notify">
+	type="notifytip">
 Unable to find a good teleport destination in this region.
   </notification>
 
@@ -6661,16 +6661,16 @@ Internal error attempting to activate region resolver.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="NoValidLanding"
-	type="notify">
+	type="notifytip">
 A valid landing point could not be found.
   </notification>
 
   <notification
-	icon="notify.tga"
+	icon="notifytip.tga"
 	name="NoValidParcel"
-	type="notify">
+	type="notifytip">
 No valid parcel could be found.
   </notification>
 
@@ -6721,6 +6721,8 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
    name="UserGiveItem"
    type="notify">
 [NAME] has given you a [OBJECTTYPE] named &apos;[OBJECTNAME]&apos;.
+
+(Keep)/(Discard) won't send an accepted/declined message.
     <form name="form">
       <button
        index="0"
@@ -6734,6 +6736,18 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        index="2"
        name="Mute"
        text="Mute"/>
+      <button
+       index="-1"
+       name="(Keep)"
+       text="(Keep)"/>
+      <button
+       index="-2"
+       name="(Discard)"
+       text="(Discard)"/>
+      <button
+       index="4"
+       name="Profile"
+       text="Profile"/>
     </form>
   </notification>
 
@@ -6783,6 +6797,10 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
        index="1"
        name="Cancel"
        text="Cancel"/>
+      <button
+       index="3"
+       name="Profile"
+       text="Profile"/>
     </form>
   </notification>
 
@@ -8326,11 +8344,11 @@ Not enough script resources available to attach object!
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="YouDiedAndGotTPHome"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
-You died and have been teleported to your home location
+You died and have been teleported to your home location.
   </notification>
 
   <notification
@@ -8847,51 +8865,51 @@ Object uses too many physics resources -- its dynamics have been disabled.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="TeleportedHomeByObjectOnParcel"
    persist="true"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 You have been teleported home by the object '[OBJECT_NAME]' on the parcel '[PARCEL_NAME]'
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="TeleportedHomeByObject"
    persist="true"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 You have been teleported home by the object '[OBJECT_NAME]'
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="TeleportedByAttachment"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 You have been teleported by an attachment on [ITEM_ID]
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="TeleportedByObjectOnParcel"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 You have been teleported by the object '[OBJECT_NAME]' on the parcel '[PARCEL_NAME]'
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="TeleportedByObjectOwnedBy"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 You have been teleported by the object '[OBJECT_NAME]' owned by [OWNER_ID]
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notifytip.tga"
    name="TeleportedByObjectUnknownUser"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 You have been teleported by the object '[OBJECT_NAME]' owned by an unknown user.
   </notification>

@@ -8,10 +8,10 @@
 	</radio_group>
 	<text name="text_box2">Chat-Farbe:</text>
 	<color_swatch label="Sie" name="user"/>
-	<color_swatch label="Andere" name="agent"/>
+	<color_swatch label="Andere:" name="agent"/>
 	<color_swatch label="IM" name="im"/>
 	<color_swatch label="System" name="system"/>
-	<color_swatch label="Fehler" name="script_error"/>
+	<color_swatch label="Skript-Fehler" name="script_error"/>
 	<color_swatch label="Objekte" name="objects"/>
 	<color_swatch label="Eigentümer" name="owner"/>
 	<color_swatch label="Blase" name="background"/>

@@ -39,6 +39,7 @@
 
 class LLFace;
 class LLDrawPool;
+class LLSelectNode;
 class LLViewerFetchedTexture;
 
 class LLVOTree : public LLViewerObject
@@ -124,6 +125,8 @@ public:
 										  LLVector4a* normal = NULL,             // return the surface normal at the intersection point
 										  LLVector4a* tangent = NULL           // return the surface tangent at the intersection point
 		);
+ 
+	void generateSilhouette(LLSelectNode* nodep, const LLVector3& view_point);
 
 	static S32 sMaxTreeSpecies;
 
@@ -162,6 +165,7 @@ public:
 	friend class LLDrawPoolTree;
 protected:
 	LLVector3		mTrunkBend;		// Accumulated wind (used for blowing trees)
+	LLVector3		mTrunkVel;		// 
 	LLVector3		mWind;
 
 	LLPointer<LLVertexBuffer> mReferenceBuffer; //reference geometry for generating tree mesh
@@ -201,6 +205,13 @@ protected:
 	static S32 sLODVertexCount[4];
 	static S32 sLODSlices[4];
 	static F32 sLODAngles[4];
+
+private:
+	void generateSilhouetteVertices(std::vector<LLVector3> &vertices,
+									std::vector<LLVector3> &normals,
+									const LLVector3& view_vec,
+									const LLMatrix4& mat,
+									const LLMatrix3& norm_mat);
 };
 
 #endif

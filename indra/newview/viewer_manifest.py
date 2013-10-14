@@ -191,6 +191,11 @@ class WindowsManifest(ViewerManifest):
                                'llplugin', 'slplugin', self.args['configuration'], "SLPlugin.exe"),
                   "SLPlugin.exe")
 
+        # Plugin volume control
+        if self.prefix(src=self.args['configuration'], dst=""):
+            self.path("winmm.dll")
+            self.end_prefix()
+
         self.path(src="licenses-win32.txt", dst="licenses.txt")
 
         self.path("featuretable.txt")
@@ -200,7 +205,7 @@ class WindowsManifest(ViewerManifest):
             self.path("libhunspell.dll")
             self.end_prefix()
 
-		# For mesh upload
+        # For mesh upload
         if self.prefix(src=self.args['configuration'], dst=""):
             self.path("libcollada14dom22.dll")
             self.path("glod.dll")
@@ -334,9 +339,7 @@ class WindowsManifest(ViewerManifest):
                     self.path(path_pair[1])
                     self.end_prefix()
 
-        # pull in the crash logger and updater from other projects
-        self.path(src='../win_crash_logger/%s/windows-crash-logger.exe' % self.args['configuration'], dst="win_crash_logger.exe")
-        self.path(src='../win_updater/%s/windows-updater.exe' % self.args['configuration'], dst="updater.exe")
+        self.package_file = 'npne'
 
 
     def nsi_file_commands(self, install=True):
@@ -521,7 +524,8 @@ class DarwinManifest(ViewerManifest):
                                 "libaprutil-1.0.dylib",
                                 "libcollada14dom.dylib",
                                 "libexpat.1.5.2.dylib",
-                                "libGLOD.dylib"):
+                                "libGLOD.dylib",
+                                "libexception_handler.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
                 # For using FMOD for sound...but, fmod is proprietary so some might not use it...
@@ -540,23 +544,16 @@ class DarwinManifest(ViewerManifest):
                     print "Skipping libfmodex.dylib - not found"
                     pass
 
-                # our apps
-                try:
-                    self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                    self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
-                except:
-                    pass
-
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
 
                 # dependencies on shared libs
-                mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
                 for libfile in ("libllcommon.dylib",
                                 "libapr-1.0.dylib",
                                 "libaprutil-1.0.dylib",
-                                "libexpat.1.5.2.dylib"):
+                                "libexpat.1.5.2.dylib",
+                                "libexception_handler.dylib"):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %
                                      {'target': target_lib,
@@ -710,12 +707,12 @@ class LinuxManifest(ViewerManifest):
         # Create an appropriate gridargs.dat for this package, denoting required grid.
         self.put_in_file(self.flags_list(), 'gridargs.dat')
 
-        if self.buildtype().lower()=='release':
-            self.path("secondlife-stripped","bin/"+self.binary_name())
-            self.path("../linux_crash_logger/linux-crash-logger-stripped","linux-crash-logger.bin")
-        else:
-            self.path("secondlife-bin","bin/"+self.binary_name())
-            self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
+        ## Singu note: we'll go strip crazy later on
+        #if self.buildtype().lower()=='release':
+        #    self.path("secondlife-stripped","bin/"+self.binary_name())
+        #else:
+        #    self.path("secondlife-bin","bin/"+self.binary_name())
+        self.path("secondlife-bin","bin/"+self.binary_name())
 
         self.path("../llplugin/slplugin/SLPlugin", "bin/SLPlugin")
         if self.prefix("res-sdl"):
@@ -810,14 +807,14 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libSDL-1.2.so*")
             self.path("libapr-1.so*")
             self.path("libaprutil-1.so*")
-            self.path("libcollada14dom.so")
+            self.path("libcollada14dom.so.2.2", "libcollada14dom.so")
             self.path("libcrypto.so*")
             self.path("libdb*.so")
             self.path("libdirect-1.*.so*")
             self.path("libdirectfb-1.*.so*")
             self.path("libfusion-1.*.so*")
             self.path("libglod.so")
-            self.path("libminizip.so")
+            self.path("libminizip.so.1.2.3", "libminizip.so");
             self.path("libexpat.so*")
             self.path("libhunspell-*.so.*")
             self.path("libssl.so*")
@@ -861,7 +858,6 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libexpat.so*")
             self.path("libglod.so")
             self.path("libhunspell-1.3.so*")
-            self.path("libpcre.so.3");
             self.path("libminizip.so.1.2.3", "libminizip.so");
             self.path("libssl.so*")
             self.path("libuuid.so*")

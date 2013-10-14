@@ -389,8 +389,26 @@ void LLToolBar::updateCommunicateList()
 		LLFloaterIMPanel* im_floaterp = (LLFloaterIMPanel*)floater_handle_it->get();
 		if (im_floaterp)
 		{
-			std::string floater_title = im_floaterp->getNumUnreadMessages() > 0 ? "*" : "";
+			static LLCachedControl<bool> show_counts("ShowUnreadIMsCounts", true);
+			S32 count = im_floaterp->getNumUnreadMessages();
+			std::string floater_title;
+			if (count > 0) floater_title = "*";
 			floater_title.append(im_floaterp->getShortTitle());
+			if (show_counts && count > 0)
+			{
+				floater_title += " - ";
+				if (count > 1)
+				{
+					LLStringUtil::format_map_t args;
+					args["COUNT"] = llformat("%d", count);
+					floater_title += getString("IMs", args);
+				}
+				else
+				{
+					floater_title += getString("IM");
+				}
+			}
+
 			itemp = communicate_button->add(floater_title, im_floaterp->getSessionID(), ADD_TOP);
 			if (im_floaterp  == frontmost_floater)
 			{

@@ -32,10 +32,10 @@
 	<text name="socks5_auth_label2">Socks5 Authentication:</text>
 	<radio_group name="socks5_auth">
 		<radio_item name="None" tool_tip="No authentication">Keine</radio_item>
-		<radio_item name="UserPass" tool_tip="Username / Password authentication">Benutzername/Kennwort</radio_item>
+		<radio_item name="UserPass" tool_tip="Benutzername / Passwort">Benutzername/Kennwort</radio_item>
 	</radio_group>
 	<text name="socks5_username_label">Benutzername:</text>
-	<line_editor name="socks5_proxy_username" tool_tip="Username for the Socks5 proxy"/>
+	<line_editor name="socks5_proxy_username" tool_tip="Benutzername für Socks5 Proxy"/>
 	<text name="socks5_password_label">Kennwort:</text>
 	<line_editor name="socks5_proxy_password" tool_tip="Password for the Socks5 proxy"/>
 </panel>

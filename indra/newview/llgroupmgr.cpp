@@ -926,13 +926,18 @@ LLGroupMgrGroupData* LLGroupMgr::getGroupData(const LLUUID& id)
 // so that the sorter can sort by year before month before day.
 static void formatDateString(std::string &date_string)
 {
-	tm t;
-	if (sscanf(date_string.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
+	using namespace boost;
+	cmatch result;
+	const regex expression("([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})");
+	if (regex_match(date_string.c_str(), result, expression))
 	{
-		t.tm_year -= 1900;
-		t.tm_mon--;
-		t.tm_hour = t.tm_min = t.tm_sec = 0;
-		timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), date_string);
+		// convert matches to integers so that we can pad them with zeroes on Linux
+		S32 year	= boost::lexical_cast<S32>(result[3]);
+		S32 month	= boost::lexical_cast<S32>(result[1]);
+		S32 day		= boost::lexical_cast<S32>(result[2]);
+
+		// ISO 8601 date format
+		date_string = llformat("%04d-%02d-%02dT00:00:00Z", year, month, day);
 	}
 }
 

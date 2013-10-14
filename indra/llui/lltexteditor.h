@@ -408,6 +408,7 @@ protected:
 	S32				overwriteChar(S32 pos, llwchar wc);
 	void			removeChar();
 	S32 			removeChar(S32 pos);
+	void			removeWord(bool prev);
 	S32				insert(const S32 pos, const LLWString &wstr, const BOOL group_with_next_op);
 	S32				remove(const S32 pos, const S32 length, const BOOL group_with_next_op);
 	S32				append(const LLWString &wstr, const BOOL group_with_next_op);

@@ -564,6 +564,7 @@ SHClientTagMgr::SHClientTagMgr()
 	gSavedSettings.getControl("AscentEstateOwnerColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 	gSavedSettings.getControl("AscentFriendColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 	gSavedSettings.getControl("AscentMutedColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
+	gSavedSettings.getControl("SLBDisplayClientTagOnNewLine")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 
 	//Following group of settings all actually manipulate the tag cache for agent avatar. Even if the tag system is 'disabled', we still allow an
 	//entry to exist for the agent avatar.
@@ -2532,7 +2533,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 													!(attached_object->mDrawable->getSpatialBridge() &&
 													  attached_object->mDrawable->getSpatialBridge()->getRadius() < 2.0));
 
-				if (visibleAttachment && attached_object && !attached_object->isDead() && attachment->getValid())
+				if (visibleAttachment && attached_object && attached_object->mDrawable && !attached_object->isDead() && attachment->getValid())
 				{
 					// if selecting any attachments, update all of them as non-damped
 					if (LLSelectMgr::getInstance()->getSelection()->getObjectCount() && LLSelectMgr::getInstance()->getSelection()->isAttachment())
@@ -3062,6 +3063,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 	LLNameValue *title = getNVPair("Title");
 	LLNameValue* firstname = getNVPair("FirstName");
 	LLNameValue* lastname = getNVPair("LastName");
+	static const LLCachedControl<bool>	display_client_new_line("SLBDisplayClientTagOnNewLine");
 
 	// Avatars must have a first and last name
 	if (!firstname || !lastname) return;
@@ -3284,7 +3286,12 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 		else if(allow_nameplate_override && !mCCSAttachmentText.empty())
 			tag_format=mCCSAttachmentText;
 		else
-			tag_format=sRenderGroupTitles ? "%g\n%f %l %t" : "%f %l %t";
+		{
+			if(!display_client_new_line)
+				tag_format=sRenderGroupTitles ? "%g\n%f %l %t" : "%f %l %t";
+			else
+				tag_format=sRenderGroupTitles ? "%g\n%f %l\n%t" : "%f %l\n%t";
+		}
 
 		// replace first name, last name and title
 		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -3770,6 +3777,23 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 	else if (!getParent() && mIsSitting && !isMotionActive(ANIM_AGENT_SIT_GROUND_CONSTRAINED))
 	{
 		getOffObject();
+		//<edit>
+		//Singu note: this appears to be a safety catch:
+		// when getParent() is NULL and we're note playing ANIM_AGENT_SIT_GROUND_CONSTRAINED then we aren't sitting!
+		// The previous call existed in an attempt to fix this inconsistent state by standing up from an object.
+		// However, since getParent() is NULL that function would crash!
+		// Since we never got crash reports regarding to this, that apparently never happened, except, I discovered
+		// today, when you are ground sitting and then LLMotionController::deleteAllMotions or
+		// LLMotionController::deactivateAllMotions is called, which seems to only happen when previewing an
+		// to-be-uploaded animation on your own avatar (while ground sitting).
+		// Hence, we DO need this safety net but not for standing up from an object but for standing up from the ground.
+		// I fixed the crash in getOffObject(), so it's ok to call that. In order to make things consistent with
+		// the server we need to actually stand up though, or we can't move anymore afterwards.
+		if (isSelf())
+		{
+		  gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+		}
+		//</edit>
 	}
 
 	//--------------------------------------------------------------------
@@ -6193,6 +6217,17 @@ void LLVOAvatar::removeChild(LLViewerObject *childp)
 	}
 }
 
+namespace
+{
+	boost::signals2::connection sDetachBridgeConnection;
+	void detach_bridge(const LLViewerObject* obj, const LLViewerObject* bridge)
+	{
+		if (obj != bridge) return;
+		sDetachBridgeConnection.disconnect();
+		LLVOAvatarSelf::detachAttachmentIntoInventory(obj->getAttachmentItemID());
+	}
+}
+
 LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* viewer_object)
 {
 	S32 attachmentID = ATTACHMENT_ID_FROM_STATE(viewer_object->getState());
@@ -6213,8 +6248,7 @@ LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* vi
 		if (isSelf() && attachmentID == 127 && gSavedSettings.getBOOL("SGDetachBridge"))
 		{
 			llinfos << "Bridge detected! detaching" << llendl;
-			LLVOAvatarSelf::detachAttachmentIntoInventory(viewer_object->getAttachmentItemID());
-			return 0;
+			sDetachBridgeConnection = gAgentAvatarp->setAttachmentCallback(boost::bind(detach_bridge, _1, viewer_object));
 		}
 //		attachment = get_if_there(mAttachmentPoints, 1, (LLViewerJointAttachment*)NULL); // Arbitrary using 1 (chest)
 // [SL:KB] - Patch: Appearance-LegacyMultiAttachment | Checked: 2010-08-28 (Catznip-2.2.0a) | Added: Catznip2.1.2a
@@ -6556,7 +6590,7 @@ void LLVOAvatar::getOffObject()
 
 		gAgentCamera.setSitCamera(LLUUID::null);
 
-		if (!sit_object->permYouOwner() && gSavedSettings.getBOOL("RevokePermsOnStandUp"))
+		if (sit_object && !sit_object->permYouOwner() && gSavedSettings.getBOOL("RevokePermsOnStandUp"))
 		{
 			gMessageSystem->newMessageFast(_PREHASH_RevokePermissions);
 			gMessageSystem->nextBlockFast(_PREHASH_AgentData);

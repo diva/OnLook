@@ -328,13 +328,12 @@ class HTTPGetResponder : public LLHTTPClient::ResponderWithCompleted
 {
 	LOG_CLASS(HTTPGetResponder);
 public:
-	HTTPGetResponder(LLTextureFetch* fetcher, const LLUUID& id, U64 startTime, S32 requestedSize, U32 offset, bool redir)
+	HTTPGetResponder(LLTextureFetch* fetcher, const LLUUID& id, U64 startTime, S32 requestedSize, U32 offset)
 		: mFetcher(fetcher)
 		, mID(id)
 		, mMetricsStartTime(startTime)
 		, mRequestedSize(requestedSize)
 		, mRequestedOffset(offset)
-		, mFollowRedir(redir)
 		, mReplyOffset(0)
 		, mReplyLength(0)
 		, mReplyFullLength(0)
@@ -449,7 +448,6 @@ public:
 		}
 	}
 	
-	/*virtual*/ bool followRedir() const { return mFollowRedir; }
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_texture; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return HTTPGetResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "HTTPGetResponder"; }
@@ -464,8 +462,6 @@ private:
 	U32 mReplyOffset;
 	U32 mReplyLength;
 	U32 mReplyFullLength;
-
-	bool mFollowRedir;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1247,7 +1243,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		}
 		else if (mSentRequest == UNSENT && mCanUseNET)
 		{
-			LL_WARNS("Texture") << mID << " moving to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
+			LL_DEBUGS("Texture") << mID << " moving to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
 			setState(SEND_UDP_REQ);
 			setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
 			if(mWriteToCacheState != NOT_WRITE)
@@ -1315,7 +1311,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			return true ; //abort
 		}
 
-		LL_WARNS("Texture") << mID << " sendind to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
+		LL_DEBUGS("Texture") << mID << " sending to UDP fetch. mSentRequest=" << mSentRequest << " mCanUseNET = " << mCanUseNET << llendl;
 
 		mRequestedSize = mDesiredSize;
 		mRequestedDiscard = mDesiredDiscard;
@@ -1423,7 +1419,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				headers.addHeader("Range", llformat("bytes=%d-%d", mRequestedOffset, mRequestedOffset + mRequestedSize - 1));
 			}
 			LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
-				new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset, true),
+				new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset),
 				headers, approved/*,*/ DEBUG_CURLIO_PARAM(debug_off), keep_alive, no_does_authentication, allow_compressed_reply, NULL, 0, NULL);
 		}
 		else
@@ -2976,6 +2972,7 @@ bool LLTextureFetchWorker::insertPacket(S32 index, U8* data, S32 size)
 
 void LLTextureFetchWorker::setState(e_state new_state)
 {
+	/*
 	static const char* e_state_name[] =
 	{
 		"INVALID",
@@ -2994,6 +2991,7 @@ void LLTextureFetchWorker::setState(e_state new_state)
 		"WAIT_ON_WRITE",
 		"DONE"
 	};
+	*/
 	//if(mState != new_state)
 	//	LL_INFOS("Texture") << "id: " << mID << " disc: " << mDesiredDiscard << " sz: " << mDesiredSize << " state: " << e_state_name[mState] << " => " << e_state_name[new_state] << llendl;
 	mState = new_state;

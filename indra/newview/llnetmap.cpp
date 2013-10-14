@@ -40,6 +40,7 @@
 #include "lllocalcliprect.h"
 #include "llrender.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llfloateravatarlist.h"
 
 #include "llagent.h"
@@ -89,6 +90,9 @@ const F32 DOT_SCALE = 0.75f;
 const F32 MIN_PICK_SCALE = 2.f;
 const S32 MOUSE_DRAG_SLOP = 2;				// How far the mouse needs to move before we think it's a drag
 
+const F32 WIDTH_PIXELS = 2.f; 
+const S32 CIRCLE_STEPS = 100; 
+
 LLNetMap::LLNetMap(const std::string& name) :
 	LLPanel(name),
 	mScale(128.f),
@@ -101,7 +105,7 @@ LLNetMap::LLNetMap(const std::string& name) :
 	mUpdateNow( FALSE )
 {
 	mScale = gSavedSettings.getF32("MiniMapScale");
-	mPixelsPerMeter = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
+	mPixelsPerMeter = mScale / REGION_WIDTH_METERS;
 	mDotRadius = llmax(DOT_SCALE * mPixelsPerMeter, MIN_DOT_RADIUS);
 
 	mObjectImageCenterGlobal = gAgentCamera.getCameraPositionGlobal();
@@ -110,8 +114,8 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLScaleMap())->registerListener(this, "MiniMap.ZoomLevel");
 	(new LLCenterMap())->registerListener(this, "MiniMap.Center");
 	(new LLCheckCenterMap())->registerListener(this, "MiniMap.CheckCenter");
-	(new LLRotateMap())->registerListener(this, "MiniMap.Rotate");
-	(new LLCheckRotateMap())->registerListener(this, "MiniMap.CheckRotate");
+	(new LLChatRings())->registerListener(this, "MiniMap.ChatRings");
+	(new LLCheckChatRings())->registerListener(this, "MiniMap.CheckChatRings");
 	(new LLStopTracking())->registerListener(this, "MiniMap.StopTracking");
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
@@ -124,6 +128,7 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new mmsetcustom())->registerListener(this, "MiniMap.setcustom");
 	(new mmsetunmark())->registerListener(this, "MiniMap.setunmark");
 	(new mmenableunmark())->registerListener(this, "MiniMap.enableunmark");
+	(new LLToggleControl())->registerListener(this, "MiniMap.ToggleControl");
 
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_mini_map.xml");
 
@@ -157,13 +162,16 @@ void LLNetMap::setScale( F32 scale )
 		F32 height = (F32)(getRect().getHeight());
 		F32 diameter = sqrt(width * width + height * height);
 		F32 region_widths = diameter / mScale;
-		F32 meters = region_widths * LLWorld::getInstance()->getRegionWidthInMeters();
+// <FS:CR> Aurora Sim
+		//F32 meters = region_widths * LLWorld::getInstance()->getRegionWidthInMeters();
+		F32 meters = region_widths * REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
 		F32 num_pixels = (F32)mObjectImagep->getWidth();
 		mObjectMapTPM = num_pixels / meters;
 		mObjectMapPixels = diameter;
 	}
 
-	mPixelsPerMeter = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
+	mPixelsPerMeter = mScale / REGION_WIDTH_METERS;
 	mDotRadius = llmax(DOT_SCALE * mPixelsPerMeter, MIN_DOT_RADIUS);
 
 	mUpdateNow = TRUE;
@@ -190,6 +198,10 @@ void LLNetMap::mm_setcolor(LLUUID key,LLColor4 col)
 void LLNetMap::draw()
 {
  	static LLFrameTimer map_timer;
+
+	static const LLCachedControl<LLColor4> map_whisper_ring_color("MiniMapWhisperRingColor", LLColor4(0.f,1.f,0.f,0.5f));
+	static const LLCachedControl<LLColor4> map_chat_ring_color("MiniMapChatRingColor", LLColor4(0.f,0.f,1.f,0.5f));
+	static const LLCachedControl<LLColor4> map_shout_ring_color("MiniMapShoutRingColor", LLColor4(1.f,0.f,0.f,0.5f));
 
 	if (mObjectImagep.isNull())
 	{
@@ -256,12 +268,15 @@ void LLNetMap::draw()
 		LLColor4 this_region_color = gColors.getColor( "NetMapThisRegion" );
 		LLColor4 live_region_color = gColors.getColor( "NetMapLiveRegion" );
 		LLColor4 dead_region_color = gColors.getColor( "NetMapDeadRegion" );
+// <FS:CR> Aurora Sim
+		//S32 region_width = llround(LLWorld::getInstance()->getRegionWidthInMeters());
+		S32 region_width = REGION_WIDTH_UNITS;
+// </FS:CR> Aurora Sim
 
 		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
 			 iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
-			S32 region_width = llround(regionp->getWidth());
 			// Find x and y position relative to camera's center.
 			LLVector3 origin_agent = regionp->getOriginAgent();
 			LLVector3 rel_region_pos = origin_agent - gAgentCamera.getCameraPositionAgent();
@@ -271,8 +286,12 @@ void LLNetMap::draw()
 			// background region rectangle
 			F32 bottom =	relative_y;
 			F32 left =		relative_x;
-			F32 top =		bottom + mScale ;
-			F32 right =		left + mScale ;
+// <FS:CR> Aurora Sim
+			//F32 top =		bottom + mScale ;
+			//F32 right =		left + mScale ;
+			F32 top =		bottom + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
+			F32 right =		left + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
+// </FS:CR> Aurora Sim
 
 			gGL.color4fv(regionp == gAgent.getRegion() ? this_region_color.mV : live_region_color.mV);
 			if (!regionp->isAlive())
@@ -331,18 +350,20 @@ void LLNetMap::draw()
 			U8 *default_texture = mObjectRawImagep->getData();
 			memset( default_texture, 0, mObjectImagep->getWidth() * mObjectImagep->getHeight() * mObjectImagep->getComponents() );
 
-			// Draw buildings
-			gObjectList.renderObjectsForMap(*this);
+			if (gSavedSettings.getBOOL("ShowMiniMapObjects"))
+			{						
+				gObjectList.renderObjectsForMap(*this); // Draw buildings.
+			}
 
 			mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
-			
+		
 			map_timer.reset();
 		}
 
 		LLVector3 map_center_agent = gAgent.getPosAgentFromGlobal(mObjectImageCenterGlobal);
 		map_center_agent -= gAgentCamera.getCameraPositionAgent();
-		map_center_agent.mV[0] *= mScale/LLWorld::getInstance()->getRegionWidthInMeters();
-		map_center_agent.mV[1] *= mScale/LLWorld::getInstance()->getRegionWidthInMeters();
+		map_center_agent.mV[0] *= mScale/REGION_WIDTH_METERS;
+		map_center_agent.mV[1] *= mScale/REGION_WIDTH_METERS;
 
 		gGL.getTexUnit(0)->bind(mObjectImagep);
 		F32 image_half_width = 0.5f*mObjectMapPixels;
@@ -375,7 +396,7 @@ void LLNetMap::draw()
 		// Draw avatars
 //		LLColor4 mapcolor = gAvatarMapColor;
 
-		static const LLCachedControl<LLColor4>	standard_color(gColors,"MapAvatar",LLColor4(0.f,1.f,0.f,1.f));
+		static const LLCachedControl<LLColor4>	standard_color("MapAvatar",LLColor4(0.f,1.f,0.f,1.f));
 		static const LLCachedControl<LLColor4>	friend_color_stored("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 		static const LLCachedControl<LLColor4>	em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
 		static const LLCachedControl<LLColor4>	linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
@@ -478,8 +499,22 @@ void LLNetMap::draw()
 			dot_width,
 			dot_width);
 
+		// Draw chat range ring(s)
+		static LLUICachedControl<bool> whisper_ring("MiniMapWhisperRing");
+		static LLUICachedControl<bool> chat_ring("MiniMapChatRing");
+		static LLUICachedControl<bool> shout_ring("MiniMapShoutRing");
+		if(whisper_ring)
+			drawRing(LFSimFeatureHandler::getInstance()->whisperRange(), pos_map, map_whisper_ring_color);
+		if(chat_ring)
+			drawRing(LFSimFeatureHandler::getInstance()->sayRange(), pos_map, map_chat_ring_color);
+		if(shout_ring)
+			drawRing(LFSimFeatureHandler::getInstance()->shoutRange(), pos_map, map_shout_ring_color);
+
 		// Draw frustum
-		F32 meters_to_pixels = mScale/ LLWorld::getInstance()->getRegionWidthInMeters();
+// <FS:CR> Aurora Sim
+		//F32 meters_to_pixels = mScale/ LLWorld::getInstance()->getRegionWidthInMeters();
+		F32 meters_to_pixels = mScale/ REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
 
 		F32 horiz_fov = LLViewerCamera::getInstance()->getView() * LLViewerCamera::getInstance()->getAspect();
 		F32 far_clip_meters = LLViewerCamera::getInstance()->getFar();
@@ -551,6 +586,9 @@ LLVector3 LLNetMap::globalPosToView(const LLVector3d& global_pos, BOOL rotated)
 	LLVector3 pos_local;
 	pos_local.setVec(relative_pos_global);  // convert to floats from doubles
 
+// <FS:CR> Aurora Sim
+	mPixelsPerMeter = mScale / REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
 	pos_local.mV[VX] *= mPixelsPerMeter;
 	pos_local.mV[VY] *= mPixelsPerMeter;
 	// leave Z component in meters
@@ -566,6 +604,22 @@ LLVector3 LLNetMap::globalPosToView(const LLVector3d& global_pos, BOOL rotated)
 	pos_local.mV[VY] += getRect().getHeight() / 2 + mCurPanY;
 
 	return pos_local;
+}
+
+void LLNetMap::drawRing(const F32 radius, const LLVector3 pos_map, const LLColor4& color)
+
+{
+// <FS:CR> Aurora Sim
+        F32 meters_to_pixels = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
+        //F32 meters_to_pixels = mScale / REGION_WIDTH_METERS;
+// </FS:CR> Aurora Sim
+        F32 radius_pixels = radius * meters_to_pixels;
+
+        gGL.matrixMode(LLRender::MM_MODELVIEW);
+        gGL.pushMatrix();
+        gGL.translatef((F32)pos_map.mV[VX], (F32)pos_map.mV[VY], 0.f);
+        gl_ring(radius_pixels, WIDTH_PIXELS, color, color, CIRCLE_STEPS, FALSE);
+        gGL.popMatrix();
 }
 
 void LLNetMap::drawTracking(const LLVector3d& pos_global, BOOL rotated,
@@ -609,7 +663,10 @@ LLVector3d LLNetMap::viewPosToGlobal( S32 x, S32 y, BOOL rotated )
 		pos_local.rotVec( rot );
 	}
 
-	pos_local *= ( LLWorld::getInstance()->getRegionWidthInMeters() / mScale );
+// <FS:CR> Aurora Sim
+	//pos_local *= ( LLWorld::getInstance()->getRegionWidthInMeters() / mScale );
+	pos_local *= ( REGION_WIDTH_METERS / mScale );
+// </FS:CR> Aurora Sim
 	
 	LLVector3d pos_global;
 	pos_global.setVec( pos_local );
@@ -1102,19 +1159,29 @@ bool LLNetMap::LLCheckCenterMap::handleEvent(LLPointer<LLEvent> event, const LLS
 	return true;
 }
 
-bool LLNetMap::LLRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+bool LLNetMap::LLChatRings::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
-	BOOL rotate = gSavedSettings.getBOOL("MiniMapRotate");
-	gSavedSettings.setBOOL("MiniMapRotate", !rotate);
-
+	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
+	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
+	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	BOOL all_enabled = whisper_enabled && chat_enabled && shout_enabled;
+	
+	gSavedSettings.setBOOL("MiniMapWhisperRing", !all_enabled);
+	gSavedSettings.setBOOL("MiniMapChatRing", !all_enabled);
+	gSavedSettings.setBOOL("MiniMapShoutRing", !all_enabled);
+	
 	return true;
 }
 
-bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+bool LLNetMap::LLCheckChatRings::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
+	BOOL whisper_enabled = gSavedSettings.getBOOL("MiniMapWhisperRing");
+	BOOL chat_enabled = gSavedSettings.getBOOL("MiniMapChatRing");
+	BOOL shout_enabled = gSavedSettings.getBOOL("MiniMapShoutRing");
+	BOOL all_enabled = whisper_enabled && chat_enabled && shout_enabled;
+	
 	LLNetMap *self = mPtr;
-	BOOL enabled = gSavedSettings.getBOOL("MiniMapRotate");
-	self->findControl(userdata["control"].asString())->setValue(enabled);
+	self->findControl(userdata["control"].asString())->setValue(all_enabled);
 	return true;
 }
 
@@ -1163,3 +1230,11 @@ bool LLNetMap::LLEnableProfile::handleEvent(LLPointer<LLEvent> event, const LLSD
 	//self->findControl(userdata["control"].asString())->setValue(self->isAgentUnderCursor());
 	return true;
 }
+
+bool LLNetMap::LLToggleControl::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	std::string control_name = userdata.asString();
+	gSavedSettings.setBOOL(control_name, !gSavedSettings.getBOOL(control_name));
+	return true;
+}
+

@@ -5,7 +5,7 @@
   <layout_stack name="toolbar_stack">
 	  
     <layout_panel name="panel2">
-		  <button label="Report-Msgid-Bugs-To: &#10;POT-Creation-Date: 2013-07-05 04:37+0200&#10;PO-Revision-Date: 2013-07-05 00:15+0200&#10;Last-Translator: Leonie &lt;saphira@terror-twins.de&gt;&#10;Language: de&#10;MIME-Version: 1.0&#10;Content-Type: text/plain; charset=UTF-8&#10;Content-Transfer-Encoding: 8bit&#10;Plural-Forms: nplurals=2; plural=(n != 1);&#10;X-Generator: Pootle 2.1.5&#10;" name="chat_btn" tool_tip="Chat-Leiste anzeigen.(Eingabe)"/>
+		  <button name="chat_btn" tool_tip="Chat-Leiste anzeigen.(Eingabe)"/>
 	  </layout_panel>
 	  
 	  <layout_panel name="panel4">
@@ -22,7 +22,7 @@
 		  <button label="Foto" name="snapshot_btn" tool_tip="Einen Screenshot auf Festplatte oder im Inventar speichern."/>
 	  </layout_panel>
 	  <layout_panel name="panel9">
-		  <button label="Suche" name="directory_btn" tool_tip="Nach Orten, Events, Personen und mehr suchen."/>
+		  <button label="Suchen" name="directory_btn" tool_tip="Nach Orten, Events, Personen und mehr suchen."/>
 	  </layout_panel>
 	  <layout_panel name="panel10">
 		  <button label="Bauen" name="build_btn" tool_tip="Neue Objekte erstellen."/>

@@ -39,20 +39,13 @@
 
 #include "aoremotectrl.h"
 #include "llaudioengine.h"
-#include "importtracker.h"
-#include "llrender.h"
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llbutton.h"
 #include "llchatbar.h"
-#include "llfocusmgr.h"
-#include "llimview.h"
+#include "llfloaterchatterbox.h"
 #include "llmediaremotectrl.h"
 #include "llpanelaudiovolume.h"
 #include "llparcel.h"
-#include "lltextbox.h"
-#include "llui.h"
-#include "llviewercontrol.h"
 #include "llviewertexturelist.h"
 #include "llviewerjoystick.h"
 #include "llviewermedia.h"
@@ -61,19 +54,12 @@
 #include "llviewerparcelmedia.h"
 #include "llviewerparcelmgr.h"
 #include "lluictrlfactory.h"
-#include "llviewercontrol.h"
-#include "llviewerwindow.h"
 #include "llvoiceclient.h"
 #include "llvoavatarself.h"
 #include "llvoiceremotectrl.h"
-#include "llmediactrl.h"
 #include "llselectmgr.h"
 #include "wlfPanel_AdvSettings.h"
 #include "llpanelnearbymedia.h"
-
-
-
-#include "llcontrol.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -308,9 +294,19 @@ void LLOverlayBar::refresh()
 {
 	bool buttons_changed = FALSE;
 
-	if(LLButton* button = updateButtonVisiblity(mNewIM,gIMMgr->getIMReceived()))
+	int unread_count(gIMMgr->getIMUnreadCount());
+	static const LLCachedControl<bool> per_conversation("NewIMsPerConversation");
+	static const LLCachedControl<bool> reset_count("NewIMsPerConversationReset");
+	if (per_conversation && (!reset_count || unread_count) && !LLFloaterChatterBox::instanceVisible())
 	{
-		int unread_count = gIMMgr->getIMUnreadCount();
+		unread_count = 0;
+		for(std::set<LLHandle<LLFloater> >::const_iterator it = gIMMgr->getIMFloaterHandles().begin(); it != gIMMgr->getIMFloaterHandles().end(); ++it)
+			if (LLFloaterIMPanel* im_floater = static_cast<LLFloaterIMPanel*>(it->get()))
+				if (im_floater->getParent() != gFloaterView && im_floater->getNumUnreadMessages()) // Only count docked IMs
+					++unread_count;
+	}
+	if (LLButton* button = updateButtonVisiblity(mNewIM, unread_count))
+	{
 		if (unread_count > 0)
 		{
 			if (unread_count > 1)

@@ -11,7 +11,7 @@
 		<column name="position" label="Pos." tool_tip="Position (X, Y) in diesem Sim oder generelle Richtung (Kompass) für andere Sims"/>
 		<column name="altitude" label="Höhe" tool_tip="Höhe"/>
     <column name="activity" label="Akt." tool_tip="Aktivität"/>
-		<column name="age" label="Alter" tool_tip="Alter"/>
+		<column name="age" label="Alt." tool_tip="Alt."/>
 		<column name="time" label="Uhrzeit" tool_tip="Zeit seit eintreffen in der Sim."/>
     <column name="client" label="Client" tool_tip="Viewer den der Avatar nutzen könnte"/>
 	</scroll_list>
@@ -33,7 +33,7 @@
 			<!-- lower row-->
 			<button name="focus_btn" label="Fokus" tool_tip="Focus camera on this avatar in the list"/>
 			<button name="prev_in_list_btn" label="Zurück" tool_tip="Zoome Kamera auf vorigen Avatar"/>
-			<button name="next_in_list_btn" label="Weiter" tool_tip="Zoome Kamera auf nächsten Avatar"/>
+			<button name="next_in_list_btn" label="Vor" tool_tip="Zoome Kamera auf nächsten Avatar"/>
 
 		</panel>
 
@@ -84,11 +84,12 @@
 				<check_box name="hide_pos" label="Pos." tool_tip="Position"/>
 				<check_box name="hide_alt" label="Höhe" tool_tip="Höhe"/>
 				<check_box name="hide_act" label="Akt." tool_tip="Aktivität"/>
-				<check_box name="hide_age" label="Alter"/>
+				<check_box name="hide_age" label="Alt."/>
 				<check_box name="hide_time" label="Uhrzeit"/>
 				<check_box name="hide_client" label="Client"/>
 		</panel>
 	</tab_container>
+	<string name="Out Of Range">Ausserhalb der Reichweite</string>
 	<string name="Moving">Bewegen</string>
 	<string name="Playing a gesture">Geste abspielen</string>
 	<string name="Playing a sound">Geräusch abspielen</string>

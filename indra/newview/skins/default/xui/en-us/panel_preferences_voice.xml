@@ -2,10 +2,13 @@
 <panel border="true" bottom="-409" height="408" label="Voice Chat" left="102" name="chat" width="517">
 	<text bottom_delta="-20" follows="left|top" left_delta="12" name="voice_unavailable">Voice Chat Is Not Available</text>
 	<check_box bottom_delta="0" follows="top" height="16" initial_value="false" label="Enable voice chat" left="8" name="enable_voice_check"/>
-	<radio_group bottom_delta="-46" draw_border="false" follows="top" height="40" left_delta="20" name="ear_location" width="364">
+	<check_box bottom_delta="-18" follows="top" height="16" name="enable_multivoice_check"/>
+	<string value="Allow multiple instances of [APP_NAME] to use voice simultaneously (requires restart)" name="multivoice_label"/>
+	<radio_group bottom_delta="-66" draw_border="false" follows="top" height="60" left_delta="20" name="ear_location" width="364">
 		<radio_item bottom="-19" height="16" left="3" name="0">Hear Voice Chat from camera position.</radio_item>
 		<radio_item bottom="-35" height="16" name="1">Hear Voice Chat from avatar position.</radio_item>
-	</radio_group>
+    <radio_item bottom="-51" height="16" name="3">Hear Voice Chat equally from everyone.</radio_item>
+  </radio_group>
 	<text bottom_delta="-20" follows="top" height="16" name="push_to_talk_heading">Push To Talk</text>
 	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Use Push-to-Talk in toggle mode" name="push_to_talk_toggle_check" tool_tip="When enabled, press the push-to-talk trigger to switch your microphone on and off. When disabled, the microphone is off unless the trigger is being held down."/>
 	<text bottom_delta="-20" follows="top" height="16" left_delta="4" name="push_to_talk_label">Push-to-Talk trigger:</text>

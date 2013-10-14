@@ -786,7 +786,8 @@ private:
 	{
 		earLocCamera = 0,		// ear at camera
 		earLocAvatar,			// ear at avatar
-		earLocMixed				// ear at avatar location/camera direction
+		earLocMixed,			// ear at avatar location/camera direction
+		earLocSpeaker			// ear at speaker, speakers not affected by position
 	};
 
 	S32			mEarLocation;

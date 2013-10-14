@@ -174,7 +174,7 @@ U32 LLScrollListText::sCount = 0;
 LLScrollListText::LLScrollListText(const LLScrollListCell::Params& p)
 :	LLScrollListCell(p),
 	mText(p.value().asString()),
-	mFont(p.font.isProvided() ? LLResMgr::getInstance()->getRes(p.font) : LLFontGL::getFontSansSerifSmall()),
+	mFont(LLFontGL::getFontSansSerifSmall()),
 	mColor(p.color),
 	mUseColor(p.color.isProvided()),
 	mFontStyle(LLFontGL::getStyleFromString(p.font_style)),
@@ -186,6 +186,19 @@ LLScrollListText::LLScrollListText(const LLScrollListCell::Params& p)
 	sCount++;
 
 	mTextWidth = getWidth();
+
+	if (p.font.isProvided())
+	{
+		if (const LLFontGL* font = LLResMgr::getInstance()->getRes(p.font)) // Common CAPITALIZED font name?
+			mFont = font;
+		else // Less common camelCase font?
+		{
+			LLFontDescriptor font_desc;
+			font_desc.setName(p.font);
+			if (const LLFontGL* font = LLFontGL::getFont(font_desc))
+				mFont = font;
+		}
+	}
 
 	// initialize rounded rect image
 	if (!mRoundedRectImage)
@@ -225,8 +238,11 @@ BOOL LLScrollListText::needsToolTip() const
 	if (LLScrollListCell::needsToolTip())
 		return LLScrollListCell::needsToolTip();
 
+	/* Singu Note: To maintain legacy behavior, show tooltips for any text
 	// ...otherwise, show tooltips for truncated text
 	return mFont->getWidth(mText.getString()) > getWidth();
+	*/
+	return !mText.empty();
 }
 
 //virtual
@@ -422,13 +438,14 @@ void LLScrollListCheck::setEnabled(BOOL enable)
 
 LLScrollListDate::LLScrollListDate( const LLScrollListCell::Params& p)
 :	LLScrollListText(p),
+	mFormat(p.format),
 	mDate(p.value().asDate())
 {}
 
 void LLScrollListDate::setValue(const LLSD& value)
 {
 	mDate = value.asDate();
-	LLScrollListText::setValue(mDate.asRFC1123());
+	LLScrollListText::setValue(mFormat.empty() ? mDate.asRFC1123() : mDate.toHTTPDateString(mFormat));
 }
 
 const LLSD LLScrollListDate::getValue() const

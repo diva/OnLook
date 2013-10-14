@@ -131,7 +131,7 @@ class LLIamHere : public LLHTTPClient::ResponderWithResult
 		};
 
 		/*virtual*/  AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return iamHere_timeout; }
-		/*virtual*/ bool redirect_status_ok(void) const { return true; }
+		/*virtual*/ bool pass_redirect_status(void) const { return true; }
 		/*virtual*/ char const* getName(void) const { return "LLIamHere"; }
 };
 

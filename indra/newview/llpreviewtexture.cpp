@@ -40,8 +40,7 @@
 #include "llcombobox.h"
 #include "statemachine/aifilepicker.h"
 #include "llfloaterinventory.h"
-#include "llimagepng.h"
-#include "llimagetga.h"
+#include "llimage.h"
 #include "llinventory.h"
 #include "llnotificationsutil.h"
 #include "llresmgr.h"
@@ -377,27 +376,16 @@ BOOL LLPreviewTexture::canSaveAs() const
 	return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
 }
 
-static bool sPng(false);
-
 // virtual
-void LLPreviewTexture::saveAsType(BOOL png)
+void LLPreviewTexture::saveAs()
 {
 	if( mLoadingFullImage )
 		return;
 
 	const LLViewerInventoryItem* item = getItem() ;
 	AIFilePicker* filepicker = AIFilePicker::create();
-	sPng = png;
-	if(png)
-	{
-		filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".png" : LLStringUtil::null, FFSAVE_PNG, "", "image");
-		filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
-	}
-	else
-	{
-		filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".tga" : LLStringUtil::null, FFSAVE_TGA, "", "image");
-		filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
-	}
+	filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".png" : LLStringUtil::null, FFSAVE_IMAGE, "", "image");
+	filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
 }
 
 void LLPreviewTexture::saveAs_continued(LLViewerInventoryItem const* item, AIFilePicker* filepicker)
@@ -446,16 +434,14 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 
 	if( self && final && success )
 	{
-		//FIXME: There has to be a better way
-		LLPointer<LLImagePNG> image_png = new LLImagePNG;
-		LLPointer<LLImageTGA> image_tga = new LLImageTGA;
-		if( sPng ? !image_png->encode( src, 0.0 ) : !image_tga->encode( src ) )
+		LLPointer<LLImageFormatted> image = LLImageFormatted::createFromExtension(self->mSaveFileName);
+		if (!image || !image->encode(src, 0.0))
 		{
 			LLSD args;
 			args["FILE"] = self->mSaveFileName;
 			LLNotificationsUtil::add("CannotEncodeFile", args);
 		}
-		else if( sPng ? !image_png->save( self->mSaveFileName ) : !image_tga->save( self->mSaveFileName ) )
+		else if (!image->save(self->mSaveFileName))
 		{
 			LLSD args;
 			args["FILE"] = self->mSaveFileName;

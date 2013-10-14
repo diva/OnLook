@@ -12,7 +12,7 @@
 			<text name="name_label">
 				Nombre o Usuario:
 			</text>
-			<combo_box name="name_combo"/>
+			<combo_box name="username_combo"/>
 			<check_box label="Recordar Nombre" name="remember_name_check"/>
 		</layout_panel>
 		<layout_panel name="password_panel">
@@ -26,7 +26,7 @@
 			<text name="grids_combo_text">
 				Grid:
 			</text>
-			<combo_box name="grids_combo"/>
+			<combo_box name="grids_combo" tool_tip="Ingresa el nombre/nick de un grid conocido o el uri de inicio de seión del mismo, o selecciona uno de la lista"/>
 			<button name="grids_btn" label="Administrar Grid"/>
 		</layout_panel>
 		<layout_panel name="location_panel">
@@ -49,6 +49,10 @@
 			<button label="Iniciar Sesión" label_selected="Iniciar Sesión" name="connect_btn"/>
 		</layout_panel>
 	</layout_stack>
+	
+	<text name="create_new_account_text">
+		Crear una Cuenta
+	</text>	
 	<text name="forgot_password_text">
 		¿Olvidaste tu Nombre o tu Contraseña?
 	</text>

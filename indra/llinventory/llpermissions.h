@@ -40,6 +40,12 @@ extern void mask_to_string(U32 mask, char* str);
 extern std::string mask_to_string(U32 mask);
 template<class T> class LLMetaClassT;
 
+enum ExportPolicy {
+  ep_creator_only,		// Used for SecondLife: only allow export when being creator.
+  ep_full_perm,			// Used on non-SL grids that do not support the PERM_EXPORT bit: allow exporting of full perm objects.
+  ep_export_bit			// Used on opensim grids that support the PERM_EXPORT bit.
+};
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLPermissions
 //
@@ -280,7 +286,7 @@ public:
 	// has that bit set and allow exporting even when this function returns false,
 	// or pass supports_export as true, which causes to perform that check using
 	// these permissions.
-	bool allowExportBy(LLUUID const& requester, bool supports_export = false) const;
+	bool allowExportBy(LLUUID const& requester, ExportPolicy export_policy) const;
 
 	// This somewhat specialized function is meant for testing if the
 	// current owner is allowed to transfer to the specified agent id.

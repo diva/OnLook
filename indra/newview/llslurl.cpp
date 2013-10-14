@@ -35,6 +35,7 @@
 #include "llfiltersd2xmlrpc.h"
 #include "curl/curl.h"
 #include "hippogridmanager.h"
+#include "llworldmap.h" // Variable size regions
 
 const char* LLSLURL::SLURL_HTTP_SCHEME		 = "http";
 const char* LLSLURL::SLURL_HTTPS_SCHEME		 = "https";
@@ -312,11 +313,11 @@ LLSLURL::LLSLURL(const std::string& slurl)
 			  
 			  mPosition = LLVector3(path_array); // this construction handles LLSD without all components (values default to 0.f)
 			  if((F32(mPosition[VX]) < 0.f) || 
-                             (mPosition[VX] > REGION_WIDTH_METERS) ||
+                             (mPosition[VX] > 8192.f/*REGION_WIDTH_METERS*/) ||
 			     (F32(mPosition[VY]) < 0.f) || 
-                             (mPosition[VY] > REGION_WIDTH_METERS) ||
+                             (mPosition[VY] > 8192.f/*REGION_WIDTH_METERS*/) ||
 			     (F32(mPosition[VZ]) < 0.f) || 
-                             (mPosition[VZ] > REGION_HEIGHT_METERS))
+                             (mPosition[VZ] > 8192.f/*REGION_HEIGHT_METERS*/))
 			    {
 			      mType = INVALID;
 			      return;
@@ -355,8 +356,8 @@ LLSLURL::LLSLURL(const std::string& grid,
 {
 	mGrid = grid;
 	mRegion = region;
-	S32 x = llround( (F32)fmod( position[VX], (F32)REGION_WIDTH_METERS ) );
-	S32 y = llround( (F32)fmod( position[VY], (F32)REGION_WIDTH_METERS ) );
+	S32 x = llround( (F32)position[VX] );
+	S32 y = llround( (F32)position[VY] );
 	S32 z = llround( (F32)position[VZ] );
 	mType = LOCATION;
 	mPosition = LLVector3(x, y, z);
@@ -377,10 +378,14 @@ LLSLURL::LLSLURL(const std::string& grid,
 		 const LLVector3d& global_position)
 {
 	HippoGridInfo* gridp = gHippoGridManager->getGrid(grid);
+	LLVector3 pos(global_position);
+	if (LLSimInfo* sim = LLWorldMap::getInstance()->simInfoFromPosGlobal(global_position)) // Variable size regions, we need to fmod against their proper dimensions, not 256
+	{
+		pos[VX] = fmod(pos[VX], sim->getSizeX());
+		pos[VY] = fmod(pos[VY], sim->getSizeY());
+	}
 	*this = LLSLURL(gridp ? gridp->getGridNick() : gHippoGridManager->getDefaultGridNick(),
-		  region, LLVector3(global_position.mdV[VX],
-				    global_position.mdV[VY],
-				    global_position.mdV[VZ]));
+		  region, pos);
 }
 
 // create a slurl from a global position

@@ -228,6 +228,7 @@ class AIHTTPView;
 
 void add_wave_listeners();
 void add_dae_listeners();
+void add_radar_listeners();
 //extern BOOL	gHideSelectedObjects;
 //extern BOOL gAllowSelectAvatar;
 //extern BOOL gDebugAvatarRotation;
@@ -865,7 +866,7 @@ void init_client_menu(LLMenuGL* menu)
 	/*menu->addChild(new LLMenuItemCallGL("Reload settings/colors", 
 					&handle_reload_settings, NULL, NULL));*/
 	menu->addChild(new LLMenuItemCallGL("Reload personal setting overrides", 
-		&reload_personal_settings_overrides, NULL, NULL, KEY_F2, MASK_CONTROL|MASK_SHIFT));
+		&reload_personal_settings_overrides));
 
 	sub_menu = new LLMenuGL("HUD Info");
 	{
@@ -1203,6 +1204,7 @@ void init_debug_ui_menu(LLMenuGL* menu)
 	menu->addChild(new LLMenuItemCheckGL("Show Render Info", menu_toggle_control, NULL, menu_check_control, (void*)"DebugShowRenderInfo"));
 	menu->addChild(new LLMenuItemCheckGL("Show Matrices", menu_toggle_control, NULL, menu_check_control, (void*)"DebugShowRenderMatrices"));
 	menu->addChild(new LLMenuItemCheckGL("Show Color Under Cursor", menu_toggle_control, NULL, menu_check_control, (void*)"DebugShowColor"));
+	menu->addChild(new LLMenuItemCheckGL("Show FPS", menu_toggle_control, NULL, menu_check_control, (void*)"SLBShowFPS"));
 	
 	menu->createJumpKeys();
 }
@@ -1297,38 +1299,43 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu = new LLMenuGL("Features");
 	sub_menu->setCanTearOff(TRUE);
 	menu->addChild(sub_menu);
+#ifdef LL_LINUX
+	#define MODIFIER MASK_SHIFT
+#else
+	#define MODIFIER MASK_ALT
+#endif
 	sub_menu->addChild(new LLMenuItemCheckGL("UI",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_UI, KEY_F1, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_UI, KEY_F1, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Selected",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_SELECTED, KEY_F2, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_SELECTED, KEY_F2, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Highlighted",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_HIGHLIGHTED, KEY_F3, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_HIGHLIGHTED, KEY_F3, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Dynamic Textures",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_DYNAMIC_TEXTURES, KEY_F4, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_DYNAMIC_TEXTURES, KEY_F4, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL( "Foot Shadows", 
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOOT_SHADOWS, KEY_F5, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOOT_SHADOWS, KEY_F5, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Fog",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOG, KEY_F6, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FOG, KEY_F6, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL("Test FRInfo",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FR_INFO, KEY_F8, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FR_INFO, KEY_F8, MODIFIER|MASK_CONTROL));
 	sub_menu->addChild(new LLMenuItemCheckGL( "Flexible Objects", 
 											&LLPipeline::toggleRenderDebugFeature, NULL,
 											&LLPipeline::toggleRenderDebugFeatureControl,
-											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FLEXIBLE, KEY_F9, MASK_ALT|MASK_CONTROL));
+											(void*)LLPipeline::RENDER_DEBUG_FEATURE_FLEXIBLE, KEY_F9, MODIFIER|MASK_CONTROL));
 	sub_menu->createJumpKeys();
 
 	/////////////////////////////
@@ -1469,6 +1476,9 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	
 	menu->addChild(new LLMenuItemCallGL("Rebuild Vertex Buffers", reset_vertex_buffers, NULL, NULL, 'V', MASK_CONTROL | MASK_SHIFT));
 
+	item = new LLMenuItemCheckGL("Animate Trees", menu_toggle_control, NULL, menu_check_control, (void*)"RenderAnimateTrees");
+	menu->addChild(item);
+	
 	item = new LLMenuItemCheckGL("Animate Textures", menu_toggle_control, NULL, menu_check_control, (void*)"AnimateTextures");
 	menu->addChild(item);
 	
@@ -2612,7 +2622,7 @@ class LLObjectCopyUUID : public view_listener_t
 		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
 		if(object)
 		{
-			gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(object->getID().asString()));
+			gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(object->getID().asString()));
 		}
 		return true;
 	}
@@ -2885,24 +2895,18 @@ class LLObjectEnableExport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLPermissions perms;
-		bool new_value = LLSelectMgr::getInstance()->selectGetPermissions(perms) && perms.isOwned();	// At least one object, accumulated permissions of all objects.
-		bool supports_export = LFSimFeatureHandler::instance().simSupportsExport();
-		if (new_value && !(supports_export && (perms.getMaskEveryone() & PERM_EXPORT)))				// No need to call allowExportBy if PERM_EXPORT is set on (all) root objects.
+		ExportPolicy export_policy = LFSimFeatureHandler::instance().exportPolicy();
+		bool can_export_any = false;
+		LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+		for (LLObjectSelection::iterator node = selection->begin(); node != selection->end(); ++node)
 		{
-			bool can_export_any = false;
-			LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
-			for (LLObjectSelection::iterator node = selection->begin(); node != selection->end(); ++node)
+			if ((*node)->mPermissions->allowExportBy(gAgent.getID(), export_policy))
 			{
-				if ((*node)->mPermissions->allowExportBy(gAgent.getID(), supports_export))
-				{
-					can_export_any = true;
-					break;
-				}
+				can_export_any = true;
+				break;
 			}
-			new_value = can_export_any;
 		}
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(can_export_any);
 		return true;
 	}
 };
@@ -3260,7 +3264,7 @@ class LLAvatarCopyUUID : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
 		
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(avatar->getID().asString()));
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(avatar->getID().asString()));
 		return true;
 	}
 };
@@ -3272,7 +3276,7 @@ class LLAvatarClientUUID : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
 		const LLUUID clientID = SHClientTagMgr::instance().getClientID(avatar);
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clientID.asString()));
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(clientID.asString()));
 		return true;
 	}
 };
@@ -3652,7 +3656,6 @@ void set_god_level(U8 god_level)
 {
 	U8 old_god_level = gAgent.getGodLevel();
 	gAgent.setGodLevel( god_level );
-	gIMMgr->refresh();
 	LLViewerParcelMgr::getInstance()->notifyObservers();
 
 	// Some classifieds change visibility on god mode
@@ -4109,6 +4112,11 @@ void reset_view_final( BOOL proceed )
 	if( !proceed )
 	{
 		return;
+	}
+
+	if (!gViewerWindow->getLeftMouseDown() && gAgentCamera.cameraThirdPerson() && gSavedSettings.getBOOL("ResetViewTurnsAvatar") && !gSavedSettings.getBOOL("FreezeTime"))
+	{
+		gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
 	}
 
 	gAgentCamera.switchCameraPreset(CAMERA_PRESET_REAR_VIEW);
@@ -9213,13 +9221,32 @@ LLScrollListCtrl* get_focused_list()
 	return list;
 }
 
+S32 get_focused_list_num_selected()
+{
+	if (LLScrollListCtrl* list = get_focused_list())
+		return list->getNumSelected();
+	return 0;
+}
+
+const LLUUID get_focused_list_id_selected()
+{
+	if (LLScrollListCtrl* list = get_focused_list())
+		return list->getStringUUIDSelectedItem();
+	return LLUUID::null;
+}
+
+const uuid_vec_t get_focused_list_ids_selected()
+{
+	if (LLScrollListCtrl* list = get_focused_list())
+		return list->getSelectedIDs();
+	return uuid_vec_t();
+}
+
 class ListEnableAnySelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected());
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected());
 		return true;
 	}
 };
@@ -9228,9 +9255,7 @@ class ListEnableMultipleSelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected() > 1);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() > 1);
 		return true;
 	}
 };
@@ -9239,9 +9264,7 @@ class ListEnableSingleSelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(list->getNumSelected() == 1);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() == 1);
 		return true;
 	}
 };
@@ -9261,9 +9284,7 @@ class ListEnableIsFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::isFriend(list->getStringUUIDSelectedItem()));
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::isFriend(get_focused_list_id_selected()));
 		return true;
 	}
 };
@@ -9272,9 +9293,7 @@ class ListEnableIsNotFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(!LLAvatarActions::isFriend(list->getStringUUIDSelectedItem()));
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(!LLAvatarActions::isFriend(get_focused_list_id_selected()));
 		return true;
 	}
 };
@@ -9283,9 +9302,7 @@ class ListEnableMute : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		uuid_vec_t ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		bool can_block = true;
 		for (uuid_vec_t::const_iterator it = ids.begin(); can_block && it != ids.end(); ++it)
 			can_block = LLAvatarActions::canBlock(*it);
@@ -9298,9 +9315,16 @@ class ListEnableOfferTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::canOfferTeleport(list->getSelectedIDs()));
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarActions::canOfferTeleport(get_focused_list_ids_selected()));
+		return true;
+	}
+};
+
+class ListVisibleWebProfile : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() && !(gSavedSettings.getBOOL("UseWebProfiles") || gSavedSettings.getString("WebProfileURL").empty()));
 		return true;
 	}
 };
@@ -9309,9 +9333,7 @@ class ListCopyUUIDs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::copyUUIDs(list->getSelectedIDs());
+		LLAvatarActions::copyUUIDs(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9320,9 +9342,7 @@ class ListInviteToGroup : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::inviteToGroup(list->getStringUUIDSelectedItem());
+		LLAvatarActions::inviteToGroup(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9331,9 +9351,7 @@ class ListOfferTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::offerTeleport(list->getSelectedIDs());
+		LLAvatarActions::offerTeleport(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9342,9 +9360,7 @@ class ListPay : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::pay(list->getStringUUIDSelectedItem());
+		LLAvatarActions::pay(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9353,9 +9369,7 @@ class ListRemoveFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::removeFriendDialog(list->getStringUUIDSelectedItem());
+		LLAvatarActions::removeFriendDialog(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9364,9 +9378,7 @@ class ListRequestFriendship : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::requestFriendshipDialog(list->getStringUUIDSelectedItem());
+		LLAvatarActions::requestFriendshipDialog(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9375,9 +9387,7 @@ class ListRequestTeleport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::teleportRequest(list->getStringUUIDSelectedItem());
+		LLAvatarActions::teleportRequest(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9386,9 +9396,16 @@ class ListShowProfile : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::showProfiles(list->getSelectedIDs());
+		LLAvatarActions::showProfiles(get_focused_list_ids_selected());
+		return true;
+	}
+};
+
+class ListShowWebProfile : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLAvatarActions::showProfiles(get_focused_list_ids_selected(), true);
 		return true;
 	}
 };
@@ -9397,9 +9414,7 @@ class ListStartAdhocCall : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startAdhocCall(list->getSelectedIDs());
+		LLAvatarActions::startAdhocCall(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9408,9 +9423,7 @@ class ListStartCall : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startCall(list->getStringUUIDSelectedItem());
+		LLAvatarActions::startCall(get_focused_list_id_selected());
 		return true;
 	}
 };
@@ -9419,9 +9432,7 @@ class ListStartConference : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startConference(list->getSelectedIDs());
+		LLAvatarActions::startConference(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9430,23 +9441,21 @@ class ListStartIM : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLAvatarActions::startIM(list->getStringUUIDSelectedItem());
+		LLAvatarActions::startIM(get_focused_list_id_selected());
 		return true;
 	}
 };
 
+/* Singu TODO: Figure out why this wouldn't work
 class ListAbuseReport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		LLFloaterReporter::showFromObject(list->getStringUUIDSelectedItem());
+		LLFloaterReporter::showFromObject(get_focused_list_id_selected());
 		return true;
 	}
 };
+*/
 
 // Create the args for administrative notifications used in lists, tossing the selected names into it.
 LLSD create_args(const uuid_vec_t& ids, const std::string& token)
@@ -9471,9 +9480,7 @@ class ListEject : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("EjectAvatarFullname", create_args(ids, "AVATAR_NAME"), LLSD(), boost::bind(parcel_mod_notice_callback, ids, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), send_eject));
 		return true;
 	}
@@ -9484,9 +9491,7 @@ class ListFreeze : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("FreezeAvatarFullname", create_args(ids, "AVATAR_NAME"), LLSD(), boost::bind(parcel_mod_notice_callback, ids, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2), send_freeze));
 		return true;
 	}
@@ -9512,9 +9517,7 @@ class ListEstateBan : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("EstateBanUser", create_args(ids, "EVIL_USER"), LLSD(), boost::bind(estate_bulk_eject, ids, true, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
 		return true;
 	}
@@ -9524,9 +9527,7 @@ class ListEstateEject : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		const uuid_vec_t& ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		LLNotificationsUtil::add("EstateKickUser", create_args(ids, "EVIL_USER"), LLSD(), boost::bind(estate_bulk_eject, ids, false, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
 		return true;
 	}
@@ -9536,9 +9537,7 @@ class ListToggleMute : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLScrollListCtrl* list = get_focused_list();
-		if (!list) return false;
-		uuid_vec_t ids = list->getSelectedIDs();
+		const uuid_vec_t& ids = get_focused_list_ids_selected();
 		for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
 			LLAvatarActions::toggleBlock(*it);
 		return true;
@@ -9857,6 +9856,7 @@ void initialize_menus()
 	addMenu(new ListEnableIsNotFriend(), "List.EnableIsNotFriend");
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
+	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
 	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
@@ -9865,16 +9865,19 @@ void initialize_menus()
 	addMenu(new ListRequestFriendship(), "List.RequestFriendship");
 	addMenu(new ListRequestTeleport(), "List.RequestTeleport");
 	addMenu(new ListShowProfile(), "List.ShowProfile");
+	addMenu(new ListShowWebProfile(), "List.ShowWebProfile");
 	addMenu(new ListStartAdhocCall(), "List.StartAdhocCall");
 	addMenu(new ListStartCall(), "List.StartCall");
 	addMenu(new ListStartConference(), "List.StartConference");
 	addMenu(new ListStartIM(), "List.StartIM");
-	addMenu(new ListAbuseReport(), "List.AbuseReport");
+	//addMenu(new ListAbuseReport(), "List.AbuseReport");
 	addMenu(new ListEject(), "List.ParcelEject");
 	addMenu(new ListFreeze(), "List.Freeze");
 	addMenu(new ListEstateBan(), "List.EstateBan");
 	addMenu(new ListEstateEject(), "List.EstateEject");
 	addMenu(new ListToggleMute(), "List.ToggleMute");
+
+	add_radar_listeners();
 
 	LLToolMgr::getInstance()->initMenu(sMenus);
 }
