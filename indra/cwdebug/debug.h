@@ -144,6 +144,7 @@ extern LL_COMMON_API fake_channel const snapshot;
 #define CWDEBUG_MARKER 0
 
 #define BACKTRACE do { } while(0)
+#define CWD_ONLY(...)
 
 #endif // !DOXYGEN
 
@@ -180,6 +181,7 @@ extern LL_COMMON_API fake_channel const snapshot;
 #include <set>
 
 #define CWD_API __attribute__ ((visibility("default")))
+#define CWD_ONLY(...) __VA_ARGS__
 
 //! Debug specific code.
 namespace debug {

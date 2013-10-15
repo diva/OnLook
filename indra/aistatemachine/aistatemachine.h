@@ -195,13 +195,21 @@ class AIStateMachine : public LLThreadSafeRefCount
 	bool mDebugAdvanceStatePending;				// True while advance_state() was called by not handled yet.
 	bool mDebugRefCalled;						// True when ref() is called (or will be called within the critial area of mMultiplexMutex).
 #endif
+#ifdef CWDEBUG
+  protected:
+	bool mSMDebug;								// Print debug output only when true.
+#endif
+  private:
 	U64 mRuntime;								// Total time spent running in the main thread (in clocks).
 
   public:
-	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
+	AIStateMachine(CWD_ONLY(bool debug)) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
 #ifdef SHOW_ASSERT
 		mThreadId(AIThreadID::none), mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
 		mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false),
+#endif
+#ifdef CWDEBUG
+		mSMDebug(debug),
 #endif
 		mRuntime(0)
 	{ }
