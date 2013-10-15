@@ -33,6 +33,7 @@
 
 #include "linden_common.h"
 #include "aistatemachine.h"
+#include "aicondition.h"
 #include "lltimer.h"
 
 //==================================================================
@@ -960,6 +961,8 @@ void AIStateMachine::reset()
 	sub_state_w->reset = true;
 	// Start running.
 	sub_state_w->idle = false;
+	// We're not waiting for a condition.
+	sub_state_w->blocked = NULL;
 	// Keep running till we reach at least bs_multiplex.
 	sub_state_w->need_run = true;
   }
@@ -983,6 +986,8 @@ void AIStateMachine::set_state(state_type new_state)
   }
 #endif
   sub_state_type_wat sub_state_w(mSubState);
+  // It should never happen that set_state() is called while we're blocked.
+  llassert(!sub_state_w->blocked);
   // Force current state to the requested state.
   sub_state_w->run_state = new_state;
   // Void last call to advance_state.
@@ -1023,6 +1028,13 @@ void AIStateMachine::advance_state(state_type new_state)
 	sub_state_w->idle = false;
 	// Ignore a call to idle if it occurs before we leave multiplex_impl().
 	sub_state_w->skip_idle = true;
+	// No longer say we woke up when signalled() is called.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
 	// Mark that a re-entry of multiplex() is necessary.
 	sub_state_w->need_run = true;
 #ifdef SHOW_ASSERT
@@ -1075,6 +1087,40 @@ void AIStateMachine::idle(void)
   mSleep = 0;
 }
 
+// This function is very much like idle().
+void AIStateMachine::wait(AIConditionBase& condition)
+{
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::wait(" << (void*)&condition << ") [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// wait() may only be called multiplex_impl().
+	llassert(state_r->base_state == bs_multiplex);
+	// May only be called by the thread that is holding mMultiplexMutex.
+	llassert(mThreadId.equals_current_thread());
+  }
+  // wait() following set_state() cancels the reason to run because of the call to set_state.
+  mDebugSetStatePending = false;
+#endif
+  sub_state_type_wat sub_state_w(mSubState);
+  // As wait() may only be called from within the state machine, it should never happen that the state machine is already idle.
+  llassert(!sub_state_w->idle);
+  // Ignore call to wait() when advance_state() was called since last call to set_state().
+  if (sub_state_w->skip_idle)
+  {
+	Dout(dc::statemachine(mSMDebug), "Ignored, because skip_idle is true (advance_state() was called last).");
+	return;
+  }
+  // Register ourselves with the condition object.
+  condition.wait(this);
+  // Mark that we are idle.
+  sub_state_w->idle = true;
+  // Mark that we are waiting for a condition.
+  sub_state_w->blocked = &condition;
+  // Not sleeping (anymore).
+  mSleep = 0;
+}
+
 void AIStateMachine::cont(void)
 {
   DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::cont() [" << (void*)this << "]");
@@ -1082,6 +1128,13 @@ void AIStateMachine::cont(void)
 	sub_state_type_wat sub_state_w(mSubState);
 	// Void last call to idle(), if any.
 	sub_state_w->idle = false;
+	// No longer say we woke up when signalled() is called.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
 	// Mark that a re-entry of multiplex() is necessary.
 	sub_state_w->need_run = true;
 #ifdef SHOW_ASSERT
@@ -1095,6 +1148,40 @@ void AIStateMachine::cont(void)
   }
 }
 
+// This function is very much like cont(), except that it has no effect when we are not in a blocked state.
+// Returns true if the state machine was unblocked, false if it was already unblocked.
+bool AIStateMachine::signalled(void)
+{
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::signalled() [" << (void*)this << "]");
+  {
+	sub_state_type_wat sub_state_w(mSubState);
+	// Test if we are blocked or not.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
+	else
+	{
+	  return false;
+	}
+	// Void last call to wait().
+	sub_state_w->idle = false;
+	// Mark that a re-entry of multiplex() is necessary.
+	sub_state_w->need_run = true;
+#ifdef SHOW_ASSERT
+	// From this moment.
+	mDebugContPending = true;
+#endif
+  }
+  if (!mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(schedule_run);
+  }
+  return true;
+}
+
 void AIStateMachine::abort(void)
 {
   DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::abort() [" << (void*)this << "]");
@@ -1104,6 +1191,13 @@ void AIStateMachine::abort(void)
 	sub_state_type_wat sub_state_w(mSubState);
 	// Mark that we are aborted, iff we didn't already finish.
 	sub_state_w->aborted = !sub_state_w->finished;
+	// No longer say we woke up when signalled() is called.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
 	// Mark that a re-entry of multiplex() is necessary.
 	sub_state_w->need_run = true;
 	// Schedule a new run when this state machine is waiting.

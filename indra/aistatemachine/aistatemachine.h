@@ -39,6 +39,7 @@
 #include <list>
 #include <boost/signals2.hpp>
 
+class AIConditionBase;
 class AIStateMachine;
 
 class AIEngine
@@ -132,6 +133,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 	struct sub_state_type {
 	  state_type		run_state;
 	  state_type		advance_state;
+	  AIConditionBase*	blocked;
 	  bool				reset;
 	  bool				need_run;
 	  bool				idle;
@@ -232,6 +234,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 	void set_state(state_type new_state);									// Run this state the NEXT loop.
 	// These functions can only be called from within multiplex_impl().
 	void idle(void);														// Go idle unless cont() or advance_state() were called since the start of the current loop, or until they are called.
+	void wait(AIConditionBase& condition);									// The same as idle(), but wake up when AICondition<T>::signal() is called.
 	void finish(void);														// Mark that the state machine finished and schedule the call back.
 	void yield(void);														// Yield to give CPU to other state machines, but do not go idle.
 	void yield(AIEngine* engine);											// Yield to give CPU to other state machines, but do not go idle. Continue running from engine 'engine'.
@@ -245,11 +248,12 @@ class AIStateMachine : public LLThreadSafeRefCount
 	// to access this state machine.
 	void abort(void);														// Abort the state machine (unsuccessful finish).
 
-	// These are the only two functions that can be called by any thread at any moment.
+	// These are the only three functions that can be called by any thread at any moment.
 	// Those threads should use an LLPointer<AIStateMachine> to access this state machine.
 	void cont(void);														// Guarantee at least one full run of multiplex() after this function is called. Cancels the last call to idle().
 	void advance_state(state_type new_state);								// Guarantee at least one full run of multiplex() after this function is called
 																			// iff new_state is larger than the last state that was processed.
+	bool signalled(void);													// Call cont() iff this state machine is still blocked after a call to wait(). Returns false if it already unblocked.
 
   public:
 	// Accessors.

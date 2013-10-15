@@ -21,6 +21,7 @@ set(aistatemachine_SOURCE_FILES
     aistatemachine.cpp
     aistatemachinethread.cpp
     aitimer.cpp
+    aicondition.cpp
     )
 
 set(aistatemachine_HEADER_FILES
@@ -29,6 +30,7 @@ set(aistatemachine_HEADER_FILES
     aistatemachine.h
     aistatemachinethread.h
     aitimer.h
+    aicondition.h
     )
 
 set_source_files_properties(${aistatemachine_HEADER_FILES}
