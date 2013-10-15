@@ -199,11 +199,13 @@ void LLAudioChannelOpenAL::play()
 		return;
 	}
 
-	if(!isPlaying())
+	if(isPlaying())
 	{
-		alSourcePlay(mALSource);
-		getSource()->setPlayedOnce(true);
+		alSourceStop(mALSource);
 	}
+
+	alSourcePlay(mALSource);
+	getSource()->setPlayedOnce(true);
 }
 
 void LLAudioChannelOpenAL::playSynced(LLAudioChannel *channelp)

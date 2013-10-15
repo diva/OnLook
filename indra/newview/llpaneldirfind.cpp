@@ -162,7 +162,7 @@ BOOL LLPanelDirFind::postBuild()
 	}
 
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("filter_gaming"))
-		ctrl->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
+		ctrl->setVisible(gAgent.getRegion() && (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
 
 	return TRUE;
 }
@@ -558,7 +558,7 @@ BOOL LLPanelDirFindAllOld::postBuild()
 	setDefaultBtn( "Search" );
 
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("filter_gaming"))
-		ctrl->setVisible((gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL_CLASSIC));
+		ctrl->setVisible(gAgent.getRegion() && (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL_CLASSIC));
 
 	return TRUE;
 }
