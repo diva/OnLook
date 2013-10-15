@@ -217,8 +217,16 @@ class AIStateMachine : public LLThreadSafeRefCount
 	{ }
 
   protected:
-	// The user should call finish() (or abort(), or kill() from the call back when finish_impl() calls run()), not delete a class derived from AIStateMachine directly.
-	virtual ~AIStateMachine() { llassert(multiplex_state_type_rat(mState)->base_state == bs_killed); }
+	// The user should call finish() (or abort(), or kill() from the call back when finish_impl() calls run()),
+	// not delete a class derived from AIStateMachine directly. Deleting it directly before calling run() is
+	// ok however.
+	virtual ~AIStateMachine()
+	{
+#ifdef SHOW_ASSERT
+	  base_state_type state = multiplex_state_type_rat(mState)->base_state;
+	  llassert(state == bs_killed || state == bs_reset);
+#endif
+	}
  
   public:
 	// These functions may be called directly after creation, or from within finish_impl(), or from the call back function.

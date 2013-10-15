@@ -700,6 +700,10 @@ void AIStateMachine::multiplex(event_type event)
 			// Mark that we're added to this engine, and at the same time, that we're not added to the previous one.
 			state_w->current_engine = engine;
 		  }
+#ifdef SHOW_ASSERT
+		  // We are leaving the loop, but we're not idle. The statemachine should re-enter the loop again.
+		  mDebugShouldRun = true;
+#endif
 		}
 		else
 		{
