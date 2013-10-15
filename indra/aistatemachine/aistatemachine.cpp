@@ -1173,6 +1173,16 @@ void AIStateMachine::yield(AIEngine* engine)
   mYieldEngine = engine;
 }
 
+bool AIStateMachine::yield_if_not(AIEngine* engine)
+{
+  if (engine && multiplex_state_type_rat(mState)->current_engine != engine)
+  {
+	yield(engine);
+	return true;
+  }
+  return false;
+}
+
 void AIStateMachine::yield_frame(unsigned int frames)
 {
   DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::yield_frame(" << frames << ") [" << (void*)this << "]");

@@ -237,6 +237,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 	void yield(AIEngine* engine);											// Yield to give CPU to other state machines, but do not go idle. Continue running from engine 'engine'.
 	void yield_frame(unsigned int frames);									// Run from the main-thread engine after at least 'frames' frames have passed.
 	void yield_ms(unsigned int ms);											// Run from the main-thread engine after roughly 'ms' miliseconds have passed.
+	bool yield_if_not(AIEngine* engine);									// Do not really yield, unless the current engine is not 'engine'. Returns true if it switched engine.
 
   public:
 	// This function can be called from multiplex_imp(), but also by a child state machine and
