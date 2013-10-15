@@ -1839,12 +1839,9 @@ void LLPanelAvatar::sendAvatarPropertiesUpdate()
 {
 	llinfos << "Sending avatarinfo update" << llendl;
 	BOOL allow_publish = FALSE;
-	BOOL mature = FALSE;
 	if (LLPanelAvatar::sAllowFirstLife)
 	{
 		allow_publish = childGetValue("allow_publish");
-		//A profile should never be mature.
-		mature = FALSE;
 	}
 
 	LLUUID first_life_image_id;
@@ -1867,7 +1864,6 @@ void LLPanelAvatar::sendAvatarPropertiesUpdate()
 	avatar_data.about_text = about_text;
 	avatar_data.fl_about_text = first_life_about_text;
 	avatar_data.allow_publish = allow_publish;
-	//avatar_data.mature = mature;
 	avatar_data.profile_url = mPanelWeb->childGetText("url_edit");
 	LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesUpdate(&avatar_data);
 
