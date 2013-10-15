@@ -40,7 +40,7 @@
 						</array>
 					<key>tags</key>
 						<array>
-							<string>ShaderLoading</string>
+							<!--string>ShaderLoading</string-->
 							<string>Openjpeg</string>
 					<!-- Debug output about messages received from plugins: -->
 						<string>Plugin</string>                           <!-- Everything except what is listed below -->

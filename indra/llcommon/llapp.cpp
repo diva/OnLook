@@ -307,46 +307,12 @@ void LLApp::setupErrorHandling()
 	// Install the Google Breakpad crash handler for Windows
 	if(mExceptionHandler == 0)
 	{
-		llwarns << "adding breakpad exception handler" << llendl;
-
-		std::wostringstream ws;
-		ws << mCrashReportPipeStr << getPid();
-		std::wstring wpipe_name = ws.str();
-		std::string ptmp = std::string(wpipe_name.begin(), wpipe_name.end());
-
-		::Sleep(2000);  //HACK hopefully a static wait won't blow up in my face before google fixes their implementation.
-
-		//HACK this for loop is ueless.  Breakpad dumbly returns success when the OOP handler isn't initialized.
-		for (int retries=0;retries<5;++retries)
-		{
-			mExceptionHandler = new google_breakpad::ExceptionHandler(
-														L"",		
-														NULL,		//No filter
-														windows_post_minidump_callback,
-														0,
-														google_breakpad::ExceptionHandler::HANDLER_ALL,
-														MiniDumpNormal, //Generate a 'normal' minidump.
-														(WCHAR *)wpipe_name.c_str(), 
-														NULL);  //No custom client info.
-			if (mExceptionHandler)
-			{
-				break;
-			}
-			else
-			{
-				::Sleep(100);  //Wait a tick and try again.
-			}
-		}
-		if (!mExceptionHandler)
-		{
-				llwarns << "Failed to initialize OOP exception handler.  Defaulting to In Process handling" << llendl;
-				mExceptionHandler = new google_breakpad::ExceptionHandler(
-                                                                  std::wstring(mDumpPath.begin(),mDumpPath.end()), //Dump path
-																  0,		//dump filename	
-																  windows_post_minidump_callback, 
-																  0, 
-																  google_breakpad::ExceptionHandler::HANDLER_ALL);
-		}
+		mExceptionHandler = new google_breakpad::ExceptionHandler(
+			std::wstring(mDumpPath.begin(),mDumpPath.end()), //Dump path
+			0,		//dump filename	
+			windows_post_minidump_callback, 
+			0, 
+			google_breakpad::ExceptionHandler::HANDLER_ALL);
 		if (mExceptionHandler)
 		{
 			mExceptionHandler->set_handle_debug_exceptions(true);

@@ -127,7 +127,8 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value)
 		if (enabled)
 		{
 			LLVector3d lpos_global = gAgent.getPositionGlobal();
-			gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
+			if(gAudiop)
+				gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
 			LLChat chat;
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			chat.mText = LLTrans::getString("PowerUser1") + "\n" + LLTrans::getString("PowerUser2") + "\n" + LLTrans::getString("Unlocked:") + "\n" + LLTrans::getString("PowerUser3") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser4") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser5");

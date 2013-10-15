@@ -522,61 +522,7 @@ bool LLAppViewerWin32::restoreErrorTrap()
 
 void LLAppViewerWin32::initCrashReporting(bool reportFreeze)
 {
-	/* Singu Note: don't fork the crash logger on start
-	const char* logger_name = "win_crash_logger.exe";
-	std::string exe_path = gDirUtilp->getExecutableDir();
-	exe_path += gDirUtilp->getDirDelimiter();
-	exe_path += logger_name;
-
-    std::stringstream pid_str;
-    pid_str <<  LLApp::getPid();
-    std::string logdir = gDirUtilp->getExpandedFilename(LL_PATH_DUMP, "");
-    std::string appname = gDirUtilp->getExecutableFilename();
-
-	S32 slen = logdir.length() -1;
-	S32 end = slen;
-	while (logdir.at(end) == '/' || logdir.at(end) == '\\') end--;
-	
-	if (slen !=end)
-	{
-		logdir = logdir.substr(0,end+1);
-	}
-	std::string arg_str = "\"" + exe_path + "\" -dumpdir \"" + logdir + "\" -procname \"" + appname + "\" -pid " + pid_str.str(); 
-	llinfos << "spawning " << arg_str << llendl;
-	_spawnl(_P_NOWAIT, exe_path.c_str(), arg_str.c_str(), NULL);
-	*/
-	  
-/*	STARTUPINFO         siStartupInfo;
-	
-	std::string arg_str =  "-dumpdir \"" + logdir + "\" -procname \"" + appname + "\" -pid " + pid_str.str(); 
-
-    memset(&siStartupInfo, 0, sizeof(siStartupInfo));
-    memset(&mCrashReporterProcessInfo, 0, sizeof(mCrashReporterProcessInfo));
-
-    siStartupInfo.cb = sizeof(siStartupInfo);
-
-	std::wstring exe_wstr;
-	exe_wstr.assign(exe_path.begin(), exe_path.end());
-
-	std::wstring arg_wstr;
-	arg_wstr.assign(arg_str.begin(), arg_str.end());
-
-    if(CreateProcess(&exe_wstr[0],     
-                     &arg_wstr[0],                 // Application arguments
-                     0,
-                     0,
-                     FALSE,
-                     CREATE_DEFAULT_ERROR_MODE,
-                     0,
-                     0,                              // Working directory
-                     &siStartupInfo,
-                     &mCrashReporterProcessInfo) == FALSE)
-      // Could not start application -> call 'GetLastError()'
-	{
-        //llinfos << "CreateProcess failed " << GetLastError() << llendl;
-        return;
-    }
-	*/
+	// Singu Note: we don't fork the crash logger on start
 }
 
 //virtual
