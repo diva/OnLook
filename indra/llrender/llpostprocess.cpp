@@ -407,13 +407,13 @@ void LLPostProcess::createScreenTextures()
 	stop_glerror();
 
 	if(mDepthTexture)
-		LLImageGL::deleteTextures(type, 0, 0, 1, &mDepthTexture, true);
+		LLImageGL::deleteTextures(1, &mDepthTexture);
 
 	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
 		if((*it)->getDepthChannel()>=0)
 		{
-			LLImageGL::generateTextures(type, GL_DEPTH_COMPONENT24, 1, &mDepthTexture);
+			LLImageGL::generateTextures(1, &mDepthTexture);
 			gGL.getTexUnit(0)->bindManual(type, mDepthTexture);
 			LLImageGL::setManualImage(LLTexUnit::getInternalType(type), 0, GL_DEPTH_COMPONENT24, mScreenWidth, mScreenHeight, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
 			stop_glerror();
@@ -451,7 +451,7 @@ void LLPostProcess::destroyGL()
 	mRenderTarget[0].release();
 	mRenderTarget[1].release();
 	if(mDepthTexture)
-		LLImageGL::deleteTextures(LLTexUnit::TT_RECT_TEXTURE, 0, 0, 1, &mDepthTexture, true);
+		LLImageGL::deleteTextures(1, &mDepthTexture);
 	mDepthTexture=0;
 	mNoiseTexture = NULL ;
 	mVBO = NULL ;
