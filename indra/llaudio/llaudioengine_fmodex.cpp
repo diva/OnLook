@@ -810,6 +810,7 @@ void LLAudioChannelFMODEX::cleanup()
 	Check_FMOD_Error(mChannelp->stop(),"FMOD::Channel::stop");
 
 	mChannelp = NULL;
+	mLastSamplePos = 0;
 }
 
 
