@@ -65,7 +65,7 @@ public:
 	//whether or not to use FBO implementation
 	static bool sUseFBO; 
 	static U32 sBytesAllocated;
-	static U32 sCurFBO;
+	static LLRenderTarget* sCurFBO;
 
 	LLRenderTarget();
 	virtual ~LLRenderTarget();
@@ -154,7 +154,7 @@ protected:
 	std::vector<U32> mTex;
 	std::vector<U32> mInternalFormat;
 	U32 mFBO;
-	U32 mPreviousFBO;
+	LLRenderTarget* mPreviousFBO;
 	U32 mDepth;
 	bool mStencil;
 	bool mUseDepth;
