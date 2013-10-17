@@ -590,6 +590,7 @@ void LLAudioChannelFMOD::cleanup()
 	}
 
 	mChannelID = 0;
+	mLastSamplePos = 0;
 }
 
 

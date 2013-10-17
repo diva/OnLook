@@ -284,13 +284,14 @@ void LLAudioEngine::updateChannels()
 	checkStates();
 }
 
-typedef std::pair<LLAudioSource*,F32> audio_source_t;
 struct SourcePriorityComparator
 {
-	bool operator() (const audio_source_t& lhs, const audio_source_t& rhs) const
+	bool operator() (const LLAudioSource* lhs, const LLAudioSource* rhs) const
 	{
-		//Sort by priority value. If equal, sync masters get higher priority.
-		return lhs.second < rhs.second || (lhs.second == rhs.second && !lhs.first->isSyncMaster() && rhs.first->isSyncMaster());
+		if(rhs->getPriority() != lhs->getPriority())
+			return rhs->getPriority() > lhs->getPriority();
+		else
+			return ((rhs->isSyncMaster() && !lhs->isSyncMaster()) || (rhs->isSyncSlave() && (!lhs->isSyncMaster() && !lhs->isSyncSlave())));
 	}
 };
 
@@ -319,10 +320,21 @@ void LLAudioEngine::idle(F32 max_decode_time)
 	LLAudioSource *sync_masterp = NULL;	//Highest priority syncmaster
 	LLAudioSource *sync_slavep = NULL;	//Highest priority syncslave
 
+	//Priority queue that will be filled with soundsources that have a high likeleyhood of being able to start [re]playing this idle tick.
+	//Sort order:  Primary: priority. Secondary: syncmaster. Tertiary: syncslave
+	std::priority_queue<LLAudioSource*,std::vector<LLAudioSource*,boost::pool_allocator<LLAudioSource*> >,SourcePriorityComparator> queue;
+
+	//Have to put syncslaves into a temporary list until the syncmaster state is determined.
+	//If the syncmaster might be started, or just looped, insert all pending/looping syncslaves into the priority queue.
+	//If the there is no active syncmaster, then stop any currently looping syncslaves and add none to the priority queue.
+	//This is necessary as any looping soundsources to be stopped, MUST be stopped before iterating down the priority queue.
+	static std::vector<LLAudioSource*> slave_list;	
+	slave_list.clear();
+
 	//Iterate over all sources. Update their decode or 'done' state, as well as their priorities.
-	//Also add sources that might be able to start playing to a priority queue.
-	//Only sources without channels, or are waiting for a syncmaster, should be added to this queue.
-	std::priority_queue<audio_source_t,std::vector<audio_source_t,boost::pool_allocator<audio_source_t> >,SourcePriorityComparator> queue;
+	//Also add sources that might be able to start playing to the priority queue.
+	//Only sources without channels should be added to priority queue.
+	//Syncslaves must put into the slave list instead of the priority queue.
 	for (source_map::iterator iter = mAllSources.begin(); iter != mAllSources.end();)
 	{
 		LLAudioSource *sourcep = iter->second;
@@ -360,34 +372,32 @@ void LLAudioEngine::idle(F32 max_decode_time)
 		{
 			if(!sync_masterp || sourcep->getPriority() > sync_masterp->getPriority())
 			{
+				if(sync_masterp && !sync_masterp->getChannel())
+					queue.push(sync_masterp);	//Add lower-priority soundmaster to the queue as a normal sound.	
 				sync_masterp = sourcep;
+				//Don't add master to the queue yet.
+				//Add it after highest-priority sound slave is found so we can outrank its priority.
+				continue;	
 			}
-			//This is a hack. Don't add master to the queue yet.
-			//Add it after highest-priority sound slave is found so we can outrank its priority.
-			continue;	
+			//Else fall through like a normal sound.
 		}
 		else if(sourcep->isSyncSlave())
 		{
-			//Only care about syncslaves without channel, or are looping.
-			if(!sourcep->getChannel() || sourcep->isLoop() )
+			if(!sync_slavep || sourcep->getPriority() > sync_slavep->getPriority())
 			{
-				if(!sync_slavep || sourcep->getPriority() > sync_slavep->getPriority())
-				{
-					sync_slavep = sourcep;
-				}
+				sync_slavep = sourcep;
 			}
-			else
-			{
-				continue;
-			}
+			//Don't add to the priority queue quite yet. Best primary syncmaster candidate may not have been determined yet.
+			slave_list.push_back(sourcep);
+			continue;
 		}
-		else if(sourcep->getChannel())
+		if(sourcep->getChannel())
 		{
 			//If this is just a regular sound and is currently playing then do nothing special.
 			continue;
 		}
 		//Add to our queue. Highest priority will be at the front.
-		queue.push(std::make_pair(sourcep,sourcep->getPriority()));		
+		queue.push(sourcep);		
 	}
 
 	// Do this BEFORE we update the channels
@@ -395,47 +405,71 @@ void LLAudioEngine::idle(F32 max_decode_time)
 	// such as changing what sound was playing.
 	updateChannels();
 
-	//Syncmaster must have priority greater than or equal to priority of highest priority syncslave.
-	if(sync_masterp && !sync_masterp->getChannel())	
+	//Loop over all syncsaves. If no syncmaster, stop looping ones, else add ones that need [re]started to the priority queue.
+	//Normally there are zero to one syncslaves, so this loop isn't typically expensive.
+	for(std::vector<LLAudioSource*>::iterator iter=slave_list.begin();iter!=slave_list.end();++iter)
 	{
+		if(!sync_masterp)
+		{
+			//Stop any looping syncslaves. I'm not sure this behavior is correct, but letting looping syncslaves run
+			//off on their own seems wrong. The lsl documentation is unclear.
+			if((*iter)->getChannel() && (*iter)->isLoop())
+			{
+				(*iter)->getChannel()->cleanup();
+			}
+		}
+		//If the syncmaster already has a channel and hasn't looped, then we can skip syncslaves this idle tick (there's nothing to do).
+		else if((!sync_masterp->getChannel() || sync_masterp->getChannel()->mLoopedThisFrame))
+		{
+			//Add syncslaves that we might want to [re]start.
+			if(!(*iter)->getChannel() || (*iter)->isLoop())
+				queue.push((*iter));		
+		}
+	}
+
+	if(sync_masterp)	
+	{
+		//Syncmaster must have priority greater than or equal to priority of highest priority syncslave.
 		//The case of slave priority equaling master priority is handled in the comparator (SourcePriorityComparator).
-		//Could have added an arbiturary small value to the priority, but the extra logic in the comparator is more correct.
 		if(sync_slavep)
-			queue.push(std::make_pair(sync_masterp, llmax(sync_slavep->getPriority(), sync_masterp->getPriority())));
-		else
-			queue.push(std::make_pair(sync_masterp, sync_masterp->getPriority()));
+			sync_masterp->setPriority(sync_slavep->getPriority());
+		if(!sync_masterp->getChannel())
+		{
+			queue.push(sync_masterp);
+		}
 	}
 
 	// Dispatch all soundsources.
-	bool syncmaster_started = false;
+	bool syncmaster_started = sync_masterp && sync_masterp->getChannel() && sync_masterp->getChannel()->mLoopedThisFrame;
 	while(!queue.empty())
 	{
-		// This is lame, instead of this I could actually iterate through all the sources
-		// attached to each channel, since only those with active channels
-		// can have anything interesting happen with their queue? (Maybe not true)
-		LLAudioSource *sourcep = queue.top().first;
+		LLAudioSource *sourcep = queue.top();
 		queue.pop();
 
-		if (sourcep->isSyncSlave())
+		//If the syncmaster hasn't just started playing, or hasn't just looped then skip this soundslave,
+		//as there's nothing to do with it yet.
+		if (sourcep->isSyncSlave() && !syncmaster_started)
 		{
-			//If the syncmaster hasn't just started playing, or hasn't just looped then skip this soundslave.
-			if(!sync_masterp || (!syncmaster_started && !(sync_masterp->getChannel() && sync_masterp->getChannel()->mLoopedThisFrame)))
-				continue;
+			continue;
 		}
 
 		LLAudioChannel *channelp = sourcep->getChannel();
 
 		if (!channelp)
 		{
-			if(!(channelp = gAudiop->getFreeChannel(sourcep->getPriority())))
-				continue; //No more channels. Don't abort the whole loop, however. Soundslaves might want to start up!
-
-			//If this is the syncmaster that just started then we need to update non-playing syncslaves.
-			if(sourcep == sync_masterp)
+			//No more channels. We can break here, as in theory, any lower priority sounds should have had their 
+			//channel already stolen. There should be nothing playing, nor playable, when iterating beyond this point.
+			if(!(channelp = getFreeChannel(sourcep->getPriority())))
 			{
-				syncmaster_started = true;
+				break;
 			}
-			channelp->setSource(sourcep);	//setSource calls updateBuffer and update3DPosition, and resets the source mAgeTimer
+
+			//If this is the primary syncmaster that we just started, then [re]start syncslaves further down in the priority queue.
+			//Due to sorting and priority fudgery, the syncmaster is ALWAYS before any syncslaves in this loop.
+			syncmaster_started |= (sourcep == sync_masterp);
+
+			//setSource calls updateBuffer and update3DPosition, and resets the source mAgeTimer
+			channelp->setSource(sourcep);	
 		}
 
 		if(sourcep->isSyncSlave())
@@ -594,7 +628,7 @@ LLAudioChannel * LLAudioEngine::getFreeChannel(const F32 priority)
 		}
 	}
 
-	if (min_priority > priority || !min_channelp)
+	if (!min_channelp || min_priority >= priority)
 	{
 		// All playing channels have higher priority, return.
 		return NULL;
@@ -1411,11 +1445,11 @@ void LLAudioSource::updatePriority()
 {
 	if (isAmbient())
 	{
-		mPriority = 1.f;
+		setPriority(1.f);
 	}
 	else if (isMuted())
 	{
-		mPriority = 0.f;
+		setPriority(0.f);
 	}
 	else
 	{
@@ -1425,7 +1459,7 @@ void LLAudioSource::updatePriority()
 		dist_vec -= gAudiop->getListenerPos();
 		F32 dist_squared = llmax(1.f, dist_vec.magVecSquared());
 
-		mPriority = mGain / dist_squared;
+		setPriority(mGain / dist_squared);
 	}
 }
 
