@@ -527,7 +527,7 @@ void LLFloaterTools::refresh()
 	{
 		F32 link_cost  = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
 		LLStringUtil::format_map_t prim_equiv_args;
-		prim_equiv_args["SEL_WEIGHT"] = llformat("%.1d", (S32)link_cost);
+		prim_equiv_args["SEL_WEIGHT"] = llformat("%.0f", link_cost);
 		selection_args["PE_STRING"] = getString("status_selectprimequiv", prim_equiv_args);
 	}
 	else
