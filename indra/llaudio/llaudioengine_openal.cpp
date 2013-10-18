@@ -189,6 +189,7 @@ void LLAudioChannelOpenAL::cleanup()
 	LLAudioChannel::cleanup();
 	alSourceStop(mALSource);
 	alSourcei(mALSource, AL_BUFFER, AL_NONE);
+	mLastSamplePos = 0;
 }
 
 void LLAudioChannelOpenAL::play()
@@ -338,7 +339,6 @@ void LLAudioBufferOpenAL::cleanup()
 			LL_WARNS("OpenAL") << "Error: " << alutGetErrorString( error ) << " when cleaning up a buffer" << LL_ENDL;
 		}
 		mALBuffer = AL_NONE;
-		mLastSamplePos = 0;
 	}
 }
 
