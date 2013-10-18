@@ -63,8 +63,6 @@ public:
 	void onClickOwnerProfile();
 	void onSelectObject();
 
-	static void onGetAvNameCallback(const LLUUID& idCreator, const LLAvatarName& av_name, void* FloaterPtr);
-
 	LLScrollListCtrl* mObjectList;
 protected:
 	// protected members
@@ -77,8 +75,6 @@ protected:
 private:
 	LLFloaterInspect();
 	virtual ~LLFloaterInspect(void);
-	// static data
-//	static LLFloaterInspect* sInstance;
 
 	LLSafeHandle<LLObjectSelection> mObjectSelection;
 	// <edit>
