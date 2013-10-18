@@ -438,7 +438,7 @@ void LLPostProcess::createNoiseTexture()
 	if(mNoiseTexture->createGLTexture())
 	{
 		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseTexture->getTexName());
-		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_LUMINANCE, NOISE_SIZE, NOISE_SIZE, GL_LUMINANCE, GL_UNSIGNED_BYTE, &buffer[0]);
+		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_RED, NOISE_SIZE, NOISE_SIZE, GL_RED, GL_UNSIGNED_BYTE, &buffer[0]);
 		stop_glerror();
 		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
 		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_WRAP);
