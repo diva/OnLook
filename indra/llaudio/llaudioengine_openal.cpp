@@ -189,6 +189,7 @@ void LLAudioChannelOpenAL::cleanup()
 	LLAudioChannel::cleanup();
 	alSourceStop(mALSource);
 	alSourcei(mALSource, AL_BUFFER, AL_NONE);
+	mLastSamplePos = 0;
 }
 
 void LLAudioChannelOpenAL::play()
@@ -199,11 +200,13 @@ void LLAudioChannelOpenAL::play()
 		return;
 	}
 
-	if(!isPlaying())
+	if(isPlaying())
 	{
-		alSourcePlay(mALSource);
-		getSource()->setPlayedOnce(true);
+		alSourceStop(mALSource);
 	}
+
+	alSourcePlay(mALSource);
+	getSource()->setPlayedOnce(true);
 }
 
 void LLAudioChannelOpenAL::playSynced(LLAudioChannel *channelp)

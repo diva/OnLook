@@ -590,6 +590,7 @@ void LLAudioChannelFMOD::cleanup()
 	}
 
 	mChannelID = 0;
+	mLastSamplePos = 0;
 }
 
 
@@ -599,6 +600,12 @@ void LLAudioChannelFMOD::play()
 	{
 		llwarns << "Playing without a channelID, aborting" << llendl;
 		return;
+	}
+	
+	if(!FSOUND_IsPaused(mChannelID))
+	{
+		FSOUND_SetPaused(mChannelID, true);
+		FSOUND_SetCurrentPosition(mChannelID, 0);
 	}
 
 	if (!FSOUND_SetPaused(mChannelID, false))

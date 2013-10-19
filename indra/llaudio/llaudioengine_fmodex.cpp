@@ -810,6 +810,7 @@ void LLAudioChannelFMODEX::cleanup()
 	Check_FMOD_Error(mChannelp->stop(),"FMOD::Channel::stop");
 
 	mChannelp = NULL;
+	mLastSamplePos = 0;
 }
 
 
@@ -823,6 +824,13 @@ void LLAudioChannelFMODEX::play()
 
 	gSoundCheck.assertActiveState(this,true);
 
+	bool paused=true;
+	Check_FMOD_Error(mChannelp->getPaused(&paused), "FMOD::Channel::getPaused");
+	if(!paused)
+	{
+		Check_FMOD_Error(mChannelp->setPaused(true), "FMOD::Channel::setPaused");
+		Check_FMOD_Error(mChannelp->setPosition(0,FMOD_TIMEUNIT_PCMBYTES), "FMOD::Channel::setPosition");
+	}
 	Check_FMOD_Error(mChannelp->setPaused(false), "FMOD::Channel::setPaused");
 
 	if(sVerboseDebugging)

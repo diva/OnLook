@@ -138,7 +138,7 @@ namespace HACD
             if (m_callBack)
             {
                 char msg[1024];
-                sprintf(msg, "nCC %lu\n", m_graph.m_nCCs);
+                sprintf(msg, "nCC %zu\n", m_graph.m_nCCs);
                 (*m_callBack)(msg, 0.0, 0.0,  m_graph.GetNVertices());
                 
             }
@@ -879,7 +879,7 @@ namespace HACD
                 if (m_callBack) 
                 {
                     char msg[1024];
-                    sprintf(msg, "\t CH(%zu) \t %zu \t %lf \t %zu \t %f \t %zu\n", v, static_cast<unsigned long>(p), m_graph.m_vertices[v].m_concavity, m_graph.m_vertices[v].m_distPoints.Size(),  m_graph.m_vertices[v].m_surf*100.0/m_area, m_graph.m_vertices[v].m_ancestors.size());
+                    sprintf(msg, "\t CH(%zu) \t %zu \t %lf \t %zu \t %f \t %zu\n", v, p, m_graph.m_vertices[v].m_concavity, m_graph.m_vertices[v].m_distPoints.Size(),  m_graph.m_vertices[v].m_surf*100.0/m_area, m_graph.m_vertices[v].m_ancestors.size());
 					(*m_callBack)(msg, 0.0, 0.0, m_nClusters);
 					p++;
                 }

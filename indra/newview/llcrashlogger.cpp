@@ -40,7 +40,10 @@
 #include "llhttpclient.h"
 #include "llsdserialize.h"
 #include "llproxy.h"
+#include "llwindow.h"
+#include "lltrans.h"
 #include "aistatemachine.h"
+#include "boost/filesystem.hpp"
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
@@ -142,6 +145,36 @@ std::string getStartupStateFromLog(std::string& sllog)
 	startup_state = state_line.substr(state_index + 4, state_line.length() - state_index - 4);
 
 	return startup_state;
+}
+
+bool miniDumpExists(const std::string& dumpDir)
+{
+	bool found = false;
+
+	try
+	{
+		if (!boost::filesystem::exists(dumpDir))
+		{
+			return false;
+		}
+
+		boost::filesystem::directory_iterator end_itr;
+		for (boost::filesystem::directory_iterator i(dumpDir); i != end_itr; ++i)
+		{
+			if (!boost::filesystem::is_regular_file(i->status())) continue;
+			if (".dmp" == i->path().extension())
+			{
+				found = true;
+				break;
+			}
+		}
+	}
+	catch (const boost::filesystem::filesystem_error& e)
+	{
+		llwarns << "Failed to determine existance of the minidump file: '" + e.code().message() +"'" << llendl;
+	}
+
+	return found;
 }
 
 bool LLCrashLogger::readDebugFromXML(LLSD& dest, const std::string& filename )
@@ -350,20 +383,29 @@ bool LLCrashLogger::sendCrashLog(std::string dump_dir)
 
 void LLCrashLogger::checkCrashDump()
 {
-	mCrashHost = gSavedSettings.getString("CrashHostUrl");
-
-	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
-	if (gDirUtilp->fileExists(dumpDir))
-	{
 #if LL_SEND_CRASH_REPORTS
-		if (!mCrashHost.empty() && gSavedSettings.getS32("CrashSubmitBehavior") != 2)
+	// 0 - ask, 1 - always send, 2 - never send
+	S32 pref = gSavedSettings.getS32("CrashSubmitBehavior"); 
+	if (pref == 2) return; //never send
+
+	mCrashHost = gSavedSettings.getString("CrashHostUrl");
+	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
+
+	// Do we have something to send, and somewhere to send it
+	if (!mCrashHost.empty() && miniDumpExists(dumpDir))
+	{
+		if (pref == 1) // always send
 		{
 			sendCrashLog(dumpDir);
 		}
+		else // ask
+		{
+			U32 response = OSMessageBox(LLTrans::getString("MBFrozenCrashed"), LLTrans::getString("MBAlert"), OSMB_YESNO);
+			if (response == OSBTN_YES)
+			{
+				sendCrashLog(dumpDir);
+			}
+		}
+	}
 #endif
-	}
-	else
-	{
-		llinfos << "No crash dump found frome previous run, not sending report" << LL_ENDL;
-	}
 }

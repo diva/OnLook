@@ -316,6 +316,7 @@ public:
 	LLVector3d getPositionGlobal() const							{ return mPositionGlobal; }
 	LLVector3 getVelocity()	const									{ return mVelocity; }				
 	F32 getPriority() const											{ return mPriority; }
+	void setPriority(F32 priority)									{ mPriority = priority; }
 
 	// Gain should always be clamped between 0 and 1.
 	F32 getGain() const												{ return mGain; }

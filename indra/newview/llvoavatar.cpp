@@ -1238,7 +1238,7 @@ void LLVOAvatar::deleteLayerSetCaches(bool clearAll)
 		}
 		if (mBakedTextureDatas[i].mMaskTexName)
 		{
-			LLImageGL::deleteTextures(LLTexUnit::TT_TEXTURE, 0, -1, 1, (GLuint*)&(mBakedTextureDatas[i].mMaskTexName));
+			LLImageGL::deleteTextures(1, (GLuint*)&(mBakedTextureDatas[i].mMaskTexName));
 			mBakedTextureDatas[i].mMaskTexName = 0 ;
 		}
 	}
@@ -2529,11 +2529,19 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 		{{
 				LLViewerJointAttachment* attachment = attachment_iter->second;
 				LLViewerObject* attached_object = attachment_iter->first;
-				BOOL visibleAttachment = visible || (attached_object && attached_object->mDrawable.notNull() &&
-													!(attached_object->mDrawable->getSpatialBridge() &&
-													  attached_object->mDrawable->getSpatialBridge()->getRadius() < 2.0));
 
-				if (visibleAttachment && attached_object && attached_object->mDrawable && !attached_object->isDead() && attachment->getValid())
+				if(	!attached_object || 
+					attached_object->isDead() ||
+					!attached_object->mDrawable ||
+					!attachment ||
+					!attachment->getValid())
+					continue;
+					
+				BOOL visibleAttachment =	visible || 
+											!attached_object->mDrawable->getSpatialBridge() || 
+											attached_object->mDrawable->getSpatialBridge()->getRadius() >= 2.f;
+				
+				if (visibleAttachment)
 				{
 					// if selecting any attachments, update all of them as non-damped
 					if (LLSelectMgr::getInstance()->getSelection()->getObjectCount() && LLSelectMgr::getInstance()->getSelection()->isAttachment())
@@ -8136,7 +8144,7 @@ void LLVOAvatar::onBakedTextureMasksLoaded( BOOL success, LLViewerFetchedTexture
 			}
 
 			U32 gl_name;
-			LLImageGL::generateTextures(LLTexUnit::TT_TEXTURE, GL_ALPHA8, 1, &gl_name );
+			LLImageGL::generateTextures(1, &gl_name );
 			stop_glerror();
 
 			gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, gl_name);
@@ -8173,7 +8181,7 @@ void LLVOAvatar::onBakedTextureMasksLoaded( BOOL success, LLViewerFetchedTexture
 						maskData->mLastDiscardLevel = discard_level;
 						if (self->mBakedTextureDatas[baked_index].mMaskTexName)
 						{
-							LLImageGL::deleteTextures(LLTexUnit::TT_TEXTURE, 0, -1, 1, &(self->mBakedTextureDatas[baked_index].mMaskTexName));
+							LLImageGL::deleteTextures(1, &(self->mBakedTextureDatas[baked_index].mMaskTexName));
 						}
 						self->mBakedTextureDatas[baked_index].mMaskTexName = gl_name;
 						found_texture_id = true;

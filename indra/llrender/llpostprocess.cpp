@@ -407,13 +407,13 @@ void LLPostProcess::createScreenTextures()
 	stop_glerror();
 
 	if(mDepthTexture)
-		LLImageGL::deleteTextures(type, 0, 0, 1, &mDepthTexture, true);
+		LLImageGL::deleteTextures(1, &mDepthTexture);
 
 	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
 		if((*it)->getDepthChannel()>=0)
 		{
-			LLImageGL::generateTextures(type, GL_DEPTH_COMPONENT24, 1, &mDepthTexture);
+			LLImageGL::generateTextures(1, &mDepthTexture);
 			gGL.getTexUnit(0)->bindManual(type, mDepthTexture);
 			LLImageGL::setManualImage(LLTexUnit::getInternalType(type), 0, GL_DEPTH_COMPONENT24, mScreenWidth, mScreenHeight, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL, false);
 			stop_glerror();
@@ -438,7 +438,7 @@ void LLPostProcess::createNoiseTexture()
 	if(mNoiseTexture->createGLTexture())
 	{
 		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseTexture->getTexName());
-		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_LUMINANCE, NOISE_SIZE, NOISE_SIZE, GL_LUMINANCE, GL_UNSIGNED_BYTE, &buffer[0]);
+		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_RED, NOISE_SIZE, NOISE_SIZE, GL_RED, GL_UNSIGNED_BYTE, &buffer[0]);
 		stop_glerror();
 		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
 		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_WRAP);
@@ -451,7 +451,7 @@ void LLPostProcess::destroyGL()
 	mRenderTarget[0].release();
 	mRenderTarget[1].release();
 	if(mDepthTexture)
-		LLImageGL::deleteTextures(LLTexUnit::TT_RECT_TEXTURE, 0, 0, 1, &mDepthTexture, true);
+		LLImageGL::deleteTextures(1, &mDepthTexture);
 	mDepthTexture=0;
 	mNoiseTexture = NULL ;
 	mVBO = NULL ;
