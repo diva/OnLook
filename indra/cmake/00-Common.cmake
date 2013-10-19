@@ -78,11 +78,15 @@ if (WINDOWS)
       /W3
       /c
       /Zc:forScope
-	  /Zc:wchar_t-
+	    /Zc:wchar_t-
       /nologo
       /Oy-
-	  /arch:SSE2
       )
+  
+  # SSE2 is implied on win64
+  if (WORD_SIZE EQUAL 32)
+    add_definitions(/arch:SSE2)
+  endif (WORD_SIZE EQUAL 32)
 
   # configure win32 API for windows XP+ compatibility
   set(WINVER "0x0501" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
