@@ -184,7 +184,7 @@ LLMutex* LLFastTimer::sLogLock = NULL;
 std::queue<LLSD> LLFastTimer::sLogQueue;
 const int LLFastTimer::NamedTimer::HISTORY_NUM = 300;
 
-#if LL_WINDOWS
+#if defined(LL_WINDOWS) && !defined(_WIN64)
 #define USE_RDTSC 1
 #endif
 
