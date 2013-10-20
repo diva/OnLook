@@ -1437,11 +1437,7 @@ set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
     "Add a package target that builds an installer package.")
 
 if (WINDOWS)
-    if(MSVC10)
-        set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
-    else(MSVC10)
-        set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
-    endif(MSVC10)
+    set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
 
     if (FMOD)
         if(MANIFEST_LIBRARIES)
@@ -1451,12 +1447,18 @@ if (WINDOWS)
         endif(MANIFEST_LIBRARIES)
     endif (FMOD)
     if (FMODEX)
+	if (WORD_SIZE EQUAL 32)
+	    set(fmodex_dll_file "fmodex.dll")
+	else (WORD_SIZE EQUAL 32)
+	    set(fmodex_dll_file "fmodex64.dll")
+	endif (WORD_SIZE EQUAL 32)
+
         if(MANIFEST_LIBRARIES)
-       	    set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/fmodex.dll")
+       	    set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/${fmodex_dll_file}")
         else(MANIFEST_LIBRARIES)
-            set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/fmodex.dll")
+            set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/${fmodex_dll_file}")
         endif(MANIFEST_LIBRARIES)
-        set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
+        set(EXTRA_LINKER_FLAGS "/DELAYLOAD:${fmodex_dll_file}")
     endif (FMODEX)
 
     set_target_properties(${VIEWER_BINARY_NAME}
@@ -1886,6 +1888,8 @@ if (WINDOWS)
       COMMENT "Copying SLPlugin executable to the runtime folder."
       )
 
+# Singu TODO::WIN64
+  if(WORD_SIZE EQUAL 32)
   get_target_property(BUILT_WEBKIT_PLUGIN media_plugin_webkit LOCATION)
     add_custom_command(
         TARGET ${VIEWER_BINARY_NAME} POST_BUILD
@@ -1897,6 +1901,7 @@ if (WINDOWS)
           ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
         COMMENT "Copying WebKit Plugin to the runtime folder."
         )
+  endif(WORD_SIZE EQUAL 32)
 
   get_target_property(BUILT_QUICKTIME_PLUGIN media_plugin_quicktime LOCATION)
     add_custom_command(
@@ -1910,7 +1915,7 @@ if (WINDOWS)
         COMMENT "Copying Quicktime Plugin to the runtime folder."
         )
 
-	get_target_property(BUILT_FILEPICKER_PLUGIN basic_plugin_filepicker LOCATION)
+  get_target_property(BUILT_FILEPICKER_PLUGIN basic_plugin_filepicker LOCATION)
     add_custom_command(
         TARGET ${VIEWER_BINARY_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND}
@@ -1922,7 +1927,9 @@ if (WINDOWS)
         COMMENT "Copying filepicker Plugin to the runtime folder."
         )
 
-	get_target_property(BUILT_WINMM_SHIM_PLUGIN winmm_shim LOCATION)
+# winmm doesn't build on windows 64
+  if(WORD_SIZE EQUAL 32)
+  get_target_property(BUILT_WINMM_SHIM_PLUGIN winmm_shim LOCATION)
     add_custom_command(
         TARGET ${VIEWER_BINARY_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND}
@@ -1933,6 +1940,8 @@ if (WINDOWS)
           ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
         COMMENT "Copying winmm.dll to the runtime folder."
         )
+  endif(WORD_SIZE EQUAL 32)
+
   # Copying the mime_types.xml file to app_settings
   set(mime_types_source "${CMAKE_SOURCE_DIR}/newview/skins/default/xui/en-us")
   set(mime_types_dest "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/app_settings")

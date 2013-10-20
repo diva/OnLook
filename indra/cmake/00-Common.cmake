@@ -46,6 +46,10 @@ if (WINDOWS)
     set(MSVC_DIR 10.0)
     set(MSVC_SUFFIX 100)
   endif (MSVC10)
+  if (MSVC11)
+    set(MSVC_DIR 11.0)
+    set(MSVC_SUFFIX 110)
+  endif (MSVC11)
 
   # Remove default /Zm1000 flag that cmake inserts
   string (REPLACE "/Zm1000" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

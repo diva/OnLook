@@ -6,6 +6,14 @@
 
 include(CMakeCopyIfDifferent)
 
+#if (WORD_SIZE EQUAL 32)
+#    set(debug_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
+#    set(release_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
+#else (WORD_SIZE EQUAL 32)
+    set(debug_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/x86_64-win/lib/debug")
+    set(release_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/x86_64-win/lib/release")
+#endif WORD_SIZE EQUAL 32)
+
 set(vivox_src_dir "${CMAKE_SOURCE_DIR}/newview/vivox-runtime/i686-win32")
 set(vivox_files
     SLVoice.exe
@@ -23,7 +31,7 @@ copy_if_different(
 set(all_targets ${all_targets} ${out_targets})
 
 
-set(debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
+set(debug_src_dir "${debug_libs_dir}")
 set(debug_files
     libhunspell.dll
     libapr-1.dll
@@ -42,6 +50,9 @@ copy_if_different(
     ${debug_files}
     )
 set(all_targets ${all_targets} ${out_targets})
+
+# Singu TODO::WIN64
+if (WORD_SIZE EQUAL 32)
 
 # Debug config runtime files required for the plugin test mule
 set(plugintest_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
@@ -203,9 +214,12 @@ copy_if_different(
     )
 set(all_targets ${all_targets} ${out_targets})
 
-set(release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
+endif (WORD_SIZE EQUAL 32)
+# /Singu TODO::WIN64
+
+set(release_src_dir "${release_libs_dir}")
 set(release_files
-    libtcmalloc_minimal.dll
+#    libtcmalloc_minimal.dll
     libhunspell.dll
     libapr-1.dll
     libaprutil-1.dll
@@ -217,7 +231,13 @@ set(release_files
     )
 
 if(FMODEX)
-    find_path(FMODEX_BINARY_DIR fmodex.dll
+    if (WORD_SIZE EQUAL 32)
+        set(fmodex_dll_file "fmodex.dll")
+    else (WORD_SIZE EQUAL 32)
+        set(fmodex_dll_file "fmodex64.dll")
+    endif (WORD_SIZE EQUAL 32)
+    
+    find_path(FMODEX_BINARY_DIR "${fmodex_dll_file}"
           "${release_src_dir}"
           "${FMODEX_SDK_DIR}/api"
           "${FMODEX_SDK_DIR}"
@@ -225,11 +245,11 @@ if(FMODEX)
           )
 
     if(FMODEX_BINARY_DIR)
-        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmodex.dll)
+        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets "${fmodex_dll_file}")
         set(all_targets ${all_targets} ${out_targets})
-        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmodex.dll)
+        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets "${fmodex_dll_file}")
         set(all_targets ${all_targets} ${out_targets})
-        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets fmodex.dll)
+        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets "${fmodex_dll_file}")
         set(all_targets ${all_targets} ${out_targets})
     endif(FMODEX_BINARY_DIR)
 endif(FMODEX)
