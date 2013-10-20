@@ -844,7 +844,7 @@
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>4c6600c70c1075fca2343fcd21b35cfe</string>
+            <string>79e328b10fae2090262c0bf02c9c5f71</string>
             <key>url</key>
             <uri>https://files.streamgrid.net/win64/singularity/jpeglib-8c-windows64-20131020.tar.bz2</uri>
           </map>
@@ -938,7 +938,7 @@
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>9d2b32caa8b91ccb5c46be6a53eb071b</string>
+            <string>00fc7bcb4016ecc57def9e3b3223d977</string>
             <key>url</key>
             <uri>https://files.streamgrid.net/win64/singularity/libpng-1.5.10-windows64-20131020.tar.bz2</uri>
           </map>
