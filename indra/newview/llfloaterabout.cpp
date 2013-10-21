@@ -136,6 +136,9 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// Version string
 	std::string version = std::string(LLAppViewer::instance()->getSecondLifeTitle()
+#if defined(_WIN64) || defined(__x86_64__)
+		+ " (64 bit)"
+#endif
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
 		gVersionMajor, gVersionMinor, gVersionPatch, LL_VIEWER_BUILD,
 		__DATE__, __TIME__,
