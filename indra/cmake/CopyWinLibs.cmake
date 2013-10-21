@@ -51,11 +51,8 @@ copy_if_different(
     )
 set(all_targets ${all_targets} ${out_targets})
 
-# Singu TODO::WIN64
-if (WORD_SIZE EQUAL 32)
-
 # Debug config runtime files required for the plugin test mule
-set(plugintest_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
+set(plugintest_debug_src_dir "${debug_libs_dir}")
 set(plugintest_debug_files
     libeay32.dll
     qtcored4.dll
@@ -74,7 +71,7 @@ copy_if_different(
 set(all_targets ${all_targets} ${out_targets})
 
 # Debug config runtime files required for the plugin test mule (Qt image format plugins)
-set(plugintest_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug/imageformats")
+set(plugintest_debug_src_dir "${debug_libs_dir}/imageformats")
 set(plugintest_debug_files
     qgifd4.dll
     qicod4.dll
@@ -100,7 +97,7 @@ copy_if_different(
 set(all_targets ${all_targets} ${out_targets})
 
 # Release & ReleaseDebInfo config runtime files required for the plugin test mule
-set(plugintest_release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
+set(plugintest_release_src_dir "${release_libs_dir}")
 set(plugintest_release_files
     libeay32.dll
     qtcore4.dll
@@ -127,7 +124,7 @@ copy_if_different(
 set(all_targets ${all_targets} ${out_targets})
 
 # Release & ReleaseDebInfo config runtime files required for the plugin test mule (Qt image format plugins)
-set(plugintest_release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release/imageformats")
+set(plugintest_release_src_dir "${release_libs_dir}/imageformats")
 set(plugintest_release_files
     qgif4.dll
     qico4.dll
@@ -169,7 +166,7 @@ copy_if_different(
 set(all_targets ${all_targets} ${out_targets})
 
 # Debug config runtime files required for the plugins
-set(plugins_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
+set(plugins_debug_src_dir "${debug_libs_dir}")
 set(plugins_debug_files
     libeay32.dll
     qtcored4.dll
@@ -188,7 +185,7 @@ copy_if_different(
 set(all_targets ${all_targets} ${out_targets})
 
 # Release & ReleaseDebInfo config runtime files required for the plugins
-set(plugins_release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
+set(plugins_release_src_dir "${release_libs_dir}")
 set(plugins_release_files
     libeay32.dll
     qtcore4.dll
@@ -214,8 +211,6 @@ copy_if_different(
     )
 set(all_targets ${all_targets} ${out_targets})
 
-endif (WORD_SIZE EQUAL 32)
-# /Singu TODO::WIN64
 
 set(release_src_dir "${release_libs_dir}")
 set(release_files

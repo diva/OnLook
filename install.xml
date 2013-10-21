@@ -1029,9 +1029,9 @@
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>ccb96fa1260ef6c3060d407b8c6b3972</string>
+            <string>cf9e5d1d79531a7e4d45f78657da9c9b</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.7.1-windows-20120228.tar.bz2</uri>
+            <uri>https://files.streamgrid.net/win64/singularity/llqtwebkit-4.7.1-windows64-20131021.tar.bz2</uri>
           </map>
         </map>
       </map>

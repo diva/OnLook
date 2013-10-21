@@ -1888,8 +1888,6 @@ if (WINDOWS)
       COMMENT "Copying SLPlugin executable to the runtime folder."
       )
 
-# Singu TODO::WIN64
-  if(WORD_SIZE EQUAL 32)
   get_target_property(BUILT_WEBKIT_PLUGIN media_plugin_webkit LOCATION)
     add_custom_command(
         TARGET ${VIEWER_BINARY_NAME} POST_BUILD
@@ -1901,7 +1899,6 @@ if (WINDOWS)
           ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
         COMMENT "Copying WebKit Plugin to the runtime folder."
         )
-  endif(WORD_SIZE EQUAL 32)
 
   get_target_property(BUILT_QUICKTIME_PLUGIN media_plugin_quicktime LOCATION)
     add_custom_command(
