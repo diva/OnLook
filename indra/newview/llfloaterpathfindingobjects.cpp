@@ -397,14 +397,11 @@ void LLFloaterPathfindingObjects::addObjectToScrollList(const LLPathfindingObjec
 	}
 
 	LLScrollListItem *scrollListItem = mObjectsScrollList->addElement(rowParams);
-// Singu TODO::WIN64 
-#if !defined(_WIN64)
 	if (pObjectPtr->hasOwner() && !pObjectPtr->hasOwnerName())
 	{
-		mMissingNameObjectsScrollListItems.insert(std::make_pair<std::string, LLScrollListItem *>(pObjectPtr->getUUID().asString(), scrollListItem));
+		mMissingNameObjectsScrollListItems.insert(std::make_pair(pObjectPtr->getUUID().asString(), scrollListItem));
 		pObjectPtr->registerOwnerNameListener(boost::bind(&LLFloaterPathfindingObjects::handleObjectNameResponse, this, _1));
 	}
-#endif
 }
 
 void LLFloaterPathfindingObjects::updateControlsOnScrollListChange()
