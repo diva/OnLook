@@ -6,13 +6,13 @@
 
 include(CMakeCopyIfDifferent)
 
-#if (WORD_SIZE EQUAL 32)
-#    set(debug_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
-#    set(release_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
-#else (WORD_SIZE EQUAL 32)
+if(WORD_SIZE EQUAL 32)
+    set(debug_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
+    set(release_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
+else(WORD_SIZE EQUAL 32)
     set(debug_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/x86_64-win/lib/debug")
     set(release_libs_dir "${CMAKE_SOURCE_DIR}/../libraries/x86_64-win/lib/release")
-#endif WORD_SIZE EQUAL 32)
+endif(WORD_SIZE EQUAL 32)
 
 set(vivox_src_dir "${CMAKE_SOURCE_DIR}/newview/vivox-runtime/i686-win32")
 set(vivox_files
@@ -214,7 +214,6 @@ set(all_targets ${all_targets} ${out_targets})
 
 set(release_src_dir "${release_libs_dir}")
 set(release_files
-#    libtcmalloc_minimal.dll
     libhunspell.dll
     libapr-1.dll
     libaprutil-1.dll
@@ -224,6 +223,13 @@ set(release_files
     libcollada14dom22.dll
     glod.dll
     )
+
+if(WORD_SIZE EQUAL 32)
+    set(release_files ${release_files}
+    libtcmalloc_minimal.dll
+    )
+endif(WORD_SIZE EQUAL 32)
+
 
 if(FMODEX)
     if (WORD_SIZE EQUAL 32)

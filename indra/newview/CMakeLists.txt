@@ -1516,6 +1516,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+	  --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --branding_id=${VIEWER_BRANDING_ID}
           --build=${CMAKE_CURRENT_BINARY_DIR}
@@ -1537,6 +1538,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+	  --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --actions=copy
           --branding_id=${VIEWER_BRANDING_ID}
