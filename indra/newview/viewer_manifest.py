@@ -305,11 +305,16 @@ class WindowsManifest(ViewerManifest):
         if not self.is_win64():
             self.path(release_lib_dir+"/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
 
+        #try:
+        #    if self.prefix(release_lib_dir+"/msvcrt", dst=""):
+        #        self.path("*.dll")
+        #        self.path("*.manifest")
+        #        self.end_prefix()
+        #except:
+        #    pass
+        
         try:
-            if self.prefix(release_lib_dir+"/msvcrt", dst=""):
-                self.path("*.dll")
-                self.path("*.manifest")
-                self.end_prefix()
+            self.path("msvc*.dll")
         except:
             pass
 
