@@ -47,6 +47,8 @@ include(LLAppearance)
 
 if (WINDOWS)
     include(CopyWinLibs)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP)
+    include(InstallRequiredSystemLibraries)
 endif (WINDOWS)
 
 include_directories(
@@ -1858,6 +1860,21 @@ endif (LL_TESTS)
 
 # Don't do these for DARWIN or LINUX here -- they're taken care of by viewer_manifest.py
 if (WINDOWS)
+
+  IF(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+    FOREACH(RUNTIME_LIB ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
+      add_custom_command(
+	  TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+	  COMMAND ${CMAKE_COMMAND}
+	  ARGS
+	  -E
+	  copy_if_different
+	  ${RUNTIME_LIB}
+	  ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
+	  COMMENT "Copying ${RUNTIME_LIB} to the runtime folder."
+	  )
+    ENDFOREACH(RUNTIME_LIB ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
+  ENDIF(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
 
   get_target_property(BUILT_LLCOMMON llcommon LOCATION)
 

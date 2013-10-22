@@ -88,9 +88,11 @@ if (WINDOWS)
       )
   
   # SSE2 is implied on win64
-  if (WORD_SIZE EQUAL 32)
+  if(WORD_SIZE EQUAL 32)
     add_definitions(/arch:SSE2)
-  endif (WORD_SIZE EQUAL 32)
+  else(WORD_SIZE EQUAL 32)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4267 /wd4250 /wd4244")
+  endif(WORD_SIZE EQUAL 32)
 
   # configure win32 API for windows XP+ compatibility
   set(WINVER "0x0501" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
