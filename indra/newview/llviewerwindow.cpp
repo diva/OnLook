@@ -2693,12 +2693,9 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 	}
 
 	// HACK look for UI editing keys
-	if (LLView::sEditingUI)
+	if (LLView::sEditingUI && LLFloaterEditUI::processKeystroke(key, mask))
 	{
-		if (LLFloaterEditUI::processKeystroke(key, mask))
-		{
-			return TRUE;
-		}
+		return TRUE;
 	}
 
 	// Explicit hack for debug menu.
@@ -2709,31 +2706,6 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		toggle_debug_menus(NULL);
 	}
 
-		// Explicit hack for debug menu.
-	//Singu note: We do not use the ForceShowGrid setting. Grid selection should always be visible.
-	/*if ((mask == (MASK_SHIFT | MASK_CONTROL)) && 
-		('G' == key || 'g' == key))
-	{
-		if  (LLStartUp::getStartupState() < STATE_LOGIN_CLEANUP)  //on splash page
-		{
-			BOOL visible = ! gSavedSettings.getBOOL("ForceShowGrid");
-			gSavedSettings.setBOOL("ForceShowGrid", visible);
-
-			// Initialize visibility (and don't force visibility - use prefs)
-			LLPanelLogin::updateLocationSelectorsVisibility();
-		}
-	}*/
-
-	// Debugging view for unified notifications: CTRL-SHIFT-5
-	// *FIXME: Having this special-cased right here (just so this can be invoked from the login screen) sucks.
-	if ((MASK_SHIFT & mask) 
-		&& (!(MASK_ALT & mask))
-		&& (MASK_CONTROL & mask)
-		&& ('5' == key))
-	{
-		LLFloaterNotificationConsole::showInstance();
-		return TRUE;
-	}
 
 	// handle shift-escape key (reset camera view)
 	if (key == KEY_ESCAPE && mask == MASK_SHIFT)
@@ -2742,18 +2714,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		return TRUE;
 	}
 
-	// handle escape key
-	//if (key == KEY_ESCAPE && mask == MASK_NONE)
-	//{
 
-		// *TODO: get this to play well with mouselook and hidden
-		// cursor modes, etc, and re-enable.
-		//if (gFocusMgr.getMouseCapture())
-		//{
-		//	gFocusMgr.setMouseCapture(NULL);
-		//	return TRUE;
-		//}
-	//}
 
 	// let menus handle navigation keys
 	if (gMenuBarView && gMenuBarView->handleKey(key, mask, TRUE))
@@ -2778,10 +2739,13 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 			if (gChatBar->getCurrentChat().empty()
 				|| gSavedSettings.getBOOL("ArrowKeysMoveAvatar"))
 			{
-				// Singu Note: We do this differently from LL to preserve the Ctrl-<Any ArrowKey> behavior in the chatbar
+				/* Singu Note: We do this differently from LL to preserve the Ctrl-<Any ArrowKey> behavior in the chatbar, and we don't need alt because we're not CHUI
 				// let Control-Up and Control-Down through for chat line history,
-				//if (!(key == KEY_UP && mask == MASK_CONTROL)
-				//	&& !(key == KEY_DOWN && mask == MASK_CONTROL))
+				if (!(key == KEY_UP && mask == MASK_CONTROL)
+					&& !(key == KEY_DOWN && mask == MASK_CONTROL)
+					&& !(key == KEY_UP && mask == MASK_ALT)
+					&& !(key == KEY_DOWN && mask == MASK_ALT))
+				*/
 				{
 					switch(key)
 					{
@@ -2803,6 +2767,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 				}
 			}
 		}
+
 		if (keyboard_focus->handleKey(key, mask, FALSE))
 		{
 			return TRUE;
@@ -2826,17 +2791,6 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 	{
 		return TRUE;
 	}
-
-	// Topmost view gets a chance before the hierarchy
-	// *FIX: get rid of this?
-	//LLUICtrl* top_ctrl = gFocusMgr.getTopCtrl();
-	//if (top_ctrl)
-	//{
-	//	if( top_ctrl->handleKey( key, mask, TRUE ) )
-	//	{
-	//		return TRUE;
-	//	}
-	//}
 
 	// give floaters first chance to handle TAB key
 	// so frontmost floater gets focus
