@@ -2720,6 +2720,29 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		return TRUE;
 	}
 
+	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
+
+	/*
+	// give menus a chance to handle modified (Ctrl, Alt) shortcut keys before current focus
+	// as long as focus isn't locked
+	if (mask & (MASK_CONTROL | MASK_ALT) && !gFocusMgr.focusLocked())
+	{
+		// Check the current floater's menu first, if it has one.
+		if (gFocusMgr.keyboardFocusHasAccelerators()
+			&& keyboard_focus
+			&& keyboard_focus->handleKey(key,mask,FALSE))
+		{
+			return TRUE;
+		}
+
+		if ((gMenuBarView && gMenuBarView->handleAcceleratorKey(key, mask))
+			|| (gLoginMenuBarView && gLoginMenuBarView->handleAcceleratorKey(key, mask)))
+		{
+			return TRUE;
+		}
+	}
+	*/
+
 	// give floaters first chance to handle TAB key
 	// so frontmost floater gets focus
 	// if nothing has focus, go to first or last UI element as appropriate
@@ -2741,9 +2764,15 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		}
 		return TRUE;
 	}
+	/* Singu TODO: gEditMenu?
+	// hidden edit menu for cut/copy/paste
+	if (gEditMenu && gEditMenu->handleAcceleratorKey(key, mask))
+	{
+		return TRUE;
+	}
+	*/
 
 	// Traverses up the hierarchy
-	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
 	if( keyboard_focus )
 	{
 		// arrow keys move avatar while chatting hack
@@ -2807,9 +2836,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		return TRUE;
 	}
 
-
-	
-	// give menus a chance to handle keys
+	// give menus a chance to handle unmodified accelerator keys
 	if ((gMenuBarView && gMenuBarView->handleAcceleratorKey(key, mask))
 		||(gLoginMenuBarView && gLoginMenuBarView->handleAcceleratorKey(key, mask)))
 	{
