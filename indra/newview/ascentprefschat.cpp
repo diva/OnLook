@@ -297,6 +297,7 @@ void LLPrefsAscentChat::refreshValues()
 	mOneLineConfButt                = gSavedSettings.getBOOL("UseConciseConferenceButtons");
 	mOnlyComm                       = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 	mItalicizeActions               = gSavedSettings.getBOOL("LiruItalicizeActions");
+	mLegacyLogLaunch                = gSavedSettings.getBOOL("LiruLegacyLogLaunch");
 	mLegacySpeakerNames             = gSavedSettings.getBOOL("LiruLegacySpeakerNames");
 
 	//Autoresponse ------------------------------------------------------------------------
@@ -535,6 +536,7 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("UseConciseConferenceButtons",          mOneLineConfButt);
 	gSavedSettings.setBOOL("CommunicateSpecificShortcut",          mOnlyComm);
 	gSavedSettings.setBOOL("LiruItalicizeActions",                 mItalicizeActions);
+	gSavedSettings.setBOOL("LiruLegacyLogLaunch",                  mLegacyLogLaunch);
 	gSavedSettings.setBOOL("LiruLegacySpeakerNames",               mLegacySpeakerNames);
 
 	//Autoresponse ------------------------------------------------------------------------

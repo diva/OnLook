@@ -87,6 +87,7 @@ protected:
 	bool mOnlyComm;
 	bool mItalicizeActions;
 	bool mLegacySpeakerNames;
+	bool mLegacyLogLaunch;
 
 	//Autoresponse ------------------------------------------------------------------------
 	std::string mIMResponseAnyoneItemID;
