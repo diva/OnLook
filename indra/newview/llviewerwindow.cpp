@@ -2723,7 +2723,6 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 
 	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
 
-	/*
 	// give menus a chance to handle modified (Ctrl, Alt) shortcut keys before current focus
 	// as long as focus isn't locked
 	if (mask & (MASK_CONTROL | MASK_ALT) && !gFocusMgr.focusLocked())
@@ -2736,13 +2735,14 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 			return TRUE;
 		}
 
+		/* Singu Note: This caused a bug where the menu ate keys before parents of keyboard_focus for some reason, breaking multifloaters usage of ctrl-w to close their selected child floater
 		if ((gMenuBarView && gMenuBarView->handleAcceleratorKey(key, mask))
 			|| (gLoginMenuBarView && gLoginMenuBarView->handleAcceleratorKey(key, mask)))
 		{
 			return TRUE;
 		}
+		*/
 	}
-	*/
 
 	// give floaters first chance to handle TAB key
 	// so frontmost floater gets focus

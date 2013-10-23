@@ -121,6 +121,7 @@ public:
 	void			unlockFocus();
 	BOOL			focusLocked() const { return mLockedView != NULL; }
 
+	bool			keyboardFocusHasAccelerators() const;
 
 	struct Impl;
 
