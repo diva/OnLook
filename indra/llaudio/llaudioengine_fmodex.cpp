@@ -59,8 +59,13 @@ bool attemptDelayLoad()
 {
 	__try
 	{
+#if defined(_WIN64)
+		if( FAILED( __HrLoadAllImportsForDll( "fmodex64.dll" ) ) )
+			return false;
+#else
 		if( FAILED( __HrLoadAllImportsForDll( "fmodex.dll" ) ) )
 			return false;
+#endif
 	}
 	__except( EXCEPTION_EXECUTE_HANDLER )
 	{

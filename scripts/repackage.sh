@@ -5,7 +5,7 @@ usage() {
 	echo "Usage: repackage PLATFORM FILEIN.tar.bz2 [FILEOUT.tar.bz2]
 Repackage an archive from llautobuild format into singularity format
 
-PLATFORM can be one of windows, linux, linux64, mac.
+PLATFORM can be one of windows, windows64 linux, linux64, mac.
 "
 	exit 0
 }
@@ -29,6 +29,13 @@ case "$1" in
 		LIBDPATH="libraries/i686-win32/lib/debug"
 		INCPATH="libraries/i686-win32/include"
 		BINPATH="libraries/i686-win32/bin"
+		;;
+	--windows64|-w64|windows64|win64)
+		MODE=windows64
+		LIBPATH="libraries/x86_64-win/lib/release"
+		LIBDPATH="libraries/x86_64-win/lib/debug"
+		INCPATH="libraries/x86_64-win/include"
+		BINPATH="libraries/x86_64-win/bin"
 		;;
 	--mac|--osx|--darwin|-x|mac|osx|darwin)
 		MODE=osx
@@ -82,7 +89,7 @@ case "$FILEIN" in
 	http\:\/\/*|https\:\/\/*)
 		echo "	Downloading..."
 		cd "$TMP"
-		wget "$FILEIN" -O package.tar.bz2
+		curl -L "$FILEIN" > package.tar.bz2
 		echo "	Unpacking..."
 		tar -xjvf package.tar.bz2
 		rm package.tar.bz2

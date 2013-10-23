@@ -192,6 +192,8 @@ def usage(srctree=""):
             arg['description'] % nd)
 
 def main():
+    print "cwd:", os.getcwd()
+    print " ".join(sys.argv)
     option_names = [arg['name'] + '=' for arg in ARGUMENTS]
     option_names.append('help')
     options, remainder = getopt.getopt(sys.argv[1:], "", option_names)
@@ -266,7 +268,7 @@ class LLManifest(object):
     __metaclass__ = LLManifestRegistry
     manifests = {}
     def for_platform(self, platform, arch = None):
-        if arch:
+        if arch and platform != "windows":
             platform = platform + '_' + arch
         return self.manifests[platform.lower()]
     for_platform = classmethod(for_platform)

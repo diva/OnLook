@@ -554,6 +554,10 @@ namespace VSTool
                     case "11.00":
                         version = "VC100";
                         break;
+
+                    case "12.00":
+                        version = "VC110";
+                        break;
                     default:
                         throw new ApplicationException("Unknown .sln version: " + format);
                 }
@@ -592,6 +596,10 @@ namespace VSTool
 
                 case "VC100":
                     progid = "VisualStudio.DTE.10.0";
+                    break;
+
+                case "VC110":
+                    progid = "VisualStudio.DTE.11.0";
                     break;
                 default:
                     throw new ApplicationException("Can't handle VS version: " + version);

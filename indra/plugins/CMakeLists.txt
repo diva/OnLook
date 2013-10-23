@@ -13,9 +13,9 @@ if (WINDOWS OR DARWIN)
     add_subdirectory(quicktime)
 endif (WINDOWS OR DARWIN)
 
-if (WINDOWS)
+if (WINDOWS AND WORD_SIZE EQUAL 32)
     add_subdirectory(winmmshim)
-endif (WINDOWS)
+endif (WINDOWS AND WORD_SIZE EQUAL 32)
 
 add_subdirectory(example_basic)
 add_subdirectory(example_media)

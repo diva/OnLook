@@ -176,6 +176,9 @@ class ViewerManifest(LLManifest):
         return " ".join((channel_flags, grid_flags, setting_flags)).strip()
 
 class WindowsManifest(ViewerManifest):
+    def is_win64(self):
+        return self.args.get('arch') == "x86_64"
+    
     def final_exe(self):
         return self.channel_oneword() + 'Viewer.exe'
 
@@ -185,6 +188,11 @@ class WindowsManifest(ViewerManifest):
         # the final exe is complicated because we're not sure where it's coming from,
         # nor do we have a fixed name for the executable
         self.path(src='%s/secondlife-bin.exe' % self.args['configuration'], dst=self.final_exe())
+        
+        if self.is_win64():
+            release_lib_dir = "../../libraries/x86_64-win/lib/release"
+        else:
+            release_lib_dir = "../../libraries/i686-win32/lib/release"
 
         # Plugin host application
         self.path(os.path.join(os.pardir,
@@ -192,7 +200,7 @@ class WindowsManifest(ViewerManifest):
                   "SLPlugin.exe")
 
         # Plugin volume control
-        if self.prefix(src=self.args['configuration'], dst=""):
+        if not self.is_win64() and self.prefix(src=self.args['configuration'], dst=""):
             self.path("winmm.dll")
             self.end_prefix()
 
@@ -216,7 +224,7 @@ class WindowsManifest(ViewerManifest):
         #is shipped with windows anyway
 
         # For using FMOD for sound... DJS
-        #~if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+        #~if self.prefix(src=release_lib_dir, dst=""):
             #~try:
             #~self.path("fmod.dll")
             #~pass
@@ -226,7 +234,7 @@ class WindowsManifest(ViewerManifest):
             #~self.end_prefix()
 
         # For textures
-        #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+        #if self.prefix(src=release_lib_dir, dst=""):
         #    self.path("openjpeg.dll")
         #    self.end_prefix()
 
@@ -246,7 +254,7 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # For WebKit/Qt plugin runtimes
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst="llplugin"):
+        if self.prefix(src=release_lib_dir, dst="llplugin"):
             self.path("libeay32.dll")
             self.path("qtcore4.dll")
             self.path("qtgui4.dll")
@@ -258,7 +266,7 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # For WebKit/Qt plugin runtimes (image format plugins)
-        if self.prefix(src="../../libraries/i686-win32/lib/release/imageformats", dst="llplugin/imageformats"):
+        if self.prefix(src=release_lib_dir+"/imageformats", dst="llplugin/imageformats"):
             self.path("qgif4.dll")
             self.path("qico4.dll")
             self.path("qjpeg4.dll")
@@ -267,7 +275,7 @@ class WindowsManifest(ViewerManifest):
             self.path("qtiff4.dll")
             self.end_prefix()
 
-        if self.prefix(src="../../libraries/i686-win32/lib/release/codecs", dst="llplugin/codecs"):
+        if self.prefix(src=release_lib_dir+"/codecs", dst="llplugin/codecs"):
             self.path("qcncodecs4.dll")
             self.path("qjpcodecs4.dll")
             self.path("qkrcodecs4.dll")
@@ -282,7 +290,7 @@ class WindowsManifest(ViewerManifest):
                 print err.message
                 print "Skipping llcommon.dll (assuming llcommon was linked statically)"
             self.end_prefix()
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+        if self.prefix(src=release_lib_dir, dst=""):
             self.path("libeay32.dll")
             self.path("ssleay32.dll")
             try:
@@ -294,13 +302,19 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # For google-perftools tcmalloc allocator.
-        self.path("../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
+        if not self.is_win64():
+            self.path(release_lib_dir+"/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
 
+        #try:
+        #    if self.prefix(release_lib_dir+"/msvcrt", dst=""):
+        #        self.path("*.dll")
+        #        self.path("*.manifest")
+        #        self.end_prefix()
+        #except:
+        #    pass
+        
         try:
-            if self.prefix("../../libraries/i686-win32/lib/release/msvcrt", dst=""):
-                self.path("*.dll")
-                self.path("*.manifest")
-                self.end_prefix()
+            self.path("msvc*.dll")
         except:
             pass
 
@@ -386,6 +400,13 @@ class WindowsManifest(ViewerManifest):
                 prev = d
 
         return result
+    
+    def installer_file(self):
+        if self.is_win64():
+            mask = "%s_%s_x86-64_Setup.exe"
+        else:
+            mask = "%s_%s_Setup.exe"
+        return mask % (self.channel_oneword(), '-'.join(self.args['version']))
 
     def package_finish(self):
         # a standard map of strings for replacing in the templates
@@ -401,6 +422,9 @@ class WindowsManifest(ViewerManifest):
             'channel':self.channel(),
             'channel_oneword':self.channel_oneword(),
             'channel_unique':self.channel_unique(),
+            'inst_name':self.channel_oneword() + ' (64 bit)' if self.is_win64() else self.channel_oneword(),
+            'installer_file':self.installer_file(),
+            'viewer_name': "%s%s" % (self.channel(), " (64 bit)" if self.is_win64() else "" ),
             }
 
         version_vars = """
@@ -409,13 +433,13 @@ class WindowsManifest(ViewerManifest):
         !define VERSION_LONG "%(version)s"
         !define VERSION_DASHES "%(version_dashes)s"
         """ % substitution_strings
-        installer_file = "%(channel_oneword)s_%(version_dashes)s_Setup.exe"
+        installer_file = "%(installer_file)s"
         grid_vars_template = """
         OutFile "%(installer_file)s"
-        !define VIEWERNAME "%(channel)s"
+        !define VIEWERNAME "%(viewer_name)s"
         !define INSTFLAGS "%(flags)s"
-        !define INSTNAME   "%(channel_oneword)s"
-        !define SHORTCUT   "%(channel)s Viewer"
+        !define INSTNAME   "%(inst_name)s"
+        !define SHORTCUT   "%(viewer_name)s Viewer"
         !define URLNAME   "secondlife"
         !define INSTALL_ICON "install_icon_singularity.ico"
         !define UNINSTALL_ICON "install_icon_singularity.ico"
@@ -435,7 +459,9 @@ class WindowsManifest(ViewerManifest):
                 "%%SOURCE%%":self.get_src_prefix(),
                 "%%GRID_VARS%%":grid_vars_template % substitution_strings,
                 "%%INSTALL_FILES%%":self.nsi_file_commands(True),
-                "%%DELETE_FILES%%":self.nsi_file_commands(False)})
+                "%%DELETE_FILES%%":self.nsi_file_commands(False),
+                "%%INSTALLDIR%%":"%s\\%s" % ('$PROGRAMFILES64' if self.is_win64() else '$PROGRAMFILES', self.channel_oneword()),
+                })
 
         # We use the Unicode version of NSIS, available from
         # http://www.scratchpaper.com/

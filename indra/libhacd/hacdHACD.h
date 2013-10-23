@@ -22,7 +22,9 @@
 #include <set>
 #include <vector>
 #include <queue>
-
+#if defined(_MSC_VER) && _MSC_VER >= 1700
+#include <functional>
+#endif
 namespace HACD
 {
     const double                                    sc_pi = 3.14159265;

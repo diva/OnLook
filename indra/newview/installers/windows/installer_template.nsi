@@ -63,7 +63,7 @@ LangString LanguageCode ${LANG_DUTCH}    "nl"
 LangString LanguageCode ${LANG_PORTUGUESEBR} "pt"
 LangString LanguageCode ${LANG_SIMPCHINESE}  "zh"
 
-Name ${VIEWERNAME}
+Name "${VIEWERNAME}"
 
 SubCaption 0 $(LicenseSubTitleSetup)	; override "license agreement" text
 
@@ -71,7 +71,7 @@ BrandingText "Prepare to Implode!"						; bottom of window text
 Icon          %%SOURCE%%\installers\windows\install_icon_singularity.ico
 UninstallIcon %%SOURCE%%\installers\windows\uninstall_icon_singularity.ico
 WindowIcon off							; show our icon in left corner
-BGGradient 9090b0 000000 notext
+# BGGradient 9090b0 000000 notext
 CRCCheck on								; make sure CRC is OK
 #InstProgressFlags smooth colored		; new colored smooth look
 InstProgressFlags
@@ -80,7 +80,7 @@ ShowInstDetails show				; no details, no "show" button
 SetOverwrite on							; stomp files by default
 AutoCloseWindow true					; after all files install, close window
 
-InstallDir "$PROGRAMFILES\${INSTNAME}"
+InstallDir "%%INSTALLDIR%%"
 InstallDirRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Linden Research, Inc.\${INSTNAME}" ""
 DirText $(DirectoryChooseTitle) $(DirectoryChooseSetup)
 

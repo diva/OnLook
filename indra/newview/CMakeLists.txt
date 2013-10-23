@@ -47,6 +47,8 @@ include(LLAppearance)
 
 if (WINDOWS)
     include(CopyWinLibs)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP)
+    include(InstallRequiredSystemLibraries)
 endif (WINDOWS)
 
 include_directories(
@@ -1437,11 +1439,7 @@ set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
     "Add a package target that builds an installer package.")
 
 if (WINDOWS)
-    if(MSVC10)
-        set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
-    else(MSVC10)
-        set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
-    endif(MSVC10)
+    set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
 
     if (FMOD)
         if(MANIFEST_LIBRARIES)
@@ -1451,12 +1449,18 @@ if (WINDOWS)
         endif(MANIFEST_LIBRARIES)
     endif (FMOD)
     if (FMODEX)
+	if (WORD_SIZE EQUAL 32)
+	    set(fmodex_dll_file "fmodex.dll")
+	else (WORD_SIZE EQUAL 32)
+	    set(fmodex_dll_file "fmodex64.dll")
+	endif (WORD_SIZE EQUAL 32)
+
         if(MANIFEST_LIBRARIES)
-       	    set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/fmodex.dll")
+       	    set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/${fmodex_dll_file}")
         else(MANIFEST_LIBRARIES)
-            set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/fmodex.dll")
+            set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/${fmodex_dll_file}")
         endif(MANIFEST_LIBRARIES)
-        set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
+        set(EXTRA_LINKER_FLAGS "/DELAYLOAD:${fmodex_dll_file}")
     endif (FMODEX)
 
     set_target_properties(${VIEWER_BINARY_NAME}
@@ -1514,6 +1518,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+	  --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --branding_id=${VIEWER_BRANDING_ID}
           --build=${CMAKE_CURRENT_BINARY_DIR}
@@ -1535,6 +1540,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+	  --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --actions=copy
           --branding_id=${VIEWER_BRANDING_ID}
@@ -1855,6 +1861,21 @@ endif (LL_TESTS)
 # Don't do these for DARWIN or LINUX here -- they're taken care of by viewer_manifest.py
 if (WINDOWS)
 
+  IF(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+    FOREACH(RUNTIME_LIB ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
+      add_custom_command(
+	  TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+	  COMMAND ${CMAKE_COMMAND}
+	  ARGS
+	  -E
+	  copy_if_different
+	  ${RUNTIME_LIB}
+	  ${CMAKE_CURRENT_BINARY_DIR}
+	  COMMENT "Copying ${RUNTIME_LIB} to the runtime folder."
+	  )
+    ENDFOREACH(RUNTIME_LIB ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
+  ENDIF(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+
   get_target_property(BUILT_LLCOMMON llcommon LOCATION)
 
     set_target_properties(llcommon
@@ -1910,7 +1931,7 @@ if (WINDOWS)
         COMMENT "Copying Quicktime Plugin to the runtime folder."
         )
 
-	get_target_property(BUILT_FILEPICKER_PLUGIN basic_plugin_filepicker LOCATION)
+  get_target_property(BUILT_FILEPICKER_PLUGIN basic_plugin_filepicker LOCATION)
     add_custom_command(
         TARGET ${VIEWER_BINARY_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND}
@@ -1922,7 +1943,9 @@ if (WINDOWS)
         COMMENT "Copying filepicker Plugin to the runtime folder."
         )
 
-	get_target_property(BUILT_WINMM_SHIM_PLUGIN winmm_shim LOCATION)
+# winmm doesn't build on windows 64
+  if(WORD_SIZE EQUAL 32)
+  get_target_property(BUILT_WINMM_SHIM_PLUGIN winmm_shim LOCATION)
     add_custom_command(
         TARGET ${VIEWER_BINARY_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND}
@@ -1933,6 +1956,8 @@ if (WINDOWS)
           ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
         COMMENT "Copying winmm.dll to the runtime folder."
         )
+  endif(WORD_SIZE EQUAL 32)
+
   # Copying the mime_types.xml file to app_settings
   set(mime_types_source "${CMAKE_SOURCE_DIR}/newview/skins/default/xui/en-us")
   set(mime_types_dest "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/app_settings")
