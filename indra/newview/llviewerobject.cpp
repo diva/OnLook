@@ -4863,7 +4863,7 @@ void LLViewerObject::setAttachedSound(const LLUUID &audio_uuid, const LLUUID& ow
 	
 	if (audio_uuid.isNull())
 	{
-		if (!mAudioSourcep)
+		if (!mAudioSourcep || (flags & LL_SOUND_FLAG_STOP && !mAudioSourcep->isLoop()))
 		{
 			return;
 		}

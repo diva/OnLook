@@ -44,7 +44,7 @@ public:
 	~LLAudioDecodeMgr();
 
 	void processQueue(const F32 num_secs = 0.005);
-	BOOL addDecodeRequest(const LLUUID &uuid);
+	bool addDecodeRequest(const LLUUID &uuid);
 	void addAudioRequest(const LLUUID &uuid);
 	
 protected:
