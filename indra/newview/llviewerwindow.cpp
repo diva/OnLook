@@ -2715,7 +2715,8 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 
 	// let menus handle navigation keys for navigation
 	if ((gMenuBarView && gMenuBarView->handleKey(key, mask, TRUE))
-		|| (gLoginMenuBarView && gLoginMenuBarView->handleKey(key, mask, TRUE)))
+		|| (gLoginMenuBarView && gLoginMenuBarView->handleKey(key, mask, TRUE))
+		|| (gMenuHolder && gMenuHolder->handleKey(key, mask, TRUE)))
 	{
 		return TRUE;
 	}
