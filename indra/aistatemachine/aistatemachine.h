@@ -39,6 +39,7 @@
 #include <list>
 #include <boost/signals2.hpp>
 
+class AIConditionBase;
 class AIStateMachine;
 
 class AIEngine
@@ -132,6 +133,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 	struct sub_state_type {
 	  state_type		run_state;
 	  state_type		advance_state;
+	  AIConditionBase*	blocked;
 	  bool				reset;
 	  bool				need_run;
 	  bool				idle;
@@ -195,20 +197,36 @@ class AIStateMachine : public LLThreadSafeRefCount
 	bool mDebugAdvanceStatePending;				// True while advance_state() was called by not handled yet.
 	bool mDebugRefCalled;						// True when ref() is called (or will be called within the critial area of mMultiplexMutex).
 #endif
+#ifdef CWDEBUG
+  protected:
+	bool mSMDebug;								// Print debug output only when true.
+#endif
+  private:
 	U64 mRuntime;								// Total time spent running in the main thread (in clocks).
 
   public:
-	AIStateMachine(void) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
+	AIStateMachine(CWD_ONLY(bool debug)) : mCallback(NULL), mDefaultEngine(NULL), mYieldEngine(NULL),
 #ifdef SHOW_ASSERT
 		mThreadId(AIThreadID::none), mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
 		mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false),
+#endif
+#ifdef CWDEBUG
+		mSMDebug(debug),
 #endif
 		mRuntime(0)
 	{ }
 
   protected:
-	// The user should call finish() (or abort(), or kill() from the call back when finish_impl() calls run()), not delete a class derived from AIStateMachine directly.
-	virtual ~AIStateMachine() { llassert(multiplex_state_type_rat(mState)->base_state == bs_killed); }
+	// The user should call finish() (or abort(), or kill() from the call back when finish_impl() calls run()),
+	// not delete a class derived from AIStateMachine directly. Deleting it directly before calling run() is
+	// ok however.
+	virtual ~AIStateMachine()
+	{
+#ifdef SHOW_ASSERT
+	  base_state_type state = multiplex_state_type_rat(mState)->base_state;
+	  llassert(state == bs_killed || state == bs_reset);
+#endif
+	}
  
   public:
 	// These functions may be called directly after creation, or from within finish_impl(), or from the call back function.
@@ -224,11 +242,13 @@ class AIStateMachine : public LLThreadSafeRefCount
 	void set_state(state_type new_state);									// Run this state the NEXT loop.
 	// These functions can only be called from within multiplex_impl().
 	void idle(void);														// Go idle unless cont() or advance_state() were called since the start of the current loop, or until they are called.
+	void wait(AIConditionBase& condition);									// The same as idle(), but wake up when AICondition<T>::signal() is called.
 	void finish(void);														// Mark that the state machine finished and schedule the call back.
 	void yield(void);														// Yield to give CPU to other state machines, but do not go idle.
 	void yield(AIEngine* engine);											// Yield to give CPU to other state machines, but do not go idle. Continue running from engine 'engine'.
 	void yield_frame(unsigned int frames);									// Run from the main-thread engine after at least 'frames' frames have passed.
 	void yield_ms(unsigned int ms);											// Run from the main-thread engine after roughly 'ms' miliseconds have passed.
+	bool yield_if_not(AIEngine* engine);									// Do not really yield, unless the current engine is not 'engine'. Returns true if it switched engine.
 
   public:
 	// This function can be called from multiplex_imp(), but also by a child state machine and
@@ -236,11 +256,12 @@ class AIStateMachine : public LLThreadSafeRefCount
 	// to access this state machine.
 	void abort(void);														// Abort the state machine (unsuccessful finish).
 
-	// These are the only two functions that can be called by any thread at any moment.
+	// These are the only three functions that can be called by any thread at any moment.
 	// Those threads should use an LLPointer<AIStateMachine> to access this state machine.
 	void cont(void);														// Guarantee at least one full run of multiplex() after this function is called. Cancels the last call to idle().
 	void advance_state(state_type new_state);								// Guarantee at least one full run of multiplex() after this function is called
 																			// iff new_state is larger than the last state that was processed.
+	bool signalled(void);													// Call cont() iff this state machine is still blocked after a call to wait(). Returns false if it already unblocked.
 
   public:
 	// Accessors.
