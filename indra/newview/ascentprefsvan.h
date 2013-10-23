@@ -38,24 +38,26 @@
 class LLPrefsAscentVan : public LLPanel
 {
 public:
-    LLPrefsAscentVan();
-    ~LLPrefsAscentVan();
+	LLPrefsAscentVan();
+	~LLPrefsAscentVan();
 
-    void apply();
-    void cancel();
-    void refresh();
-    void refreshValues();
+	void apply();
+	void cancel();
+	void refresh();
+	void refreshValues();
 
 protected:
 	void onCommitClientTag(LLUICtrl* ctrl);
 	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitTextModified(LLUICtrl* ctrl, const LLSD& value);
 	static void onManualClientUpdate();
-    //Main
-    BOOL mUseAccountSettings;
-    BOOL mShowTPScreen;
-    BOOL mPlayTPSound;
-    BOOL mShowLogScreens;
+
+private:
+	//Main
+	bool mUseAccountSettings;
+	bool mShowTPScreen;
+	bool mPlayTPSound;
+	bool mShowLogScreens;
 	bool mDisableChatAnimation;
 	bool mAddNotReplace;
 	bool mTurnAround;
@@ -64,41 +66,38 @@ protected:
 	bool mUnfocusedFloatersOpaque;
 	bool mCompleteNameProfiles;
 	bool mScriptErrorsStealFocus;
-    //Tags\Colors
-    BOOL mAscentBroadcastTag;
-    std::string mReportClientUUID;
-    U32 mSelectedClient;
-    BOOL mShowSelfClientTag;
-    BOOL mShowSelfClientTagColor;
-    BOOL mShowFriendsTag;
-    BOOL mDisplayClientTagOnNewLine;
-    BOOL mCustomTagOn;
-    std::string mCustomTagLabel;
-    LLColor4 mCustomTagColor;
-    BOOL mShowOthersTag;
-    BOOL mShowOthersTagColor;
-    BOOL mShowIdleTime;
-    BOOL mUseStatusColors;
-    BOOL mUpdateTagsOnLoad;
-    LLColor4 mEffectColor;
-    LLColor4 mFriendColor;
-    LLColor4 mEstateOwnerColor;
-    LLColor4 mLindenColor;
-    LLColor4 mMutedColor;
+	//Tags\Colors
+	bool mAscentBroadcastTag;
+	std::string mReportClientUUID;
+	U32 mSelectedClient;
+	bool mShowSelfClientTag;
+	bool mShowSelfClientTagColor;
+	bool mShowFriendsTag;
+	bool mDisplayClientTagOnNewLine;
+	bool mCustomTagOn;
+	std::string mCustomTagLabel;
+	LLColor4 mCustomTagColor;
+	bool mShowOthersTag;
+	bool mShowOthersTagColor;
+	bool mShowIdleTime;
+	bool mUseStatusColors;
+	bool mUpdateTagsOnLoad;
+	LLColor4 mEffectColor;
+	LLColor4 mFriendColor;
+	LLColor4 mEstateOwnerColor;
+	LLColor4 mLindenColor;
+	LLColor4 mMutedColor;
 	LLColor4 mMapAvatarColor;
 	LLColor4 mCustomColor;
 	bool mColorFriendChat;
 	bool mColorEOChat;
 	bool mColorLindenChat;
 	bool mColorMutedChat;
-//	bool mColorCustomChat;
+	//	bool mColorCustomChat;
 
-    F32 mAvatarXModifier;
-    F32 mAvatarYModifier;
-    F32 mAvatarZModifier;
-
-private:
-
+	F32 mAvatarXModifier;
+	F32 mAvatarYModifier;
+	F32 mAvatarZModifier;
 };
 
 #endif
