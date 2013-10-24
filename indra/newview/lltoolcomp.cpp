@@ -654,7 +654,7 @@ void LLToolCompRotate::render()
 
 LLToolCompGun::LLToolCompGun()
 	: LLToolComposite(std::string("Mouselook"))
-	, mRightMouseButton(false), mMenuShown(false), mTimerFOV() // <exodus/>
+	, mRightMouseButton(false), mMenuShown(false), mTimerFOV(), mOriginalFOV(), mStartFOV(), mTargetFOV() // <exodus/>
 {
 	mGun = new LLToolGun(this);
 	mGrab = new LLToolGrab(this);
@@ -665,7 +665,6 @@ LLToolCompGun::LLToolCompGun()
 
 	// <exodus>
 	mTimerFOV.stop();
-	mStartFOV = mOriginalFOV = mTargetFOV = LLViewerCamera::getInstance()->getAndSaveDefaultFOV();
 	// </exodus>
 }
 
