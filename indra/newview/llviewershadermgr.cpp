@@ -2191,6 +2191,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectSimpleProgram.mFeatures.hasAtmospherics = true;
 			gSkinnedObjectSimpleProgram.mFeatures.hasLighting = true;
 			gSkinnedObjectSimpleProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectSimpleProgram.mFeatures.hasAlphaMask = true;
 			gSkinnedObjectSimpleProgram.mFeatures.disableTextureIndex = true;
 			gSkinnedObjectSimpleProgram.mShaderFiles.clear();
 			gSkinnedObjectSimpleProgram.mShaderFiles.push_back(make_pair("objects/simpleSkinnedV.glsl", GL_VERTEX_SHADER_ARB));
@@ -2207,6 +2208,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectFullbrightProgram.mFeatures.hasTransport = true;
 			gSkinnedObjectFullbrightProgram.mFeatures.isFullbright = true;
 			gSkinnedObjectFullbrightProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectFullbrightProgram.mFeatures.hasAlphaMask = true;			
 			gSkinnedObjectFullbrightProgram.mFeatures.disableTextureIndex = true;
 			gSkinnedObjectFullbrightProgram.mShaderFiles.clear();
 			gSkinnedObjectFullbrightProgram.mShaderFiles.push_back(make_pair("objects/fullbrightSkinnedV.glsl", GL_VERTEX_SHADER_ARB));
@@ -2257,6 +2259,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectFullbrightShinyProgram.mFeatures.isShiny = true;
 			gSkinnedObjectFullbrightShinyProgram.mFeatures.isFullbright = true;
 			gSkinnedObjectFullbrightShinyProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectFullbrightShinyProgram.mFeatures.hasAlphaMask = true;
 			gSkinnedObjectFullbrightShinyProgram.mFeatures.disableTextureIndex = true;
 			gSkinnedObjectFullbrightShinyProgram.mShaderFiles.clear();
 			gSkinnedObjectFullbrightShinyProgram.mShaderFiles.push_back(make_pair("objects/fullbrightShinySkinnedV.glsl", GL_VERTEX_SHADER_ARB));
@@ -2273,6 +2276,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectShinySimpleProgram.mFeatures.hasGamma = true;
 			gSkinnedObjectShinySimpleProgram.mFeatures.hasAtmospherics = true;
 			gSkinnedObjectShinySimpleProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectShinySimpleProgram.mFeatures.hasAlphaMask = true;
 			gSkinnedObjectShinySimpleProgram.mFeatures.isShiny = true;
 			gSkinnedObjectShinySimpleProgram.mFeatures.disableTextureIndex = true;
 			gSkinnedObjectShinySimpleProgram.mShaderFiles.clear();
@@ -2310,6 +2314,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectFullbrightWaterProgram.mFeatures.hasTransport = true;
 			gSkinnedObjectFullbrightWaterProgram.mFeatures.isFullbright = true;
 			gSkinnedObjectFullbrightWaterProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectFullbrightWaterProgram.mFeatures.hasAlphaMask = true;
 			gSkinnedObjectFullbrightWaterProgram.mFeatures.hasWaterFog = true;
 			gSkinnedObjectFullbrightWaterProgram.mFeatures.disableTextureIndex = true;
 			gSkinnedObjectFullbrightWaterProgram.mShaderGroup = LLGLSLShader::SG_WATER;
@@ -2329,6 +2334,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectFullbrightShinyWaterProgram.mFeatures.isShiny = true;
 			gSkinnedObjectFullbrightShinyWaterProgram.mFeatures.isFullbright = true;
 			gSkinnedObjectFullbrightShinyWaterProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectFullbrightShinyWaterProgram.mFeatures.hasAlphaMask = true;
 			gSkinnedObjectFullbrightShinyWaterProgram.mFeatures.hasWaterFog = true;
 			gSkinnedObjectFullbrightShinyWaterProgram.mFeatures.disableTextureIndex = true;
 			gSkinnedObjectFullbrightShinyWaterProgram.mShaderGroup = LLGLSLShader::SG_WATER;
@@ -2347,6 +2353,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			gSkinnedObjectShinySimpleWaterProgram.mFeatures.hasGamma = true;
 			gSkinnedObjectShinySimpleWaterProgram.mFeatures.hasAtmospherics = true;
 			gSkinnedObjectShinySimpleWaterProgram.mFeatures.hasObjectSkinning = true;
+			gSkinnedObjectShinySimpleWaterProgram.mFeatures.hasAlphaMask = true;
 			gSkinnedObjectShinySimpleWaterProgram.mFeatures.isShiny = true;
 			gSkinnedObjectShinySimpleWaterProgram.mFeatures.hasWaterFog = true;
 			gSkinnedObjectShinySimpleWaterProgram.mFeatures.disableTextureIndex = true;

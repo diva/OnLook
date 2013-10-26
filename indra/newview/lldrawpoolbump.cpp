@@ -570,6 +570,7 @@ void LLDrawPoolBump::renderFullbrightShiny()
 	{
 		LLGLEnable blend_enable(GL_BLEND);
 
+		gGL.setSceneBlendType(LLRender::BT_REPLACE);
 		if (mVertexShaderLevel > 1)
 		{
 			LLRenderPass::pushBatches(LLRenderPass::PASS_FULLBRIGHT_SHINY, sVertexMask | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
@@ -578,6 +579,7 @@ void LLDrawPoolBump::renderFullbrightShiny()
 		{
 			LLRenderPass::renderTexture(LLRenderPass::PASS_FULLBRIGHT_SHINY, sVertexMask);
 		}
+		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 	}
 }
 
@@ -896,7 +898,9 @@ void LLDrawPoolBump::renderPostDeferred(S32 pass)
 	switch (pass)
 	{
 	case 0:
+		gGL.setColorMask(true, true);
 		renderFullbrightShiny();
+		gGL.setColorMask(true, false);
 		break;
 	case 1:
 		renderBump(LLRenderPass::PASS_POST_BUMP);
