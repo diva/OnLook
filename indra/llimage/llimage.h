@@ -173,7 +173,7 @@ protected:
 public:
 	LLImageRaw();
 	LLImageRaw(U16 width, U16 height, S8 components);
-	LLImageRaw(U8 *data, U16 width, U16 height, S8 components);
+	LLImageRaw(U8 *data, U16 width, U16 height, S8 components, bool no_copy = false);
 	LLImageRaw(LLImageRaw const* src, U16 width, U16 height, U16 crop_offset, bool crop_vertically);
 	// Construct using createFromFile (used by tools)
 	//LLImageRaw(const std::string& filename, bool j2c_lowest_mip_only = false);
@@ -204,6 +204,9 @@ public:
 
 	// Copy operations
 	
+	//duplicate this raw image if refCount > 1.
+	LLPointer<LLImageRaw> duplicate();
+
 	// Src and dst can be any size.  Src and dst can each have 3 or 4 components.
 	void copy( LLImageRaw* src );
 
