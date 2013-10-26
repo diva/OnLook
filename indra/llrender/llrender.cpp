@@ -1496,7 +1496,7 @@ void LLRender::translateUI(F32 x, F32 y, F32 z)
 	}
 
 	LLVector4a add(x,y,z);
-	mUIOffset.back()->add(add);
+	mUIOffset.back().add(add);
 }
 
 void LLRender::scaleUI(F32 x, F32 y, F32 z)
@@ -1507,33 +1507,27 @@ void LLRender::scaleUI(F32 x, F32 y, F32 z)
 	}
 
 	LLVector4a scale(x,y,z);
-	mUIScale.back()->mul(scale);
+	mUIScale.back().mul(scale);
 }
 
 void LLRender::pushUIMatrix()
 {
 	if (mUIOffset.empty())
 	{
-		mUIOffset.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
-		mUIOffset.back()->splat(0.f);
+		mUIOffset.push_back(LLVector4a(0.f));
 	}
 	else
 	{
-		const LLVector4a* last_entry = mUIOffset.back();
-		mUIOffset.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
-		*mUIOffset.back() = *last_entry;
+		mUIOffset.push_back(mUIOffset.back());
 	}
 	
 	if (mUIScale.empty())
 	{
-		mUIScale.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
-		mUIScale.back()->splat(1.f);
+		mUIScale.push_back(LLVector4a(1.f));
 	}
 	else
 	{
-		const LLVector4a* last_entry = mUIScale.back();
-		mUIScale.push_back(static_cast<LLVector4a*>(ll_aligned_malloc_16(sizeof(LLVector4a))));
-		*mUIScale.back() = *last_entry;
+		mUIScale.push_back(mUIScale.back());
 	}
 }
 
@@ -1543,9 +1537,7 @@ void LLRender::popUIMatrix()
 	{
 		llerrs << "UI offset stack blown." << llendl;
 	}
-	ll_aligned_free_16(mUIOffset.back());
 	mUIOffset.pop_back();
-	ll_aligned_free_16(mUIScale.back());
 	mUIScale.pop_back();
 }
 
@@ -1555,7 +1547,7 @@ LLVector3 LLRender::getUITranslation()
 	{
 		return LLVector3(0,0,0);
 	}
-	return LLVector3(mUIOffset.back()->getF32ptr());
+	return LLVector3(mUIOffset.back().getF32ptr());
 }
 
 LLVector3 LLRender::getUIScale()
@@ -1564,7 +1556,7 @@ LLVector3 LLRender::getUIScale()
 	{
 		return LLVector3(1,1,1);
 	}
-	return LLVector3(mUIScale.back()->getF32ptr());
+	return LLVector3(mUIScale.back().getF32ptr());
 }
 
 
@@ -1574,8 +1566,8 @@ void LLRender::loadUIIdentity()
 	{
 		llerrs << "Need to push UI translation frame before clearing offset." << llendl;
 	}
-	mUIOffset.back()->splat(0.f);
-	mUIScale.back()->splat(1.f);
+	mUIOffset.back().splat(0.f);
+	mUIScale.back().splat(1.f);
 }
 
 void LLRender::setColorMask(bool writeColor, bool writeAlpha)
@@ -1977,8 +1969,8 @@ void LLRender::vertex4a(const LLVector4a& vertex)
 	else
 	{
 		//LLVector3 vert = (LLVector3(x,y,z)+mUIOffset.back()).scaledVec(mUIScale.back());
-		mVerticesp[mCount].setAdd(vertex,*mUIOffset.back());
-		mVerticesp[mCount].mul(*mUIScale.back());
+		mVerticesp[mCount].setAdd(vertex,mUIOffset.back());
+		mVerticesp[mCount].mul(mUIScale.back());
 	}
 
 	if (mMode == LLRender::QUADS && LLRender::sGLCoreProfile)

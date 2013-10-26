@@ -41,7 +41,11 @@ public:
 	~LLAlignedArray();
 
 	void push_back(const T& elem);
-	U32 size() const { return mElementCount; }
+	void pop_back()				{ if(!!mElementCount) --mElementCount; }
+	bool empty()	const		{ return !mElementCount; }
+	T& front()					{ return operator[](0); }
+	T& back()					{ return operator[](mElementCount-1); }
+	U32 size()		const		{ return mElementCount; }
 	void resize(U32 size);
 	T* append(S32 N);
 	T& operator[](int idx);
