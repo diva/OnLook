@@ -9934,7 +9934,7 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 			resY != avatar->mImpostor.getHeight())
 		{
 			LLFastTimer t(FTM_IMPOSTOR_RESIZE);
-			avatar->mImpostor.resize(resX,resY,GL_RGBA);
+			avatar->mImpostor.resize(resX,resY);
 		}
 
 		avatar->mImpostor.bindTarget();
