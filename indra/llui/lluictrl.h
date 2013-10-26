@@ -70,6 +70,7 @@ public:
 	/*virtual*/ BOOL	isCtrl() const;
 	/*virtual*/ void	onMouseEnter(S32 x, S32 y, MASK mask);
 	/*virtual*/ void	onMouseLeave(S32 x, S32 y, MASK mask);
+	/*virtual*/ BOOL	canFocusChildren() const;
 	/*virtual*/ BOOL 	handleMouseDown(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL 	handleMouseUp(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL	handleRightMouseDown(S32 x, S32 y, MASK mask);
@@ -131,6 +132,9 @@ public:
 	BOOL			hasTabStop() const;
 
 	LLUICtrl*		getParentUICtrl() const;
+
+	void			setCommitOnReturn(BOOL commit) { mCommitOnReturn = commit; }
+	BOOL			getCommitOnReturn() const { return mCommitOnReturn; }
 
 	//Start using these!
 	boost::signals2::connection setCommitCallback( const commit_signal_t::slot_type& cb );
@@ -197,6 +201,8 @@ private:
 	BOOL			mTabStop;
 	BOOL			mIsChrome;
 	BOOL			mTentative;
+
+	bool			mCommitOnReturn;
 
 	class DefaultTabGroupFirstSorter;
 };
