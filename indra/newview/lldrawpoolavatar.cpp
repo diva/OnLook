@@ -1509,7 +1509,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				
 				stop_glerror();
 
-				LLDrawPoolAvatar::sVertexProgram->uniformMatrix4fv("matrixPalette", 
+				LLDrawPoolAvatar::sVertexProgram->uniformMatrix4fv(LLViewerShaderMgr::AVATAR_MATRIX, 
 					maxJoints,
 					FALSE,
 					(GLfloat*) mat[0].mMatrix);

@@ -51,6 +51,28 @@ extern LLGLSLShader			gPostPosterizeProgram;
 extern LLGLSLShader			gPostMotionBlurProgram;
 extern LLGLSLShader			gPostVignetteProgram;
 
+static LLStaticHashedString sGamma("gamma");
+static LLStaticHashedString sBrightness("brightness");
+static LLStaticHashedString sContrast("contrast");
+static LLStaticHashedString sContrastBase("contrastBase");
+static LLStaticHashedString sSaturation("saturation");
+static LLStaticHashedString sBrightMult("brightMult");
+static LLStaticHashedString sNoiseStrength("noiseStrength");
+static LLStaticHashedString sLayerCount("layerCount");
+
+static LLStaticHashedString sVignetteStrength("vignette_strength");
+static LLStaticHashedString sVignettRadius("vignette_radius");
+static LLStaticHashedString sVignetteDarkness("vignette_darkness");
+static LLStaticHashedString sVignetteDesaturation("vignette_desaturation");
+static LLStaticHashedString sVignetteChromaticAberration("vignette_chromatic_aberration");
+static LLStaticHashedString sScreenRes("screen_res");
+
+static LLStaticHashedString sHorizontalPass("horizontalPass");
+
+static LLStaticHashedString sPrevProj("prev_proj");
+static LLStaticHashedString sInvProj("inv_proj");
+static LLStaticHashedString sBlurStrength("blur_strength");
+
 static const unsigned int NOISE_SIZE = 512;
 
 static const char * const XML_FILENAME = "postprocesseffects.xml";
@@ -155,16 +177,16 @@ public:
 
 	/*virtual*/ QuadType preDraw()
 	{
-		getShader().uniform1f("gamma", mGamma);
-		getShader().uniform1f("brightness", mBrightness);
-		getShader().uniform1f("contrast", mContrast);
+		getShader().uniform1f(sGamma, mGamma);
+		getShader().uniform1f(sBrightness, mBrightness);
+		getShader().uniform1f(sContrast, mContrast);
 		float baseI = (mContrastBase.get()[VX] + mContrastBase.get()[VY] + mContrastBase.get()[VZ]) / 3.0f;
 		baseI = mContrastBase.get()[VW] / llmax(baseI,0.001f);
 		float baseR = mContrastBase.get()[VX] * baseI;
 		float baseG = mContrastBase.get()[VY] * baseI;
 		float baseB = mContrastBase.get()[VZ] * baseI;
-		getShader().uniform3fv("contrastBase", 1, LLVector3(baseR, baseG, baseB).mV);
-		getShader().uniform1f("saturation", mSaturation);
+		getShader().uniform3fv(sContrastBase, 1, LLVector3(baseR, baseG, baseB).mV);
+		getShader().uniform1f(sSaturation, mSaturation);
 
 		return QUAD_NORMAL;
 	}
@@ -187,8 +209,8 @@ public:
 	{
 		LLPostProcess::getInstance()->bindNoise(1);
 
-		getShader().uniform1f("brightMult", mBrightnessMult);
-		getShader().uniform1f("noiseStrength", mNoiseStrength);
+		getShader().uniform1f(sBrightMult, mBrightnessMult);
+		getShader().uniform1f(sNoiseStrength, mNoiseStrength);
 
 		return QUAD_NOISE;
 	}
@@ -206,7 +228,7 @@ public:
 	}
 	/*virtual*/ QuadType preDraw()
 	{
-		getShader().uniform1i("layerCount", mNumLayers);
+		getShader().uniform1i(sLayerCount, mNumLayers);
 		return QUAD_NORMAL;
 	}
 };
@@ -232,12 +254,13 @@ public:
 	/*virtual*/ QuadType preDraw()
 	{
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
-		getShader().uniform1f("vignette_strength", mStrength);
-		getShader().uniform1f("vignette_radius", mRadius);
-		getShader().uniform1f("vignette_darkness", mDarkness);
-		getShader().uniform1f("vignette_desaturation", mDesaturation);
-		getShader().uniform1f("vignette_chromatic_aberration", mChromaticAberration);
-		getShader().uniform2fv("screen_res", 1, screen_rect.mV);
+
+		getShader().uniform1f(sVignetteStrength, mStrength);
+		getShader().uniform1f(sVignettRadius, mRadius);
+		getShader().uniform1f(sVignetteDarkness, mDarkness);
+		getShader().uniform1f(sVignetteDesaturation, mDesaturation);
+		getShader().uniform1f(sVignetteChromaticAberration, mChromaticAberration);
+		getShader().uniform2fv(sScreenRes, 1, screen_rect.mV);
 		return QUAD_NORMAL;
 	}
 };
@@ -259,7 +282,7 @@ public:
 	/*virtual*/ S32 getDepthChannel()	const	{ return -1; }
 	/*virtual*/ QuadType preDraw()
 	{
-		mPassLoc = getShader().getUniformLocation("horizontalPass");
+		mPassLoc = getShader().getUniformLocation(sHorizontalPass);
 		return QUAD_NORMAL;
 	}
 	/*virtual*/ bool draw(U32 pass) 
@@ -295,10 +318,10 @@ public:
 
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
 
-		getShader().uniformMatrix4fv("prev_proj", 1, GL_FALSE, prev_proj.m);
-		getShader().uniformMatrix4fv("inv_proj", 1, GL_FALSE, inv_proj.m);
-		getShader().uniform2fv("screen_res", 1, screen_rect.mV);
-		getShader().uniform1i("blur_strength", mStrength);
+		getShader().uniformMatrix4fv(sPrevProj, 1, GL_FALSE, prev_proj.m);
+		getShader().uniformMatrix4fv(sInvProj, 1, GL_FALSE, inv_proj.m);
+		getShader().uniform2fv(sScreenRes, 1, screen_rect.mV);
+		getShader().uniform1i(sBlurStrength, mStrength);
 		
 		return QUAD_NORMAL;
 	}

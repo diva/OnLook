@@ -231,6 +231,7 @@ set(llcommon_HEADER_FILES
     llstrider.h
     llstring.h
     llstringtable.h
+    llstaticstringtable.h
     llsys.h
     llthread.h
     llthreadsafequeue.h
