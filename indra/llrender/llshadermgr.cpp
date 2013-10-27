@@ -676,6 +676,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		std::string define = "#define " + iter->first + " " + iter->second + "\n";
 		text[count++] = (GLcharARB *) strdup(define.c_str());
 	}
+	}
 
 	if (texture_index_channels > 0 && type == GL_FRAGMENT_SHADER_ARB)
 	{

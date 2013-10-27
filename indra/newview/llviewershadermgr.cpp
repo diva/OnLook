@@ -250,47 +250,6 @@ void LLViewerShaderMgr::initAttribsAndUniforms(void)
 	if (mReservedAttribs.empty())
 	{
 		LLShaderMgr::initAttribsAndUniforms();
-
-		mAvatarUniforms.push_back("matrixPalette");
-		mAvatarUniforms.push_back("gWindDir");
-		mAvatarUniforms.push_back("gSinWaveParams");
-		mAvatarUniforms.push_back("gGravity");
-
-		mWLUniforms.push_back("camPosLocal");
-
-		mTerrainUniforms.reserve(5);
-		mTerrainUniforms.push_back("detail_0");
-		mTerrainUniforms.push_back("detail_1");
-		mTerrainUniforms.push_back("detail_2");
-		mTerrainUniforms.push_back("detail_3");
-		mTerrainUniforms.push_back("alpha_ramp");
-
-		mGlowUniforms.push_back("glowDelta");
-		mGlowUniforms.push_back("glowStrength");
-
-		mGlowExtractUniforms.push_back("minLuminance");
-		mGlowExtractUniforms.push_back("maxExtractAlpha");
-		mGlowExtractUniforms.push_back("lumWeights");
-		mGlowExtractUniforms.push_back("warmthWeights");
-		mGlowExtractUniforms.push_back("warmthAmount");
-
-		mShinyUniforms.push_back("origin");
-
-		mWaterUniforms.reserve(12);
-		mWaterUniforms.push_back("screenTex");
-		mWaterUniforms.push_back("screenDepth");
-		mWaterUniforms.push_back("refTex");
-		mWaterUniforms.push_back("eyeVec");
-		mWaterUniforms.push_back("time");
-		mWaterUniforms.push_back("d1");
-		mWaterUniforms.push_back("d2");
-		mWaterUniforms.push_back("lightDir");
-		mWaterUniforms.push_back("specular");
-		mWaterUniforms.push_back("lightExp");
-		mWaterUniforms.push_back("fogCol");
-		mWaterUniforms.push_back("kd");
-		mWaterUniforms.push_back("refScale");
-		mWaterUniforms.push_back("waterHeight");
 	}	
 }
 	
@@ -935,7 +894,7 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		gPostNightVisionProgram.mName = "Night Vision Shader (Post)";
 		gPostNightVisionProgram.mShaderFiles.clear();
 		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("effects/nightVisionF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("interface/onetexturenocolorV.glsl", GL_VERTEX_SHADER_ARB));
+		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("interface/twotextureaddV.glsl", GL_VERTEX_SHADER_ARB));
 		gPostNightVisionProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
 		if(gPostNightVisionProgram.createShader(NULL, &shaderUniforms))
 		{
