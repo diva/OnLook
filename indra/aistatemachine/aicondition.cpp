@@ -28,6 +28,7 @@
  *   Initial version, written by Aleric Inglewood @ SL
  */
 
+#include "sys.h"
 #include "aicondition.h"
 #include "aistatemachine.h"
 
