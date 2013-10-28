@@ -869,6 +869,7 @@ void LLToolCompGun::draw()
 		}
 		else mTimerFOV.stop();
 	}
+	LLToolComposite::draw(); // Singu Note: We call parent here, instead of being clueless and adding to LLViewerWindow::draw for crosshairs and such
 }
 
 // </exodus>
