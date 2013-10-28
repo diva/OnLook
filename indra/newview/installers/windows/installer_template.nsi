@@ -36,6 +36,14 @@ RequestExecutionLevel admin	; on Vista we must be admin because we write to Prog
 %%GRID_VARS%%
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Alows us to determine if we're running on 64 bit OS; ${If} macros
+!include "x64.nsh"
+!include "LogicLib.nsh"
+
+;; are 64 bit binaries packaged in this installer
+%%WIN64_BIN_BUILD%%
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; - language files - one for each language (or flavor thereof)
 ;; (these files are in the same place as the nsi template but the python script generates a new nsi file in the 
 ;; application directory so we have to add a path to these include files)
@@ -664,6 +672,12 @@ FunctionEnd
 ;;  entry to the language ID selector below
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Function .onInit
+!ifdef WIN64_BIN_BUILD
+    ${IfNot} ${RunningX64}
+        MessageBox MB_OK|MB_ICONSTOP "This version requires 64 bit operating sytem."
+        Quit
+    ${EndIf}
+!endif
     Push $0
     ${GetParameters} $COMMANDLINE              ; get our command line
     ${GetOptions} $COMMANDLINE "/LANGID=" $0   ; /LANGID=1033 implies US English
