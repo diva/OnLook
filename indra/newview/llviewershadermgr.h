@@ -80,57 +80,6 @@ public:
 		SHADER_COUNT
 	};
 
-	typedef enum
-	{
-		SHINY_ORIGIN = END_RESERVED_UNIFORMS
-	} eShinyUniforms;
-
-	typedef enum
-	{
-		WATER_SCREENTEX = END_RESERVED_UNIFORMS,
-		WATER_SCREENDEPTH,
-		WATER_REFTEX,
-		WATER_EYEVEC,
-		WATER_TIME,
-		WATER_WAVE_DIR1,
-		WATER_WAVE_DIR2,
-		WATER_LIGHT_DIR,
-		WATER_SPECULAR,
-		WATER_SPECULAR_EXP,
-		WATER_FOGCOLOR,
-		WATER_FOGDENSITY,
-		WATER_REFSCALE,
-		WATER_WATERHEIGHT,
-	} eWaterUniforms;
-
-	typedef enum
-	{
-		WL_CAMPOSLOCAL = END_RESERVED_UNIFORMS,
-		WL_WATERHEIGHT
-	} eWLUniforms;
-
-	typedef enum
-	{
-		TERRAIN_DETAIL0 = END_RESERVED_UNIFORMS,
-		TERRAIN_DETAIL1,
-		TERRAIN_DETAIL2,
-		TERRAIN_DETAIL3,
-		TERRAIN_ALPHARAMP
-	} eTerrainUniforms;
-
-	typedef enum
-	{
-		GLOW_DELTA = END_RESERVED_UNIFORMS
-	} eGlowUniforms;
-
-	typedef enum
-	{
-		AVATAR_MATRIX = END_RESERVED_UNIFORMS,
-		AVATAR_WIND,
-		AVATAR_SINWAVE,
-		AVATAR_GRAVITY,
-	} eAvatarUniforms;
-
 	// simple model of forward iterator
 	// http://www.sgi.com/tech/stl/ForwardIterator.html
 	class shader_iter
@@ -235,6 +184,7 @@ extern LLGLSLShader			gTransformTexCoordProgram;
 extern LLGLSLShader			gTransformNormalProgram;
 extern LLGLSLShader			gTransformColorProgram;
 extern LLGLSLShader			gTransformTangentProgram;
+
 //utility shaders
 extern LLGLSLShader			gOcclusionProgram;
 extern LLGLSLShader			gOcclusionCubeProgram;
@@ -244,6 +194,8 @@ extern LLGLSLShader			gSplatTextureRectProgram;
 extern LLGLSLShader			gGlowCombineFXAAProgram;
 extern LLGLSLShader			gDebugProgram;
 extern LLGLSLShader			gClipProgram;
+extern LLGLSLShader			gDownsampleDepthProgram;
+extern LLGLSLShader			gDownsampleDepthRectProgram;
 
 //output tex0[tc0] + tex1[tc1]
 extern LLGLSLShader			gTwoTextureAddProgram;

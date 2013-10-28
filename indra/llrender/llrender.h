@@ -38,6 +38,7 @@
 #include "v3math.h"
 #include "v4coloru.h"
 #include "v4math.h"
+#include "llalignedarray.h"
 #include "llstrider.h"
 #include "llpointer.h"
 #include "llglheaders.h"
@@ -466,9 +467,8 @@ private:
 
 	F32				mMaxAnisotropy;
 
-	std::vector<LLVector4a*> mUIOffset;
-	std::vector<LLVector4a*> mUIScale;
-
+	LLAlignedArray<LLVector4a, 64> mUIOffset;
+	LLAlignedArray<LLVector4a, 64> mUIScale;
 };
 
 extern F32 gGLModelView[16];

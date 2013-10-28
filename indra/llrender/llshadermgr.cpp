@@ -528,7 +528,7 @@ void LLShaderMgr::dumpObjectLog(GLhandleARB ret, BOOL warns)
 	}
 }
 
-GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shader_level, GLenum type, S32 texture_index_channels)
+GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shader_level, GLenum type, std::map<std::string, std::string>* defines, S32 texture_index_channels)
 {
 	std::pair<std::multimap<std::string, CachedObjectInfo >::iterator, std::multimap<std::string, CachedObjectInfo>::iterator> range;
 	range = mShaderObjects.equal_range(filename);
@@ -669,11 +669,13 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 	if(SHPackDeferredNormals)
 		text[count++] = strdup("#define PACK_NORMALS\n");
 
-	//copy preprocessor definitions into buffer
-	for (std::map<std::string,std::string>::iterator iter = mDefinitions.begin(); iter != mDefinitions.end(); ++iter)
+	if(defines)
+	{
+		for (std::map<std::string,std::string>::iterator iter = defines->begin(); iter != defines->end(); ++iter)
 	{
 		std::string define = "#define " + iter->first + " " + iter->second + "\n";
 		text[count++] = (GLcharARB *) strdup(define.c_str());
+	}
 	}
 
 	if (texture_index_channels > 0 && type == GL_FRAGMENT_SHADER_ARB)
@@ -924,7 +926,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		if (shader_level > 1)
 		{
 			shader_level--;
-			return loadShaderFile(filename,shader_level,type,texture_index_channels);
+			return loadShaderFile(filename,shader_level,type, defines, texture_index_channels);
 		}
 		LL_WARNS("ShaderLoading") << "Failed to load " << filename << LL_ENDL;	
 	}
@@ -1044,7 +1046,9 @@ void LLShaderMgr::initAttribsAndUniforms()
 	mReservedUniforms.push_back("texture_matrix1");
 	mReservedUniforms.push_back("texture_matrix2");
 	mReservedUniforms.push_back("texture_matrix3");
-	llassert(mReservedUniforms.size() == LLShaderMgr::TEXTURE_MATRIX3+1);
+	mReservedUniforms.push_back("object_plane_s");
+	mReservedUniforms.push_back("object_plane_t");
+	llassert(mReservedUniforms.size() == LLShaderMgr::OBJECT_PLANE_T+1);
 
 	mReservedUniforms.push_back("viewport");
 
@@ -1185,7 +1189,47 @@ void LLShaderMgr::initAttribsAndUniforms()
 	mReservedUniforms.push_back("lightMap");
 	mReservedUniforms.push_back("bloomMap");
 	mReservedUniforms.push_back("projectionMap");
+	mReservedUniforms.push_back("norm_mat");
 
+	mReservedUniforms.push_back("matrixPalette");
+	
+	mReservedUniforms.push_back("screenTex");
+	mReservedUniforms.push_back("screenDepth");
+	mReservedUniforms.push_back("refTex");
+	mReservedUniforms.push_back("eyeVec");
+	mReservedUniforms.push_back("time");
+	mReservedUniforms.push_back("d1");
+	mReservedUniforms.push_back("d2");
+	mReservedUniforms.push_back("lightDir");
+	mReservedUniforms.push_back("specular");
+	mReservedUniforms.push_back("lightExp");
+	mReservedUniforms.push_back("waterFogColor");
+	mReservedUniforms.push_back("waterFogDensity");
+	mReservedUniforms.push_back("waterFogKS");
+	mReservedUniforms.push_back("refScale");
+	mReservedUniforms.push_back("waterHeight");
+	mReservedUniforms.push_back("waterPlane");
+	mReservedUniforms.push_back("normScale");
+	mReservedUniforms.push_back("fresnelScale");
+	mReservedUniforms.push_back("fresnelOffset");
+	mReservedUniforms.push_back("blurMultiplier");
+	mReservedUniforms.push_back("sunAngle");
+	mReservedUniforms.push_back("scaledAngle");
+	mReservedUniforms.push_back("sunAngle2");
+
+	mReservedUniforms.push_back("camPosLocal");
+
+	mReservedUniforms.push_back("gWindDir");
+	mReservedUniforms.push_back("gSinWaveParams");
+	mReservedUniforms.push_back("gGravity");
+
+	mReservedUniforms.push_back("detail_0");
+	mReservedUniforms.push_back("detail_1");
+	mReservedUniforms.push_back("detail_2");
+	mReservedUniforms.push_back("detail_3");
+	mReservedUniforms.push_back("alpha_ramp");
+
+	mReservedUniforms.push_back("origin");
 	llassert(mReservedUniforms.size() == END_RESERVED_UNIFORMS);
 
 	std::set<std::string> dupe_check;

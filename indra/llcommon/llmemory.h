@@ -663,14 +663,6 @@ void  LLPrivateMemoryPoolTester::operator delete[](void* addr)
 #endif
 #endif
 
-LL_COMMON_API void ll_assert_aligned_func(uintptr_t ptr,U32 alignment);
-
-#ifdef SHOW_ASSERT
-#define ll_assert_aligned(ptr,alignment) ll_assert_aligned_func(reinterpret_cast<uintptr_t>(ptr),((U32)alignment))
-#else
-#define ll_assert_aligned(ptr,alignment)
-#endif
-
 //EVENTUALLY REMOVE THESE:
 #include "llpointer.h"
 #include "llsingleton.h"

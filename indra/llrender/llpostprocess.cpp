@@ -51,6 +51,28 @@ extern LLGLSLShader			gPostPosterizeProgram;
 extern LLGLSLShader			gPostMotionBlurProgram;
 extern LLGLSLShader			gPostVignetteProgram;
 
+static LLStaticHashedString sGamma("gamma");
+static LLStaticHashedString sBrightness("brightness");
+static LLStaticHashedString sContrast("contrast");
+static LLStaticHashedString sContrastBase("contrastBase");
+static LLStaticHashedString sSaturation("saturation");
+static LLStaticHashedString sBrightMult("brightMult");
+static LLStaticHashedString sNoiseStrength("noiseStrength");
+static LLStaticHashedString sLayerCount("layerCount");
+
+static LLStaticHashedString sVignetteStrength("vignette_strength");
+static LLStaticHashedString sVignettRadius("vignette_radius");
+static LLStaticHashedString sVignetteDarkness("vignette_darkness");
+static LLStaticHashedString sVignetteDesaturation("vignette_desaturation");
+static LLStaticHashedString sVignetteChromaticAberration("vignette_chromatic_aberration");
+static LLStaticHashedString sScreenRes("screen_res");
+
+static LLStaticHashedString sHorizontalPass("horizontalPass");
+
+static LLStaticHashedString sPrevProj("prev_proj");
+static LLStaticHashedString sInvProj("inv_proj");
+static LLStaticHashedString sBlurStrength("blur_strength");
+
 static const unsigned int NOISE_SIZE = 512;
 
 static const char * const XML_FILENAME = "postprocesseffects.xml";
@@ -155,16 +177,16 @@ public:
 
 	/*virtual*/ QuadType preDraw()
 	{
-		getShader().uniform1f("gamma", mGamma);
-		getShader().uniform1f("brightness", mBrightness);
-		getShader().uniform1f("contrast", mContrast);
+		getShader().uniform1f(sGamma, mGamma);
+		getShader().uniform1f(sBrightness, mBrightness);
+		getShader().uniform1f(sContrast, mContrast);
 		float baseI = (mContrastBase.get()[VX] + mContrastBase.get()[VY] + mContrastBase.get()[VZ]) / 3.0f;
 		baseI = mContrastBase.get()[VW] / llmax(baseI,0.001f);
 		float baseR = mContrastBase.get()[VX] * baseI;
 		float baseG = mContrastBase.get()[VY] * baseI;
 		float baseB = mContrastBase.get()[VZ] * baseI;
-		getShader().uniform3fv("contrastBase", 1, LLVector3(baseR, baseG, baseB).mV);
-		getShader().uniform1f("saturation", mSaturation);
+		getShader().uniform3fv(sContrastBase, 1, LLVector3(baseR, baseG, baseB).mV);
+		getShader().uniform1f(sSaturation, mSaturation);
 
 		return QUAD_NORMAL;
 	}
@@ -187,8 +209,8 @@ public:
 	{
 		LLPostProcess::getInstance()->bindNoise(1);
 
-		getShader().uniform1f("brightMult", mBrightnessMult);
-		getShader().uniform1f("noiseStrength", mNoiseStrength);
+		getShader().uniform1f(sBrightMult, mBrightnessMult);
+		getShader().uniform1f(sNoiseStrength, mNoiseStrength);
 
 		return QUAD_NOISE;
 	}
@@ -206,7 +228,7 @@ public:
 	}
 	/*virtual*/ QuadType preDraw()
 	{
-		getShader().uniform1i("layerCount", mNumLayers);
+		getShader().uniform1i(sLayerCount, mNumLayers);
 		return QUAD_NORMAL;
 	}
 };
@@ -232,12 +254,13 @@ public:
 	/*virtual*/ QuadType preDraw()
 	{
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
-		getShader().uniform1f("vignette_strength", mStrength);
-		getShader().uniform1f("vignette_radius", mRadius);
-		getShader().uniform1f("vignette_darkness", mDarkness);
-		getShader().uniform1f("vignette_desaturation", mDesaturation);
-		getShader().uniform1f("vignette_chromatic_aberration", mChromaticAberration);
-		getShader().uniform2fv("screen_res", 1, screen_rect.mV);
+
+		getShader().uniform1f(sVignetteStrength, mStrength);
+		getShader().uniform1f(sVignettRadius, mRadius);
+		getShader().uniform1f(sVignetteDarkness, mDarkness);
+		getShader().uniform1f(sVignetteDesaturation, mDesaturation);
+		getShader().uniform1f(sVignetteChromaticAberration, mChromaticAberration);
+		getShader().uniform2fv(sScreenRes, 1, screen_rect.mV);
 		return QUAD_NORMAL;
 	}
 };
@@ -259,7 +282,7 @@ public:
 	/*virtual*/ S32 getDepthChannel()	const	{ return -1; }
 	/*virtual*/ QuadType preDraw()
 	{
-		mPassLoc = getShader().getUniformLocation("horizontalPass");
+		mPassLoc = getShader().getUniformLocation(sHorizontalPass);
 		return QUAD_NORMAL;
 	}
 	/*virtual*/ bool draw(U32 pass) 
@@ -295,10 +318,10 @@ public:
 
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
 
-		getShader().uniformMatrix4fv("prev_proj", 1, GL_FALSE, prev_proj.m);
-		getShader().uniformMatrix4fv("inv_proj", 1, GL_FALSE, inv_proj.m);
-		getShader().uniform2fv("screen_res", 1, screen_rect.mV);
-		getShader().uniform1i("blur_strength", mStrength);
+		getShader().uniformMatrix4fv(sPrevProj, 1, GL_FALSE, prev_proj.m);
+		getShader().uniformMatrix4fv(sInvProj, 1, GL_FALSE, inv_proj.m);
+		getShader().uniform2fv(sScreenRes, 1, screen_rect.mV);
+		getShader().uniform1i(sBlurStrength, mStrength);
 		
 		return QUAD_NORMAL;
 	}
@@ -312,7 +335,7 @@ public:
 LLPostProcess::LLPostProcess(void) : 
 					mVBO(NULL),
 					mDepthTexture(0),
-					mNoiseTexture(NULL),
+					mNoiseTexture(0),
 					mScreenWidth(0),
 					mScreenHeight(0),
 					mNoiseTextureScale(0.f),
@@ -407,7 +430,10 @@ void LLPostProcess::createScreenTextures()
 	stop_glerror();
 
 	if(mDepthTexture)
+	{
 		LLImageGL::deleteTextures(1, &mDepthTexture);
+		mDepthTexture = 0;
+	}
 
 	for(std::list<LLPointer<LLPostProcessShader> >::iterator it=mShaders.begin();it!=mShaders.end();++it)
 	{
@@ -434,16 +460,25 @@ void LLPostProcess::createNoiseTexture()
 		}
 	}
 
-	mNoiseTexture = new LLImageGL(FALSE) ;
-	if(mNoiseTexture->createGLTexture())
+	if(mNoiseTexture)
 	{
-		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseTexture->getTexName());
-		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_RED, NOISE_SIZE, NOISE_SIZE, GL_RED, GL_UNSIGNED_BYTE, &buffer[0]);
-		stop_glerror();
-		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
-		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_WRAP);
-		stop_glerror();
+		LLImageGL::deleteTextures(1, &mNoiseTexture);
+		mNoiseTexture = 0;
 	}
+
+	LLImageGL::generateTextures(1, &mNoiseTexture);
+	stop_glerror();
+	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseTexture);
+	stop_glerror();
+
+	if(gGLManager.mGLVersion >= 4.f)
+		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_R8, NOISE_SIZE, NOISE_SIZE, GL_RED, GL_UNSIGNED_BYTE, &buffer[0], false);
+	else
+		LLImageGL::setManualImage(GL_TEXTURE_2D, 0, GL_LUMINANCE8, NOISE_SIZE, NOISE_SIZE, GL_LUMINANCE, GL_UNSIGNED_BYTE, &buffer[0], false);
+	stop_glerror();
+	gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
+	gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_WRAP);
+	stop_glerror();
 }
 
 void LLPostProcess::destroyGL()
@@ -453,7 +488,9 @@ void LLPostProcess::destroyGL()
 	if(mDepthTexture)
 		LLImageGL::deleteTextures(1, &mDepthTexture);
 	mDepthTexture=0;
-	mNoiseTexture = NULL ;
+	if(mNoiseTexture)
+		LLImageGL::deleteTextures(1, &mNoiseTexture);
+	mNoiseTexture=0 ;
 	mVBO = NULL ;
 }
 
@@ -467,6 +504,7 @@ void LLPostProcess::copyFrameBuffer()
 {
 	mRenderTarget[!!mRenderTarget[0].getFBO()].bindTexture(0,0);
 	glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB,0,0,0,0,0,mScreenWidth, mScreenHeight);
+	stop_glerror();
 
 	if(mDepthTexture)
 	{
@@ -476,6 +514,7 @@ void LLPostProcess::copyFrameBuffer()
 			{
 				gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mDepthTexture);
 				glCopyTexSubImage2D(GL_TEXTURE_RECTANGLE_ARB,0,0,0,0,0,mScreenWidth, mScreenHeight);
+				stop_glerror();
 				break;
 			}
 		}
@@ -485,7 +524,7 @@ void LLPostProcess::copyFrameBuffer()
 
 void LLPostProcess::bindNoise(U32 channel)
 {
-	gGL.getTexUnit(channel)->bind(mNoiseTexture);
+	gGL.getTexUnit(channel)->bindManual(LLTexUnit::TT_TEXTURE,mNoiseTexture);
 }
 
 void LLPostProcess::renderEffects(unsigned int width, unsigned int height)
@@ -508,8 +547,7 @@ void LLPostProcess::doEffects(void)
 {
 	LLVertexBuffer::unbind();
 
-	mNoiseTextureScale = 0.001f + ((100.f - mSelectedEffectInfo["noise_size"].asFloat()) / 100.f);
-	mNoiseTextureScale *= (mScreenHeight / NOISE_SIZE);
+	mNoiseTextureScale = (1.f - (mSelectedEffectInfo["noise_size"].asFloat() - 1.f) *(9.f/990.f)) / (float)NOISE_SIZE;
 
 	/// Copy the screen buffer to the render texture
 	copyFrameBuffer();
@@ -562,13 +600,19 @@ void LLPostProcess::applyShaders(void)
 			QuadType quad = (*it)->preDraw();
 			while((*it)->draw(pass++))
 			{
-				mRenderTarget[!primary_rendertarget].bindTarget();
+				LLRenderTarget& write_target = mRenderTarget[!primary_rendertarget];
+				LLRenderTarget& read_target = mRenderTarget[mRenderTarget[0].getFBO() ? primary_rendertarget : !primary_rendertarget];
+				write_target.bindTarget();
 
 				if(color_channel >= 0)
-					mRenderTarget[mRenderTarget[0].getFBO() ? primary_rendertarget : !primary_rendertarget].bindTexture(0,color_channel);
+					read_target.bindTexture(0,color_channel);
 
 				drawOrthoQuad(quad);
-				mRenderTarget[!primary_rendertarget].flush();
+
+				if(color_channel >= 0 && !mRenderTarget[0].getFBO())
+					gGL.getTexUnit(color_channel)->unbind(read_target.getUsage());
+
+				write_target.flush();
 				if(mRenderTarget[0].getFBO())
 					primary_rendertarget = !primary_rendertarget;
 			}
@@ -593,8 +637,13 @@ void LLPostProcess::drawOrthoQuad(QuadType type)
 		LLStrider<LLVector2> uv2;
 		mVBO->getTexCoord1Strider(uv2);
 
-		float offs[2] = {(float) rand() / (float) RAND_MAX, (float) rand() / (float) RAND_MAX};
-		float scale[2] = {mScreenWidth * mNoiseTextureScale / mScreenHeight, mNoiseTextureScale};
+		float offs[2] = {
+			llround(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE),
+			llround(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE) };
+		float scale[2] = {
+			(float)mScreenWidth * mNoiseTextureScale,
+			(float)mScreenHeight * mNoiseTextureScale };
+
 		uv2[0] = LLVector2(offs[0],offs[1]);
 		uv2[1] = LLVector2(offs[0],offs[1]+scale[1]);
 		uv2[2] = LLVector2(offs[0]+scale[0],offs[1]);
