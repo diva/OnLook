@@ -540,9 +540,9 @@
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>bfde86bbd84536448ac2a717ed1646d8</string>
+            <string>17f6c6e1b2d404a1e039aa23445f446c</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.5.0.1-windows64-20131020.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.3.9-windows64-20131028.tar.bz2</uri>
           </map>
         </map>
       </map>
