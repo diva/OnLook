@@ -4630,10 +4630,13 @@ BOOL LLMenuHolderGL::handleKey(KEY key, MASK mask, BOOL called_from_parent)
 			}
 			else
 			{
-				//highlight first enabled one
-				if(pMenu->highlightNextItem(NULL))
+				if (key == KEY_UP || key == KEY_DOWN) // Singu Note: Only highlight if the user actually meant to navigate through the menu
 				{
-					handled = true;
+					//highlight first enabled one
+					if (pMenu->highlightNextItem(NULL))
+					{
+						handled = true;
+					}
 				}
 			}
 		}
