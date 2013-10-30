@@ -461,6 +461,7 @@ class WindowsManifest(ViewerManifest):
                 "%%INSTALL_FILES%%":self.nsi_file_commands(True),
                 "%%DELETE_FILES%%":self.nsi_file_commands(False),
                 "%%INSTALLDIR%%":"%s\\%s" % ('$PROGRAMFILES64' if self.is_win64() else '$PROGRAMFILES', self.channel_oneword()),
+                "%%WIN64_BIN_BUILD%%":"!define WIN64_BIN_BUILD 1" if self.is_win64() else "",
                 })
 
         # We use the Unicode version of NSIS, available from

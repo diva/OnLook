@@ -131,7 +131,7 @@ void LLViewerDynamicTexture::preRender(BOOL clear_depth)
 	llassert(mFullHeight <= 512);
 	llassert(mFullWidth <= 512);
 
-	if (gGLManager.mHasFramebufferObject && gPipeline.mWaterDis.isComplete())
+	if (gGLManager.mHasFramebufferObject && gPipeline.mWaterDis.isComplete() && !gGLManager.mIsATI)
 	{ //using offscreen render target, just use the bottom left corner
 		mOrigin.set(0, 0);
 	}
@@ -218,13 +218,12 @@ BOOL LLViewerDynamicTexture::updateAllInstances()
 		return TRUE;
 	}
 
-#if 0 //THIS CAUSES MAINT-1092
-	bool use_fbo = gGLManager.mHasFramebufferObject && gPipeline.mWaterDis.isComplete();
+	bool use_fbo = gGLManager.mHasFramebufferObject && gPipeline.mWaterDis.isComplete() && !gGLManager.mIsATI;
+
 	if (use_fbo)
 	{
 		gPipeline.mWaterDis.bindTarget();
 	}
-#endif
 
 	LLGLSLShader::bindNoShader();
 	LLVertexBuffer::unbind();
@@ -259,12 +258,10 @@ BOOL LLViewerDynamicTexture::updateAllInstances()
 		}
 	}
 
-#if 0 //THIS CAUSES MAINT-1092
 	if (use_fbo)
 	{
 		gPipeline.mWaterDis.flush();
 	}
-#endif
 
 	return ret;
 }

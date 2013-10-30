@@ -570,6 +570,7 @@ void LLDrawPoolBump::renderFullbrightShiny()
 	{
 		LLGLEnable blend_enable(GL_BLEND);
 
+		gGL.setSceneBlendType(LLRender::BT_REPLACE);
 		if (mVertexShaderLevel > 1)
 		{
 			LLRenderPass::pushBatches(LLRenderPass::PASS_FULLBRIGHT_SHINY, sVertexMask | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
@@ -578,6 +579,7 @@ void LLDrawPoolBump::renderFullbrightShiny()
 		{
 			LLRenderPass::renderTexture(LLRenderPass::PASS_FULLBRIGHT_SHINY, sVertexMask);
 		}
+		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 	}
 }
 
@@ -896,7 +898,9 @@ void LLDrawPoolBump::renderPostDeferred(S32 pass)
 	switch (pass)
 	{
 	case 0:
+		gGL.setColorMask(true, true);
 		renderFullbrightShiny();
+		gGL.setColorMask(true, false);
 		break;
 	case 1:
 		renderBump(LLRenderPass::PASS_POST_BUMP);
@@ -1370,9 +1374,14 @@ void LLBumpImageList::onSourceLoaded( BOOL success, LLViewerTexture *src_vi, LLI
 					LLGLDisable blend(GL_BLEND);
 					gGL.setColorMask(TRUE, TRUE);
 					gNormalMapGenProgram.bind();
-					gNormalMapGenProgram.uniform1f("norm_scale", gSavedSettings.getF32("RenderNormalMapScale"));
-					gNormalMapGenProgram.uniform1f("stepX", 1.f/bump->getWidth());
-					gNormalMapGenProgram.uniform1f("stepY", 1.f/bump->getHeight());
+
+					static LLStaticHashedString sNormScale("norm_scale");
+					static LLStaticHashedString sStepX("stepX");
+					static LLStaticHashedString sStepY("stepY");
+
+					gNormalMapGenProgram.uniform1f(sNormScale, gSavedSettings.getF32("RenderNormalMapScale"));
+					gNormalMapGenProgram.uniform1f(sStepX, 1.f/bump->getWidth());
+					gNormalMapGenProgram.uniform1f(sStepX, 1.f/bump->getHeight());
 
 					LLVector2 v((F32) bump->getWidth()/gPipeline.mScreen.getWidth(),
 								(F32) bump->getHeight()/gPipeline.mScreen.getHeight());

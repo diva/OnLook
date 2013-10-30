@@ -1099,6 +1099,26 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 			intformat = GL_RGBA8;
 		}
 
+		if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE) 
+		{ //GL_LUMINANCE is deprecated, convert to GL_RGBA
+			use_scratch = true;
+			scratch = new U32[width*height];
+
+			U32 pixel_count = (U32) (width*height);
+			for (U32 i = 0; i < pixel_count; i++)
+			{
+				U8 lum = ((U8*) pixels)[i];
+
+				U8* pix = (U8*) &scratch[i];
+				pix[0] = pix[1] = pix[2] = lum;
+				pix[3] = 1.f;
+			}					
+			
+			pixformat = GL_RGBA;
+			intformat = GL_RGBA8;
+		}
+
+
 		if (pixformat == GL_LUMINANCE_ALPHA && pixtype == GL_UNSIGNED_BYTE) 
 		{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
 			use_scratch = true;

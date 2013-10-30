@@ -56,7 +56,8 @@ LLUICtrl::LLUICtrl() :
 	mDoubleClickSignal(NULL),
 	mTentative(FALSE),
 	mTabStop(TRUE),
-	mIsChrome(FALSE)
+	mIsChrome(FALSE),
+	mCommitOnReturn(FALSE)
 {
 }
 
@@ -78,7 +79,8 @@ LLUICtrl::LLUICtrl(const std::string& name, const LLRect rect, BOOL mouse_opaque
 	mDoubleClickSignal(NULL),
 	mTentative( FALSE ),
 	mTabStop( TRUE ),
-	mIsChrome(FALSE)
+	mIsChrome(FALSE),
+	mCommitOnReturn(FALSE)
 {
 	if(commit_callback)
 		setCommitCallback(commit_callback);
@@ -177,6 +179,13 @@ BOOL LLUICtrl::handleDoubleClick(S32 x, S32 y, MASK mask)
 	}
 	return handled;
 }
+
+// can't tab to children of a non-tab-stop widget
+BOOL LLUICtrl::canFocusChildren() const
+{
+	return TRUE;//hasTabStop();
+}
+
 
 void LLUICtrl::onCommit()
 {
@@ -528,7 +537,8 @@ BOOL LLUICtrl::focusNextItem(BOOL text_fields_only)
 {
 	// this assumes that this method is called on the focus root.
 	LLCtrlQuery query = getTabOrderQuery();
-	if(text_fields_only || LLUI::sConfigGroup->getBOOL("TabToTextFieldsOnly"))
+	static LLUICachedControl<bool> tab_to_text_fields_only ("TabToTextFieldsOnly", false);
+	if(text_fields_only || tab_to_text_fields_only)
 	{
 		query.addPreFilter(LLUICtrl::LLTextInputFilter::getInstance());
 	}
@@ -540,7 +550,8 @@ BOOL LLUICtrl::focusPrevItem(BOOL text_fields_only)
 {
 	// this assumes that this method is called on the focus root.
 	LLCtrlQuery query = getTabOrderQuery();
-	if(text_fields_only || LLUI::sConfigGroup->getBOOL("TabToTextFieldsOnly"))
+	static LLUICachedControl<bool> tab_to_text_fields_only ("TabToTextFieldsOnly", false);
+	if(text_fields_only || tab_to_text_fields_only)
 	{
 		query.addPreFilter(LLUICtrl::LLTextInputFilter::getInstance());
 	}
@@ -552,7 +563,7 @@ LLUICtrl* LLUICtrl::findRootMostFocusRoot()
 {
 	LLUICtrl* focus_root = NULL;
 	LLUICtrl* next_view = this;
-	while(next_view)
+	while(next_view/* && next_view->hasTabStop()*/)
 	{
 		if (next_view->isFocusRoot())
 		{

@@ -1208,7 +1208,12 @@ void LLViewerFetchedTexture::addToCreateTexture()
 							destroyRawImage();
 							return ;
 						}
-						mRawImage->scale(w >> i, h >> i) ;					
+
+						{
+							//make a duplicate in case somebody else is using this raw image
+							mRawImage = mRawImage->duplicate(); 
+							mRawImage->scale(w >> i, h >> i) ;					
+						}
 					}
 				}
 			}
@@ -2540,7 +2545,11 @@ void LLViewerFetchedTexture::setCachedRawImage()
 				mIsRawImageValid = 0;
 				return;
 			}
-			mRawImage->scale(w >> i, h >> i) ;
+			{
+				//make a duplicate in case somebody else is using this raw image
+				mRawImage = mRawImage->duplicate(); 
+				mRawImage->scale(w >> i, h >> i) ;
+			}
 		}
 		if(mCachedRawImage.notNull())
 			mCachedRawImage->setInCache(false);

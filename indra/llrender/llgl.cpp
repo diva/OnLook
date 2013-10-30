@@ -727,7 +727,8 @@ bool LLGLManager::initGL()
 	}
 	
 	stop_glerror();
-
+	
+	//Singu Note: Multisampled texture stuff in v3 is dead, however we DO use multisampled FBOs.
 	if (mHasFramebufferMultisample)
 	{
 		glGetIntegerv(GL_MAX_INTEGER_SAMPLES, &mMaxIntegerSamples);

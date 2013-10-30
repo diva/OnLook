@@ -26,7 +26,7 @@ if (NOT FMODEX_LIBRARY)
     endif(WORD_SIZE EQUAL 32)
   endif(FMODEX_SDK_DIR)
   if(WINDOWS AND NOT FMODEX_SDK_DIR)
-    set(FMODEX_PROG_DIR "$ENV{PROGRAMFILES}/FMOD SoundSystem/FMOD Programmers API Windows")
+    GET_FILENAME_COMPONENT(FMODEX_PROG_DIR [HKEY_CURRENT_USER\\Software\\FMOD\ Programmers\ API\ Windows] ABSOLUTE CACHE)
     if(WORD_SIZE EQUAL 32)
       find_library(FMODEX_LIBRARY
                    fmodex_vc fmodexL_vc

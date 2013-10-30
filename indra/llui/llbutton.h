@@ -207,9 +207,6 @@ public:
 	void			setImageFlash(LLPointer<LLUIImage> image);
 	void			setImagePressed(LLPointer<LLUIImage> image);
 	
-	void			setCommitOnReturn(BOOL commit) { mCommitOnReturn = commit; }
-	BOOL			getCommitOnReturn() const { return mCommitOnReturn; }
-
 	static void		onHeldDown(void *userdata);  // to be called by gIdleCallbacks
 	void			setHelpURLCallback(const std::string &help_url);
 	const std::string&	getHelpURL() const { return mHelpURL; }
