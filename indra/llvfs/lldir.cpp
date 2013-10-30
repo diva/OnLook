@@ -363,7 +363,11 @@ std::string LLDir::buildSLOSCacheDir() const
 	}
 	else
 	{
+#if defined(_WIN64)
+		res = add(getOSCacheDir(), "SingularityViewer64");
+#else
 		res = add(getOSCacheDir(), "SingularityViewer");
+#endif
 	}
 	return res;
 }

@@ -626,12 +626,12 @@ BOOL LLMenuItemSeparatorGL::handleMouseDown(S32 x, S32 y, MASK mask)
 	{
 		// the menu items are in the child list in bottom up order
 		LLView* prev_menu_item = parent_menu->findNextSibling(this);
-		return prev_menu_item ? prev_menu_item->handleMouseDown(x, prev_menu_item->getRect().getHeight(), mask) : FALSE;
+		return (prev_menu_item && prev_menu_item->getVisible() && prev_menu_item->getEnabled()) ? prev_menu_item->handleMouseDown(x, prev_menu_item->getRect().getHeight(), mask) : FALSE;
 	}
 	else
 	{
 		LLView* next_menu_item = parent_menu->findPrevSibling(this);
-		return next_menu_item ? next_menu_item->handleMouseDown(x, 0, mask) : FALSE;
+		return (next_menu_item && next_menu_item->getVisible() && next_menu_item->getEnabled()) ? next_menu_item->handleMouseDown(x, 0, mask) : FALSE;
 	}
 }
 
@@ -641,12 +641,12 @@ BOOL LLMenuItemSeparatorGL::handleMouseUp(S32 x, S32 y, MASK mask)
 	if (y > getRect().getHeight() / 2)
 	{
 		LLView* prev_menu_item = parent_menu->findNextSibling(this);
-		return prev_menu_item ? prev_menu_item->handleMouseUp(x, prev_menu_item->getRect().getHeight(), mask) : FALSE;
+		return (prev_menu_item && prev_menu_item->getVisible() && prev_menu_item->getEnabled()) ? prev_menu_item->handleMouseUp(x, prev_menu_item->getRect().getHeight(), mask) : FALSE;
 	}
 	else
 	{
 		LLView* next_menu_item = parent_menu->findPrevSibling(this);
-		return next_menu_item ? next_menu_item->handleMouseUp(x, 0, mask) : FALSE;
+		return (next_menu_item && next_menu_item->getVisible() && next_menu_item->getEnabled()) ? next_menu_item->handleMouseUp(x, 0, mask) : FALSE;
 	}
 }
 
@@ -4630,10 +4630,13 @@ BOOL LLMenuHolderGL::handleKey(KEY key, MASK mask, BOOL called_from_parent)
 			}
 			else
 			{
-				//highlight first enabled one
-				if(pMenu->highlightNextItem(NULL))
+				if (key == KEY_UP || key == KEY_DOWN) // Singu Note: Only highlight if the user actually meant to navigate through the menu
 				{
-					handled = true;
+					//highlight first enabled one
+					if (pMenu->highlightNextItem(NULL))
+					{
+						handled = true;
+					}
 				}
 			}
 		}

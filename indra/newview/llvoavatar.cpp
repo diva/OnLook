@@ -6442,8 +6442,6 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 		
 		if (attachment->isObjectAttached(viewer_object))
 		{
-			cleanupAttachedMesh( viewer_object );
-			attachment->removeObject(viewer_object);
 			std::vector<std::pair<LLViewerObject*,LLViewerJointAttachment*> >::iterator it = std::find(mAttachedObjectsVector.begin(),mAttachedObjectsVector.end(),std::make_pair(viewer_object,attachment));
 			if(it != mAttachedObjectsVector.end())
 			{
@@ -6451,6 +6449,8 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 				mAttachedObjectsVector.pop_back();
 			}
 
+			cleanupAttachedMesh( viewer_object );
+			attachment->removeObject(viewer_object);
 			lldebugs << "Detaching object " << viewer_object->mID << " from " << attachment->getName() << llendl;
 			return TRUE;
 		}

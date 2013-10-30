@@ -113,6 +113,8 @@ void LLAudioEngine::setDefaults()
 	for (U32 i = 0; i < LLAudioEngine::AUDIO_TYPE_COUNT; i++)
 		mSecondaryGain[i] = 1.0f;
 
+	mCurrentTransfer = NULL;
+
 	mAllowLargeSounds = false;
 }
 
@@ -354,6 +356,11 @@ void LLAudioEngine::idle(F32 max_decode_time)
 		// Increment iter here (it is not used anymore), so we can use continue below to move on to the next source.
 		++iter;
 
+		if(!sourcep->isLoop() && sourcep->mPlayedOnce && (!sourcep->mChannelp || !sourcep->mChannelp->isPlaying()))
+		{
+			continue;
+		}
+
 		LLAudioData *adp = sourcep->getCurrentData();
 		//If there is no current data at all, or if it hasn't loaded, we must skip this source.
 		if (!adp || !adp->getBuffer())
@@ -509,9 +516,8 @@ void LLAudioEngine::idle(F32 max_decode_time)
 	// Decode audio files
 	gAudioDecodeMgrp->processQueue(max_decode_time);
 	
-	// Call this every frame, just in case we somehow
-	// missed picking it up in all the places that can add
-	// or request new data.
+	// Just call here every frame. It makes little sense to call elsewhere,
+	// as it's throttled to one active preloading loading sound at a time anyhow
 	startNextTransfer();
 
 	updateInternetStream();
@@ -660,10 +666,7 @@ bool LLAudioEngine::preloadSound(const LLUUID &uuid)
 	if(uuid.isNull())
 		return false;
 
-	gAudiop->getAudioData(uuid);	// We don't care about the return value, this is just to make sure
-									// that we have an entry, which will mean that the audio engine knows about this
-
-	if (gAudioDecodeMgrp->addDecodeRequest(uuid))
+	if(getAudioData(uuid)->getLoadState() >= LLAudioData::STATE_LOAD_DECODING)
 	{
 		// This means that we do have a local copy, and we're working on decoding it.
 		return true;
@@ -1064,29 +1067,39 @@ bool LLAudioEngine::hasDecodedFile(const LLUUID &uuid)
 	}
 }
 
-
-bool LLAudioEngine::hasLocalFile(const LLUUID &uuid)
-{
-	// See if it's in the VFS.
-	return gVFS->getExists(uuid, LLAssetType::AT_SOUND);
-}
-
-
 void LLAudioEngine::startNextTransfer()
 {
 	//LL_INFOS("AudioEngine") << "LLAudioEngine::startNextTransfer()" << LL_ENDL;
-	if (!gAssetStorage->isUpstreamOK() || mCurrentTransfer.notNull() || getMuted())
+	if (getMuted())
 	{
-		//LL_INFOS("AudioEngine") << "Transfer in progress, aborting" << LL_ENDL;
 		return;
 	}
+	else if(mCurrentTransferTimer.getElapsedTimeF32() <= .1f)
+	{
+		return;
+	}
+	else if(mCurrentTransfer && mCurrentTransfer->isInPreload())
+	{
+		//Keep updating until it either errors out or completes.
+		mCurrentTransfer->updateLoadState();	
+		return;
+	}
+	else
+	{
+		mCurrentTransfer = NULL;
+	}
+
+	//Technically, mCurrentTransfer could end up pointing to an audiodata object that's already
+	//being transmitted/decoded if such was spawned via needing it for playback immediately.
+	//This will effectively block us from choosing a lower priority audiodata object until the
+	//immediate ones are done, but it's not a real problem.
 
 	// Get the ID for the next asset that we want to transfer.
 	// Pick one in the following order:
-	LLUUID asset_id;
 	S32 i;
 	LLAudioSource *asp = NULL;
 	LLAudioData *adp = NULL;
+	LLAudioData *cur_adp = NULL;
 	data_map::iterator data_iter;
 
 	// Check all channels for currently playing sounds.
@@ -1119,15 +1132,15 @@ void LLAudioEngine::startNextTransfer()
 			continue;
 		}
 
-		if (!adp->hasLocalData() && adp->hasValidData())
+		if (adp->isInPreload())
 		{
-			asset_id = adp->getID();
 			max_pri = asp->getPriority();
+			cur_adp = adp;
 		}
 	}
 
 	// Check all channels for currently queued sounds.
-	if (asset_id.isNull())
+	if (!cur_adp)
 	{
 		max_pri = -1.f;
 		for (i = 0; i < MAX_CHANNELS; i++)
@@ -1155,16 +1168,16 @@ void LLAudioEngine::startNextTransfer()
 				continue;
 			}
 
-			if (!adp->hasLocalData() && adp->hasValidData())
+			if (adp->isInPreload())
 			{
-				asset_id = adp->getID();
 				max_pri = asp->getPriority();
+				cur_adp = adp;
 			}
 		}
 	}
 
 	// Check all live channels for other sounds (preloads).
-	if (asset_id.isNull())
+	if (!cur_adp)
 	{
 		max_pri = -1.f;
 		for (i = 0; i < MAX_CHANNELS; i++)
@@ -1195,17 +1208,17 @@ void LLAudioEngine::startNextTransfer()
 					continue;
 				}
 
-				if (!adp->hasLocalData() && adp->hasValidData())
+				if (adp->isInPreload())
 				{
-					asset_id = adp->getID();
 					max_pri = asp->getPriority();
+					cur_adp = adp;
 				}
 			}
 		}
 	}
 
 	// Check all sources
-	if (asset_id.isNull())
+	if (!cur_adp)
 	{
 		max_pri = -1.f;
 		source_map::iterator source_iter;
@@ -1223,18 +1236,18 @@ void LLAudioEngine::startNextTransfer()
 			}
 
 			adp = asp->getCurrentData();
-			if (adp && !adp->hasLocalData() && adp->hasValidData())
+			if (adp && adp->isInPreload())
 			{
-				asset_id = adp->getID();
 				max_pri = asp->getPriority();
+				cur_adp = adp;
 				continue;
 			}
 
 			adp = asp->getQueuedData();
-			if (adp && !adp->hasLocalData() && adp->hasValidData())
+			if (adp && adp->isInPreload())
 			{
-				asset_id = adp->getID();
 				max_pri = asp->getPriority();
+				cur_adp = adp;
 				continue;
 			}
 
@@ -1246,35 +1259,41 @@ void LLAudioEngine::startNextTransfer()
 					continue;
 				}
 
-				if (!adp->hasLocalData() && adp->hasValidData())
+				if (adp->isInPreload())
 				{
-					asset_id = adp->getID();
 					max_pri = asp->getPriority();
+					cur_adp = adp;
 					break;
 				}
 			}
 		}
 	}
 
-	if (asset_id.isNull() && !mPreloadSystemList.empty())
+	if (!cur_adp)
 	{
-		asset_id = mPreloadSystemList.front();
-		mPreloadSystemList.pop_front();
+		while(!mPreloadSystemList.empty())
+		{
+			adp = getAudioData(mPreloadSystemList.front());
+			mPreloadSystemList.pop_front();
+			if(adp->isInPreload())
+			{
+				cur_adp = adp;
+				break;
+			}
+		}
 	}
-	else if(asset_id.notNull())
+	else if(cur_adp)
 	{
-		std::list<LLUUID>::iterator it = std::find(mPreloadSystemList.begin(),mPreloadSystemList.end(),asset_id);
+		std::list<LLUUID>::iterator it = std::find(mPreloadSystemList.begin(),mPreloadSystemList.end(),cur_adp->getID());
 		if(it != mPreloadSystemList.end())
 			mPreloadSystemList.erase(it);
 	}
 
-	if (asset_id.notNull())
+	if (cur_adp)
 	{
-		LL_DEBUGS("AudioEngine") << "Getting asset data for: " << asset_id << LL_ENDL;
-		gAudiop->mCurrentTransfer = asset_id;
-		gAudiop->mCurrentTransferTimer.reset();
-		gAssetStorage->getAssetData(asset_id, LLAssetType::AT_SOUND,
-									assetCallback, NULL);
+		mCurrentTransfer = cur_adp;
+		mCurrentTransferTimer.reset();
+		mCurrentTransfer->updateLoadState();
 	}
 	else
 	{
@@ -1289,22 +1308,20 @@ void LLAudioEngine::assetCallback(LLVFS *vfs, const LLUUID &uuid, LLAssetType::E
 	if(!gAudiop)
 		return;
 
+	LLAudioData *adp = gAudiop->getAudioData(uuid);
+
 	if (result_code)
 	{
 		LL_INFOS("AudioEngine") << "Boom, error in audio file transfer: " << LLAssetStorage::getErrorString( result_code ) << " (" << result_code << ")" << LL_ENDL;
 		// Need to mark data as bad to avoid constant rerequests.
-		LLAudioData *adp = gAudiop->getAudioData(uuid);
+		
 		if (adp)
-		{	// Make sure everything is cleared
-			adp->setHasValidData(false);
-			adp->setHasLocalData(false);
-			adp->setHasDecodedData(false);
-			adp->setHasCompletedDecode(true);
+		{	
+			adp->setLoadState(LLAudioData::STATE_LOAD_ERROR);
 		}
 	}
 	else
 	{
-		LLAudioData *adp = gAudiop->getAudioData(uuid);
 		if (!adp)
         {
 			// Should never happen
@@ -1313,13 +1330,11 @@ void LLAudioEngine::assetCallback(LLVFS *vfs, const LLUUID &uuid, LLAssetType::E
 		else
 		{
 			// LL_INFOS("AudioEngine") << "Got asset callback with good audio data for " << uuid << ", making decode request" << LL_ENDL;
-			adp->setHasValidData(true);
-			adp->setHasLocalData(true);
-			gAudioDecodeMgrp->addDecodeRequest(uuid);
+			adp->setLoadState(LLAudioData::STATE_LOAD_REQ_DECODE);
+			//Immediate decode.
+			adp->updateLoadState();
 		}
 	}
-	gAudiop->mCurrentTransfer = LLUUID::null;
-	gAudiop->startNextTransfer();
 }
 
 
@@ -1411,32 +1426,29 @@ void LLAudioSource::update()
 		//Make sure this source looks like its brand new again to prevent removal.
 		mPlayedOnce = false;
 		mAgeTimer.reset();	
-
-		gAudiop->startNextTransfer();
 	}
 
 	LLAudioData *adp = getCurrentData();
 	if (adp && !adp->getBuffer())
 	{
-		// Update the audio buffer first - load a sound if we have it.
-		// Note that this could potentially cause us to waste time updating buffers
-		// for sounds that actually aren't playing, although this should be mitigated
-		// by the fact that we limit the number of buffers, and we flush buffers based
-		// on priority.
-		if (adp->hasDecodedData())
+		if(adp->getLoadState() == LLAudioData::STATE_LOAD_ERROR)
 		{
-			if(!adp->load() && adp->hasCompletedDecode())
-			{
-				LL_WARNS("AudioEngine") << "Marking LLAudioSource corrupted for " << adp->getID() << LL_ENDL;
-				mCorrupted = true ;
-			}
+			LL_WARNS("AudioEngine") << "Marking LLAudioSource corrupted for " << adp->getID() << LL_ENDL;
+			mCorrupted = true ;
 		}
-		else if (adp->hasLocalData() && adp->hasValidData())
+		else if(adp->getLoadState() == LLAudioData::STATE_LOAD_READY)
 		{
-			if (adp->getID().notNull())
-			{
-				gAudioDecodeMgrp->addDecodeRequest(adp->getID());
-			}
+			// Update the audio buffer first - load a sound if we have it.
+			// Note that this could potentially cause us to waste time updating buffers
+			// for sounds that actually aren't playing, although this should be mitigated
+			// by the fact that we limit the number of buffers, and we flush buffers based
+			// on priority.
+			adp->load();	//If it fails, just try again next update.
+		}
+		else
+		{
+			//The sound wasn't preloaded yet... so we must kick off the process.
+			adp->updateLoadState();
 		}
 	}
 }
@@ -1524,9 +1536,6 @@ bool LLAudioSource::play(const LLUUID &audio_uuid)
 
 	mCurrentDatap = adp;
 
-	// Make sure the audio engine knows that we want to request this sound.
-	gAudiop->startNextTransfer();
-
 	return true;
 }
 
@@ -1536,7 +1545,6 @@ bool LLAudioSource::isDone() const
 	static const F32 MAX_AGE = 60.f;
 	static const F32 MAX_UNPLAYED_AGE = 15.f;
 	static const F32 MAX_MUTED_AGE = 11.f;
-
 	if(mCorrupted)
 	{
 		// If we decode bad data then just kill this source entirely.
@@ -1570,7 +1578,7 @@ bool LLAudioSource::isDone() const
 		LLAudioData* adp = mCurrentDatap;
 
 		//Still decoding.
-		if(adp && !adp->hasDecodedData() && adp->hasValidData())
+		if(adp && adp->isInPreload())
 			return false;
 
 		// We don't have a channel assigned, and it's been
@@ -1599,7 +1607,6 @@ void LLAudioSource::preload(const LLUUID &audio_id)
 	{
 		// Add it to the preload list.
 		mPreloadMap[audio_id] = gAudiop->getAudioData(audio_id);
-		gAudiop->startNextTransfer();
 	}
 }
 
@@ -1617,7 +1624,7 @@ bool LLAudioSource::hasPendingPreloads() const
 		{
 			continue;
 		}
-		if (!adp->hasDecodedData() && adp->hasValidData())
+		if (adp->isInPreload())
 		{
 			// This source is still waiting for a preload
 			return true;
@@ -1734,27 +1741,42 @@ bool LLAudioChannel::updateBuffer()
 LLAudioData::LLAudioData(const LLUUID &uuid) :
 	mID(uuid),
 	mBufferp(NULL),
-	mHasLocalData(false),
-	mHasDecodedData(false),
-	mHasCompletedDecode(false),
-	mHasValidData(true)
+	mLoadState(STATE_LOAD_ERROR)
 {
 	if (uuid.isNull())
 	{
 		// This is a null sound.
 		return;
 	}
-	
-	if (gAudiop && gAudiop->hasDecodedFile(uuid))
+
+	if(gAudiop->hasDecodedFile(getID()))
+		mLoadState = STATE_LOAD_READY;
+	else if(gAssetStorage && gAssetStorage->hasLocalAsset(getID(), LLAssetType::AT_SOUND))
+		mLoadState = STATE_LOAD_REQ_DECODE;
+	else
+		mLoadState = STATE_LOAD_REQ_FETCH;
+}
+
+void LLAudioData::updateLoadState()
+{
+	if(mLoadState == STATE_LOAD_REQ_DECODE && gAudioDecodeMgrp)
 	{
-		// Already have a decoded version, don't need to decode it.
-		setHasLocalData(true);
-		setHasDecodedData(true);
-		setHasCompletedDecode(true);
+		if(	gAudioDecodeMgrp->addDecodeRequest(getID()) )
+		{
+			setLoadState(STATE_LOAD_DECODING);
+			LL_INFOS("AudioEngine") << "Decoding asset data for: " << getID() << LL_ENDL;
+		}
+		else
+		{
+			setLoadState(STATE_LOAD_ERROR);
+		}
 	}
-	else if (gAssetStorage && gAssetStorage->hasLocalAsset(uuid, LLAssetType::AT_SOUND))
+	else if(mLoadState == STATE_LOAD_REQ_FETCH && gAssetStorage && gAssetStorage->isUpstreamOK())
 	{
-		setHasLocalData(true);
+		LL_INFOS("AudioEngine") << "Fetching asset data for: " << getID() << LL_ENDL;
+		setLoadState(STATE_LOAD_FETCHING);
+
+		gAssetStorage->getAssetData(getID(), LLAssetType::AT_SOUND, LLAudioEngine::assetCallback, NULL);
 	}
 }
 

@@ -38,13 +38,13 @@
 class LLPrefsAscentChat : public LLPanel
 {
 public:
-    LLPrefsAscentChat();
-    ~LLPrefsAscentChat();
+	LLPrefsAscentChat();
+	~LLPrefsAscentChat();
 
-    void apply();
-    void cancel();
-    void refresh();
-    void refreshValues();
+	void apply();
+	void cancel();
+	void refresh();
+	void refreshValues();
 
 protected:
 	void onSpellAdd();
@@ -56,26 +56,27 @@ protected:
 	void onCommitDialogBlock(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitKeywords(LLUICtrl* ctrl);
 
-    //Chat/IM -----------------------------------------------------------------------------
-    BOOL mIMAnnounceIncoming;
-    BOOL mHideTypingNotification;
-    bool mInstantMessagesFriendsOnly;
-    BOOL mShowGroupNameInChatIM;
-    bool mShowDisplayNameChanges;
-    bool mUseTypingBubbles;
-    BOOL mPlayTypingSound;
-    BOOL mHideNotificationsInChat;
-    BOOL mEnableMUPose;
-    BOOL mEnableOOCAutoClose;
-    U32 mLinksForChattingObjects;
-    U32 mTimeFormat;
-    U32 mDateFormat;
-        U32 tempTimeFormat;
-        U32 tempDateFormat;
-    BOOL mSecondsInChatAndIMs;
-    BOOL mSecondsInLog;
+private:
+	//Chat/IM -----------------------------------------------------------------------------
+	bool mIMAnnounceIncoming;
+	bool mHideTypingNotification;
+	bool mInstantMessagesFriendsOnly;
+	bool mShowGroupNameInChatIM;
+	bool mShowDisplayNameChanges;
+	bool mUseTypingBubbles;
+	bool mPlayTypingSound;
+	bool mHideNotificationsInChat;
+	bool mEnableMUPose;
+	bool mEnableOOCAutoClose;
+	U32 mLinksForChattingObjects;
+	U32 mTimeFormat;
+	U32 mDateFormat;
+	U32 tempTimeFormat;
+	U32 tempDateFormat;
+	bool mSecondsInChatAndIMs;
+	bool mSecondsInLog;
 
-    //Chat UI -----------------------------------------------------------------------------
+	//Chat UI -----------------------------------------------------------------------------
 	bool mWoLfVerticalIMTabs;
 	bool mOtherChatsTornOff;
 	bool mIMAnnounceStealFocus;
@@ -87,6 +88,7 @@ protected:
 	bool mOnlyComm;
 	bool mItalicizeActions;
 	bool mLegacySpeakerNames;
+	bool mLegacyLogLaunch;
 
 	//Autoresponse ------------------------------------------------------------------------
 	std::string mIMResponseAnyoneItemID;
@@ -94,39 +96,39 @@ protected:
 	std::string mIMResponseMutedItemID;
 	std::string mIMResponseBusyItemID;
 
-    //Spam --------------------------------------------------------------------------------
-    BOOL mEnableAS;
-    BOOL mGlobalQueue;
-    U32  mChatSpamCount;
-    U32  mChatSpamTime;
-    BOOL mBlockDialogSpam;
-    BOOL mBlockAlertSpam;
-    BOOL mBlockFriendSpam;
-    BOOL mBlockGroupNoticeSpam;
-    BOOL mBlockGroupInviteSpam;
-	BOOL mBlockGroupFeeInviteSpam;
-    BOOL mBlockItemOfferSpam;
+	//Spam --------------------------------------------------------------------------------
+	bool mEnableAS;
+	bool mGlobalQueue;
+	U32  mChatSpamCount;
+	U32  mChatSpamTime;
+	bool mBlockDialogSpam;
+	bool mBlockAlertSpam;
+	bool mBlockFriendSpam;
+	bool mBlockGroupNoticeSpam;
+	bool mBlockGroupInviteSpam;
+	bool mBlockGroupFeeInviteSpam;
+	bool mBlockItemOfferSpam;
 	bool mBlockNotMineSpam;
 	bool mBlockNotFriendSpam;
-    BOOL mBlockScriptSpam;
-    BOOL mBlockTeleportSpam;
+	bool mBlockScriptSpam;
+	bool mBlockTeleportSpam;
 	bool mBlockTeleportRequestSpam;
-    BOOL mNotifyOnSpam;
-    BOOL mSoundMulti;
-    U32  mNewLines;
-    U32  mPreloadMulti;
+	bool mNotifyOnSpam;
+	bool mSoundMulti;
+	U32  mNewLines;
+	U32  mPreloadMulti;
 	bool mEnableGestureSounds;
 
-    //Text Options ------------------------------------------------------------------------
-    BOOL mSpellDisplay;
-    BOOL mKeywordsOn;
-    std::string mKeywordsList;
-    BOOL mKeywordsInChat;
-    BOOL mKeywordsInIM;
-    BOOL mKeywordsChangeColor;
-    LLColor4 mKeywordsColor;
-    BOOL mKeywordsPlaySound;
-    LLUUID mKeywordsSound;
+	//Text Options ------------------------------------------------------------------------
+	bool mSpellDisplay;
+	bool mKeywordsOn;
+	std::string mKeywordsList;
+	bool mKeywordsInChat;
+	bool mKeywordsInIM;
+	bool mKeywordsChangeColor;
+	LLColor4 mKeywordsColor;
+	bool mKeywordsPlaySound;
+	LLUUID mKeywordsSound;
 };
 
 #endif

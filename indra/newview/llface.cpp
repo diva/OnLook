@@ -60,6 +60,9 @@
 
 #define LL_MAX_INDICES_COUNT 1000000
 
+static LLStaticHashedString sTextureIndexIn("texture_index_in");
+static LLStaticHashedString sColorIn("color_in");
+
 BOOL LLFace::sSafeRenderSelect = TRUE; // FALSE
 
 #define DOTVEC(a,b) (a.mV[0]*b.mV[0] + a.mV[1]*b.mV[1] + a.mV[2]*b.mV[2])
@@ -1186,6 +1189,21 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	}
 
 
+	// <FS:ND> The volume face vf can have more indices/vertices than this face. All striders below are aquired with a size of this face, but then written with num_verices/num_indices values,
+	// thus overflowing the buffer when vf holds more data.
+	// We can either clamp num_* down like here, or aquire all striders not using the face size, but the size if vf (that is swapping out mGeomCount with num_vertices and mIndicesCout with num_indices
+	// in all calls to nVertbuffer->get*Strider(...). Final solution is to just return FALSE and be done with it.
+	// 
+	// The correct poison of choice is debatable, either copying not all data of vf (clamping) or writing more data than this face claims to have (aquiring bigger striders). Returning will not display this face at all.
+	//
+	// clamping it is for now.
+
+	num_vertices = llclamp( num_vertices, (S32)0, (S32)mGeomCount );
+	num_indices = llclamp( num_indices, (S32)0, (S32)mIndicesCount );
+
+	// </FS:ND>
+
+
 	//don't use map range (generates many redundant unmap calls)
 	bool map_range = false; //gGLManager.mHasMapBufferRange || gGLManager.mHasFlushBufferRange;
 
@@ -1414,7 +1432,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			vp[2] = 0;
 			vp[3] = 0;
 			
-			gTransformPositionProgram.uniform1i("texture_index_in", val);
+			gTransformPositionProgram.uniform1i(sTextureIndexIn, val);
 			glBeginTransformFeedback(GL_POINTS);
 			buff->setBuffer(LLVertexBuffer::MAP_VERTEX);
 
@@ -1432,7 +1450,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 			S32 val = *((S32*) color.mV);
 
-			gTransformColorProgram.uniform1i("color_in", val);
+			gTransformColorProgram.uniform1i(sColorIn, val);
 			glBeginTransformFeedback(GL_POINTS);
 			buff->setBuffer(LLVertexBuffer::MAP_VERTEX);
 			push_for_transform(buff, vf.mNumVertices, mGeomCount);
@@ -1453,7 +1471,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						 (glow << 16) |
 						 (glow << 24);
 
-			gTransformColorProgram.uniform1i("color_in", glow32);
+			gTransformColorProgram.uniform1i(sColorIn, glow32);
 			glBeginTransformFeedback(GL_POINTS);
 			buff->setBuffer(LLVertexBuffer::MAP_VERTEX);
 			push_for_transform(buff, vf.mNumVertices, mGeomCount);
@@ -1641,7 +1659,14 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						if (!do_xform)
 						{
 							LLFastTimer t(FTM_FACE_TEX_QUICK_NO_XFORM);
-							S32 tc_size = (num_vertices*2*sizeof(F32)+0xF) & ~0xF;
+
+							// <FS:ND> Don't round up, or there's high risk to write past buffer
+
+							// S32 tc_size = (num_vertices*2*sizeof(F32)+0xF) & ~0xF;
+							S32 tc_size = (num_vertices*2*sizeof(F32));
+
+							// </FS:ND>
+
 							LLVector4a::memcpyNonAliased16((F32*) tex_coords0.get(), (F32*) vf.mTexCoords, tc_size);
 						}
 						else
@@ -1860,15 +1885,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 			LLVector4a texIdx;
 
-			U8 index = mTextureIndex < 255 ? mTextureIndex : 0;
+			S32 index = mTextureIndex < 255 ? mTextureIndex : 0;
 
 			F32 val = 0.f;
-			U8* vp = (U8*) &val;
-			vp[0] = index;
-			vp[1] = 0;
-			vp[2] = 0;
-			vp[3] = 0;
-
+			S32* vp = (S32*) &val;
+			*vp = index;
+			
 			llassert(index <= LLGLSLShader::sIndexedTextureChannels-1);
 
 			LLVector4Logical mask;

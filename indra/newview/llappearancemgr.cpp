@@ -4332,9 +4332,10 @@ public:
 					<< llendl;
 			//dec_busy_count();
 			gInventory.removeObserver(this);
+			doOnIdleOneTime(mCallable);
 
 			// lets notify observers that loading is finished.
-			gAgentWearables.notifyLoadingFinished();
+			//gAgentWearables.notifyLoadingFinished();
 			delete this;
 			return;
 		}

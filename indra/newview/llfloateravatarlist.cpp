@@ -189,7 +189,17 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 			using namespace boost::gregorian;
 			int year, month, day;
 			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
-			mAge = (day_clock::local_day() - date(year, month, day)).days();
+			try
+			{
+				mAge = (day_clock::local_day() - date(year, month, day)).days();
+			}
+			catch(const std::exception&)
+			{
+				llwarns << "Failed to extract age from APT_PROPERTIES for " << mID << ", received \"" << pAvatarData->born_on << "\". Requesting properties again." << llendl;
+				LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
+				LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
+				return;
+			}
 			if (!mStats[STAT_TYPE_AGE] && mAge >= 0) //Only announce age once per entry.
 			{
 				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");

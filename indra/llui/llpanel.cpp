@@ -159,8 +159,12 @@ void LLPanel::addBorder(LLViewBorder::EBevel border_bevel,
 
 void LLPanel::removeBorder()
 {
-	delete mBorder;
-	mBorder = NULL;
+	if (mBorder)
+	{
+		removeChild(mBorder);
+		delete mBorder;
+		mBorder = NULL;
+	}
 }
 
 
@@ -277,7 +281,7 @@ BOOL LLPanel::handleKeyHere( KEY key, MASK mask )
 	// handle user hitting ESC to defocus
 	if (key == KEY_ESCAPE && mask == MASK_NONE)
 	{
-		gFocusMgr.setKeyboardFocus(NULL);
+		setFocus(FALSE);
 		return TRUE;
 	}
 	else if( (mask == MASK_SHIFT) && (KEY_TAB == key))
@@ -304,29 +308,25 @@ BOOL LLPanel::handleKeyHere( KEY key, MASK mask )
 			}
 		}
 	}
-
-	// If we have a default button, click it when
-	// return is pressed, unless current focus is a return-capturing button
-	// in which case *that* button will handle the return key
-	LLButton* focused_button = dynamic_cast<LLButton*>(cur_focus);
-	if (cur_focus && !(focused_button && focused_button->getCommitOnReturn()))
+	
+	// If RETURN was pressed and something has focus, call onCommit()
+	if (!handled && cur_focus && key == KEY_RETURN && mask == MASK_NONE)
 	{
-		// RETURN key means hit default button in this case
-		if (key == KEY_RETURN && mask == MASK_NONE 
-			&& mDefaultBtn != NULL 
-			&& mDefaultBtn->getVisible()
-			&& mDefaultBtn->getEnabled())
+		if (cur_focus->getCommitOnReturn())
 		{
+			// current focus is a return-capturing element,
+			// let *that* element handle the return key
+			handled = FALSE; 
+		}
+		else if (mDefaultBtn && mDefaultBtn->getVisible() && mDefaultBtn->getEnabled())
+		{
+			// If we have a default button, click it when return is pressed
 			mDefaultBtn->onCommit();
 			handled = TRUE;
 		}
-	}
-
-	if (key == KEY_RETURN && mask == MASK_NONE)
-	{
-		// set keyboard focus to self to trigger commitOnFocusLost behavior on current ctrl
-		if (cur_focus && cur_focus->acceptsTextInput())
+		else if (cur_focus->acceptsTextInput())
 		{
+			// call onCommit for text input handling control
 			cur_focus->onCommit();
 			handled = TRUE;
 		}
@@ -363,34 +363,16 @@ void LLPanel::handleVisibilityChange ( BOOL new_visibility )
 
 void LLPanel::setFocus(BOOL b)
 {
-	if( b )
+	if( b && !hasFocus())
 	{
-		if (!gFocusMgr.childHasKeyboardFocus(this))
-		{
-			//refresh();
-			if (!focusFirstItem())
-			{
-				LLUICtrl::setFocus(TRUE);
-			}
-			onFocusReceived();
-		}
+		// give ourselves focus preemptively, to avoid infinite loop
+		LLUICtrl::setFocus(TRUE);
+		// then try to pass to first valid child
+		focusFirstItem();
 	}
 	else
 	{
-		if( this == gFocusMgr.getKeyboardFocus() )
-		{
-			gFocusMgr.setKeyboardFocus( NULL );
-		}
-		else
-		{
-			//RN: why is this here?
-			LLView::ctrl_list_t ctrls = getCtrlList();
-			for (LLView::ctrl_list_t::iterator ctrl_it = ctrls.begin(); ctrl_it != ctrls.end(); ++ctrl_it)
-			{
-				LLUICtrl* ctrl = *ctrl_it;
-				ctrl->setFocus( FALSE );
-			}
-		}
+		LLUICtrl::setFocus(b);
 	}
 }
 

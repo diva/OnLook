@@ -52,7 +52,7 @@
 // Construction of a AICurlEasyRequestStateMachine might throw AICurlNoEasyHandle.
 class AICurlEasyRequestStateMachine : public AIStateMachine, public AICurlEasyHandleEvents {
   public:
-	AICurlEasyRequestStateMachine(void);
+	AICurlEasyRequestStateMachine(CWD_ONLY(bool debug = false));
 
 	// Transparent access.
 	AICurlEasyRequest mCurlEasyRequest;

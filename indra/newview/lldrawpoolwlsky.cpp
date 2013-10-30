@@ -161,7 +161,8 @@ void LLDrawPoolWLSky::renderDome(F32 camHeightLocal, LLGLSLShader * shader) cons
 	gGL.translatef(0.f,-camHeightLocal, 0.f);
 	
 	// Draw WL Sky	
-	shader->uniform3f("camPosLocal", 0.f, camHeightLocal, 0.f);
+	static LLStaticHashedString sCamPosLocal("camPosLocal");
+	shader->uniform3f(sCamPosLocal, 0.f, camHeightLocal, 0.f);
 
 	gSky.mVOWLSkyp->drawDome();
 
@@ -219,7 +220,8 @@ void LLDrawPoolWLSky::renderStars(void) const
 
 	if (gPipeline.canUseVertexShaders())
 	{
-		star_shader->uniform1f("custom_alpha", star_alpha.mV[3]);
+		static LLStaticHashedString sCustomAlpha("custom_alpha");
+		star_shader->uniform1f(sCustomAlpha, star_alpha.mV[3]);
 	}
 	else
 	{
@@ -294,7 +296,8 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 		if (gPipeline.canUseVertexShaders())
 		{
 			// Okay, so the moon isn't a star, but it's close enough.
-			star_shader->uniform1f("custom_alpha", color.mV[VW]);
+			static LLStaticHashedString sCustomAlpha("custom_alpha");
+			star_shader->uniform1f(sCustomAlpha, color.mV[VW]);
 		}
 		else
 		{

@@ -177,7 +177,6 @@ public:
 	void cleanupBuffer(LLAudioBuffer *bufferp);
 
 	bool hasDecodedFile(const LLUUID &uuid);
-	bool hasLocalFile(const LLUUID &uuid);
 
 	void setAllowLargeSounds(bool allow) { mAllowLargeSounds = allow ;}
 	bool getAllowLargeSounds() const {return mAllowLargeSounds;}
@@ -227,7 +226,7 @@ protected:
 	S32 mNumChannels;
 	bool mEnableWind;
 
-	LLUUID mCurrentTransfer; // Audio file currently being transferred by the system
+	LLAudioData* mCurrentTransfer; // Audio file currently being transferred by the system
 	LLFrameTimer mCurrentTransferTimer;
 
 	// A list of all audio sources that are known to the viewer at this time.
@@ -400,25 +399,27 @@ public:
 	LLUUID getID() const				{ return mID; }
 	LLAudioBuffer *getBuffer() const	{ return mBufferp; }
 
-	bool	hasLocalData() const		{ return mHasLocalData; }
-	bool	hasDecodedData() const		{ return mHasDecodedData; }
-	bool	hasCompletedDecode() const	{ return mHasCompletedDecode; }
-	bool	hasValidData() const		{ return mHasValidData; }
+	enum ELoadState
+	{
+		STATE_LOAD_ERROR,
+		STATE_LOAD_REQ_FETCH,
+		STATE_LOAD_FETCHING,
+		STATE_LOAD_REQ_DECODE,
+		STATE_LOAD_DECODING,
+		STATE_LOAD_READY
+	};
+	ELoadState	getLoadState() const			{ return mLoadState; }
+	ELoadState	setLoadState(ELoadState state)	{ return mLoadState = state; }
+	bool		isInPreload() const				{ return mLoadState > STATE_LOAD_ERROR && mLoadState < STATE_LOAD_READY; }
 
-	void	setHasLocalData(const bool hld)		{ mHasLocalData = hld; }
-	void	setHasDecodedData(const bool hdd)	{ mHasDecodedData = hdd; }
-	void	setHasCompletedDecode(const bool hcd)	{ mHasCompletedDecode = hcd; }
-	void	setHasValidData(const bool hvd)		{ mHasValidData = hvd; }
+	void updateLoadState();
 
 	friend class LLAudioEngine; // Severe laziness, bad.
 
 protected:
 	LLUUID mID;
 	LLAudioBuffer *mBufferp;	// If this data is being used by the audio system, a pointer to the buffer will be set here.
-	bool mHasLocalData;			// Set true if the sound asset file is available locally
-	bool mHasDecodedData;		// Set true if the sound file has been decoded
-	bool mHasCompletedDecode;	// Set true when the sound is decoded
-	bool mHasValidData;			// Set false if decoding failed, meaning the sound asset is bad
+	ELoadState mLoadState;
 };
 
 

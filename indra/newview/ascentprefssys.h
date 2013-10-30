@@ -38,13 +38,13 @@
 class LLPrefsAscentSys : public LLPanel
 {
 public:
-    LLPrefsAscentSys();
-    ~LLPrefsAscentSys();
+	LLPrefsAscentSys();
+	~LLPrefsAscentSys();
 
-    void apply();
-    void cancel();
-    void refresh();
-    void refreshValues();
+	void apply();
+	void cancel();
+	void refresh();
+	void refreshValues();
 
 protected:
 	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
@@ -52,61 +52,62 @@ protected:
 	void onCommitComboBox(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitTexturePicker(LLUICtrl* ctrl);
 
-    //General -----------------------------------------------------------------------------
-    BOOL mDoubleClickTeleport;
-        BOOL mResetCameraAfterTP;
-        BOOL mOffsetTPByUserHeight;
-    bool mClearBeaconAfterTeleport;
-    bool mLiruFlyAfterTeleport;
-    bool mLiruContinueFlying;
-    BOOL mPreviewAnimInWorld;
-    BOOL mSaveScriptsAsMono;
-    BOOL mAlwaysRezInGroup;
-    BOOL mBuildAlwaysEnabled;
-    BOOL mAlwaysShowFly;
-    BOOL mDisableMinZoom;
-    BOOL mPowerUser;
-    BOOL mFetchInventoryOnLogin;
-    BOOL mEnableLLWind;
-    BOOL mEnableClouds;
-        BOOL mEnableClassicClouds;
-    BOOL mSpeedRez;
-        U32 mSpeedRezInterval;
+private:
+	//General -----------------------------------------------------------------------------
+	bool mDoubleClickTeleport;
+	bool mResetCameraAfterTP;
+	bool mOffsetTPByUserHeight;
+	bool mClearBeaconAfterTeleport;
+	bool mLiruFlyAfterTeleport;
+	bool mLiruContinueFlying;
+	bool mPreviewAnimInWorld;
+	bool mSaveScriptsAsMono;
+	bool mAlwaysRezInGroup;
+	bool mBuildAlwaysEnabled;
+	bool mAlwaysShowFly;
+	bool mDisableMinZoom;
+	bool mPowerUser;
+	bool mFetchInventoryOnLogin;
+	bool mEnableLLWind;
+	bool mEnableClouds;
+	bool mEnableClassicClouds;
+	bool mSpeedRez;
+	U32 mSpeedRezInterval;
 	bool mUseWebProfiles;
 	bool mUseWebSearch;
 
-    //Command Line ------------------------------------------------------------------------
-    BOOL mCmdLine;
-    std::string mCmdLinePos;
-    std::string mCmdLineGround;
-    std::string mCmdLineHeight;
-    std::string mCmdLineTeleportHome;
-    std::string mCmdLineRezPlatform;
-    F32 mCmdPlatformSize;
-    std::string mCmdLineCalc;
-    std::string mCmdLineClearChat;
-    std::string mCmdLineDrawDistance;
-    std::string mCmdTeleportToCam;
-    std::string mCmdLineKeyToName;
-    std::string mCmdLineOfferTp;
-    std::string mCmdLineMapTo;
-    BOOL mCmdMapToKeepPos;
-    std::string mCmdLineTP2;
-    std::string mCmdLineAway;
+	//Command Line ------------------------------------------------------------------------
+	bool mCmdLine;
+	std::string mCmdLinePos;
+	std::string mCmdLineGround;
+	std::string mCmdLineHeight;
+	std::string mCmdLineTeleportHome;
+	std::string mCmdLineRezPlatform;
+	F32 mCmdPlatformSize;
+	std::string mCmdLineCalc;
+	std::string mCmdLineClearChat;
+	std::string mCmdLineDrawDistance;
+	std::string mCmdTeleportToCam;
+	std::string mCmdLineKeyToName;
+	std::string mCmdLineOfferTp;
+	std::string mCmdLineMapTo;
+	bool mCmdMapToKeepPos;
+	std::string mCmdLineTP2;
+	std::string mCmdLineAway;
 	std::string mCmdLineURL;
 
-    //Security ----------------------------------------------------------------------------
-    BOOL mBroadcastViewerEffects;
-    BOOL mDisablePointAtAndBeam;
-    BOOL mPrivateLookAt;
-    BOOL mShowLookAt;
-	BOOL mQuietSnapshotsToDisk;
-	BOOL mDetachBridge;
-	BOOL mRevokePermsOnStandUp;
-    BOOL mDisableClickSit;
+	//Security ----------------------------------------------------------------------------
+	bool mBroadcastViewerEffects;
+	bool mDisablePointAtAndBeam;
+	bool mPrivateLookAt;
+	bool mShowLookAt;
+	bool mQuietSnapshotsToDisk;
+	bool mDetachBridge;
+	bool mRevokePermsOnStandUp;
+	bool mDisableClickSit;
 	bool mDisableClickSitOtherOwner;
-    BOOL mDisplayScriptJumps;
-    F32 mNumScriptDiff;
+	bool mDisplayScriptJumps;
+	F32 mNumScriptDiff;
 
 	//Build -------------------------------------------------------------------------------
 	F32 mAlpha;
@@ -115,14 +116,14 @@ protected:
 	F32 mGlow;
 	std::string mItem;
 	std::string mMaterial;
-	BOOL mNextCopy;
-	BOOL mNextMod;
-	BOOL mNextTrans;
+	bool mNextCopy;
+	bool mNextMod;
+	bool mNextTrans;
 	std::string mShiny;
-	BOOL mTemporary;
+	bool mTemporary;
 	std::string mTexture;
-	BOOL mPhantom;
-	BOOL mPhysical;
+	bool mPhantom;
+	bool mPhysical;
 	F32 mXsize;
 	F32 mYsize;
 	F32 mZsize;

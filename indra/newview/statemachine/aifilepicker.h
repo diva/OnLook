@@ -168,7 +168,7 @@ public:
 
 public:
 	// The derived class must have a default constructor.
-	AIFilePicker(void);
+	AIFilePicker(CWD_ONLY(bool debug = false));
 
 	// Create a dynamically created AIFilePicker object.
 	static AIFilePicker* create(void) { AIFilePicker* filepicker = new AIFilePicker; return filepicker; }

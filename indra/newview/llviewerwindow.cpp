@@ -1015,18 +1015,6 @@ BOOL LLViewerWindow::handleMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask)
 
 BOOL LLViewerWindow::handleRightMouseDown(LLWindow *window,  LLCoordGL pos, MASK mask)
 {
-	//From Phoenix
-	// Singu TODO: Change these from debug settings to externs?
-	gSavedSettings.setBOOL("zmm_rightmousedown", true);
-	if (gAgentCamera.cameraMouselook() && !gSavedSettings.getBOOL("zmm_isinml"))
-	{
-		llinfos << "zmmisinml set to true" << llendl;
-		gSavedSettings.setBOOL("zmm_isinml", true);
-		F32 deffov = LLViewerCamera::getInstance()->getDefaultFOV();
-		gSavedSettings.setF32("zmm_deffov", deffov);
-		LLViewerCamera::getInstance()->setDefaultFOV(deffov/gSavedSettings.getF32("zmm_mlfov"));
-	}
-
 	S32 x = pos.mX;
 	S32 y = pos.mY;
 	x = llround((F32)x / mDisplayScale.mV[VX]);
@@ -1055,14 +1043,6 @@ BOOL LLViewerWindow::handleRightMouseDown(LLWindow *window,  LLCoordGL pos, MASK
 
 BOOL LLViewerWindow::handleRightMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask)
 {
-	gSavedSettings.setBOOL("zmm_rightmousedown", false);
-	if(gSavedSettings.getBOOL("zmm_isinml")==1)
-	{
-		llinfos << "zmmisinml set to false" << llendl;
-		gSavedSettings.setBOOL("zmm_isinml",0);
-		LLViewerCamera::getInstance()->setDefaultFOV(gSavedSettings.getF32("zmm_deffov"));
-	}
-
 	BOOL down = FALSE;
 	return handleAnyMouseClick(window,pos,mask,LLMouseHandler::CLICK_RIGHT,down);
 }
@@ -2713,12 +2693,9 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 	}
 
 	// HACK look for UI editing keys
-	if (LLView::sEditingUI)
+	if (LLView::sEditingUI && LLFloaterEditUI::processKeystroke(key, mask))
 	{
-		if (LLFloaterEditUI::processKeystroke(key, mask))
-		{
-			return TRUE;
-		}
+		return TRUE;
 	}
 
 	// Explicit hack for debug menu.
@@ -2729,32 +2706,6 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		toggle_debug_menus(NULL);
 	}
 
-		// Explicit hack for debug menu.
-	//Singu note: We do not use the ForceShowGrid setting. Grid selection should always be visible.
-	/*if ((mask == (MASK_SHIFT | MASK_CONTROL)) && 
-		('G' == key || 'g' == key))
-	{
-		if  (LLStartUp::getStartupState() < STATE_LOGIN_CLEANUP)  //on splash page
-		{
-			BOOL visible = ! gSavedSettings.getBOOL("ForceShowGrid");
-			gSavedSettings.setBOOL("ForceShowGrid", visible);
-
-			// Initialize visibility (and don't force visibility - use prefs)
-			LLPanelLogin::updateLocationSelectorsVisibility();
-		}
-	}*/
-
-	// Debugging view for unified notifications: CTRL-SHIFT-5
-	// *FIXME: Having this special-cased right here (just so this can be invoked from the login screen) sucks.
-	if ((MASK_SHIFT & mask) 
-		&& (!(MASK_ALT & mask))
-		&& (MASK_CONTROL & mask)
-		&& ('5' == key))
-	{
-		LLFloaterNotificationConsole::showInstance();
-		return TRUE;
-	}
-
 	// handle shift-escape key (reset camera view)
 	if (key == KEY_ESCAPE && mask == MASK_SHIFT)
 	{
@@ -2762,32 +2713,67 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		return TRUE;
 	}
 
-	// handle escape key
-	//if (key == KEY_ESCAPE && mask == MASK_NONE)
-	//{
-
-		// *TODO: get this to play well with mouselook and hidden
-		// cursor modes, etc, and re-enable.
-		//if (gFocusMgr.getMouseCapture())
-		//{
-		//	gFocusMgr.setMouseCapture(NULL);
-		//	return TRUE;
-		//}
-	//}
-
-	// let menus handle navigation keys
-	if (gMenuBarView && gMenuBarView->handleKey(key, mask, TRUE))
+	// let menus handle navigation keys for navigation
+	if ((gMenuBarView && gMenuBarView->handleKey(key, mask, TRUE))
+		|| (gLoginMenuBarView && gLoginMenuBarView->handleKey(key, mask, TRUE))
+		|| (gMenuHolder && gMenuHolder->handleKey(key, mask, TRUE)))
 	{
 		return TRUE;
 	}
-	// let menus handle navigation keys
-	if (gLoginMenuBarView && gLoginMenuBarView->handleKey(key, mask, TRUE))
+
+	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
+
+	// give menus a chance to handle modified (Ctrl, Alt) shortcut keys before current focus
+	// as long as focus isn't locked
+	if (mask & (MASK_CONTROL | MASK_ALT) && !gFocusMgr.focusLocked())
+	{
+		// Check the current floater's menu first, if it has one.
+		if (gFocusMgr.keyboardFocusHasAccelerators()
+			&& keyboard_focus
+			&& keyboard_focus->handleKey(key,mask,FALSE))
+		{
+			return TRUE;
+		}
+
+		/* Singu Note: This caused a bug where the menu ate keys before parents of keyboard_focus for some reason, breaking multifloaters usage of ctrl-w to close their selected child floater
+		if ((gMenuBarView && gMenuBarView->handleAcceleratorKey(key, mask))
+			|| (gLoginMenuBarView && gLoginMenuBarView->handleAcceleratorKey(key, mask)))
+		{
+			return TRUE;
+		}
+		*/
+	}
+
+	// give floaters first chance to handle TAB key
+	// so frontmost floater gets focus
+	// if nothing has focus, go to first or last UI element as appropriate
+	if (key == KEY_TAB && (mask & MASK_CONTROL || gFocusMgr.getKeyboardFocus() == NULL))
+	{
+		if (gMenuHolder) gMenuHolder->hideMenus();
+
+		// if CTRL-tabbing (and not just TAB with no focus), go into window cycle mode
+		gFloaterView->setCycleMode((mask & MASK_CONTROL) != 0);
+
+		// do CTRL-TAB and CTRL-SHIFT-TAB logic
+		if (mask & MASK_SHIFT)
+		{
+			mRootView->focusPrevRoot();
+		}
+		else
+		{
+			mRootView->focusNextRoot();
+		}
+		return TRUE;
+	}
+	/* Singu TODO: gEditMenu?
+	// hidden edit menu for cut/copy/paste
+	if (gEditMenu && gEditMenu->handleAcceleratorKey(key, mask))
 	{
 		return TRUE;
 	}
+	*/
 
 	// Traverses up the hierarchy
-	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
 	if( keyboard_focus )
 	{
 		// arrow keys move avatar while chatting hack
@@ -2798,10 +2784,13 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 			if (gChatBar->getCurrentChat().empty()
 				|| gSavedSettings.getBOOL("ArrowKeysMoveAvatar"))
 			{
-				// Singu Note: We do this differently from LL to preserve the Ctrl-<Any ArrowKey> behavior in the chatbar
+				/* Singu Note: We do this differently from LL to preserve the Ctrl-<Any ArrowKey> behavior in the chatbar, and we don't need alt because we're not CHUI
 				// let Control-Up and Control-Down through for chat line history,
-				//if (!(key == KEY_UP && mask == MASK_CONTROL)
-				//	&& !(key == KEY_DOWN && mask == MASK_CONTROL))
+				if (!(key == KEY_UP && mask == MASK_CONTROL)
+					&& !(key == KEY_DOWN && mask == MASK_CONTROL)
+					&& !(key == KEY_UP && mask == MASK_ALT)
+					&& !(key == KEY_DOWN && mask == MASK_ALT))
+				*/
 				{
 					switch(key)
 					{
@@ -2809,7 +2798,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 					case KEY_RIGHT:
 					case KEY_UP:
 					case KEY_DOWN:
-						if (mask == MASK_CONTROL)
+						if (mask & MASK_CONTROL)
 							break;
 					case KEY_PAGE_UP:
 					case KEY_PAGE_DOWN:
@@ -2823,6 +2812,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 				}
 			}
 		}
+
 		if (keyboard_focus->handleKey(key, mask, FALSE))
 		{
 			return TRUE;
@@ -2847,43 +2837,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		return TRUE;
 	}
 
-	// Topmost view gets a chance before the hierarchy
-	// *FIX: get rid of this?
-	//LLUICtrl* top_ctrl = gFocusMgr.getTopCtrl();
-	//if (top_ctrl)
-	//{
-	//	if( top_ctrl->handleKey( key, mask, TRUE ) )
-	//	{
-	//		return TRUE;
-	//	}
-	//}
-
-	// give floaters first chance to handle TAB key
-	// so frontmost floater gets focus
-	if (key == KEY_TAB)
-	{
-		// if nothing has focus, go to first or last UI element as appropriate
-		if (mask & MASK_CONTROL || gFocusMgr.getKeyboardFocus() == NULL)
-		{
-			if (gMenuHolder) gMenuHolder->hideMenus();
-
-			// if CTRL-tabbing (and not just TAB with no focus), go into window cycle mode
-			gFloaterView->setCycleMode((mask & MASK_CONTROL) != 0);
-
-			// do CTRL-TAB and CTRL-SHIFT-TAB logic
-			if (mask & MASK_SHIFT)
-			{
-				mRootView->focusPrevRoot();
-			}
-			else
-			{
-				mRootView->focusNextRoot();
-			}
-			return TRUE;
-		}
-	}
-	
-	// give menus a chance to handle keys
+	// give menus a chance to handle unmodified accelerator keys
 	if ((gMenuBarView && gMenuBarView->handleAcceleratorKey(key, mask))
 		||(gLoginMenuBarView && gLoginMenuBarView->handleAcceleratorKey(key, mask)))
 	{

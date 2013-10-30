@@ -128,6 +128,8 @@ public:
 	static BOOL		enableSelectAllMenu(void* userdata);
 	static BOOL		enableDeselectMenu(void* userdata);
 
+	virtual bool	hasAccelerators() const { return true; }
+
 private:
 	static bool		onHelpWebDialog(const LLSD& notification, const LLSD& response);
 	static void		onBtnHelp(void* userdata);

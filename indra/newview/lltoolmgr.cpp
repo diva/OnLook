@@ -141,8 +141,6 @@ void LLToolMgr::initTools()
 	gBasicToolset->addTool( LLToolCompInspect::getInstance() );
 	gFaceEditToolset->addTool( LLToolCamera::getInstance() );
 
-	// In case focus was lost before we got here
-	clearSavedTool();
 	// On startup, use "select" tool
 	setCurrentToolset(gBasicToolset);
 
@@ -283,24 +281,7 @@ bool LLToolMgr::canEdit()
 
 void LLToolMgr::toggleBuildMode()
 {
-	if (inBuildMode())
-	{
-		if (gSavedSettings.getBOOL("EditCameraMovement"))
-		{
-			// just reset the view, will pull us out of edit mode
-			handle_reset_view();
-		}
-		else
-		{
-			// manually disable edit mode, but do not affect the camera
-			gAgentCamera.resetView(false);
-			gFloaterTools->close();
-			gViewerWindow->showCursor();			
-		}
-		// avoid spurious avatar movements pulling out of edit mode
-		LLViewerJoystick::getInstance()->setNeedsReset();
-	}
-	else
+	if (!inBuildMode())
 	{
 		ECameraMode camMode = gAgentCamera.getCameraMode();
 		if (CAMERA_MODE_MOUSELOOK == camMode ||	CAMERA_MODE_CUSTOMIZE_AVATAR == camMode)
@@ -350,6 +331,24 @@ void LLToolMgr::toggleBuildMode()
 		LLViewerJoystick::getInstance()->setNeedsReset();
 
 	}
+	else
+	{
+		if (gSavedSettings.getBOOL("EditCameraMovement"))
+		{
+			// just reset the view, will pull us out of edit mode
+			handle_reset_view();
+		}
+		else
+		{
+			// manually disable edit mode, but do not affect the camera
+			gAgentCamera.resetView(false);
+			gFloaterTools->close();
+			gViewerWindow->showCursor();
+		}
+		// avoid spurious avatar movements pulling out of edit mode
+		LLViewerJoystick::getInstance()->setNeedsReset();
+	}
+
 }
 
 bool LLToolMgr::inBuildMode()

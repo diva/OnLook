@@ -33,6 +33,7 @@
 
 #include "linden_common.h"
 #include "aistatemachine.h"
+#include "aicondition.h"
 #include "lltimer.h"
 
 //==================================================================
@@ -283,7 +284,7 @@ char const* HelloWorld::state_str_impl(state_type run_state) const
 
 void AIEngine::add(AIStateMachine* state_machine)
 {
-  Dout(dc::statemachine, "Adding state machine [" << (void*)state_machine << "] to " << mName);
+  Dout(dc::statemachine(state_machine->mSMDebug), "Adding state machine [" << (void*)state_machine << "] to " << mName);
   engine_state_type_wat engine_state_w(mEngineState);
   engine_state_w->list.push_back(QueueElement(state_machine));
   if (engine_state_w->waiting)
@@ -330,7 +331,7 @@ void AIEngine::mainloop(void)
 	engine_state_type_wat engine_state_w(mEngineState);
 	if (!active)
 	{
-	  Dout(dc::statemachine, "Erasing state machine [" << (void*)&state_machine << "] from " << mName);
+	  Dout(dc::statemachine(state_machine.mSMDebug), "Erasing state machine [" << (void*)&state_machine << "] from " << mName);
 	  engine_state_w->list.erase(queued_element++);
 	}
 	else
@@ -392,7 +393,7 @@ void AIStateMachine::multiplex(event_type event)
   // If this fails then you are using a pointer to a state machine instead of an LLPointer.
   llassert(event == initial_run || getNumRefs() > 0);
 
-  DoutEntering(dc::statemachine, "AIStateMachine::multiplex(" << event_str(event) << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::multiplex(" << event_str(event) << ") [" << (void*)this << "]");
 
   base_state_type state;
   state_type run_state;
@@ -407,7 +408,7 @@ void AIStateMachine::multiplex(event_type event)
 	llassert(!mMultiplexMutex.isSelfLocked());		// We may never enter recursively!
 	if (!mMultiplexMutex.tryLock())
 	{
-	  Dout(dc::statemachine, "Leaving because it is already being run [" << (void*)this << "]");
+	  Dout(dc::statemachine(mSMDebug), "Leaving because it is already being run [" << (void*)this << "]");
 	  return;
 	}
 
@@ -421,7 +422,7 @@ void AIStateMachine::multiplex(event_type event)
 	// we should indeed run, again.
 	if (event == schedule_run && !sub_state_type_rat(mSubState)->need_run)
 	{
-	  Dout(dc::statemachine, "Leaving because it was already being run [" << (void*)this << "]");
+	  Dout(dc::statemachine(mSMDebug), "Leaving because it was already being run [" << (void*)this << "]");
 	  return;
 	}
 
@@ -440,9 +441,9 @@ void AIStateMachine::multiplex(event_type event)
 	{
 #ifdef CWDEBUG
 	  if (state == bs_multiplex)
-		Dout(dc::statemachine, "Running state bs_multiplex / " << state_str_impl(run_state) << " [" << (void*)this << "]");
+		Dout(dc::statemachine(mSMDebug), "Running state bs_multiplex / " << state_str_impl(run_state) << " [" << (void*)this << "]");
 	  else
-		Dout(dc::statemachine, "Running state " << state_str(state) << " [" << (void*)this << "]");
+		Dout(dc::statemachine(mSMDebug), "Running state " << state_str(state) << " [" << (void*)this << "]");
 #endif
 
 #ifdef SHOW_ASSERT
@@ -503,7 +504,7 @@ void AIStateMachine::multiplex(event_type event)
 		// run of bs_reset is not a problem because it happens to be a NoOp.
 		state = (state == bs_initialize) ? bs_reset : bs_abort;
 #ifdef CWDEBUG
-		Dout(dc::statemachine, "Late abort detected! Running state " << state_str(state) << " instead [" << (void*)this << "]");
+		Dout(dc::statemachine(mSMDebug), "Late abort detected! Running state " << state_str(state) << " instead [" << (void*)this << "]");
 #endif
 	  }
 #ifdef SHOW_ASSERT
@@ -665,7 +666,7 @@ void AIStateMachine::multiplex(event_type event)
 
 #ifdef CWDEBUG
 		if (state != state_w->base_state)
-		  Dout(dc::statemachine, "Base state changed from " << state_str(state) << " to " << state_str(state_w->base_state) <<
+		  Dout(dc::statemachine(mSMDebug), "Base state changed from " << state_str(state) << " to " << state_str(state_w->base_state) <<
 			  "; need_new_run = " << (need_new_run ? "true" : "false") << " [" << (void*)this << "]");
 #endif
 	  }
@@ -699,11 +700,15 @@ void AIStateMachine::multiplex(event_type event)
 			// Mark that we're added to this engine, and at the same time, that we're not added to the previous one.
 			state_w->current_engine = engine;
 		  }
+#ifdef SHOW_ASSERT
+		  // We are leaving the loop, but we're not idle. The statemachine should re-enter the loop again.
+		  mDebugShouldRun = true;
+#endif
 		}
 		else
 		{
-		  // Remove this state machine from any engine.
-		  // Cause the engine to remove us.
+		  // Remove this state machine from any engine,
+		  // causing the engine to remove us.
 		  state_w->current_engine = NULL;
 		}
 
@@ -749,7 +754,7 @@ void AIStateMachine::multiplex(event_type event)
 
 AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::begin_loop(" << state_str(base_state) << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::begin_loop(" << state_str(base_state) << ") [" << (void*)this << "]");
 
   sub_state_type_wat sub_state_w(mSubState);
   // Honor a subsequent call to idle() (only necessary in bs_multiplex, but it doesn't hurt to reset this flag in other states too).
@@ -759,7 +764,7 @@ AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state
   // Honor previous calls to advance_state() (once run_state is initialized).
   if (base_state == bs_multiplex && sub_state_w->advance_state > sub_state_w->run_state)
   {
-	Dout(dc::statemachine, "Copying advance_state to run_state, because it is larger [" << state_str_impl(sub_state_w->advance_state) << " > " << state_str_impl(sub_state_w->run_state) << "]");
+	Dout(dc::statemachine(mSMDebug), "Copying advance_state to run_state, because it is larger [" << state_str_impl(sub_state_w->advance_state) << " > " << state_str_impl(sub_state_w->run_state) << "]");
 	sub_state_w->run_state = sub_state_w->advance_state;
   }
 #ifdef SHOW_ASSERT
@@ -789,7 +794,7 @@ AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state
 
 void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent, AIEngine* default_engine)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::run(" <<
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::run(" <<
 	  (void*)parent << ", " <<
 	  (parent ? parent->state_str_impl(new_parent_state) : "NA") <<
 	  ", abort_parent = " << (abort_parent ? "true" : "false") <<
@@ -839,7 +844,7 @@ void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bo
 
 void AIStateMachine::run(callback_type::signal_type::slot_type const& slot, AIEngine* default_engine)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::run(<slot>, default_engine = " << default_engine->name() << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::run(<slot>, default_engine = " << default_engine->name() << ") [" << (void*)this << "]");
 
 #ifdef SHOW_ASSERT
   {
@@ -874,7 +879,7 @@ void AIStateMachine::run(callback_type::signal_type::slot_type const& slot, AIEn
 
 void AIStateMachine::callback(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::callback() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::callback() [" << (void*)this << "]");
 
   bool aborted = sub_state_type_rat(mSubState)->aborted;
   if (mParent)
@@ -920,7 +925,7 @@ void AIStateMachine::force_killed(void)
 
 void AIStateMachine::kill(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::kill() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::kill() [" << (void*)this << "]");
 #ifdef SHOW_ASSERT
   {
 	multiplex_state_type_rat state_r(mState);
@@ -937,7 +942,7 @@ void AIStateMachine::kill(void)
 
 void AIStateMachine::reset()
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::reset() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::reset() [" << (void*)this << "]");
 #ifdef SHOW_ASSERT
   mDebugAborted = false;
   mDebugContPending = false;
@@ -960,6 +965,8 @@ void AIStateMachine::reset()
 	sub_state_w->reset = true;
 	// Start running.
 	sub_state_w->idle = false;
+	// We're not waiting for a condition.
+	sub_state_w->blocked = NULL;
 	// Keep running till we reach at least bs_multiplex.
 	sub_state_w->need_run = true;
   }
@@ -972,7 +979,7 @@ void AIStateMachine::reset()
 
 void AIStateMachine::set_state(state_type new_state)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::set_state(" << state_str_impl(new_state) << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::set_state(" << state_str_impl(new_state) << ") [" << (void*)this << "]");
 #ifdef SHOW_ASSERT
   {
 	multiplex_state_type_rat state_r(mState);
@@ -983,6 +990,8 @@ void AIStateMachine::set_state(state_type new_state)
   }
 #endif
   sub_state_type_wat sub_state_w(mSubState);
+  // It should never happen that set_state() is called while we're blocked.
+  llassert(!sub_state_w->blocked);
   // Force current state to the requested state.
   sub_state_w->run_state = new_state;
   // Void last call to advance_state.
@@ -999,13 +1008,13 @@ void AIStateMachine::set_state(state_type new_state)
 
 void AIStateMachine::advance_state(state_type new_state)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::advance_state(" << state_str_impl(new_state) << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::advance_state(" << state_str_impl(new_state) << ") [" << (void*)this << "]");
   {
 	sub_state_type_wat sub_state_w(mSubState);
 	// Ignore call to advance_state when the currently queued state is already greater or equal to the requested state.
 	if (sub_state_w->advance_state >= new_state)
 	{
-	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->advance_state) << " >= " << state_str_impl(new_state) << ".");
+	  Dout(dc::statemachine(mSMDebug), "Ignored, because " << state_str_impl(sub_state_w->advance_state) << " >= " << state_str_impl(new_state) << ".");
 	  return;
 	}
 	// Ignore call to advance_state when the current state is greater than the requested state: the new state would be
@@ -1014,7 +1023,7 @@ void AIStateMachine::advance_state(state_type new_state)
 	// the state change is and should be being ignored: the statemachine would start running it's current state (again).
 	if (sub_state_w->run_state > new_state)
 	{
-	  Dout(dc::statemachine, "Ignored, because " << state_str_impl(sub_state_w->run_state) << " > " << state_str_impl(new_state) << " (current state).");
+	  Dout(dc::statemachine(mSMDebug), "Ignored, because " << state_str_impl(sub_state_w->run_state) << " > " << state_str_impl(new_state) << " (current state).");
 	  return;
 	}
 	// Increment state.
@@ -1023,6 +1032,13 @@ void AIStateMachine::advance_state(state_type new_state)
 	sub_state_w->idle = false;
 	// Ignore a call to idle if it occurs before we leave multiplex_impl().
 	sub_state_w->skip_idle = true;
+	// No longer say we woke up when signalled() is called.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
 	// Mark that a re-entry of multiplex() is necessary.
 	sub_state_w->need_run = true;
 #ifdef SHOW_ASSERT
@@ -1048,7 +1064,7 @@ void AIStateMachine::advance_state(state_type new_state)
 
 void AIStateMachine::idle(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::idle() [" << (void*)this << "]");
 #ifdef SHOW_ASSERT
   {
 	multiplex_state_type_rat state_r(mState);
@@ -1066,7 +1082,7 @@ void AIStateMachine::idle(void)
   // Ignore call to idle() when advance_state() was called since last call to set_state().
   if (sub_state_w->skip_idle)
   {
-	Dout(dc::statemachine, "Ignored, because skip_idle is true (advance_state() was called last).");
+	Dout(dc::statemachine(mSMDebug), "Ignored, because skip_idle is true (advance_state() was called last).");
 	return;
   }
   // Mark that we are idle.
@@ -1075,13 +1091,54 @@ void AIStateMachine::idle(void)
   mSleep = 0;
 }
 
+// This function is very much like idle().
+void AIStateMachine::wait(AIConditionBase& condition)
+{
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::wait(" << (void*)&condition << ") [" << (void*)this << "]");
+#ifdef SHOW_ASSERT
+  {
+	multiplex_state_type_rat state_r(mState);
+	// wait() may only be called multiplex_impl().
+	llassert(state_r->base_state == bs_multiplex);
+	// May only be called by the thread that is holding mMultiplexMutex.
+	llassert(mThreadId.equals_current_thread());
+  }
+  // wait() following set_state() cancels the reason to run because of the call to set_state.
+  mDebugSetStatePending = false;
+#endif
+  sub_state_type_wat sub_state_w(mSubState);
+  // As wait() may only be called from within the state machine, it should never happen that the state machine is already idle.
+  llassert(!sub_state_w->idle);
+  // Ignore call to wait() when advance_state() was called since last call to set_state().
+  if (sub_state_w->skip_idle)
+  {
+	Dout(dc::statemachine(mSMDebug), "Ignored, because skip_idle is true (advance_state() was called last).");
+	return;
+  }
+  // Register ourselves with the condition object.
+  condition.wait(this);
+  // Mark that we are idle.
+  sub_state_w->idle = true;
+  // Mark that we are waiting for a condition.
+  sub_state_w->blocked = &condition;
+  // Not sleeping (anymore).
+  mSleep = 0;
+}
+
 void AIStateMachine::cont(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::cont() [" << (void*)this << "]");
   {
 	sub_state_type_wat sub_state_w(mSubState);
 	// Void last call to idle(), if any.
 	sub_state_w->idle = false;
+	// No longer say we woke up when signalled() is called.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
 	// Mark that a re-entry of multiplex() is necessary.
 	sub_state_w->need_run = true;
 #ifdef SHOW_ASSERT
@@ -1095,15 +1152,56 @@ void AIStateMachine::cont(void)
   }
 }
 
+// This function is very much like cont(), except that it has no effect when we are not in a blocked state.
+// Returns true if the state machine was unblocked, false if it was already unblocked.
+bool AIStateMachine::signalled(void)
+{
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::signalled() [" << (void*)this << "]");
+  {
+	sub_state_type_wat sub_state_w(mSubState);
+	// Test if we are blocked or not.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
+	else
+	{
+	  return false;
+	}
+	// Void last call to wait().
+	sub_state_w->idle = false;
+	// Mark that a re-entry of multiplex() is necessary.
+	sub_state_w->need_run = true;
+#ifdef SHOW_ASSERT
+	// From this moment.
+	mDebugContPending = true;
+#endif
+  }
+  if (!mMultiplexMutex.isSelfLocked())
+  {
+	multiplex(schedule_run);
+  }
+  return true;
+}
+
 void AIStateMachine::abort(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::abort() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::abort() [" << (void*)this << "]");
   bool is_waiting = false;
   {
 	multiplex_state_type_rat state_r(mState);
 	sub_state_type_wat sub_state_w(mSubState);
 	// Mark that we are aborted, iff we didn't already finish.
 	sub_state_w->aborted = !sub_state_w->finished;
+	// No longer say we woke up when signalled() is called.
+	if (sub_state_w->blocked)
+	{
+	  Dout(dc::statemachine(mSMDebug), "Removing statemachine from condition " << (void*)sub_state_w->blocked);
+	  sub_state_w->blocked->remove(this);
+	  sub_state_w->blocked = NULL;
+	}
 	// Mark that a re-entry of multiplex() is necessary.
 	sub_state_w->need_run = true;
 	// Schedule a new run when this state machine is waiting.
@@ -1128,7 +1226,7 @@ void AIStateMachine::abort(void)
 
 void AIStateMachine::finish(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::finish() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::finish() [" << (void*)this << "]");
 #ifdef SHOW_ASSERT
   {
 	multiplex_state_type_rat state_r(mState);
@@ -1147,7 +1245,7 @@ void AIStateMachine::finish(void)
 
 void AIStateMachine::yield(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::yield() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::yield() [" << (void*)this << "]");
   multiplex_state_type_rat state_r(mState);
   // yield() may only be called from multiplex_impl().
   llassert(state_r->base_state == bs_multiplex);
@@ -1160,7 +1258,7 @@ void AIStateMachine::yield(void)
 void AIStateMachine::yield(AIEngine* engine)
 {
   llassert(engine);
-  DoutEntering(dc::statemachine, "AIStateMachine::yield(" << engine->name() << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::yield(" << engine->name() << ") [" << (void*)this << "]");
 #ifdef SHOW_ASSERT
   {
 	multiplex_state_type_rat state_r(mState);
@@ -1173,9 +1271,19 @@ void AIStateMachine::yield(AIEngine* engine)
   mYieldEngine = engine;
 }
 
+bool AIStateMachine::yield_if_not(AIEngine* engine)
+{
+  if (engine && multiplex_state_type_rat(mState)->current_engine != engine)
+  {
+	yield(engine);
+	return true;
+  }
+  return false;
+}
+
 void AIStateMachine::yield_frame(unsigned int frames)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::yield_frame(" << frames << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::yield_frame(" << frames << ") [" << (void*)this << "]");
   mSleep = -(S64)frames;
   // Sleeping is always done from the main thread.
   yield(&gMainThreadEngine);
@@ -1183,7 +1291,7 @@ void AIStateMachine::yield_frame(unsigned int frames)
 
 void AIStateMachine::yield_ms(unsigned int ms)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::yield_ms(" << ms << ") [" << (void*)this << "]");
+  DoutEntering(dc::statemachine(mSMDebug), "AIStateMachine::yield_ms(" << ms << ") [" << (void*)this << "]");
   mSleep = get_clock_count() + calc_clock_frequency() * ms / 1000;
   // Sleeping is always done from the main thread.
   yield(&gMainThreadEngine);
@@ -1233,7 +1341,7 @@ void AIEngine::threadloop(void)
 	engine_state_type_wat engine_state_w(mEngineState);
 	if (!active)
 	{
-	  Dout(dc::statemachine, "Erasing state machine [" << (void*)&state_machine << "] from " << mName);
+	  Dout(dc::statemachine(state_machine.mSMDebug), "Erasing state machine [" << (void*)&state_machine << "] from " << mName);
 	  engine_state_w->list.erase(queued_element++);
 	}
 	else

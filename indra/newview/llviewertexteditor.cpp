@@ -1644,14 +1644,7 @@ LLView* LLViewerTextEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlF
 
 	LLFontGL* font = LLView::selectFont(node);
 
-	// std::string text = node->getValue();
 	std::string text = node->getTextContents().substr(0, max_text_length - 1);
-
-	if (text.size() > max_text_length)
-	{
-		// Erase everything from max_text_length on.
-		text.erase(max_text_length);
-	}
 
 	LLViewerTextEditor* text_editor = new LLViewerTextEditor("text_editor", 
 								rect,

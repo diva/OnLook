@@ -443,9 +443,15 @@ class WindowsSetup(PlatformSetup):
         'vc100' : {
             'gen' : r'Visual Studio 10',
             'ver' : r'10.0'
+            },
+        'vc110' : {
+            'gen' : r'Visual Studio 11',
+            'ver' : r'11.0'
             }
         }
+    
     gens['vs2010'] = gens['vc100']
+    gens['vs2012'] = gens['vc110']
 
     search_path = r'C:\windows'
     exe_suffixes = ('.exe', '.bat', '.com')
@@ -503,6 +509,9 @@ class WindowsSetup(PlatformSetup):
             project_name=self.project_name,
             word_size=self.word_size,
             )
+        if self.word_size == 64:
+            args["generator"] += r' Win64'
+
         #if simple:
         #    return 'cmake %(opts)s "%(dir)s"' % args
         return ('cmake -G "%(generator)s" '

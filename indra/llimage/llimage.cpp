@@ -299,10 +299,15 @@ LLImageRaw::LLImageRaw(U16 width, U16 height, S8 components)
 	++sRawImageCount;
 }
 
-LLImageRaw::LLImageRaw(U8 *data, U16 width, U16 height, S8 components)
+LLImageRaw::LLImageRaw(U8 *data, U16 width, U16 height, S8 components, bool no_copy)
 	: LLImageBase(), mCacheEntries(0)
 {
-	if(allocateDataSize(width, height, components) && data)
+
+	if(no_copy)
+	{
+		setDataAndSize(data, width, height, components);
+	}
+	else if(allocateDataSize(width, height, components) && data)
 	{
 		memcpy(getData(), data, width*height*components);
 	}
@@ -762,8 +767,17 @@ void LLImageRaw::fill( const LLColor4U& color )
 	}
 }
 
+LLPointer<LLImageRaw> LLImageRaw::duplicate()
+{
+	if(getNumRefs() < 2)
+	{
+		return this; //nobody else refences to this image, no need to duplicate.
+	}
 
-
+	//make a duplicate
+	LLPointer<LLImageRaw> dup = new LLImageRaw(getData(), getWidth(), getHeight(), getComponents());
+	return dup; 
+}
 
 // Src and dst can be any size.  Src and dst can each have 3 or 4 components.
 void LLImageRaw::copy(LLImageRaw* src)

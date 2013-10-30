@@ -32,38 +32,23 @@
 		<menu bottom="0" drop_shadow="true" enabled="true" height="62"
 		     left="0" mouse_opaque="false" name="File" opaque="true" tear_off="false"
 		     width="138">
-			<menu_item_call bottom_delta="-30" height="20" label="Save" left="0" mouse_opaque="true"
-			     name="Save" width="138" />
-			<menu_item_separator bottom_delta="-38" height="8" left="0" mouse_opaque="true" name="separator"
-			     width="138" />
+			<menu_item_call label="Save" name="Save" shortcut="control|S"/>
+			<menu_item_separator/>
 			<menu_item_call bottom_delta="-58" height="20" label="Revert All Changes" left="0"
 			     mouse_opaque="true" name="Revert All Changes" width="138" />
 		</menu>
-		<menu bottom="665" drop_shadow="true" enabled="true" height="198"
-		     left="222" mouse_opaque="false" name="Edit" opaque="true" tear_off="false"
-		     width="139">
-			<menu_item_call bottom_delta="-30" enabled="false" height="20" label="Undo" left="0"
-			     mouse_opaque="true" name="Undo" width="139" />
-			<menu_item_call bottom_delta="-50" enabled="false" height="20" label="Redo" left="0"
-			     mouse_opaque="true" name="Redo" width="139" />
-			<menu_item_separator bottom_delta="-58" enabled="true" height="8" label="-----------" left="0"
-			     mouse_opaque="true" name="separator" width="139" />
-			<menu_item_call bottom_delta="-78" enabled="false" height="20" label="Cut" left="0"
-			     mouse_opaque="true" name="Cut" width="139" />
-			<menu_item_call bottom_delta="-98" enabled="false" height="20" label="Copy" left="0"
-			     mouse_opaque="true" name="Copy" width="139" />
-			<menu_item_call bottom_delta="-118" enabled="false" height="20" label="Paste" left="0"
-			     mouse_opaque="true" name="Paste" width="139" />
-			<menu_item_separator bottom_delta="-126" enabled="true" height="8" label="-----------" left="0"
-			     mouse_opaque="true" name="separator2" width="139" />
-			<menu_item_call bottom_delta="-146" enabled="true" height="20" label="Select All" left="0"
-			     mouse_opaque="true" name="Select All" width="139" />
-			<menu_item_call bottom_delta="-166" enabled="false" height="20" label="Deselect" left="0"
-			     mouse_opaque="true" name="Deselect" width="139" />
-			<menu_item_separator bottom_delta="-174" enabled="true" height="8" label="-----------" left="0"
-			     mouse_opaque="true" name="separator3" width="139" />
-			<menu_item_call bottom_delta="-194" enabled="true" height="20" label="Search / Replace..."
-			     left="0" mouse_opaque="true" name="Search / Replace..." width="139" />
+		<menu label="Edit" name="Edit" tear_off="false">
+			<menu_item_call label="Undo" name="Undo" shortcut="control|Z"/>
+			<menu_item_call label="Redo" name="Redo" shortcut="control|Y"/>
+			<menu_item_separator/>
+			<menu_item_call label="Cut" name="Cut" shortcut="control|X"/>
+			<menu_item_call label="Copy" name="Copy" shortcut="control|C"/>
+			<menu_item_call label="Paste" name="Paste" shortcut="control|V"/>
+			<menu_item_separator/>
+			<menu_item_call label="Select All" name="Select All" shortcut="control|A"/>
+			<menu_item_call label="Deselect" name="Deselect" shortcut="control|E"/>
+			<menu_item_separator/>
+			<menu_item_call label="Search / Replace..." name="Search / Replace..." shortcut="control|F"/>
 		</menu>
 		<menu bottom="-18" drop_shadow="true" enabled="true" height="34"
 		     left="0" mouse_opaque="false" name="Help" opaque="true" tear_off="false"

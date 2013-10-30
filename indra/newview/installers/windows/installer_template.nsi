@@ -36,6 +36,14 @@ RequestExecutionLevel admin	; on Vista we must be admin because we write to Prog
 %%GRID_VARS%%
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Alows us to determine if we're running on 64 bit OS; ${If} macros
+!include "x64.nsh"
+!include "LogicLib.nsh"
+
+;; are 64 bit binaries packaged in this installer
+%%WIN64_BIN_BUILD%%
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; - language files - one for each language (or flavor thereof)
 ;; (these files are in the same place as the nsi template but the python script generates a new nsi file in the 
 ;; application directory so we have to add a path to these include files)
@@ -63,7 +71,7 @@ LangString LanguageCode ${LANG_DUTCH}    "nl"
 LangString LanguageCode ${LANG_PORTUGUESEBR} "pt"
 LangString LanguageCode ${LANG_SIMPCHINESE}  "zh"
 
-Name ${VIEWERNAME}
+Name "${VIEWERNAME}"
 
 SubCaption 0 $(LicenseSubTitleSetup)	; override "license agreement" text
 
@@ -71,7 +79,7 @@ BrandingText "Prepare to Implode!"						; bottom of window text
 Icon          %%SOURCE%%\installers\windows\install_icon_singularity.ico
 UninstallIcon %%SOURCE%%\installers\windows\uninstall_icon_singularity.ico
 WindowIcon off							; show our icon in left corner
-BGGradient 9090b0 000000 notext
+# BGGradient 9090b0 000000 notext
 CRCCheck on								; make sure CRC is OK
 #InstProgressFlags smooth colored		; new colored smooth look
 InstProgressFlags
@@ -80,7 +88,7 @@ ShowInstDetails show				; no details, no "show" button
 SetOverwrite on							; stomp files by default
 AutoCloseWindow true					; after all files install, close window
 
-InstallDir "$PROGRAMFILES\${INSTNAME}"
+InstallDir "%%INSTALLDIR%%"
 InstallDirRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Linden Research, Inc.\${INSTNAME}" ""
 DirText $(DirectoryChooseTitle) $(DirectoryChooseSetup)
 
@@ -664,6 +672,12 @@ FunctionEnd
 ;;  entry to the language ID selector below
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Function .onInit
+!ifdef WIN64_BIN_BUILD
+    ${IfNot} ${RunningX64}
+        MessageBox MB_OK|MB_ICONSTOP "This version requires 64 bit operating sytem."
+        Quit
+    ${EndIf}
+!endif
     Push $0
     ${GetParameters} $COMMANDLINE              ; get our command line
     ${GetOptions} $COMMANDLINE "/LANGID=" $0   ; /LANGID=1033 implies US English

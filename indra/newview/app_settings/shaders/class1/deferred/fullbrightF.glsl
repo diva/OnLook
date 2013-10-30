@@ -48,6 +48,7 @@ void main()
 
 	color.rgb = fullbrightScaleSoftClip(color.rgb);
 
+	color.a = .0;
 	frag_color = color;
 }
 

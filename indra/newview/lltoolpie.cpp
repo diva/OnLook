@@ -1092,9 +1092,6 @@ BOOL LLToolPie::handleRightClickPick()
 
 	// didn't click in any UI object, so must have clicked in the world
 	LLViewerObject *object = mPick.getObject();
-	LLViewerObject *parent = NULL;
-	if(object)
-		parent = object->getRootEdit();
 
 	// Can't ignore children here.
 	LLToolSelect::handleObjectSelection(mPick, FALSE, TRUE);

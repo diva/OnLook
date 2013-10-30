@@ -38,6 +38,7 @@
 
 #include "v4math.h"
 #include "v4color.h"
+#include "llstaticstringtable.h"
 
 class LLWLParamSet;
 class LLGLSLShader;
@@ -54,8 +55,11 @@ public:
 private:
 
 	LLSD mParamValues;
-	
+	std::vector<LLStaticHashedString> mParamHashedNames;
+
 	float mCloudScrollXOffset, mCloudScrollYOffset;
+
+	void updateHashedNames();
 
 public:
 
@@ -184,6 +188,8 @@ inline void LLWLParamSet::setAll(const LLSD& val)
 	if(val.isMap()) {
 		mParamValues = val;
 	}
+
+	updateHashedNames();
 }
 
 inline const LLSD& LLWLParamSet::getAll()

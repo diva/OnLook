@@ -90,7 +90,7 @@ private:
 							// However this is ONLY the case if fbos are actually supported, else swapping isn't needed.
 	LLRenderTarget mRenderTarget[2];
 	U32 mDepthTexture;
-	LLPointer<LLImageGL> mNoiseTexture ;
+	U32 mNoiseTexture ;
 	
 	U32 mScreenWidth;
 	U32 mScreenHeight;

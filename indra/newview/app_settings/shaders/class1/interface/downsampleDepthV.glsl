@@ -1,9 +1,9 @@
 /** 
- * @file lightShinyWaterF.glsl
+ * @file debugV.glsl
  *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * Copyright (C) 2007, Linden Research, Inc.
+ * Copyright (C) 2011, Linden Research, Inc.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,32 +23,37 @@
  * $/LicenseInfo$
  */
 
-#ifdef DEFINE_GL_FRAGCOLOR
-out vec4 frag_color;
-#else
-#define frag_color gl_FragColor
-#endif
+uniform mat4 modelview_projection_matrix;
 
-VARYING vec4 vertex_color;
-VARYING vec2 vary_texcoord0;
-VARYING vec3 vary_texcoord1;
+ATTRIBUTE vec3 position;
 
-uniform sampler2D diffuseMap;
-uniform samplerCube environmentMap;
+uniform vec2 screen_res;
 
-vec3 atmosLighting(vec3 light);
-vec4 applyWaterFog(vec4 color);
+uniform vec2 delta;
 
-void shiny_lighting_water()
+VARYING vec2 tc0;
+VARYING vec2 tc1;
+VARYING vec2 tc2;
+VARYING vec2 tc3;
+VARYING vec2 tc4;
+VARYING vec2 tc5;
+VARYING vec2 tc6;
+VARYING vec2 tc7;
+VARYING vec2 tc8;
+
+void main()
 {
-	vec4 color = texture2D(diffuseMap,vary_texcoord0.xy);
-	color.rgb *= vertex_color.rgb;
+	gl_Position = vec4(position, 1.0); 
 	
-	vec3 envColor = textureCube(environmentMap, vary_texcoord1.xyz).rgb;	
-	color.rgb = mix(color.rgb, envColor.rgb, vertex_color.a);
-
-	color.rgb = atmosLighting(color.rgb);
-	color.a = 1.0;
-	frag_color = applyWaterFog(color);
+	vec2 tc = (position.xy*0.5+0.5)*screen_res;
+	tc0 = tc+vec2(-delta.x,-delta.y);
+	tc1 = tc+vec2(0,-delta.y);
+	tc2 = tc+vec2(delta.x,-delta.y);
+	tc3 = tc+vec2(-delta.x,0);
+	tc4 = tc+vec2(0,0);
+	tc5 = tc+vec2(delta.x,0);
+	tc6 = tc+vec2(-delta.x,delta.y);
+	tc7 = tc+vec2(0,delta.y);
+	tc8 = tc+vec2(delta.x,delta.y);
 }
 

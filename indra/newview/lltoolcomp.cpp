@@ -2,31 +2,25 @@
  * @file lltoolcomp.cpp
  * @brief Composite tools
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -49,6 +43,7 @@
 #include "lltoolmgr.h"
 #include "lltoolselectrect.h"
 #include "lltoolplacer.h"
+#include "llviewercamera.h" // <exodus/>
 #include "llviewermenu.h"
 #include "llviewerobject.h"
 #include "llviewerwindow.h"
@@ -57,7 +52,7 @@
 #include "llfloatertools.h"
 #include "qtoolalign.h"
 #include "llviewercontrol.h"
-#include "llviewercamera.h"
+
 
 const S32 BUTTON_HEIGHT = 16;
 const S32 BUTTON_WIDTH_SMALL = 32;
@@ -659,6 +654,7 @@ void LLToolCompRotate::render()
 
 LLToolCompGun::LLToolCompGun()
 	: LLToolComposite(std::string("Mouselook"))
+	, mRightMouseButton(false), mMenuShown(false), mTimerFOV(), mOriginalFOV(), mStartFOV(), mTargetFOV() // <exodus/>
 {
 	mGun = new LLToolGun(this);
 	mGrab = new LLToolGrab(this);
@@ -666,8 +662,11 @@ LLToolCompGun::LLToolCompGun()
 
 	setCurrentTool(mGun);
 	mDefault = mGun;
-}
 
+	// <exodus>
+	mTimerFOV.stop();
+	// </exodus>
+}
 
 LLToolCompGun::~LLToolCompGun()
 {
@@ -751,24 +750,9 @@ BOOL LLToolCompGun::handleDoubleClick(S32 x, S32 y, MASK mask)
 	return LLToolGrab::getInstance()->handleDoubleClick(x, y, mask);
 }
 
-
+/* Singu Note: Moved to bottom, upstream is Exodus
 BOOL LLToolCompGun::handleRightMouseDown(S32 x, S32 y, MASK mask)
-{
-	/* JC - suppress context menu 8/29/2002
-
-	// On right mouse, go through some convoluted steps to
-	// make the build menu appear.
-	setCurrentTool( (LLTool*) mNull );
-
-	// This should return FALSE, meaning the context menu will
-	// be shown.
-	return FALSE;
-	*/
-
-	// Returning true will suppress the context menu
-	return TRUE;
-}
-
+*/
 
 BOOL LLToolCompGun::handleMouseUp(S32 x, S32 y, MASK mask)
 {
@@ -799,27 +783,93 @@ void	LLToolCompGun::handleDeselect()
 	setMouseCapture(FALSE);
 }
 
+// <exodus>
+
+BOOL LLToolCompGun::handleRightMouseUp(S32 x, S32 y, MASK mask)
+{
+	// Singu Note: Beware the alt-click menu
+	if (mRightMouseButton)
+	{
+		mRightMouseButton = false;
+
+		mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
+		mTargetFOV = mOriginalFOV;
+		mTimerFOV.start();
+	}
+
+	if (mMenuShown)
+	{
+		mMenuShown = false;
+		return LLToolComposite::handleRightMouseUp(x, y, mask);
+	}
+
+	return TRUE;
+}
+
+BOOL LLToolCompGun::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	// Singu Note: Beware the alt-click menu
+	if (gSavedSettings.getBOOL("LiruMouselookMenu") && mask & MASK_ALT)
+	{
+		mMenuShown = true;
+		return false;
+	}
+
+	mRightMouseButton = true;
+
+	if(!mTimerFOV.getStarted())
+	{
+		mStartFOV = LLViewerCamera::getInstance()->getAndSaveDefaultFOV();
+		mOriginalFOV = mStartFOV;
+	}
+	else mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
+
+	mTargetFOV = gSavedPerAccountSettings.getF32("zmm_mlfov");
+	mTimerFOV.start();
+
+	return TRUE;
+}
 
 BOOL LLToolCompGun::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
-	//::MOYMOD::
-    if(gSavedSettings.getBOOL("zmm_isinml") == 1)
+	if (mRightMouseButton)
 	{
-        if(clicks > 0)
-		{
-			gSavedSettings.setF32("zmm_mlfov", gSavedSettings.getF32("zmm_mlfov") / 1.1);
-		}
-        else if(clicks < 0)
-		{
-			gSavedSettings.setF32("zmm_mlfov", gSavedSettings.getF32("zmm_mlfov") * 1.1);
-		}
-		LLViewerCamera::getInstance()->setDefaultFOV(gSavedSettings.getF32("zmm_deffov") / gSavedSettings.getF32("zmm_mlfov"));
-        return TRUE;
-    }
-	if (clicks > 0)
-	{
-		gAgentCamera.changeCameraToDefault();
+		mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
 
+		gSavedPerAccountSettings.setF32(
+			"zmm_mlfov",
+			mTargetFOV = clicks > 0 ?
+				llclamp(mTargetFOV += (0.05f * clicks), 0.1f, 3.0f) :
+				llclamp(mTargetFOV -= (0.05f * -clicks), 0.1f, 3.0f)
+		);
+
+		mTimerFOV.start();
 	}
+	else if (clicks > 0) gAgentCamera.changeCameraToDefault();
+
 	return TRUE;
 }
+
+// Zoom related stuff...
+
+void LLToolCompGun::draw()
+{
+	if (mTimerFOV.getStarted())
+	{
+		if (!LLViewerCamera::getInstance()->mSavedFOVLoaded && mStartFOV != mTargetFOV)
+		{
+			F32 timer = mTimerFOV.getElapsedTimeF32();
+
+			if (timer > 0.15f)
+			{
+				LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV);
+				mTimerFOV.stop();
+			}
+			else LLViewerCamera::getInstance()->setDefaultFOV(lerp(mStartFOV, mTargetFOV, timer * 6.66f));
+		}
+		else mTimerFOV.stop();
+	}
+	LLToolComposite::draw(); // Singu Note: We call parent here, instead of being clueless and adding to LLViewerWindow::draw for crosshairs and such
+}
+
+// </exodus>

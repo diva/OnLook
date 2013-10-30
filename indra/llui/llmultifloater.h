@@ -56,7 +56,7 @@ public:
 	virtual void growToFit(S32 content_width, S32 content_height);
 	virtual void addFloater(LLFloater* floaterp, BOOL select_added_floater, LLTabContainer::eInsertionPoint insertion_point = LLTabContainer::END);
 
-	virtual void showFloater(LLFloater* floaterp);
+	virtual void showFloater(LLFloater* floaterp, LLTabContainer::eInsertionPoint insertion_point = LLTabContainer::END);
 	virtual void removeFloater(LLFloater* floaterp);
 
 	virtual void tabOpen(LLFloater* opened_floater);
@@ -76,6 +76,7 @@ public:
 	void onTabSelected();
 
 	virtual void updateResizeLimits();
+	virtual void updateFloaterTitle(LLFloater* floaterp);
 
 protected:
 	struct LLFloaterData
@@ -94,6 +95,9 @@ protected:
 	LLTabContainer::TabPosition mTabPos;
 	BOOL				mAutoResize;
 	S32					mOrigMinWidth, mOrigMinHeight;  // logically const but initialized late
+
+private:
+	virtual void computeResizeLimits(S32& new_min_width, S32& new_min_height);
 };
 
 #endif  // LL_MULTI_FLOATER_H

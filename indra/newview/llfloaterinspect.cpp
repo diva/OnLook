@@ -89,7 +89,6 @@ LLFloaterInspect::~LLFloaterInspect(void)
 	{
 		gFloaterTools->setFocus(TRUE);
 	}
-	//sInstance = NULL;
 }
 
 // static
@@ -199,15 +198,6 @@ LLUUID LLFloaterInspect::getSelectedUUID()
 	return LLUUID::null;
 }
 
-void LLFloaterInspect::onGetAvNameCallback(const LLUUID& idCreator, const LLAvatarName& av_name, void* FloaterPtr)
-{
-	if (FloaterPtr)
-	{
-		LLFloaterInspect* floater = (LLFloaterInspect*)FloaterPtr;
-		floater->dirty();
-	}
-}
-
 void LLFloaterInspect::refresh()
 {
 	LLUUID creator_id;
@@ -234,15 +224,14 @@ void LLFloaterInspect::refresh()
 	{
 		LLSelectNode* obj = *iter;
 		LLSD row;
-		std::string owner_name, creator_name, time, last_owner_name;
+		std::string owner_name, creator_name, last_owner_name;
 
 		if (obj->mCreationDate == 0)
 		{	// Don't have valid information from the server, so skip this one
 			continue;
 		}
 
-		time_t timestamp = (time_t) (obj->mCreationDate/1000000);
-		timeToFormattedString(timestamp, gSavedSettings.getString("TimestampFormat"), time);
+		// Singu Note: Diverge from LL and handle datetime column in a sortable manner later on
 
 		const LLUUID& idOwner = obj->mPermissions->getOwner();
 		const LLUUID& idCreator = obj->mPermissions->getCreator();
@@ -266,7 +255,7 @@ void LLFloaterInspect::refresh()
 		else
 		{
 			owner_name = LLTrans::getString("RetrievingData");
-			LLAvatarNameCache::get(idOwner, boost::bind(&LLFloaterInspect::onGetAvNameCallback, _1, _2, this));
+			LLAvatarNameCache::get(idOwner, boost::bind(&LLFloaterInspect::dirty, this));
 		}
 
 		if (LLAvatarNameCache::get(idCreator, &av_name))
@@ -283,7 +272,7 @@ void LLFloaterInspect::refresh()
 		else
 		{
 			creator_name = LLTrans::getString("RetrievingData");
-			LLAvatarNameCache::get(idCreator, boost::bind(&LLFloaterInspect::onGetAvNameCallback, _1, _2, this));
+			LLAvatarNameCache::get(idCreator, boost::bind(&LLFloaterInspect::dirty, this));
 		}
 
 		// <edit>
@@ -300,7 +289,7 @@ void LLFloaterInspect::refresh()
 		else
 		{
 			last_owner_name = LLTrans::getString("RetrievingData");
-			LLAvatarNameCache::get(idLastOwner, boost::bind(&LLFloaterInspect::onGetAvNameCallback, _1, _2, this));
+			LLAvatarNameCache::get(idLastOwner, boost::bind(&LLFloaterInspect::dirty, this));
 		}
 		// </edit>
 
@@ -363,8 +352,10 @@ void LLFloaterInspect::refresh()
 		row["columns"][7]["value"] = llformat("%d",total_inv);
 		// </edit>
 		row["columns"][8]["column"] = "creation_date";
-		row["columns"][8]["type"] = "text";
-		row["columns"][8]["value"] = time;
+		row["columns"][8]["type"] = "date";
+		row["columns"][8]["value"] = LLDate(obj->mCreationDate/1000000);
+		static const LLCachedControl<std::string> format("TimestampFormat");
+		row["columns"][8]["format"] = format;
 		mObjectList->addElement(row, ADD_TOP);
 	}
 	if(selected_index > -1 && mObjectList->getItemIndex(selected_uuid) == selected_index)

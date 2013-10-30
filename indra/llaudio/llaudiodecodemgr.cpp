@@ -611,8 +611,10 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 				llwarns << mCurrentDecodep->getUUID() << " has invalid vorbis data, aborting decode" << llendl;
 				mCurrentDecodep->flushBadFile();
 				LLAudioData *adp = gAudiop->getAudioData(mCurrentDecodep->getUUID());
-				adp->setHasValidData(false);
-				adp->setHasCompletedDecode(true);
+				if(adp)
+				{
+					adp->setLoadState(LLAudioData::STATE_LOAD_ERROR);
+				}
 				mCurrentDecodep = NULL;
 				done = TRUE;
 			}
@@ -634,10 +636,7 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 					}
 					else if (mCurrentDecodep->isValid() && mCurrentDecodep->isDone())
 					{
-						adp->setHasCompletedDecode(true);
-						adp->setHasDecodedData(true);
-						adp->setHasValidData(true);
-
+						adp->setLoadState(LLAudioData::STATE_LOAD_READY);
 						// At this point, we could see if anyone needs this sound immediately, but
 						// I'm not sure that there's a reason to - we need to poll all of the playing
 						// sounds anyway.
@@ -645,7 +644,7 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 					}
 					else
 					{
-						adp->setHasCompletedDecode(true);
+						adp->setLoadState(LLAudioData::STATE_LOAD_ERROR);
 						llinfos << "Vorbis decode failed for " << mCurrentDecodep->getUUID() << llendl;
 					}
 					mCurrentDecodep = NULL;
@@ -688,8 +687,7 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 					LLAudioData *adp = gAudiop->getAudioData(uuid);
 					if(adp)
 					{
-						adp->setHasValidData(false);
-						adp->setHasCompletedDecode(true);
+						adp->setLoadState(LLAudioData::STATE_LOAD_ERROR);
 					}
 					mCurrentDecodep = NULL;
 				}
@@ -715,23 +713,13 @@ void LLAudioDecodeMgr::processQueue(const F32 num_secs)
 	mImpl->processQueue(num_secs);
 }
 
-BOOL LLAudioDecodeMgr::addDecodeRequest(const LLUUID &uuid)
+bool LLAudioDecodeMgr::addDecodeRequest(const LLUUID &uuid)
 {
-	if (gAudiop->hasDecodedFile(uuid))
-	{
-		// Already have a decoded version, don't need to decode it.
-		//llinfos << "addDecodeRequest for " << uuid << " has decoded file already" << llendl;
-		return TRUE;
-	}
-
-	if (gAssetStorage->hasLocalAsset(uuid, LLAssetType::AT_SOUND))
-	{
-		// Just put it on the decode queue.
-		//llinfos << "addDecodeRequest for " << uuid << " has local asset file already" << llendl;
-		mImpl->mDecodeQueue.push(uuid);
-		return TRUE;
-	}
-
-	//llinfos << "addDecodeRequest for " << uuid << " no file available" << llendl;
-	return FALSE;
+	if(!uuid.notNull())
+		return false;
+	else if (!gAssetStorage || !gAssetStorage->hasLocalAsset(uuid, LLAssetType::AT_SOUND))
+		return false;
+	
+	mImpl->mDecodeQueue.push(uuid);
+	return true;
 }
