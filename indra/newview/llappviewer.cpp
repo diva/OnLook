@@ -2625,7 +2625,11 @@ void LLAppViewer::writeSystemInfo()
 	gDebugInfo["ClientInfo"]["MinorVersion"] = gVersionMinor;
 	gDebugInfo["ClientInfo"]["PatchVersion"] = gVersionPatch;
 	gDebugInfo["ClientInfo"]["BuildVersion"] = gVersionBuild;
-
+#if defined(_WIN64) || defined(__x86_64__)
+	gDebugInfo["ClientInfo"]["Architecture"] = "x86_64";
+#else
+	gDebugInfo["ClientInfo"]["Architecture"] = "i386";
+#endif
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
 	gDebugInfo["CPUInfo"]["CPUString"] = gSysCPU.getCPUString();
