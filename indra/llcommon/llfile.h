@@ -82,6 +82,9 @@ public:
 			std::ios::openmode mode);
 
 	static  const char * tmpdir();
+
+	static std::string strerr(int errn);
+	static std::string strerr();
 };
 
 /**
