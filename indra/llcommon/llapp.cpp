@@ -163,15 +163,18 @@ void LLApp::commonCtor()
 	mCrashReportPipeStr = L"\\\\.\\pipe\\LLCrashReporterPipe";
 }
 
+#if LL_WINDOWS
 static bool clear_CrashLoggerReserve_callback(void* context, EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion)
 {
-#if LL_WINDOWS
 	VirtualFree(sCrashLoggerReserve, 0, MEM_RELEASE);
-#else
-	free(sCrashLoggerReserve);
-#endif
 	return true;
 }
+#else
+static bool clear_CrashLoggerReserve_callback(void* context)
+	free(sCrashLoggerReserve);
+	return true;
+}
+#endif
 
 LLApp::LLApp(LLErrorThread *error_thread) :
 	mThreadErrorp(error_thread)
