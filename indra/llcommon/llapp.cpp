@@ -123,6 +123,8 @@ LLApp::LLApp() : mThreadErrorp(NULL)
 	commonCtor();
 }
 
+static void* sCrashLoggerReserve = NULL;
+
 void LLApp::commonCtor()
 {
 	// Set our status to running
@@ -148,11 +150,27 @@ void LLApp::commonCtor()
 	sApplication = this;
 
 	mExceptionHandler = 0;
+
+#if LL_WINDOWS
+	sCrashLoggerReserve = VirtualAlloc(NULL, 512*1024, MEM_COMMIT|MEM_RESERVE, PAGE_NOACCESS);
+#else
+	sCrashLoggerReserve = malloc(512*1024);
+#endif
 	
 	// initialize the buffer to write the minidump filename to
 	// (this is used to avoid allocating memory in the crash handler)
 	memset(mMinidumpPath, 0, MAX_MINDUMP_PATH_LENGTH);
 	mCrashReportPipeStr = L"\\\\.\\pipe\\LLCrashReporterPipe";
+}
+
+static bool clear_CrashLoggerReserve_callback(void* context, EXCEPTION_POINTERS* exinfo, MDRawAssertionInfo* assertion)
+{
+#if LL_WINDOWS
+	VirtualFree(sCrashLoggerReserve, 0, MEM_RELEASE);
+#else
+	free(sCrashLoggerReserve);
+#endif
+	return true;
 }
 
 LLApp::LLApp(LLErrorThread *error_thread) :
@@ -309,7 +327,7 @@ void LLApp::setupErrorHandling()
 	{
 		mExceptionHandler = new google_breakpad::ExceptionHandler(
 			std::wstring(mDumpPath.begin(),mDumpPath.end()), //Dump path
-			0,		//dump filename	
+			clear_CrashLoggerReserve_callback,
 			windows_post_minidump_callback, 
 			0, 
 			google_breakpad::ExceptionHandler::HANDLER_ALL);
@@ -367,7 +385,7 @@ void LLApp::setupErrorHandling()
 
 	if(installHandler && (mExceptionHandler == 0))
 	{
-		mExceptionHandler = new google_breakpad::ExceptionHandler(mDumpPath, 0, &unix_post_minidump_callback, 0, true, 0);
+		mExceptionHandler = new google_breakpad::ExceptionHandler(mDumpPath, clear_CrashLoggerReserve_callback, &unix_post_minidump_callback, 0, true, 0);
 	}
 #elif LL_LINUX
 	if(installHandler && (mExceptionHandler == 0))
@@ -377,8 +395,7 @@ void LLApp::setupErrorHandling()
 			mDumpPath = "/tmp";
 		}
 		google_breakpad::MinidumpDescriptor desc(mDumpPath);
-	    //mExceptionHandler = new google_breakpad::ExceptionHandler(desc, 0, unix_minidump_callback, 0, true, 0);
-	    mExceptionHandler = new google_breakpad::ExceptionHandler(desc, NULL, unix_minidump_callback, NULL, true, -1);
+		mExceptionHandler = new google_breakpad::ExceptionHandler(desc, clear_CrashLoggerReserve_callback, unix_minidump_callback, NULL, true, -1);
 	}
 #endif
 
