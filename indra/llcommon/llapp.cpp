@@ -171,6 +171,7 @@ static bool clear_CrashLoggerReserve_callback(void* context, EXCEPTION_POINTERS*
 }
 #else
 static bool clear_CrashLoggerReserve_callback(void* context)
+{
 	free(sCrashLoggerReserve);
 	return true;
 }
