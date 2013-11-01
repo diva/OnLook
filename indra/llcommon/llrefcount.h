@@ -27,6 +27,9 @@
 #define LLREFCOUNT_H
 
 #include <boost/noncopyable.hpp>
+#include "llpreprocessor.h"			// LL_COMMON_API
+#include "stdtypes.h"				// S32
+#include "llerror.h"				// llassert
 
 #define LL_REF_COUNT_DEBUG 0
 #if LL_REF_COUNT_DEBUG

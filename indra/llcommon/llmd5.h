@@ -32,6 +32,10 @@
 #ifndef LL_LLMD5_H
 #define LL_LLMD5_H
 
+#include "llpreprocessor.h"
+#include <iosfwd>
+#include <cstring>	// memcmp
+
 // LLMD5.CC - source code for the C++/object oriented translation and 
 //          modification of MD5.
 
