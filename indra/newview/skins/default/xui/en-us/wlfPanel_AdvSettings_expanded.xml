@@ -2,13 +2,13 @@
 <panel bg_visible="false" border="false" border_visible="false" height="180" name="Adv_Settings" use_bounding_rect="true" width="220">
 	<panel bottom="1" filename="panel_bg_tab.xml" height="194" width="197"/>
 	<text bottom="169" left="5" height="20" width="190" name="Camera Preset:">Cam Preset:</text>
-	<button bottom="171" left="81" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Back_On.png" image_unselected="Cam_Preset_Back_Off.png" name="Rear">
+	<button bottom="171" left="81" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Back_On.png" image_unselected="Cam_Preset_Back_Off.png" name="Rear" tool_tip="Rear View">
 		<button.commit_callback function="Wlf.ChangeCameraPreset" parameter="0"/>
 	</button>
-	<button bottom_delta="0" left_delta="20" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Front_On.png" image_unselected="Cam_Preset_Front_Off.png" name="Front">
+	<button bottom_delta="0" left_delta="20" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Front_On.png" image_unselected="Cam_Preset_Front_Off.png" name="Front" tool_tip="Front View">
 		<button.commit_callback function="Wlf.ChangeCameraPreset" parameter="1"/>
 	</button>
-	<button bottom_delta="0" left_delta="20" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Side_On.png" image_unselected="Cam_Preset_Side_Off.png" name="Group">
+	<button bottom_delta="0" left_delta="20" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Side_On.png" image_unselected="Cam_Preset_Side_Off.png" name="Group" tool_tip="Side View">
 		<button.commit_callback function="Wlf.ChangeCameraPreset" parameter="2"/>
 	</button>
 	<slider bottom_delta="-20" left="5" control_name="RenderFarClip" decimal_digits="0" height="20" increment="8" label="Draw Dist.:" can_edit_text="true" label_width="60" max_val="1024" min_val="24" val_width="36" name="DrawDistance" width="190" tool_tip="Change your Draw Distance"/>
