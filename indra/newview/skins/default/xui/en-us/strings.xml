@@ -4375,4 +4375,29 @@ Try enclosing path to the editor with double quotes.
 	<string name="AIFile_remove_Failed_to_remove_FILENAME">Failed to remove file [FILENAME]: [ERROR]</string>
 	<string name="AIFile_rename_Failed_to_rename_FILE_to_NEWFILE">Failed to rename file [FILE] to [NEWFILE]: [ERROR]</string>
 
+	<!-- AIXMLElement exception alerts -->
+	<string name="AIXMLElement_attribute_Failed_to_write_DATA">Failed to write &apos;[DATA]&apos;, writing attribute data.</string>
+	<string name="AIXMLElement_child_Bad_ostream">ostream not good after calling child.toXML</string>
+	<string name="AIXMLElement_write_child_Failed_to_write_DATA">Failed to write &apos;[DATA]&apos;, writing child data.</string>
+	<string name="AIXMLElement_Failed_to_write_DATA">Failed to write &apos;[DATA]&apos;, opening new child.</string>
+	<string name="AIXMLElement_closing_child_Failed_to_write_DATA">Failed to write &apos;[DATA]&apos;, closing previous child.</string>
+
+	<!-- AIXMLStream exception alerts -->
+	<string name="AIXMLStream_fprintf_failed_to_write_xml_header">Failed to write XML header.</string>
+
+	<!-- AIXMLParser exception alerts -->
+	<string name="AIXMLParser_Cannot_parse_FILEDESC_FILENAME">Cannot parse [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLParser_No_root_node_found_in_FILEDESC_FILENAME">No root node found in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLParser_Missing_header_NAME_invalid_FILEDESC_FILENAME">Missing header &apos;[NAME]&apos; ; invalid [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLParser_Invalid_or_missing_NAME_version_attribute_in_FILEDESC_FILENAME">Invalid or missing [NAME] &apos;version&apos; attribute in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLParser_Incompatible_NAME_version_MAJOR_MINOR_in">Incompatible &apos;[NAME]&apos; version, [MAJOR].[MINOR], in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+
+	<!-- AIXMLElementParser exception alerts -->
+	<string name="AIXMLElementParser_read_string_Invalid_MD5_VALUE_in_FILEDESC_FILENAME">Invalid MD5 ([VALUE]) in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLElementParser_read_string_Invalid_boolean_VALUE_in_FILEDESC_FILENAME">Invalid boolean ([VALUE]) in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLElementParser_attribute_Missing_NAME_attribute_in_NODENAME_of_FILEDESC_FILENAME">Missing &apos;[NAME]&apos; attribute in [NODENAME] of [FILEDESC] &quot;[FILENAME]&quot;.</string>"
+	<string name="AIXMLElementParser_attribute_Invalid_NAME_attribute_should_be_REQUIRED_in_NODENAME_of_FILEDESC_FILENAME">Invalid &apos;[NAME]&apos; attribute (should be &apos;[REQUIRED]&apos;) in [NODENAME] of [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLElementParser_read_child_Invalid_uuid_in_FILEDESC_FILENAME">Invalid UUID in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+	<string name="AIXMLElementParser_read_child_Invalid_date_DATE_in_FILEDESC_FILENAME">Invalid DATE ([DATE]) in [FILEDESC] &quot;[FILENAME]&quot;.</string>
+
 </strings>

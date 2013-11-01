@@ -13,6 +13,7 @@ include_directories(
     )
 
 set(llxml_SOURCE_FILES
+    aixml.cpp
     llcontrol.cpp
     llxmlnode.cpp
     llxmlparser.cpp
@@ -22,6 +23,7 @@ set(llxml_SOURCE_FILES
 set(llxml_HEADER_FILES
     CMakeLists.txt
 
+    aixml.h
     llcontrol.h
     llcontrolgroupreader.h
     llxmlnode.h
