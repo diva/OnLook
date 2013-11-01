@@ -1,18 +1,28 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel bg_visible="false" border="false" border_visible="false" height="180" name="Adv_Settings" use_bounding_rect="true" width="220">
-	<panel bottom="1" filename="panel_bg_tab.xml" height="177" width="197"/>
-	<slider bottom="157" left="5" control_name="RenderFarClip" decimal_digits="0" height="20" increment="8" label="Draw Dist.:" can_edit_text="true" label_width="60" max_val="1024" min_val="24" val_width="36" name="DrawDistance" width="189" tool_tip="Change your Draw Distance"/>
-	<slider bottom_delta="-20" control_name="RenderMaxPartCount" decimal_digits="0" height="20" increment="256" label="Particles:" can_edit_text="true" label_width="60" max_val="8192" min_val="0" val_width="36" name="MaxParticleCount" width="189" tool_tip="Amount of particles to render"/>
-	<slider bottom_delta="-20" control_name="RenderAvatarMaxVisible" decimal_digits="0" height="20" increment="1" label="Max Avs:" can_edit_text="true" label_width="60" max_val="50" min_val="1" val_width="36" name="RenderAvatarMaxVisible" width="189" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
-	<slider bottom_delta="-20" control_name="RenderVolumeLODFactor" height="20" increment="0.125" label="Obj. Detail:" can_edit_text="true" label_width="60"  max_val="4" min_val="0.5" name="Object Detail" val_width="36" width="189" tool_tip="Controls level of detail of primitives (multiplier for current screen area when calculated level of detail[0.5 to 2.0 is stable])"/>
-	<button left="5" height="20" name="EnvAdvancedSkyButton" width="20" image_overlay="Inv_WindLight.png" label="" tool_tip="Advanced Sky"/>
-	<combo_box name="WLSkyPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="133" tool_tip="WindLight Presets for your Sky."/>
-	<button bottom_delta="0" height="18" label="&lt;" left="158" image_overlay="arrow_left.tga" name="WLprev" scale_image="true" width="18"/>
-	<button bottom_delta="0" height="18" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WLnext" width="18"/>
+	<panel bottom="1" filename="panel_bg_tab.xml" height="194" width="197"/>
+	<text bottom="169" left="5" height="20" width="190" name="Camera Preset:">Cam Preset:</text>
+	<button bottom="171" left="81" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Back_On.png" image_unselected="Cam_Preset_Back_Off.png" name="Rear">
+		<button.commit_callback function="Wlf.ChangeCameraPreset" parameter="0"/>
+	</button>
+	<button bottom_delta="0" left_delta="20" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Front_On.png" image_unselected="Cam_Preset_Front_Off.png" name="Front">
+		<button.commit_callback function="Wlf.ChangeCameraPreset" parameter="1"/>
+	</button>
+	<button bottom_delta="0" left_delta="20" width="20" height="20" label="" toggle="true" image_selected="Cam_Preset_Side_On.png" image_unselected="Cam_Preset_Side_Off.png" name="Group">
+		<button.commit_callback function="Wlf.ChangeCameraPreset" parameter="2"/>
+	</button>
+	<slider bottom_delta="-20" left="5" control_name="RenderFarClip" decimal_digits="0" height="20" increment="8" label="Draw Dist.:" can_edit_text="true" label_width="60" max_val="1024" min_val="24" val_width="36" name="DrawDistance" width="190" tool_tip="Change your Draw Distance"/>
+	<slider bottom_delta="-20" control_name="RenderMaxPartCount" decimal_digits="0" height="20" increment="256" label="Particles:" can_edit_text="true" label_width="60" max_val="8192" min_val="0" val_width="36" name="MaxParticleCount" width="190" tool_tip="Amount of particles to render"/>
+	<slider bottom_delta="-20" control_name="RenderAvatarMaxVisible" decimal_digits="0" height="20" increment="1" label="Max Avs:" can_edit_text="true" label_width="60" max_val="50" min_val="1" val_width="36" name="RenderAvatarMaxVisible" width="190" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
+	<slider bottom_delta="-20" control_name="RenderVolumeLODFactor" height="20" increment="0.125" label="Obj. Detail:" can_edit_text="true" label_width="60"  max_val="4" min_val="0.5" name="Object Detail" val_width="36" width="190" tool_tip="Controls level of detail of primitives (multiplier for current screen area when calculated level of detail[0.5 to 2.0 is stable])"/>
+	<button bottom_delta="-22" left="5" height="20" name="EnvAdvancedSkyButton" width="20" image_overlay="Inv_WindLight.png" label="" tool_tip="Advanced Sky"/>
+	<combo_box name="WLSkyPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="131" tool_tip="WindLight Presets for your Sky."/>
+	<button bottom_delta="-1" height="19" label="&lt;" left="157" image_overlay="arrow_left.tga" name="WLprev" scale_image="true" width="19"/>
+	<button bottom_delta="0" height="19" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WLnext" width="19"/>
 	<button left="5" height="20" name="EnvAdvancedWaterButton" width="20" image_overlay="Inv_WaterLight.png" label="" tool_tip="Advanced Water"/>
-	<combo_box name="WLWaterPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="133" tool_tip="WindLight Presets for your Water."/>
-	<button bottom_delta="0" height="18" label="&lt;" left="158" image_overlay="arrow_left.tga" name="WWprev" width="18"/>
-	<button bottom_delta="0" height="18" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WWnext" width="18"/>
+	<combo_box name="WLWaterPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="131" tool_tip="WindLight Presets for your Water."/>
+	<button bottom_delta="-1" height="19" label="&lt;" left="157" image_overlay="arrow_left.tga" name="WWprev" width="19"/>
+	<button bottom_delta="0" height="19" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WWnext" width="19"/>
 	<check_box left="5" label="Region WL" control_name="UseEnvironmentFromRegion" height="16" name="use_estate_wl" tool_tip="Use the region's windlight settings when available."/>
 <!--check_box bottom_delta="0" left_delta="125" label="Always?" control_name="UseEnvironmentFromRegionAlways" height="16" name="Always" tool_tip="Always use region/parcel settings when they exist, automatically."/-->
 	<check_box bottom_delta="0" left_delta="110" label="Crossfade?" control_name="PhoenixInterpolateSky" height="16" name="Crossfade" tool_tip="If unchecked, Sky Windlight settings changes will apply immediately, without hesitation/animation."/>

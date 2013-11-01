@@ -824,7 +824,7 @@ BOOL LLToolCompGun::handleRightMouseDown(S32 x, S32 y, MASK mask)
 	}
 	else mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
 
-	mTargetFOV = gSavedPerAccountSettings.getF32("zmm_mlfov");
+	mTargetFOV = gSavedSettings.getF32("zmm_mlfov");
 	mTimerFOV.start();
 
 	return TRUE;
@@ -836,7 +836,7 @@ BOOL LLToolCompGun::handleScrollWheel(S32 x, S32 y, S32 clicks)
 	{
 		mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
 
-		gSavedPerAccountSettings.setF32(
+		gSavedSettings.setF32(
 			"zmm_mlfov",
 			mTargetFOV = clicks > 0 ?
 				llclamp(mTargetFOV += (0.05f * clicks), 0.1f, 3.0f) :
