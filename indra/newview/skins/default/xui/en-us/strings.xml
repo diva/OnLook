@@ -4400,4 +4400,13 @@ Try enclosing path to the editor with double quotes.
 	<string name="AIXMLElementParser_read_child_Invalid_uuid_in_FILEDESC_FILENAME">Invalid UUID in [FILEDESC] &quot;[FILENAME]&quot;.</string>
 	<string name="AIXMLElementParser_read_child_Invalid_date_DATE_in_FILEDESC_FILENAME">Invalid DATE ([DATE]) in [FILEDESC] &quot;[FILENAME]&quot;.</string>
 
+	<!-- AIArchetype exception alerts -->
+	<string name="AIArchetype_archetype_has_no_meta">archetype has no &lt;meta&gt; element.</string>
+	<string name="AIArchetype_MetaData_archetype_meta_has_no_ATTRIBUTE">archetype &lt;meta&gt; element has no &apos;[ATTRIBUTE]&apos; attribute.</string>
+
+  <string name="AIXMLdumpArchetypeXMLError">Failure dumping archetype to &quot;[FILENAME]&quot;:</string>
+  <string name="AIXMLExportWriteError">The export to file &quot;[FILE]&quot; failed:</string>
+  <string name="AIXMLImportError">Failed to import the [TYPE] wearable:</string>
+  <string name="AIXMLImportNoArchetypeError">No archetype found in wearable import file &quot;[FILE]&quot;.</string>
+
 </strings>

@@ -86,6 +86,7 @@ public:
 	/*virtual*/ void		setWeight(F32 weight, BOOL upload_bake);
 	/*virtual*/ void		setAnimationTarget(F32 target_value, BOOL upload_bake); 
 	/*virtual*/ void		animate(F32 delta, BOOL upload_bake);
+	/*virtual*/ char const* getTypeString(void) const { return "param_alpha"; }
 
 	// LLViewerVisualParam Virtual functions
 	/*virtual*/ F32					getTotalDistortion()									{ return 1.f; }
@@ -177,7 +178,7 @@ public:
 	/*virtual*/ void			setWeight(F32 weight, BOOL upload_bake);
 	/*virtual*/ void			setAnimationTarget(F32 target_value, BOOL upload_bake);
 	/*virtual*/ void			animate(F32 delta, BOOL upload_bake);
-
+	/*virtual*/ char const* getTypeString(void) const { return "param_color"; }
 
 	// LLViewerVisualParam Virtual functions
 	/*virtual*/ F32					getTotalDistortion()									{ return 1.f; }

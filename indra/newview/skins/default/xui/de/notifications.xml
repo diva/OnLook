@@ -69,17 +69,7 @@
     </form>
   </template>
 
-  <notification name="AIXMLExportWriteError">Export Failure: could not open file "[FILE]" for writing.</notification>
-
-  <notification name="AIXMLImportGridMismatch">Import Warning: could not apply textures: [FILE] was exported on grid "[GRIDNAME]" while the currentgrid is "[CURGRID]".</notification>
-
-  <notification name="AIXMLImportParseError">Import Failure: could not read or parse wearable import file "[FILE]".</notification>
-
-  <notification name="AIXMLImportRootTypeError">Import Failure: the file "[FILE]" is not a linden_genepool XML file.</notification>
-
   <notification name="AIXMLImportRootVersionError">Import Failure: the file "[FILE]" contains linden_genepool XML data with the wrong [TAG]. Version "[VERSIONMAJOR].0" or less is required.</notification>
-
-  <notification name="AIXMLImportInvalidError">Import Failure: the file "[FILE]" contains invalid data.</notification>
 
   <notification name="AIXMLImportDifferentGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!</notification>
 
