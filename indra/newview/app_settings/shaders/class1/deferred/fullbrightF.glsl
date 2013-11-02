@@ -166,12 +166,12 @@ void main()
 	vec3 pos = vary_position;
 	vec4 fogged = applyWaterFogDeferred(pos, vec4(color.rgb, final_alpha));
 	color.rgb = fogged.rgb;
-	//color.a   = fogged.a;
+	color.a   = fogged.a;
 #else
-	//color.a   = final_alpha;
+	color.a   = final_alpha;
 #endif
 
-	color.a = .0;
-	frag_color = color;
+	frag_color.rgb = color.rgb;
+	frag_color.a   = color.a;
 }
 
