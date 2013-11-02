@@ -97,12 +97,11 @@ void main()
 	vec4 col = defined_weight.xyxx * ccol;
 
 	// relax tolerance according to distance to avoid speckling artifacts, as angles and distances are a lot more abrupt within a small screen area at larger distances
-	float pointplanedist_tolerance_pow2 = pos.z*pos.z*0.00005;
+	float pointplanedist_tolerance_pow2 = pos.z*-0.001;
 
 	// perturb sampling origin slightly in screen-space to hide edge-ghosting artifacts where smoothing radius is quite large
-	float tc_mod = 0.5*(tc.x + tc.y); // mod(tc.x+tc.y,2)
-	tc_mod -= floor(tc_mod);
-	tc_mod *= 2.0;
+	vec2 tc_v = fract(0.5 * tc.xy); // we now have floor(mod(tc,2.0))*0.5
+	float tc_mod = 2.0 * abs(tc_v.x - tc_v.y); // diff of x,y makes checkerboard
 	tc += ( (tc_mod - 0.5) * getKern(1).z * dlt * 0.5 );
 
 	for (int i = 1; i < 4; i++)
