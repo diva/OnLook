@@ -456,9 +456,6 @@ void LLDrawPoolBump::unbindCubeMap(LLGLSLShader* shader, S32 shader_level, S32& 
 	LLCubeMap* cube_map = gSky.mVOSkyp ? gSky.mVOSkyp->getCubeMap() : NULL;
 	if( cube_map )
 	{
-		cube_map->disable();
-		cube_map->restoreMatrix();
-
 		if (!invisible && shader_level > 1)
 		{
 			shader->disableTexture(LLViewerShaderMgr::ENVIRONMENT_MAP, LLTexUnit::TT_CUBE_MAP);
@@ -471,6 +468,10 @@ void LLDrawPoolBump::unbindCubeMap(LLGLSLShader* shader, S32 shader_level, S32& 
 				}
 			}
 		}
+        // Moved below shader->disableTexture call to avoid false alarms from auto-re-enable of textures on stage 0
+        // MAINT-755
+		cube_map->disable();
+		cube_map->restoreMatrix();
 	}
 
 	if (!LLGLSLShader::sNoFixedFunction)
@@ -521,7 +522,14 @@ void LLDrawPoolBump::beginFullbrightShiny()
 	}
 	else
 	{
-		shader = &gObjectFullbrightShinyProgram;
+		if (LLPipeline::sRenderDeferred)
+		{
+			shader = &gDeferredFullbrightShinyProgram;
+		}
+		else
+		{
+			shader = &gObjectFullbrightShinyProgram;
+		}
 	}
 
 	LLCubeMap* cube_map = gSky.mVOSkyp ? gSky.mVOSkyp->getCubeMap() : NULL;
@@ -1381,7 +1389,7 @@ void LLBumpImageList::onSourceLoaded( BOOL success, LLViewerTexture *src_vi, LLI
 
 					gNormalMapGenProgram.uniform1f(sNormScale, gSavedSettings.getF32("RenderNormalMapScale"));
 					gNormalMapGenProgram.uniform1f(sStepX, 1.f/bump->getWidth());
-					gNormalMapGenProgram.uniform1f(sStepX, 1.f/bump->getHeight());
+					gNormalMapGenProgram.uniform1f(sStepY, 1.f/bump->getHeight());
 
 					LLVector2 v((F32) bump->getWidth()/gPipeline.mScreen.getWidth(),
 								(F32) bump->getHeight()/gPipeline.mScreen.getHeight());

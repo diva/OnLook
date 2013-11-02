@@ -358,7 +358,12 @@ public:
 	
 	void setGamingData(const LLSD& info);
 	const U32 getGamingFlags() const { return mGamingFlags; }
-
+	
+	// implements the materials capability throttle
+	bool materialsCapThrottled() const { return !mMaterialsCapThrottleTimer.hasExpired(); }
+	void resetMaterialsCapThrottle();
+	
+	U32 getMaxMaterialsPerTransaction() const;
 public:
 	struct CompareDistance
 	{
@@ -458,6 +463,9 @@ private:
 	
 	LLSD mSimulatorFeatures;
 	U32 mGamingFlags;
+	// the materials capability throttle
+	LLFrameTimer mMaterialsCapThrottleTimer;
+LLFrameTimer	mRenderInfoRequestTimer;
 };
 
 inline BOOL LLViewerRegion::getRegionProtocol(U64 protocol) const
