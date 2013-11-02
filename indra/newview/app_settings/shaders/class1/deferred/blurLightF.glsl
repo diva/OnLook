@@ -64,24 +64,28 @@ vec4 getPosition(vec2 pos_screen)
 	return pos;
 }
 
-vec3 unpack(vec2 tc)
+vec2 encode_normal(vec3 n)
 {
-//#define PACK_NORMALS
-#ifdef PACK_NORMALS
-	vec2 enc = texture2DRect(normalMap, tc).xy;
-	enc = enc*4.0-2.0;
-	float prod = dot(enc,enc);
-	return vec3(enc*sqrt(1.0-prod*.25),1.0-prod*.5);
-#else
-	vec3 norm = texture2DRect(normalMap, tc).xyz;
-	return norm*2.0-1.0;
-#endif
+	float f = sqrt(8 * n.z + 8);
+	return n.xy / f + 0.5;
+}
+
+vec3 decode_normal (vec2 enc)
+{
+    vec2 fenc = enc*4-2;
+    float f = dot(fenc,fenc);
+    float g = sqrt(1-f/4);
+    vec3 n;
+    n.xy = fenc*g;
+    n.z = 1-f/2;
+    return n;
 }
 
 void main() 
 {
     vec2 tc = vary_fragcoord.xy;
-	vec3 norm = unpack(tc); // unpack norm
+	vec3 norm = texture2DRect(normalMap, tc).xyz;
+	norm = decode_normal(norm.xy); // unpack norm
 
 	vec3 pos = getPosition(tc).xyz;
 	vec4 ccol = texture2DRect(lightMap, tc).rgba;
@@ -93,11 +97,12 @@ void main()
 	vec4 col = defined_weight.xyxx * ccol;
 
 	// relax tolerance according to distance to avoid speckling artifacts, as angles and distances are a lot more abrupt within a small screen area at larger distances
-	float pointplanedist_tolerance_pow2 = pos.z*-0.001;
+	float pointplanedist_tolerance_pow2 = pos.z*pos.z*0.00005;
 
 	// perturb sampling origin slightly in screen-space to hide edge-ghosting artifacts where smoothing radius is quite large
-	vec2 tc_v = fract(0.5 * tc.xy); // we now have floor(mod(tc,2.0))*0.5
-	float tc_mod = 2.0 * abs(tc_v.x - tc_v.y); // diff of x,y makes checkerboard
+	float tc_mod = 0.5*(tc.x + tc.y); // mod(tc.x+tc.y,2)
+	tc_mod -= floor(tc_mod);
+	tc_mod *= 2.0;
 	tc += ( (tc_mod - 0.5) * getKern(1).z * dlt * 0.5 );
 
 	for (int i = 1; i < 4; i++)

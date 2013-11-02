@@ -534,8 +534,11 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 	range = mShaderObjects.equal_range(filename);
 	for (std::multimap<std::string, CachedObjectInfo>::iterator it = range.first; it != range.second;++it)
 	{
-		if((*it).second.mLevel == shader_level && (*it).second.mType == type)
+		if((*it).second.mLevel == shader_level && (*it).second.mType == type && (*it).second.mDefinitions == (defines ? *defines : std::map<std::string, std::string>()))
+		{
+			llinfos << "Loading cached shader for " << filename << llendl;
 			return (*it).second.mHandle;
+		}
 	}
 
 	GLenum error = GL_NO_ERROR;
@@ -713,6 +716,8 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		}
 		*/
 
+		text[count++] = strdup("#define HAS_DIFFUSE_LOOKUP 1\n");
+
 		//uniform declartion
 		for (S32 i = 0; i < texture_index_channels; ++i)
 		{
@@ -769,6 +774,10 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			// (for passing integers between vertex and fragment shaders)
 			llerrs << "Indexed texture rendering requires GLSL 1.30 or later." << llendl;
 		}
+	}
+	else
+	{
+		text[count++] = strdup("#define HAS_DIFFUSE_LOOKUP 0\n");
 	}
 
 	//copy file into memory
@@ -918,7 +927,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 	if (ret)
 	{
 		// Add shader file to map
-		mShaderObjects.insert(make_pair(filename,CachedObjectInfo(ret,try_gpu_class,type)));
+		mShaderObjects.insert(make_pair(filename,CachedObjectInfo(ret,try_gpu_class,type,defines)));
 		shader_level = try_gpu_class;
 	}
 	else
@@ -1129,6 +1138,7 @@ void LLShaderMgr::initAttribsAndUniforms()
 
 
 	mReservedUniforms.push_back("minimum_alpha");
+	mReservedUniforms.push_back("emissive_brightness");
 
 	mReservedUniforms.push_back("shadow_matrix");
 	mReservedUniforms.push_back("env_mat");
@@ -1191,6 +1201,12 @@ void LLShaderMgr::initAttribsAndUniforms()
 	mReservedUniforms.push_back("projectionMap");
 	mReservedUniforms.push_back("norm_mat");
 
+	mReservedUniforms.push_back("global_gamma");
+	mReservedUniforms.push_back("texture_gamma");
+	
+	mReservedUniforms.push_back("specular_color");
+	mReservedUniforms.push_back("env_intensity");
+
 	mReservedUniforms.push_back("matrixPalette");
 	
 	mReservedUniforms.push_back("screenTex");
@@ -1230,6 +1246,7 @@ void LLShaderMgr::initAttribsAndUniforms()
 	mReservedUniforms.push_back("alpha_ramp");
 
 	mReservedUniforms.push_back("origin");
+	mReservedUniforms.push_back("display_gamma");
 	llassert(mReservedUniforms.size() == END_RESERVED_UNIFORMS);
 
 	std::set<std::string> dupe_check;

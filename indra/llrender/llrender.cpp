@@ -1075,6 +1075,15 @@ LLRender::~LLRender()
 
 void LLRender::init()
 {
+	if (sGLCoreProfile && !LLVertexBuffer::sUseVAO)
+	{ //bind a dummy vertex array object so we're core profile compliant
+#ifdef GL_ARB_vertex_array_object
+		U32 ret;
+		glGenVertexArrays(1, &ret);
+		glBindVertexArray(ret);
+#endif
+	}
+
 	llassert_always(mBuffer.isNull()) ;
 	stop_glerror();
 	mBuffer = new LLVertexBuffer(immediate_mask, 0);
@@ -2294,6 +2303,22 @@ void LLRender::diffuseColor4ubv(const U8* c)
 		glColor4ubv(c);
 	}
 }
+
+void LLRender::diffuseColor4ub(U8 r, U8 g, U8 b, U8 a)
+{
+	LLGLSLShader* shader = LLGLSLShader::sCurBoundShaderPtr;
+	llassert(!LLGLSLShader::sNoFixedFunction || shader != NULL);
+
+	if (shader)
+	{
+		shader->uniform4f(LLShaderMgr::DIFFUSE_COLOR, r/255.f, g/255.f, b/255.f, a/255.f);
+	}
+	else
+	{
+		glColor4ub(r,g,b,a);
+	}
+}
+
 
 void LLRender::debugTexUnits(void)
 {

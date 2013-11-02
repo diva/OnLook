@@ -60,6 +60,7 @@ public:
 								LLStrider<LLVector3>& normalsp, 
 								LLStrider<LLVector2>& texcoordsp, 
 								LLStrider<LLColor4U>& colorsp, 
+								LLStrider<LLColor4U>& emissivep,
 								LLStrider<U16>& indicesp);
 
 	/*virtual*/ BOOL    isActive() const; // Whether this object needs to do an idleUpdate.

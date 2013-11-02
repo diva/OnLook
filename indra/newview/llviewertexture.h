@@ -36,6 +36,7 @@
 #if 0
 #include "llmetricperformancetester.h"
 #endif
+#include "llface.h"
 
 #include <map>
 #include <list>
@@ -43,7 +44,6 @@
 #define MIN_VIDEO_RAM_IN_MEGA_BYTES    32
 #define MAX_VIDEO_RAM_IN_MEGA_BYTES    512 // 512MB max for performance reasons.
 
-class LLFace;
 class LLImageGL ;
 class LLImageRaw;
 class LLViewerObject;
@@ -59,6 +59,7 @@ class LLVFile;
 class LLMessageSystem;
 class LLViewerMediaImpl ;
 class LLVOVolume ;
+class LLFace ; //But llface.h is already included...(?)
 
 class LLLoadedCallbackEntry
 {
@@ -147,10 +148,11 @@ public:
 	
 	/*virtual*/ void setKnownDrawSize(S32 width, S32 height);
 
-	virtual void addFace(LLFace* facep) ;
-	virtual void removeFace(LLFace* facep) ; 
-	S32 getNumFaces() const;
-	const ll_face_list_t* getFaceList() const {return &mFaceList;}
+	virtual void addFace(U32 channel, LLFace* facep) ;
+	virtual void removeFace(U32 channel, LLFace* facep) ; 
+	S32 getTotalNumFaces() const;
+	S32 getNumFaces(U32 ch) const;
+	const ll_face_list_t* getFaceList(U32 channel) const {llassert(channel < LLRender::NUM_TEXTURE_CHANNELS); return &mFaceList[channel];}
 
 	virtual void addVolume(LLVOVolume* volumep);
 	virtual void removeVolume(LLVOVolume* volumep);
@@ -188,8 +190,8 @@ protected:
 	mutable F32 mAdditionalDecodePriority;  // priority add to mDecodePriority.
 	LLFrameTimer mLastReferencedTimer;	
 
-	ll_face_list_t    mFaceList ; //reverse pointer pointing to the faces using this image as texture
-	U32               mNumFaces ;
+	ll_face_list_t    mFaceList[LLRender::NUM_TEXTURE_CHANNELS]; //reverse pointer pointing to the faces using this image as texture
+	U32               mNumFaces[LLRender::NUM_TEXTURE_CHANNELS];
 	LLFrameTimer      mLastFaceListUpdateTimer ;
 
 	ll_volume_list_t  mVolumeList;
@@ -483,6 +485,7 @@ public:
 	static LLPointer<LLViewerFetchedTexture> sWhiteImagep;	// Texture to show NOTHING (whiteness)
 	static LLPointer<LLViewerFetchedTexture> sDefaultImagep; // "Default" texture for error cases, the only case of fetched texture which is generated in local.
 	static LLPointer<LLViewerFetchedTexture> sSmokeImagep; // Old "Default" translucent texture
+	static LLPointer<LLViewerFetchedTexture> sFlatNormalImagep; // Flat normal map denoting no bumpiness on a surface
 };
 
 //
@@ -540,12 +543,12 @@ public:
 	void addMediaToFace(LLFace* facep) ;
 	void removeMediaFromFace(LLFace* facep) ;
 
-	/*virtual*/ void addFace(LLFace* facep) ;
-	/*virtual*/ void removeFace(LLFace* facep) ; 
+	/*virtual*/ void addFace(U32 ch, LLFace* facep) ;
+	/*virtual*/ void removeFace(U32 ch, LLFace* facep) ; 
 
 	/*virtual*/ F32  getMaxVirtualSize() ;
 private:
-	void switchTexture(LLFace* facep) ;
+	void switchTexture(U32 ch, LLFace* facep) ;
 	BOOL findFaces() ;
 	void stopPlaying() ;
 

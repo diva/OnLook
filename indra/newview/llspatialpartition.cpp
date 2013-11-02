@@ -2386,7 +2386,7 @@ void pushBufferVerts(LLVertexBuffer* buffer, U32 mask)
 	}
 }
 
-void pushBufferVerts(LLSpatialGroup* group, U32 mask)
+void pushBufferVerts(LLSpatialGroup* group, U32 mask, bool push_alpha = true)
 {
 	if (group->mSpatialPartition->mRenderByGroup)
 	{
@@ -2395,7 +2395,10 @@ void pushBufferVerts(LLSpatialGroup* group, U32 mask)
 			LLDrawInfo* params = *(group->mDrawMap.begin()->second.begin());
 			LLRenderPass::applyModelMatrix(*params);
 		
-			pushBufferVerts(group->mVertexBuffer, mask);
+			if (push_alpha)
+			{
+				pushBufferVerts(group->mVertexBuffer, mask);
+			}
 
 			for (LLSpatialGroup::buffer_map_t::iterator i = group->mBufferMap.begin(); i != group->mBufferMap.end(); ++i)
 			{
@@ -2858,20 +2861,23 @@ void renderBoundingBox(LLDrawable* drawable, BOOL set_color = TRUE)
 	const LLVector4a* ext;
 	LLVector4a pos, size;
 
-	//render face bounding boxes
-	for (S32 i = 0; i < drawable->getNumFaces(); i++)
+	if (drawable->getVOVolume())
 	{
-		LLFace* facep = drawable->getFace(i);
-		if (facep)
+		//render face bounding boxes
+		for (S32 i = 0; i < drawable->getNumFaces(); i++)
 		{
-			ext = facep->mExtents;
+			LLFace* facep = drawable->getFace(i);
+			if (facep)
+			{
+				ext = facep->mExtents;
 
-			pos.setAdd(ext[0], ext[1]);
-			pos.mul(0.5f);
-			size.setSub(ext[1], ext[0]);
-			size.mul(0.5f);
+				pos.setAdd(ext[0], ext[1]);
+				pos.mul(0.5f);
+				size.setSub(ext[1], ext[0]);
+				size.mul(0.5f);
 		
-			drawBoxOutline(pos,size);
+				drawBoxOutline(pos,size);
+			}
 		}
 	}
 
@@ -4442,7 +4448,16 @@ LLDrawInfo::LLDrawInfo(U16 start, U16 end, U32 count, U32 offset,
 	mGroup(NULL),
 	mFace(NULL),
 	mDistance(0.f),
-	mDrawMode(LLRender::TRIANGLES)
+	mDrawMode(LLRender::TRIANGLES),
+	mMaterial(NULL),
+	mShaderMask(0),
+	mSpecColor(1.0f, 1.0f, 1.0f, 0.5f),
+	mBlendFuncSrc(LLRender::BF_SOURCE_ALPHA),
+	mBlendFuncDst(LLRender::BF_ONE_MINUS_SOURCE_ALPHA),
+	mHasGlow(FALSE),
+	mEnvIntensity(0.0f),
+	mAlphaMaskCutoff(0.5f),
+	mDiffuseAlphaMode(0)
 {
 	mVertexBuffer->validateRange(mStart, mEnd, mCount, mOffset);
 

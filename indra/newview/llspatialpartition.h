@@ -117,6 +117,7 @@ public:
 	U32 mOffset;
 	BOOL mFullbright;
 	U8 mBump;
+	U8 mShiny;
 	BOOL mParticle;
 	F32 mPartSize;
 	F32 mVSize;
@@ -124,6 +125,21 @@ public:
 	LL_ALIGN_16(LLFace* mFace); //associated face
 	F32 mDistance;
 	U32 mDrawMode;
+	LLMaterialPtr mMaterial; // If this is null, the following parameters are unused.
+	LLMaterialID mMaterialID;
+	U32 mShaderMask;
+	U32 mBlendFuncSrc;
+	U32 mBlendFuncDst;
+	BOOL mHasGlow;
+	LLPointer<LLViewerTexture> mSpecularMap;
+	const LLMatrix4* mSpecularMapMatrix;
+	LLPointer<LLViewerTexture> mNormalMap;
+	const LLMatrix4* mNormalMapMatrix;
+	LLVector4 mSpecColor; // XYZ = Specular RGB, W = Specular Exponent
+	F32  mEnvIntensity;
+	F32  mAlphaMaskCutoff;
+	U8   mDiffuseAlphaMode;
+
 
 	struct CompareTexture
 	{

@@ -2,31 +2,25 @@
  * @file llface.h
  * @brief LLFace class definition
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -115,8 +109,12 @@ public:
 	U16				getGeomStart()		const	{ return mGeomIndex; }		// index into draw pool
 	void			setTextureIndex(U8 index);
 	U8				getTextureIndex() const		{ return mTextureIndex; }
+	void			setTexture(U32 ch, LLViewerTexture* tex);
 	void			setTexture(LLViewerTexture* tex) ;
-	void            switchTexture(LLViewerTexture* new_texture);
+	void			setDiffuseMap(LLViewerTexture* tex);
+	void			setNormalMap(LLViewerTexture* tex);
+	void			setSpecularMap(LLViewerTexture* tex);
+	void            switchTexture(U32 ch, LLViewerTexture* new_texture);
 	void            dirtyTexture();
 	LLXformMatrix*	getXform()			const	{ return mXform; }
 	BOOL			hasGeometry()		const	{ return mGeomCount > 0; }
@@ -135,8 +133,8 @@ public:
 	F32				getVirtualSize() const { return mVSize; }
 	F32				getPixelArea() const { return mPixelArea; }
 
-	S32				getIndexInTex() const {return mIndexInTex ;}
-	void			setIndexInTex(S32 index) { mIndexInTex = index ;}
+	S32             getIndexInTex(U32 ch) const {llassert(ch < LLRender::NUM_TEXTURE_CHANNELS); return mIndexInTex[ch];}
+	void            setIndexInTex(U32 ch, S32 index) { llassert(ch < LLRender::NUM_TEXTURE_CHANNELS);  mIndexInTex[ch] = index ;}
 
 	void			renderSetColor() const;
 	S32				renderElements(const U16 *index_array) const;
@@ -154,7 +152,7 @@ public:
 	S32				getLOD()			const	{ return mVObjp.notNull() ? mVObjp->getLOD() : 0; }
 	void			setPoolType(U32 type)		{ mPoolType = type; }
 	S32				getTEOffset()				{ return mTEOffset; }
-	LLViewerTexture*	getTexture() const;
+	LLViewerTexture*	getTexture(U32 ch = LLRender::DIFFUSE_MAP) const;
 
 	void			setViewerObject(LLViewerObject* object);
 	void			setPool(LLFacePool *pool, LLViewerTexture *texturep);
@@ -196,10 +194,9 @@ public:
 	S32 getColors(LLStrider<LLColor4U> &colors);
 	S32 getIndices(LLStrider<U16> &indices);
 
-	void		setSize(S32 numVertices, const S32 num_indices = 0, bool align = false);
+	void		setSize(S32 numVertices, S32 num_indices = 0, bool align = false);
 	
-	BOOL		genVolumeBBoxes(const LLVolume &volume, S32 f,
-								   const LLMatrix4& mat, const LLMatrix3& inv_trans_mat, BOOL global_volume = FALSE);
+	BOOL		genVolumeBBoxes(const LLVolume &volume, S32 f,const LLMatrix4& mat, BOOL global_volume = FALSE);
 	
 	void		init(LLDrawable* drawablep, LLViewerObject* objp);
 	void		destroy();
@@ -224,9 +221,13 @@ public:
 
 	F32         getTextureVirtualSize() ;
 	F32         getImportanceToCamera()const {return mImportanceToCamera ;}
+	void        resetVirtualSize();
 
 	void        setHasMedia(bool has_media)  { mHasMedia = has_media ;}
 	BOOL        hasMedia() const ;
+
+	BOOL                  switchTexture() ;
+
 	//vertex buffer tracking
 	void setVertexBuffer(LLVertexBuffer* buffer);
 	void clearVertexBuffer(); //sets mVertexBuffer and mLastVertexBuffer to NULL
@@ -258,6 +259,8 @@ public:
 	F32			mLastSkinTime;
 	F32			mLastMoveTime;
 	LLMatrix4*	mTextureMatrix;
+	LLMatrix4*	mSpecMapMatrix;
+	LLMatrix4*	mNormalMapMatrix;
 	LLDrawInfo* mDrawInfo;
 
 private:
@@ -273,10 +276,12 @@ private:
 	U8			mTextureIndex;		// index of texture channel to use for pseudo-atlasing
 	U32			mIndicesCount;
 	U32			mIndicesIndex;		// index into draw pool for indices (yeah, I know!)
-	S32			mIndexInTex ;
+	S32         mIndexInTex[LLRender::NUM_TEXTURE_CHANNELS];
 
 	LLXformMatrix* mXform;
-	LLPointer<LLViewerTexture> mTexture;
+
+	LLPointer<LLViewerTexture> mTexture[LLRender::NUM_TEXTURE_CHANNELS];
+	
 	LLPointer<LLDrawable> mDrawablep;
 	LLPointer<LLViewerObject> mVObjp;
 	S32			mTEOffset;
