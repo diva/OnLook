@@ -2244,11 +2244,11 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 
 	if (to_texture)
 	{
-		if (LLPipeline::sRenderDeferred)
+		/*if (LLPipeline::sRenderDeferred)
 		{
 			mOcclusionDepth.bindTarget();
 		}
-		else
+		else*/
 		{
 			mScreen.bindTarget();
 		}
@@ -2389,11 +2389,11 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 
 	if (to_texture)
 	{
-		if (LLPipeline::sRenderDeferred)
+		/*if (LLPipeline::sRenderDeferred)
 		{
 			mOcclusionDepth.flush();
 		}
-		else
+		else*/
 		{
 			mScreen.flush();
 		}
@@ -4382,7 +4382,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 			gGLLastMatrix = NULL;
 			gGL.loadMatrix(gGLModelView);
 			LLGLSLShader::bindNoShader();
-			doOcclusion(camera, mScreen, mOcclusionDepth, &mDeferredDepth);
+			doOcclusion(camera/*, mScreen, mOcclusionDepth, &mDeferredDepth*/);
 			gGL.setColorMask(true, false);
 		}
 
@@ -8928,10 +8928,10 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 LLPipeline::RENDER_TYPE_VOLUME,
+						 //LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
+						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -8943,7 +8943,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 LLPipeline::RENDER_TYPE_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT_ALPHA_MASK,
@@ -9566,11 +9566,11 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 		gDeferredShadowCubeProgram.bind();
 	}
 
-	LLRenderTarget& occlusion_target = mShadowOcclusion[LLViewerCamera::sCurCameraID-1];
+	//LLRenderTarget& occlusion_target = mShadowOcclusion[LLViewerCamera::sCurCameraID-1];
 
-	occlusion_target.bindTarget();
+	//occlusion_target.bindTarget();
 	updateCull(shadow_cam, result);
-	occlusion_target.flush();
+	//occlusion_target.flush();
 
 	stateSort(shadow_cam, result);
 	
@@ -9642,7 +9642,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 		renderMaskedObjects(LLRenderPass::PASS_ALPHA_MASK, mask, TRUE, TRUE);
 		renderMaskedObjects(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, mask, TRUE, TRUE);
 		gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.598f);
-		renderObjects(LLRenderPass::PASS_ALPHA, mask, TRUE, TRUE);
+		//renderObjects(LLRenderPass::PASS_ALPHA, mask, TRUE, TRUE);
 
 		mask = mask & ~LLVertexBuffer::MAP_TEXTURE_INDEX;
 
@@ -9662,9 +9662,9 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	gGLLastMatrix = NULL;
 	gGL.loadMatrix(gGLModelView);
 
-	LLRenderTarget& occlusion_source = mShadow[LLViewerCamera::sCurCameraID-1];
+	//LLRenderTarget& occlusion_source = mShadow[LLViewerCamera::sCurCameraID-1];
 
-	doOcclusion(shadow_cam, occlusion_source, occlusion_target);
+	doOcclusion(shadow_cam/*, occlusion_source, occlusion_target*/);
 
 	if (use_shader)
 	{
