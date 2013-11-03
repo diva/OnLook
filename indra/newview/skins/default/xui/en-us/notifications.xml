@@ -134,6 +134,20 @@
   </template>
 
   <notification
+   icon="alert.tga"
+   name="AIAlert"
+   type="alert">
+[PAYLOAD]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="AIAlertModal"
+   type="alertmodal">
+[PAYLOAD]
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="AIXMLExportWriteError"
    type="alertmodal">

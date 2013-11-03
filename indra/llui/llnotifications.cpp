@@ -40,6 +40,7 @@
 #include "lltrans.h"
 
 #include "llnotifications.h"
+#include "aialert.h"
 
 #include "../newview/hippogridmanager.h"
 
@@ -1477,6 +1478,32 @@ LLNotificationPtr LLNotifications::add(const LLNotification::Params& p)
 	LLNotificationPtr pNotif(new LLNotification(p));
 	add(pNotif);
 	return pNotif;
+}
+
+LLNotificationPtr LLNotifications::add(AIAlert const& alert, unsigned int suppress_mask)
+{
+	std::string alert_text;
+	bool suppress_newlines = false;
+	bool last_was_prefix = false;
+	for (AIAlert::lines_type::const_iterator line = alert.lines().begin(); line != alert.lines().end(); ++line)
+	{
+	  // Even if a line is suppressed, we print its leading newline if requested, but never more than one.
+	  if (!suppress_newlines && line->prepend_newline())
+	  {
+		alert_text += '\n';
+		suppress_newlines = true;
+	  }
+	  if (!line->suppressed(suppress_mask))
+	  {
+		if (last_was_prefix) alert_text += ' ';		// The translation system strips off spaces... add them back.
+	    alert_text += LLTrans::getString(line->getXmlDesc(), line->args());
+		suppress_newlines = false;
+		last_was_prefix = line->is_prefix();
+	  }
+	}
+	LLSD substitutions = LLSD::emptyMap();
+	substitutions["[PAYLOAD]"] = alert_text;
+	return add(LLNotification::Params(alert.is_modal() ? "AIAlertModal" : "AIAlert").substitutions(substitutions));
 }
 
 

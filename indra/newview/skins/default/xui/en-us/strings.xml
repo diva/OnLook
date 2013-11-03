@@ -4364,4 +4364,7 @@ Try enclosing path to the editor with double quotes.
   <!-- teleport_strings.xml's strings we need -->
   <string name="completed_from">Teleport completed from</string>
 
+  <!-- AIAlert messages -->
+  <string name="AIPrefix">"[PREFIX]: "</string>
+
 </strings>

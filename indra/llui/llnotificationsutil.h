@@ -34,9 +34,12 @@
 #include <boost/function.hpp>
 
 class LLSD;
+class AIAlert;
 
 namespace LLNotificationsUtil
 {
+	LLNotificationPtr add(AIAlert const& alert, unsigned int suppress_mask = 0);			// Singu extension.
+
 	LLNotificationPtr add(const std::string& name);
 	
 	LLNotificationPtr add(const std::string& name, 

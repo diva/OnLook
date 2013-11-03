@@ -30,6 +30,11 @@
 #include "llsd.h"
 #include "llxmlnode.h"	// apparently needed to call LLNotifications::instance()
 
+LLNotificationPtr LLNotificationsUtil::add(AIAlert const& alert, unsigned int suppress_mask)
+{
+	return LLNotifications::instance().add(alert, suppress_mask);
+}
+
 LLNotificationPtr LLNotificationsUtil::add(const std::string& name)
 {
 	return LLNotifications::instance().add(
