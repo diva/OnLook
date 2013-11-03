@@ -42,10 +42,5 @@ void main()
 	
 	frag_data[0] = vec4(col.rgb,col.a*custom_alpha);
 	frag_data[1] = vec4(0,0,0,0);
-//#define PACK_NORMALS
-#ifdef PACK_NORMALS
-	frag_data[2] = vec4(0.5,0.5,0.0,0.0);
-#else
-	frag_data[2] = vec4(0.0,0.0,1.0,0.0);
-#endif
+	frag_data[2] = vec4(0.5,0.5,0.0,1.0);
 }

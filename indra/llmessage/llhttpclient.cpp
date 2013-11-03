@@ -343,6 +343,7 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 			strncmp(str, "cap not found:", 14) &&		// Most of the other 3%.
 			str[0] &&									// Empty happens too and aint LLSD either.
 			strncmp(str, "Not Found", 9) &&
+			strncmp(str, "Upstream error: ", 16) &&		// Received by LLEventPollResponder every 50 seconds (see http://wiki.secondlife.com/wiki/EventQueueGet).
 			LLSDSerialize::fromXML(dummy, ss) > 0;
 		if (server_sent_llsd_with_http_error)
 		{

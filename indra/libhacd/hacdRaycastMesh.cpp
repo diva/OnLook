@@ -106,7 +106,7 @@ namespace HACD
 		m_nMaxNodes = 0;
 		for(size_t k = 0; k < maxDepth; k++)
 		{
-			m_nMaxNodes += (1 << maxDepth);
+			m_nMaxNodes += (static_cast<size_t>(1) << maxDepth);
 		}
 		m_nodes = new RMNode[m_nMaxNodes];
 		RMNode & root = m_nodes[AddNode()];

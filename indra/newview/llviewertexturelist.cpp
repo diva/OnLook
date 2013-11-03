@@ -126,6 +126,7 @@ void LLViewerTextureList::doPreloadImages()
 	LLTexUnit::sWhiteTexture = LLViewerFetchedTexture::sWhiteImagep->getTexName();
 	LLUIImageList* image_list = LLUIImageList::getInstance();
 
+	LLViewerFetchedTexture::sFlatNormalImagep = LLViewerTextureManager::getFetchedTextureFromFile("flatnormal.tga", MIPMAP_NO, LLViewerFetchedTexture::BOOST_BUMP);
 	image_list->initFromFile();
 	
 	// turn off clamping and bilinear filtering for uv picking images
