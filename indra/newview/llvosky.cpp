@@ -299,7 +299,7 @@ void LLSkyTex::create(const F32 brightness)
 void LLSkyTex::createGLImage(S32 which)
 {	
 	mTexture[which]->setNeedsAlphaAndPickMask(false);	//Needed, else analyzeAlpha is called every frame for each texture.
-	mTexture[which]->createGLTexture(0, mImageRaw[which], 0, TRUE, LLViewerTexture::LOCAL);
+	mTexture[which]->createGLTexture(0, mImageRaw[which], 0, TRUE, LLGLTexture::LOCAL);
 	mTexture[which]->setAddressMode(LLTexUnit::TAM_CLAMP);
 }
 

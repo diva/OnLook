@@ -224,6 +224,7 @@ public:
 	virtual BOOL isFlexible() const					{ return FALSE; }
 	virtual BOOL isSculpted() const 				{ return FALSE; }
 	virtual BOOL isMesh() const						{ return FALSE; }
+	virtual BOOL hasLightTexture() const			{ return FALSE; }
 
 	// This method returns true if the object is over land owned by
 	// the agent, one of its groups, or it encroaches and 
@@ -306,7 +307,11 @@ public:
 	/*virtual*/	void	setNumTEs(const U8 num_tes);
 	/*virtual*/	void	setTE(const U8 te, const LLTextureEntry &texture_entry);
 	/*virtual*/ S32		setTETexture(const U8 te, const LLUUID &uuid);
-	S32 				setTETextureCore(const U8 te, LLViewerTexture *image);
+	/*virtual*/ S32		setTENormalMap(const U8 te, const LLUUID &uuid);
+	/*virtual*/ S32		setTESpecularMap(const U8 te, const LLUUID &uuid);
+	S32 setTETextureCore(const U8 te, LLViewerTexture *image);
+	S32 setTENormalMapCore(const U8 te, LLViewerTexture *image);
+	S32 setTESpecularMapCore(const U8 te, LLViewerTexture *image);
 	/*virtual*/ S32		setTEColor(const U8 te, const LLColor3 &color);
 	/*virtual*/ S32		setTEColor(const U8 te, const LLColor4 &color);
 	/*virtual*/ S32		setTEScale(const U8 te, const F32 s, const F32 t);
@@ -323,11 +328,25 @@ public:
 	/*virtual*/	S32		setTEFullbright(const U8 te, const U8 fullbright );
 	/*virtual*/	S32		setTEMediaFlags(const U8 te, const U8 media_flags );
 	/*virtual*/ S32     setTEGlow(const U8 te, const F32 glow);
+	/*virtual*/ S32     setTEMaterialID(const U8 te, const LLMaterialID& pMaterialID);
+	/*virtual*/ S32		setTEMaterialParams(const U8 te, const LLMaterialPtr pMaterialParams);
+
+	// Used by Materials update functions to properly kick off rebuilds
+	// of VBs etc when materials updates require changes.
+	//
+	void refreshMaterials();
+
 	/*virtual*/	BOOL	setMaterial(const U8 material);
 	virtual		void	setTEImage(const U8 te, LLViewerTexture *imagep); // Not derived from LLPrimitive
-	virtual     void	changeTEImage(S32 index, LLViewerTexture* new_image)  ;
+	virtual     void    changeTEImage(S32 index, LLViewerTexture* new_image)  ;
+	virtual     void    changeTENormalMap(S32 index, LLViewerTexture* new_image)  ;
+	virtual     void    changeTESpecularMap(S32 index, LLViewerTexture* new_image)  ;
 	LLViewerTexture		*getTEImage(const U8 te) const;
+	LLViewerTexture		*getTENormalMap(const U8 te) const;
+	LLViewerTexture		*getTESpecularMap(const U8 te) const;
 	
+	bool 						isImageAlphaBlended(const U8 te) const;
+
 	void fitFaceTexture(const U8 face);
 	void sendTEUpdate() const;			// Sends packed representation of all texture entry information
 	
@@ -596,6 +615,7 @@ public:
 	} EPhysicsShapeType;
 
 	LLUUID			mID;
+	LLUUID			mOwnerID; //null if unknown
 
 	// unique within region, not unique across regions
 	// Local ID = 0 is not used
@@ -608,6 +628,8 @@ public:
 	S32				mListIndex;
 
 	LLPointer<LLViewerTexture> *mTEImages;
+	LLPointer<LLViewerTexture> *mTENormalMaps;
+	LLPointer<LLViewerTexture> *mTESpecularMaps;
 
 	// Selection, picking and rendering variables
 	U32				mGLName;			// GL "name" used by selection code
@@ -679,7 +701,7 @@ protected:
 	BOOL isOnMap();
 
 	void unpackParticleSource(const S32 block_num, const LLUUID& owner_id);
-	void unpackParticleSource(LLDataPacker &dp, const LLUUID& owner_id);
+	void unpackParticleSource(LLDataPacker &dp, const LLUUID& owner_id, bool legacy);
 	void deleteParticleSource();
 	void setParticleSource(const LLPartSysData& particle_parameters, const LLUUID& owner_id);
 
@@ -847,7 +869,10 @@ public:
 								LLStrider<LLVector3>& normalsp, 
 								LLStrider<LLVector2>& texcoordsp,
 								LLStrider<LLColor4U>& colorsp, 
+								LLStrider<LLColor4U>& emissivep,
 								LLStrider<U16>& indicesp) = 0;
+
+	virtual void getBlendFunc(S32 face, U32& src, U32& dst);
 
 	F32 mDepth;
 };

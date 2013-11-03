@@ -119,6 +119,8 @@ public:
 	void beginRiggedFullbrightAlpha();
 	void beginRiggedGlow();
 	void beginDeferredRiggedAlpha();
+	void beginDeferredRiggedMaterial(S32 pass);
+	void beginDeferredRiggedMaterialAlpha(S32 pass);
 
 	void endRiggedSimple();
 	void endRiggedFullbright();
@@ -128,6 +130,8 @@ public:
 	void endRiggedFullbrightAlpha();
 	void endRiggedGlow();
 	void endDeferredRiggedAlpha();
+	void endDeferredRiggedMaterial(S32 pass);
+	void endDeferredRiggedMaterialAlpha(S32 pass);
 
 	void beginDeferredRiggedSimple();
 	void beginDeferredRiggedBump();
@@ -135,6 +139,7 @@ public:
 	void endDeferredRiggedSimple();
 	void endDeferredRiggedBump();
 		
+	void getRiggedGeometry(LLFace* face, LLPointer<LLVertexBuffer>& buffer, U32 data_mask, const LLMeshSkinInfo* skin, LLVolume* volume, const LLVolumeFace& vol_face);
 	void updateRiggedFaceVertexBuffer(LLVOAvatar* avatar,
 									  LLFace* facep, 
 									  const LLMeshSkinInfo* skin, 
@@ -152,10 +157,27 @@ public:
 	void renderRiggedGlow(LLVOAvatar* avatar);
 	void renderDeferredRiggedSimple(LLVOAvatar* avatar);
 	void renderDeferredRiggedBump(LLVOAvatar* avatar);
-
+	void renderDeferredRiggedMaterial(LLVOAvatar* avatar, S32 pass);
+	
 	typedef enum
 	{
-		RIGGED_SIMPLE = 0,
+		RIGGED_MATERIAL=0,
+		RIGGED_MATERIAL_ALPHA,
+		RIGGED_MATERIAL_ALPHA_MASK,
+		RIGGED_MATERIAL_ALPHA_EMISSIVE,
+		RIGGED_SPECMAP,
+		RIGGED_SPECMAP_BLEND,
+		RIGGED_SPECMAP_MASK,
+		RIGGED_SPECMAP_EMISSIVE,
+		RIGGED_NORMMAP,
+		RIGGED_NORMMAP_BLEND,
+		RIGGED_NORMMAP_MASK,
+		RIGGED_NORMMAP_EMISSIVE,
+		RIGGED_NORMSPEC,
+		RIGGED_NORMSPEC_BLEND,
+		RIGGED_NORMSPEC_MASK,
+		RIGGED_NORMSPEC_EMISSIVE,
+		RIGGED_SIMPLE,
 		RIGGED_FULLBRIGHT,
 		RIGGED_SHINY,
 		RIGGED_FULLBRIGHT_SHINY,
@@ -170,6 +192,48 @@ public:
 
 	typedef enum
 	{
+		RIGGED_MATERIAL_MASK =
+						LLVertexBuffer::MAP_VERTEX | 
+						LLVertexBuffer::MAP_NORMAL | 
+						LLVertexBuffer::MAP_TEXCOORD0 |
+						LLVertexBuffer::MAP_COLOR |
+						LLVertexBuffer::MAP_WEIGHT4,
+		RIGGED_MATERIAL_ALPHA_VMASK = RIGGED_MATERIAL_MASK,
+		RIGGED_MATERIAL_ALPHA_MASK_MASK = RIGGED_MATERIAL_MASK,
+		RIGGED_MATERIAL_ALPHA_EMISSIVE_MASK = RIGGED_MATERIAL_MASK,
+		RIGGED_SPECMAP_VMASK =
+						LLVertexBuffer::MAP_VERTEX | 
+						LLVertexBuffer::MAP_NORMAL | 
+						LLVertexBuffer::MAP_TEXCOORD0 |
+						LLVertexBuffer::MAP_TEXCOORD2 |
+						LLVertexBuffer::MAP_COLOR |
+						LLVertexBuffer::MAP_WEIGHT4,
+		RIGGED_SPECMAP_BLEND_MASK = RIGGED_SPECMAP_VMASK,
+		RIGGED_SPECMAP_MASK_MASK = RIGGED_SPECMAP_VMASK,
+		RIGGED_SPECMAP_EMISSIVE_MASK = RIGGED_SPECMAP_VMASK,
+		RIGGED_NORMMAP_VMASK =
+						LLVertexBuffer::MAP_VERTEX | 
+						LLVertexBuffer::MAP_NORMAL | 
+						LLVertexBuffer::MAP_TANGENT | 
+						LLVertexBuffer::MAP_TEXCOORD0 |
+						LLVertexBuffer::MAP_TEXCOORD1 |
+						LLVertexBuffer::MAP_COLOR |
+						LLVertexBuffer::MAP_WEIGHT4,
+		RIGGED_NORMMAP_BLEND_MASK = RIGGED_NORMMAP_VMASK,
+		RIGGED_NORMMAP_MASK_MASK = RIGGED_NORMMAP_VMASK,
+		RIGGED_NORMMAP_EMISSIVE_MASK = RIGGED_NORMMAP_VMASK,
+		RIGGED_NORMSPEC_VMASK =
+						LLVertexBuffer::MAP_VERTEX | 
+						LLVertexBuffer::MAP_NORMAL | 
+						LLVertexBuffer::MAP_TANGENT | 
+						LLVertexBuffer::MAP_TEXCOORD0 |
+						LLVertexBuffer::MAP_TEXCOORD1 |
+						LLVertexBuffer::MAP_TEXCOORD2 |
+						LLVertexBuffer::MAP_COLOR |
+						LLVertexBuffer::MAP_WEIGHT4,
+		RIGGED_NORMSPEC_BLEND_MASK = RIGGED_NORMSPEC_VMASK,
+		RIGGED_NORMSPEC_MASK_MASK = RIGGED_NORMSPEC_VMASK,
+		RIGGED_NORMSPEC_EMISSIVE_MASK = RIGGED_NORMSPEC_VMASK,
 		RIGGED_SIMPLE_MASK = LLVertexBuffer::MAP_VERTEX | 
 							 LLVertexBuffer::MAP_NORMAL | 
 							 LLVertexBuffer::MAP_TEXCOORD0 |
@@ -214,6 +278,7 @@ public:
 	static BOOL sSkipOpaque;
 	static BOOL sSkipTransparent;
 	static S32 sDiffuseChannel;
+	static F32 sMinimumAlpha;
 
 	static LLGLSLShader* sVertexProgram;
 };

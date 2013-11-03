@@ -5869,7 +5869,7 @@ Builds with extended hollow or extended hole size do not render properly on othe
    icon="alertmodal.tga"
    name="ExportFailed"
    type="alertmodal">
-Bad permissions for the exported object. Export aborted.
+None of the selected objects are exportable. Export aborted.
   </notification>
 
   <notification

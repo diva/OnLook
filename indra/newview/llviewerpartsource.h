@@ -82,6 +82,7 @@ public:
 	LLVector3	mLastUpdatePosAgent;
 	LLPointer<LLViewerObject>	mSourceObjectp;
 	U32 mID;
+	LLViewerPart* mLastPart; //last particle emitted (for making particle ribbons)
 
 protected:
 	U32			mType;
@@ -120,7 +121,7 @@ public:
 
 	// Returns a new particle source to attach to an object...
 	static LLPointer<LLViewerPartSourceScript> unpackPSS(LLViewerObject *source_objp, LLPointer<LLViewerPartSourceScript> pssp, const S32 block_num);
-	static LLPointer<LLViewerPartSourceScript> unpackPSS(LLViewerObject *source_objp, LLPointer<LLViewerPartSourceScript> pssp, LLDataPacker &dp);
+	static LLPointer<LLViewerPartSourceScript> unpackPSS(LLViewerObject *source_objp, LLPointer<LLViewerPartSourceScript> pssp, LLDataPacker &dp, bool legacy);
 	static LLPointer<LLViewerPartSourceScript> createPSS(LLViewerObject *source_objp, const LLPartSysData& particle_parameters);
 
 	LLViewerTexture *getImage() const				{ return mImagep; }

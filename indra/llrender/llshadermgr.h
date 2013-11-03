@@ -111,6 +111,7 @@ public:
 		GLOW_DELTA,
 
 		MINIMUM_ALPHA,
+		EMISSIVE_BRIGHTNESS,
 
 		DEFERRED_SHADOW_MATRIX,
 		DEFERRED_ENV_MAT,
@@ -168,7 +169,14 @@ public:
 		DEFERRED_PROJECTION,
 		DEFERRED_NORM_MATRIX,
 
+		GLOBAL_GAMMA,
+		TEXTURE_GAMMA,
+		
+		SPECULAR_COLOR,
+		ENVIRONMENT_INTENSITY,
+		
 		AVATAR_MATRIX,
+
 		WATER_SCREENTEX,
 		WATER_SCREENDEPTH,
 		WATER_REFTEX,
@@ -204,7 +212,9 @@ public:
 		TERRAIN_DETAIL2,
 		TERRAIN_DETAIL3,
 		TERRAIN_ALPHARAMP,
+		
 		SHINY_ORIGIN,
+DISPLAY_GAMMA,
 		END_RESERVED_UNIFORMS
 	} eGLSLReservedUniforms;
 
@@ -228,11 +238,12 @@ public:
 public:
 	struct CachedObjectInfo
 	{
-		CachedObjectInfo(GLhandleARB handle, U32 level, GLenum type) : 
-			mHandle(handle), mLevel(level), mType(type) {}
+		CachedObjectInfo(GLhandleARB handle, U32 level, GLenum type, std::map<std::string,std::string> *definitions) : 
+			mHandle(handle), mLevel(level), mType(type), mDefinitions(definitions ? *definitions : std::map<std::string,std::string>()){}
 		GLhandleARB mHandle;	//Actual handle of the opengl shader object.
 		U32 mLevel;				//Level /might/ not be needed, but it's stored to ensure there's no change in behavior.
 		GLenum mType;			//GL_VERTEX_SHADER_ARB or GL_FRAGMENT_SHADER_ARB. Tracked because some utility shaders can be loaded as both types (carefully).
+		std::map<std::string,std::string> mDefinitions;
 	};
 	// Map of shader names to compiled
 	std::multimap<std::string, CachedObjectInfo > mShaderObjects;	//Singu Note: Packing more info here. Doing such provides capability to skip unneeded duplicate loading..
