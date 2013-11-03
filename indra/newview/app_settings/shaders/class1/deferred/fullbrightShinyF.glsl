@@ -63,7 +63,7 @@ void main()
 	color.rgb = fullbrightShinyAtmosTransport(color.rgb);
 	color.rgb = fullbrightScaleSoftClip(color.rgb);
 
-	color.a = 1.0;
+	color.a = 0.0;
 
 	color.rgb = pow(color.rgb, vec3(1.0/2.2));
 

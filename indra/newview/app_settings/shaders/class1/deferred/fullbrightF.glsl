@@ -166,10 +166,15 @@ void main()
 	vec3 pos = vary_position;
 	vec4 fogged = applyWaterFogDeferred(pos, vec4(color.rgb, final_alpha));
 	color.rgb = fogged.rgb;
+#ifndef HAS_ALPHA_MASK
 	color.a   = fogged.a;
-#else
+#endif
+#elif !HAS_ALPHA_MASK
 	color.a   = final_alpha;
 #endif
+#if HAS_ALPHA_MASK
+	color.a = 0.0;
+#endif 
 
 	frag_color.rgb = color.rgb;
 	frag_color.a   = color.a;
