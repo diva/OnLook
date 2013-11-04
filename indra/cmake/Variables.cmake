@@ -97,7 +97,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(DARWIN 1)
 
-  if(${CMAKE_GENERATOR} MATCHES Xcode)
+  if(${CMAKE_GENERATOR} MATCHES "Xcode")
     #SDK Compiler and Deployment targets for XCode
     if (${XCODE_VERSION} VERSION_LESS 4.0.0)
       set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
@@ -106,10 +106,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
       set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
     endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
-  else(${CMAKE_GENERATOR} MATCHES Xcode)
+  else(${CMAKE_GENERATOR} MATCHES "Xcode")
     set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-  endif(${CMAKE_GENERATOR} MATCHES Xcode)
+  endif(${CMAKE_GENERATOR} MATCHES "Xcode")
 
   set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
 
