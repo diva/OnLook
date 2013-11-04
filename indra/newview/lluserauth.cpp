@@ -217,8 +217,21 @@ void LLUserAuth::authenticate(
 	XMLRPC_VectorAppendString(params, "last", lastname.c_str(), 0);
 	XMLRPC_VectorAppendString(params, "passwd", dpasswd.c_str(), 0);
 	XMLRPC_VectorAppendString(params, "start", start.c_str(), 0);
-	XMLRPC_VectorAppendString(params, "version", gCurrentVersion.c_str(), 0); // Includes channel name
-	XMLRPC_VectorAppendString(params, "channel", gVersionChannel, 0);
+	XMLRPC_VectorAppendString(params, "version", llformat("%d.%d.%d.%d", gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild).c_str(), 0);
+	// Singu Note: At the request of Linden Lab we change channel sent to the login server in the following way:
+	// * If channel is "Singularity" we change it to "Singularity Release", due to their statistics system
+	//   not being able to distinguish just the release version
+	// * We append "64" to channel name on 64-bit for systems for the LL stats system to be able to produce independent
+	//   crash statistics depending on the architecture
+	std::string chan(gVersionChannel);
+	if (chan == "Singularity")
+	{
+		chan += " Release";
+	}
+#if defined(_WIN64) || defined(__x86_64__)
+	chan += " 64";
+#endif
+	XMLRPC_VectorAppendString(params, "channel", chan.c_str(), 0);
 	XMLRPC_VectorAppendString(params, "platform", PLATFORM_STRING, 0);
 
 	XMLRPC_VectorAppendString(params, "mac", hashed_mac.c_str(), 0);
