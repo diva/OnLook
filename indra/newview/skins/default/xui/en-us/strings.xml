@@ -4367,4 +4367,12 @@ Try enclosing path to the editor with double quotes.
   <!-- AIAlert messages -->
   <string name="AIPrefix">"[PREFIX]: "</string>
 
+    <!-- AIFile exception alerts -->
+	<string name="AIFile_mkdir_Failed_to_create_DIRNAME">Failed to create folder [DIRNAME]: [ERROR]</string>
+	<string name="AIFile_rmdir_Failed_to_remove_DIRNAME">Failed to remove folder [DIRNAME]: [ERROR]</string>
+	<string name="AIFile_fopen_Failed_to_open_FILENAME">Failed to open file &quot;[FILENAME]&quot;: [ERROR]</string>
+	<string name="AIFile_close_Failed_to_close_file">Failed to close file: [ERROR]</string>
+	<string name="AIFile_remove_Failed_to_remove_FILENAME">Failed to remove file [FILENAME]: [ERROR]</string>
+	<string name="AIFile_rename_Failed_to_rename_FILE_to_NEWFILE">Failed to rename file [FILE] to [NEWFILE]: [ERROR]</string>
+
 </strings>
