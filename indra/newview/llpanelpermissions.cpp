@@ -1118,16 +1118,17 @@ void LLPanelPermissions::onClickDeedToGroup(void* data)
 	LLNotificationsUtil::add( "DeedObjectToGroup", LLSD(), LLSD(), callback_deed_to_group);
 }
 
-void LLPanelPermissions::onClickCopyObjKey()
+template <typename iterator>
+std::string gather_keys(iterator iter, iterator end)
 {
 	//NAMESHORT - Was requested on the forums, was going to integrate a textbox with the ID, but due to lack of room on the floater,
 	//We now have a copy button :>
 	//Madgeek - Hacked together method to copy more than one key, separated by comma.
 	//At some point the separator was changed to read from the xml settings - I'll probably try to make this openly changable from settings. -HgB
+	//Lirusaito - Tweaked to copy selected prim(s) when EditLinkedParts, main functionality moved into gather_keys
 	std::string output;
 	std::string separator = gSavedSettings.getString("AscentDataSeparator");
-	for (LLObjectSelection::root_iterator iter = LLSelectMgr::getInstance()->getSelection()->root_begin();
-		iter != LLSelectMgr::getInstance()->getSelection()->root_end(); iter++)
+	for (; iter != end; ++iter)
 	{
 		LLSelectNode* selectNode = *iter;
 		LLViewerObject* object = selectNode->getObject();
@@ -1137,6 +1138,14 @@ void LLPanelPermissions::onClickCopyObjKey()
 			output.append(object->getID().asString());
 		}
 	}
+	return output;
+}
+
+void LLPanelPermissions::onClickCopyObjKey()
+{
+	bool parts(gSavedSettings.getBOOL("EditLinkedParts"));
+	LLObjectSelectionHandle selection(LLSelectMgr::getInstance()->getSelection());
+	std::string output = parts ? gather_keys(selection->begin(), selection->end()) : gather_keys(selection->root_begin(), selection->root_end());
 	if (!output.empty()) gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(output));
 }
 
