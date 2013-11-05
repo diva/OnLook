@@ -53,12 +53,12 @@
 
 #ifdef EXAMPLE_CODE // undefined
 
-class HelloWord {
+class HelloWorld {
   public:
 	// Write object to XML.
 	void toXML(std::ostream& os, int indentation) const;
 	// Read object from XML.
-	HelloWord(AIXMLElementParser const& parser);
+	HelloWorld(AIXMLElementParser const& parser);
 
   private:
 	// Example member variables...
@@ -73,7 +73,7 @@ class HelloWord {
 };
 
 // Typical serialization member function.
-void HelloWord::toXML(std::ostream& os, int indentation) const
+void HelloWorld::toXML(std::ostream& os, int indentation) const
 {
   AIXMLElement tag(os, "helloworld", indentation);
 
@@ -93,7 +93,7 @@ void HelloWord::toXML(std::ostream& os, int indentation) const
 }
 
 // Typical deserialization member function.
-HelloWord::HelloWorld(AIXMLElementParser const& parser)
+HelloWorld::HelloWorld(AIXMLElementParser const& parser)
 {
   // Zero or more attributes:
   parser.attribute("attributename1", "foobar");			// Throws std::runtime_error is attributename1 is missing or does not have the value "foobar".
