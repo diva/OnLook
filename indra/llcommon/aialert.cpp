@@ -25,43 +25,51 @@
  *
  *   02/11/2013
  *   - Initial version, written by Aleric Inglewood @ SL
+ *
+ *   05/11/2013
+ *   Moved everything in namespace AIAlert, except AIArgs.
  */
 
 #include "aialert.h"
 
-AIAlert::AIAlert(AIAlertPrefix const& prefix, modal_nt type,
-                 std::string const& xml_desc, AIArgs const& args) : mModal(type)
+namespace AIAlert
 {
-  if (prefix) mLines.push_back(AIAlertLine(prefix));
-  mLines.push_back(AIAlertLine(xml_desc, args));
+
+Error::Error(Prefix const& prefix, modal_nt type,
+             std::string const& xml_desc, AIArgs const& args) : mModal(type)
+{
+  if (prefix) mLines.push_back(Line(prefix));
+  mLines.push_back(Line(xml_desc, args));
 }
 
-AIAlert::AIAlert(AIAlertPrefix const& prefix, modal_nt type,
-                 AIAlert const& alert,
-                 std::string const& xml_desc, AIArgs const& args) : mLines(alert.mLines), mModal(type)
-{
-  if (alert.mModal == modal) mModal = modal;
-  if (prefix) mLines.push_back(AIAlertLine(prefix, !mLines.empty()));
-  mLines.push_back(AIAlertLine(xml_desc, args));
-}
-
-AIAlert::AIAlert(AIAlertPrefix const& prefix, modal_nt type,
-                 std::string const& xml_desc,
-                 AIAlert const& alert) : mLines(alert.mLines), mModal(type)
+Error::Error(Prefix const& prefix, modal_nt type,
+             Error const& alert,
+             std::string const& xml_desc, AIArgs const& args) : mLines(alert.mLines), mModal(type)
 {
   if (alert.mModal == modal) mModal = modal;
-  if (!mLines.empty()) { mLines.front().set_newline(); }
-  mLines.push_front(AIAlertLine(xml_desc));
-  if (prefix) mLines.push_front(AIAlertLine(prefix));
+  if (prefix) mLines.push_back(Line(prefix, !mLines.empty()));
+  mLines.push_back(Line(xml_desc, args));
 }
 
-AIAlert::AIAlert(AIAlertPrefix const& prefix, modal_nt type,
-                 std::string const& xml_desc, AIArgs const& args,
-                 AIAlert const& alert) : mLines(alert.mLines), mModal(type)
+Error::Error(Prefix const& prefix, modal_nt type,
+             std::string const& xml_desc,
+             Error const& alert) : mLines(alert.mLines), mModal(type)
 {
   if (alert.mModal == modal) mModal = modal;
   if (!mLines.empty()) { mLines.front().set_newline(); }
-  mLines.push_front(AIAlertLine(xml_desc, args));
-  if (prefix) mLines.push_front(AIAlertLine(prefix));
+  mLines.push_front(Line(xml_desc));
+  if (prefix) mLines.push_front(Line(prefix));
 }
+
+Error::Error(Prefix const& prefix, modal_nt type,
+             std::string const& xml_desc, AIArgs const& args,
+             Error const& alert) : mLines(alert.mLines), mModal(type)
+{
+  if (alert.mModal == modal) mModal = modal;
+  if (!mLines.empty()) { mLines.front().set_newline(); }
+  mLines.push_front(Line(xml_desc, args));
+  if (prefix) mLines.push_front(Line(prefix));
+}
+
+} // namespace AIAlert
 

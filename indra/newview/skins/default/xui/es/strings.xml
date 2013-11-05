@@ -4836,5 +4836,58 @@ Intenta entrecomillando el camino al editor.
 
 	<!-- teleport_strings.xml's strings we need -->
 	<string name="completed_from">Teleporte completado desde</string>
-	
+
+	<!-- ************ EVERYTHING BELOW STILL NEEDS TRANSLATION! ************** -->
+
+  <!-- AIAlert messages -->
+  <string name="AIPrefix">"[PREFIX]: "</string>
+
+    <!-- AIFile exception alerts -->
+	<string name="AIFile_mkdir_Failed_to_create_DIRNAME">Failed to create folder [DIRNAME]: [ERROR]</string>
+	<string name="AIFile_rmdir_Failed_to_remove_DIRNAME">Failed to remove folder [DIRNAME]: [ERROR]</string>
+	<string name="AIFile_fopen_Failed_to_open_FILENAME">Failed to open file "[FILENAME]": [ERROR]</string>
+	<string name="AIFile_close_Failed_to_close_file">Failed to close file: [ERROR]</string>
+	<string name="AIFile_remove_Failed_to_remove_FILENAME">Failed to remove file [FILENAME]: [ERROR]</string>
+	<string name="AIFile_rename_Failed_to_rename_FILE_to_NEWFILE">Failed to rename file [FILE] to [NEWFILE]: [ERROR]</string>
+
+	<!-- AIXMLElement exception alerts -->
+	<string name="AIXMLElement_attribute_Failed_to_write_DATA">Failed to write '[DATA]', writing attribute data.</string>
+	<string name="AIXMLElement_child_Bad_ostream">ostream not good after calling child.toXML</string>
+	<string name="AIXMLElement_write_child_Failed_to_write_DATA">Failed to write '[DATA]', writing child data.</string>
+	<string name="AIXMLElement_Failed_to_write_DATA">Failed to write '[DATA]', opening new child.</string>
+	<string name="AIXMLElement_closing_child_Failed_to_write_DATA">Failed to write '[DATA]', closing previous child.</string>
+
+	<!-- AIXMLStream exception alerts -->
+	<string name="AIXMLStream_fprintf_failed_to_write_xml_header">Failed to write XML header.</string>
+
+	<!-- AIXMLParser exception alerts -->
+	<string name="AIXMLParser_Cannot_parse_FILEDESC_FILENAME">Cannot parse [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLParser_No_root_node_found_in_FILEDESC_FILENAME">No root node found in [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLParser_Missing_header_NAME_invalid_FILEDESC_FILENAME">Missing header '[NAME]' ; invalid [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLParser_Invalid_or_missing_NAME_version_attribute_in_FILEDESC_FILENAME">Invalid or missing [NAME] 'version' attribute in [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLParser_Incompatible_NAME_version_MAJOR_MINOR_in">Incompatible '[NAME]' version, [MAJOR].[MINOR], in [FILEDESC] "[FILENAME]".</string>
+
+	<!-- AIXMLElementParser exception alerts -->
+	<string name="AIXMLElementParser_read_string_Invalid_MD5_VALUE_in_FILEDESC_FILENAME">Invalid MD5 ([VALUE]) in [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLElementParser_read_string_Invalid_boolean_VALUE_in_FILEDESC_FILENAME">Invalid boolean ([VALUE]) in [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLElementParser_attribute_Missing_NAME_attribute_in_NODENAME_of_FILEDESC_FILENAME">Missing '[NAME]' attribute in [NODENAME] of [FILEDESC] "[FILENAME]".</string>"
+	<string name="AIXMLElementParser_attribute_Invalid_NAME_attribute_should_be_REQUIRED_in_NODENAME_of_FILEDESC_FILENAME">Invalid '[NAME]' attribute (should be '[REQUIRED]') in [NODENAME] of [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLElementParser_read_child_Invalid_uuid_in_FILEDESC_FILENAME">Invalid UUID in [FILEDESC] "[FILENAME]".</string>
+	<string name="AIXMLElementParser_read_child_Invalid_date_DATE_in_FILEDESC_FILENAME">Invalid DATE ([DATE]) in [FILEDESC] "[FILENAME]".</string>
+
+	<!-- AIArchetype exception alerts -->
+	<string name="AIArchetype_archetype_has_no_meta">archetype has no &lt;meta&gt; element.</string>
+	<string name="AIArchetype_MetaData_archetype_meta_has_no_ATTRIBUTE">archetype &lt;meta&gt; element has no '[ATTRIBUTE]' attribute.</string>
+
+  <string name="AIXMLdumpArchetypeXMLError">Failure dumping archetype to "[FILE]":</string>
+  <string name="AIXMLExportSuccess">Successfully exported wearable to "[FILE]".</string>
+  <string name="AIXMLExportWriteError">The export to file "[FILE]" failed:</string>
+  <string name="AIXMLImportRootVersionError">Fallo de Importación: el archivo "[FILE]" contiene datos linden_genepool XML con [TAG] erróneo. Se requiere Versión "[VERSIONMAJOR].0" o inferior.</string>
+  <string name="AIXMLImportDifferentGrid">La importación se ha realizado con exito, pero ten presente que el objeto vestible fue exportado desde el grid [EXPORTGRID] (y el grid actual es [CURRENTGRID]). ¡No se aplicaron las UUIDs de las Texturas!</string>
+  <string name="AIXMLImportMixedGrid">La importación se ha realizado con exito, pero ten presente que el objeto vestible fue exportado desde el grid [EXPORTGRID] (y el grid actual es [CURRENTGRID]).¡Se aplicaron las UUIDs de la Texturas pero quizás no existan aquí!</string>
+  <string name="AIXMLImportEmptyArchetype">Import warning: the file "[FILE]" contains a wearable of the selected type ([TYPE]), but contains no parameters or textures for that type. Nothing was imported.</string>
+  <string name="AIXMLImportWearableTypeMismatch">Aviso de Importación: el archivo "[FILE]" no contiene un objeto vestible de tipo [TYPE]. Éste contiene un arquetipo de tipo [ARCHETYPENAME]. Por favor, selecciona el tipo correcto antes de comenzar la importación.</string>
+  <string name="AIXMLImportError">Failed to import the [TYPE] wearable:</string>
+  <string name="AIXMLImportNoArchetypeError">No archetype found in wearable import file "[FILE]".</string>
+
 </strings>

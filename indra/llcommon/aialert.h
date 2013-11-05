@@ -1,6 +1,6 @@
 /**
  * @file aialert.h
- * @brief Declaration of AIArgs, AIAlertPrefix, AIAlertLine, AIAlert and AIAlertCode
+ * @brief Declaration of AIArgs and AIAlert classes.
  *
  * Copyright (c) 2013, Aleric Inglewood.
  *
@@ -26,6 +26,9 @@
  *
  *   02/11/2013
  *   Initial version, written by Aleric Inglewood @ SL
+ *
+ *   05/11/2013
+ *   Moved everything in namespace AIAlert, except AIArgs.
  */
 
 #ifndef AI_ALERT
@@ -40,28 +43,28 @@
 // Facility to throw errors that can easily be converted to an informative pop-up floater for the user.
 
 // Throw arbitrary class.
-#define   THROW_ALERT_CLASS(Alert, ...) throw Alert(AIAlertPrefix(),                                                       AIAlert::not_modal, __VA_ARGS__)
-#define  THROW_MALERT_CLASS(Alert, ...) throw Alert(AIAlertPrefix(),                                                           AIAlert::modal, __VA_ARGS__)
-#define  THROW_FALERT_CLASS(Alert, ...) throw Alert(AIAlertPrefix(__PRETTY_FUNCTION__, alert_line_pretty_function_prefix), AIAlert::not_modal, __VA_ARGS__)
-#define THROW_FMALERT_CLASS(Alert, ...) throw Alert(AIAlertPrefix(__PRETTY_FUNCTION__, alert_line_pretty_function_prefix),     AIAlert::modal, __VA_ARGS__)
+#define   THROW_ALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                     AIAlert::not_modal, __VA_ARGS__)
+#define  THROW_MALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                         AIAlert::modal, __VA_ARGS__)
+#define  THROW_FALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix), AIAlert::not_modal, __VA_ARGS__)
+#define THROW_FMALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix),     AIAlert::modal, __VA_ARGS__)
 
-// Shortcut to throw AIAlert.
-#define   THROW_ALERT(...)   THROW_ALERT_CLASS(AIAlert, __VA_ARGS__)
-#define  THROW_MALERT(...)  THROW_MALERT_CLASS(AIAlert, __VA_ARGS__)
-#define  THROW_FALERT(...)  THROW_FALERT_CLASS(AIAlert, __VA_ARGS__)
-#define THROW_FMALERT(...) THROW_FMALERT_CLASS(AIAlert, __VA_ARGS__)
+// Shortcut to throw AIAlert::Error.
+#define   THROW_ALERT(...)   THROW_ALERT_CLASS(AIAlert::Error, __VA_ARGS__)
+#define  THROW_MALERT(...)  THROW_MALERT_CLASS(AIAlert::Error, __VA_ARGS__)
+#define  THROW_FALERT(...)  THROW_FALERT_CLASS(AIAlert::Error, __VA_ARGS__)
+#define THROW_FMALERT(...) THROW_FMALERT_CLASS(AIAlert::Error, __VA_ARGS__)
 
-// Shortcut to throw AIAlertCode.
-#define   THROW_ALERTC(...)   THROW_ALERT_CLASS(AIAlertCode, __VA_ARGS__)
-#define  THROW_MALERTC(...)  THROW_MALERT_CLASS(AIAlertCode, __VA_ARGS__)
-#define  THROW_FALERTC(...)  THROW_FALERT_CLASS(AIAlertCode, __VA_ARGS__)
-#define THROW_FMALERTC(...) THROW_FMALERT_CLASS(AIAlertCode, __VA_ARGS__)
+// Shortcut to throw AIAlert::ErrorCode.
+#define   THROW_ALERTC(...)   THROW_ALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
+#define  THROW_MALERTC(...)  THROW_MALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
+#define  THROW_FALERTC(...)  THROW_FALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
+#define THROW_FMALERTC(...) THROW_FMALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
 
-// Shortcut to throw AIAlertCode with errno as code.
-#define   THROW_ALERTE(...) do { int errn = errno;   THROW_ALERT_CLASS(AIAlertCode, errn, __VA_ARGS__); } while(0)
-#define  THROW_MALERTE(...) do { int errn = errno;  THROW_MALERT_CLASS(AIAlertCode, errn, __VA_ARGS__); } while(0)
-#define  THROW_FALERTE(...) do { int errn = errno;  THROW_FALERT_CLASS(AIAlertCode, errn, __VA_ARGS__); } while(0)
-#define THROW_FMALERTE(...) do { int errn = errno; THROW_FMALERT_CLASS(AIAlertCode, errn, __VA_ARGS__); } while(0)
+// Shortcut to throw AIAlert::ErrorCode with errno as code.
+#define   THROW_ALERTE(...) do { int errn = errno;   THROW_ALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
+#define  THROW_MALERTE(...) do { int errn = errno;  THROW_MALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
+#define  THROW_FALERTE(...) do { int errn = errno;  THROW_FALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
+#define THROW_FMALERTE(...) do { int errn = errno; THROW_FMALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
 
 // Examples
 
@@ -70,18 +73,18 @@
 	//----------------------------------------------------------
 	// To show the alert box:
 
-	catch (AIAlert const& alert)
+	catch (AIAlert::Error const& error)
     {
-	   LLNotificationsUtil::add(alert);		// Optionally pass alert_line_pretty_function_prefix as second parameter to *suppress* that output.
+	   AIAlert::add(error);		// Optionally pass pretty_function_prefix as second parameter to *suppress* that output.
 	}
 
     // or, for example
 
-	catch (AIAlertCode const& alert)
+	catch (AIAlert::ErrorCode const& error)
     {
-	   if (alert.getCode() != EEXIST)
+	   if (error.getCode() != EEXIST)
 	   {
-		 LLNotificationsUtil::add(alert, alert_line_pretty_function_prefix);
+		 AIAlert::add(alert, AIAlert::pretty_function_prefix);
 	   }
 	}
 	//----------------------------------------------------------
@@ -89,15 +92,15 @@
 
 	THROW_ALERT("ExampleKey");																// A) Lookup "ExampleKey" in strings.xml and show translation.
 	THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second)(...etc...));		// B) Same as A, but replace [FIRST] with first, [SECOND] with second, etc.
-	THROW_ALERT("ExampleKey", alert);														// C) As A, but followed by a colon and a newline, and then the text of 'alert'.
-	THROW_ALERT(alert, "ExampleKey");														// D) The text of 'alert', followed by a colon and a newline and then as A.
-	THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second), alert);			// E) As B, but followed by a colon and a newline, and then the text of 'alert'.
-	THROW_ALERT(alert, "ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second));			// F) The text of 'alert', followed by a colon and a newline and then as B.
-	// where 'alert' is a caught AIAlert object (as above) in a rethrow.
+	THROW_ALERT("ExampleKey", error);														// C) As A, but followed by a colon and a newline, and then the text of 'error'.
+	THROW_ALERT(error, "ExampleKey");														// D) The text of 'error', followed by a colon and a newline and then as A.
+	THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second), error);			// E) As B, but followed by a colon and a newline, and then the text of 'error'.
+	THROW_ALERT(error, "ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second));			// F) The text of 'error', followed by a colon and a newline and then as B.
+	// where 'error' is a caught Error object (as above) in a rethrow.
 	// Prepend ALERT with M and/or F to make the alert box Modal and/or prepend the text with the current function name.
 	// For example,
 	THROW_MFALERT("ExampleKey", AIArgs("[FIRST]", first));	// Throw a Modal alert box that is prefixed with the current Function name.
-	// Append E after ALERT to throw an AIAlertCode class that contains the current errno.
+	// Append E after ALERT to throw an ErrorCode class that contains the current errno.
 	// For example,
 	THROW_FALERTE("ExampleKey", AIArgs("[FIRST]", first));	// Throw an alert box that is prefixed with the current Function name and pass errno to the catcher.
 
@@ -105,34 +108,6 @@
 
 //
 //===================================================================================================================================
-
-enum alert_line_type_nt
-{
-  alert_line_normal = 0,
-  alert_line_empty_prefix = 1,
-  alert_line_pretty_function_prefix = 2
-  // These must exist of single bits (a mask).
-};
-
-// An AIAlertPrefix currently comes only in two flavors:
-//
-// alert_line_empty_prefix           : An empty prefix.
-// alert_line_pretty_function_prefix : A function name prefix, this is the function from which the alert was thrown.
-
-class LL_COMMON_API AIAlertPrefix
-{
-  public:
-	AIAlertPrefix(void) : mType(alert_line_empty_prefix) { }
-	AIAlertPrefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
-
-	operator bool(void) const { return mType != alert_line_empty_prefix; }
-	alert_line_type_nt type(void) const { return mType; }
-	std::string const& str(void) const { return mStr; }
-
-  private:
-	std::string mStr;				// Literal text. For example a C++ function name.
-	alert_line_type_nt mType;		// The type of this prefix.
-};
 
 // A wrapper around LLStringUtil::format_map_t to allow constructing a dictionary
 // on one line by doing:
@@ -158,25 +133,62 @@ class LL_COMMON_API AIArgs
 	LLStringUtil::format_map_t const& operator*() const { return mArgs; }
 };
 
+namespace AIAlert
+{
+
+enum modal_nt
+{
+  not_modal,
+  modal
+};
+
+enum alert_line_type_nt
+{
+  normal = 0,
+  empty_prefix = 1,
+  pretty_function_prefix = 2
+  // These must exist of single bits (a mask).
+};
+
+// An Prefix currently comes only in two flavors:
+//
+// empty_prefix           : An empty prefix.
+// pretty_function_prefix : A function name prefix, this is the function from which the alert was thrown.
+
+class LL_COMMON_API Prefix
+{
+  public:
+	Prefix(void) : mType(empty_prefix) { }
+	Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
+
+	operator bool(void) const { return mType != empty_prefix; }
+	alert_line_type_nt type(void) const { return mType; }
+	std::string const& str(void) const { return mStr; }
+
+  private:
+	std::string mStr;				// Literal text. For example a C++ function name.
+	alert_line_type_nt mType;		// The type of this prefix.
+};
+
 // A class that represents one line with its replacements.
 // The string mXmlDesc shall be looked up in strings.xml.
 // This is not done as part of this class because LLTrans::getString
 // is not part of llcommon.
 
-class LL_COMMON_API AIAlertLine
+class LL_COMMON_API Line
 {
   private:
 	bool mNewline;					// Prepend this line with a newline if set.
 	std::string mXmlDesc;			// The keyword to look up in string.xml.
 	AIArgs mArgs;					// Replacement map.
-	alert_line_type_nt mType;		// The type of this line: alert_line_normal for normal lines, other for prefixes.
+	alert_line_type_nt mType;		// The type of this line: normal for normal lines, other for prefixes.
 
   public:
-	AIAlertLine(std::string const& xml_desc, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mType(alert_line_normal) { }
-	AIAlertLine(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(alert_line_normal) { }
-	AIAlertLine(AIAlertPrefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc("AIPrefix"), mArgs("[PREFIX]", prefix.str()), mType(prefix.type()) { }
+	Line(std::string const& xml_desc, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mType(normal) { }
+	Line(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(normal) { }
+	Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc("AIPrefix"), mArgs("[PREFIX]", prefix.str()), mType(prefix.type()) { }
 	// The destructor may not throw.
-	~AIAlertLine() throw() { }
+	~Line() throw() { }
 
 	// Prepend a newline before this line.
 	void set_newline(void) { mNewline = true; }
@@ -188,7 +200,7 @@ class LL_COMMON_API AIAlertLine
 
 	// Accessors.
 	bool suppressed(unsigned int suppress_mask) const { return (suppress_mask & mType) != 0; }
-	bool is_prefix(void) const { return mType != alert_line_normal; }
+	bool is_prefix(void) const { return mType != normal; }
 };
 
 // This class is used to throw an error that will cause
@@ -200,82 +212,82 @@ class LL_COMMON_API AIAlertLine
 // The class represents multiple lines, each line is to be translated and catenated,
 // separated by newlines, and then written to an alert box. This is not done as part
 // of this class because LLTrans::getString and LLNotification is not part of llcommon.
-// Instead call LLNotificationUtil::add(AIAlert const&).
+// Instead call LLNotificationUtil::add(Error const&).
 
-class LL_COMMON_API AIAlert : public std::exception
+class LL_COMMON_API Error : public std::exception
 {
   public:
-	typedef std::deque<AIAlertLine> lines_type;
-	enum modal_nt { not_modal, modal };
+	typedef std::deque<Line> lines_type;
 
 	// The destructor may not throw.
-	~AIAlert() throw() { }
+	~Error() throw() { }
 
 	// Accessors.
 	lines_type const& lines(void) const { return mLines; }
 	bool is_modal(void) const { return mModal == modal; }
 
 	// A string with zero or more replacements.
-	AIAlert(AIAlertPrefix const& prefix, modal_nt modal,
-		    std::string const& xml_desc, AIArgs const& args = AIArgs());
+	Error(Prefix const& prefix, modal_nt type,
+		  std::string const& xml_desc, AIArgs const& args = AIArgs());
 
 	// Same as above bit prepending the message with the text of another alert.
-	AIAlert(AIAlertPrefix const& prefix, modal_nt modal,
-		    AIAlert const& alert,
-		    std::string const& xml_desc, AIArgs const& args = AIArgs());
+	Error(Prefix const& prefix, modal_nt type,
+		  Error const& alert,
+		  std::string const& xml_desc, AIArgs const& args = AIArgs());
 
 	// Same as above but appending the message with the text of another alert.
 	// (no args)
-	AIAlert(AIAlertPrefix const& prefix, modal_nt modal,
-		    std::string const& xml_desc,
-		    AIAlert const& alert);
+	Error(Prefix const& prefix, modal_nt type,
+		  std::string const& xml_desc,
+		  Error const& alert);
 	// (with args)
-	AIAlert(AIAlertPrefix const& prefix, modal_nt modal,
-		    std::string const& xml_desc, AIArgs const& args,
-		    AIAlert const& alert);
+	Error(Prefix const& prefix, modal_nt type,
+		  std::string const& xml_desc, AIArgs const& args,
+		  Error const& alert);
 
   private:
 	lines_type mLines;								// The lines (or prefixes) of text to be displayed, each consisting on a keyword (to be looked up in strings.xml) and a replacement map.
 	modal_nt mModal;								// If true, make the alert box a modal floater.
 };
 
-// Same as AIAlert but allows to pass an additional error code.
+// Same as Error but allows to pass an additional error code.
 
-class LL_COMMON_API AIAlertCode : public AIAlert
+class LL_COMMON_API ErrorCode : public Error
 {
   private:
 	int mCode;
 
   public:
 	// The destructor may not throw.
-	~AIAlertCode() throw() { }
+	~ErrorCode() throw() { }
 
 	// Accessor.
 	int getCode(void) const { return mCode; }
 
 	// A string with zero or more replacements.
-	AIAlertCode(AIAlertPrefix const& prefix, modal_nt modal, int code,
-		        std::string const& xml_desc, AIArgs const& args = AIArgs()) :
-	  AIAlert(prefix, modal, xml_desc, args) { }
+	ErrorCode(Prefix const& prefix, modal_nt type, int code,
+		      std::string const& xml_desc, AIArgs const& args = AIArgs()) :
+	  Error(prefix, modal, xml_desc, args) { }
 
 	// Same as above bit prepending the message with the text of another alert.
-	AIAlertCode(AIAlertPrefix const& prefix, modal_nt modal, int code,
-		        AIAlert const& alert,
-		        std::string const& xml_desc, AIArgs const& args = AIArgs()) :
-	  AIAlert(prefix, modal, alert, xml_desc, args) { }
+	ErrorCode(Prefix const& prefix, modal_nt type, int code,
+		      Error const& alert,
+		      std::string const& xml_desc, AIArgs const& args = AIArgs()) :
+	  Error(prefix, modal, alert, xml_desc, args) { }
 
 	// Same as above but appending the message with the text of another alert.
 	// (no args)
-	AIAlertCode(AIAlertPrefix const& prefix, modal_nt modal, int code,
-		        std::string const& xml_desc,
-		        AIAlert const& alert) :
-	  AIAlert(prefix, modal, xml_desc, alert) { }
+	ErrorCode(Prefix const& prefix, modal_nt type, int code,
+		      std::string const& xml_desc,
+		      Error const& alert) :
+	  Error(prefix, modal, xml_desc, alert) { }
 	// (with args)
-	AIAlertCode(AIAlertPrefix const& prefix, modal_nt modal, int code,
-		        std::string const& xml_desc, AIArgs const& args,
-		        AIAlert const& alert) :
-	  AIAlert(prefix, modal, xml_desc, args, alert) { }
-
+	ErrorCode(Prefix const& prefix, modal_nt type, int code,
+		      std::string const& xml_desc, AIArgs const& args,
+		      Error const& alert) :
+	  Error(prefix, modal, xml_desc, args, alert) { }
 };
+
+} // namespace AIAlert
 
 #endif // AI_ALERT

@@ -73,24 +73,7 @@
 		</form>
 	</template>
 
-	<notification name="AIXMLImportRootVersionError">
-		Fallo de Importación: el archivo &quot;[FILE]&quot; contiene datos linden_genepool XML con [TAG] erróneo. Se requiere Versión &quot;[VERSIONMAJOR].0&quot; o inferior.
-	</notification>
 
-	<notification name="AIXMLImportDifferentGrid">
-		La importación se ha realizado con exito, pero ten presente que el objeto vestible fue exportado desde el grid [EXPORTGRID] (y el grid actual es [CURRENTGRID]). ¡No se aplicaron las UUIDs de las Texturas!
-	</notification>
-
-	<notification name="AIXMLImportMixedGrid">
-		La importación se ha realizado con exito, pero ten presente que el objeto vestible fue exportado desde el grid [EXPORTGRID] (y el grid actual es [CURRENTGRID]).¡Se aplicaron las UUIDs de la Texturas pero quizás no existan aquí!
-	</notification>
-
-	<notification name="AIXMLImportWearableTypeMismatch">
-		Aviso de Importación: el archivo &quot;[FILE]&quot; no contiene un objeto vestible de tipo [TYPE].
-Éste contiene un arquetipo de tipo [ARCHETYPENAME]. Por favor, selecciona el tipo correcto antes de comenzar la importación.
-	</notification>
-
-	
 	<notification name="MediaAlert">
 		El propietario de esta parcela ha solicitado que el siguiente URL de [TYPE] sea cargado en tu visor:
 

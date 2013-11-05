@@ -1480,12 +1480,12 @@ LLNotificationPtr LLNotifications::add(const LLNotification::Params& p)
 	return pNotif;
 }
 
-LLNotificationPtr LLNotifications::add(AIAlert const& alert, unsigned int suppress_mask)
+LLNotificationPtr LLNotifications::add(AIAlert::Error const& error, int type, unsigned int suppress_mask)
 {
 	std::string alert_text;
 	bool suppress_newlines = false;
 	bool last_was_prefix = false;
-	for (AIAlert::lines_type::const_iterator line = alert.lines().begin(); line != alert.lines().end(); ++line)
+	for (AIAlert::Error::lines_type::const_iterator line = error.lines().begin(); line != error.lines().end(); ++line)
 	{
 	  // Even if a line is suppressed, we print its leading newline if requested, but never more than one.
 	  if (!suppress_newlines && line->prepend_newline())
@@ -1503,7 +1503,7 @@ LLNotificationPtr LLNotifications::add(AIAlert const& alert, unsigned int suppre
 	}
 	LLSD substitutions = LLSD::emptyMap();
 	substitutions["[PAYLOAD]"] = alert_text;
-	return add(LLNotification::Params(alert.is_modal() ? "AIAlertModal" : "AIAlert").substitutions(substitutions));
+	return add(LLNotification::Params((type == AIAlert::modal || error.is_modal()) ? "AIAlertModal" : "AIAlert").substitutions(substitutions));
 }
 
 

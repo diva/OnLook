@@ -8412,9 +8412,9 @@ void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_b
 	  }
 #endif
 	}
-	catch(AIAlert const& alert)
+	catch (AIAlert::Error const& error)
 	{
-		LLNotificationsUtil::add(AIAlert(AIAlertPrefix(), AIAlert::modal, "AIXMLdumpArchetypeXMLError", AIArgs("[FILENAME]", fullpath), alert));
+		AIAlert::add_modal("AIXMLdumpArchetypeXMLError", AIArgs("[FILE]", fullpath), error);
 	}
 }
 

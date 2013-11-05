@@ -4404,8 +4404,14 @@ Try enclosing path to the editor with double quotes.
 	<string name="AIArchetype_archetype_has_no_meta">archetype has no &lt;meta&gt; element.</string>
 	<string name="AIArchetype_MetaData_archetype_meta_has_no_ATTRIBUTE">archetype &lt;meta&gt; element has no '[ATTRIBUTE]' attribute.</string>
 
-  <string name="AIXMLdumpArchetypeXMLError">Failure dumping archetype to "[FILENAME]":</string>
+  <string name="AIXMLdumpArchetypeXMLError">Failure dumping archetype to "[FILE]":</string>
+  <string name="AIXMLExportSuccess">Successfully exported wearable to "[FILE]".</string>
   <string name="AIXMLExportWriteError">The export to file "[FILE]" failed:</string>
+  <string name="AIXMLImportRootVersionError">Import Failure: the file "[FILE]" contains linden_genepool XML data with the wrong [TAG]. Version "[VERSIONMAJOR].0" or less is required.</string>
+  <string name="AIXMLImportDifferentGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!</string>
+  <string name="AIXMLImportMixedGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have been applied but might not exist here!</string>
+  <string name="AIXMLImportEmptyArchetype">Import warning: the file "[FILE]" contains a wearable of the selected type ([TYPE]), but contains no parameters or textures for that type. Nothing was imported.</string>
+  <string name="AIXMLImportWearableTypeMismatch">Import warning: the file "[FILE]" does not contain a wearable of type [TYPE]. It contains an archetype of type [ARCHETYPENAME]. Please select the correct type before importing.</string>
   <string name="AIXMLImportError">Failed to import the [TYPE] wearable:</string>
   <string name="AIXMLImportNoArchetypeError">No archetype found in wearable import file "[FILE]".</string>
 

@@ -336,8 +336,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 
 	std::string const filename = filepicker->getFilename();
 
-	LLSD args(LLSD::emptyMap());
-	args["FILE"] = gDirUtilp->getBaseFileName(filename);
+	AIArgs args("[FILE]", gDirUtilp->getBaseFileName(filename));
 
 	bool found_param = false;
 	bool found_texture = false;
@@ -362,11 +361,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 
 		if (!LLStringUtil::convertToU32(metaversion, metaversion_major) || metaversion_major > 1)
 		{
-			llwarns << "Invalid or incompatible linden_genepool metaversion: " << metaversion << " in file: " << filename << llendl;
-			args["TAG"] = "metaversion";
-			args["VERSIONMAJOR"] = "1";
-			LLNotificationsUtil::add("AIXMLImportRootVersionError", args);
-			return;
+			THROW_MALERT("AIXMLImportRootVersionError", args("[TAG]", "metaversion")("[VERSIONMAJOR]", "1"));
 		}
 
 		//-------------------------------------------------------------------------
@@ -436,9 +431,9 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 			}
 		}
 	}
-	catch (AIAlert const& alert)
+	catch (AIAlert::Error const& error)
 	{
-		LLNotificationsUtil::add(AIAlert(AIAlertPrefix(), AIAlert::modal, "AIXMLImportError", AIArgs("[TYPE]", label), alert));
+		AIAlert::add_modal("AIXMLImportError", AIArgs("[TYPE]", label), error);
 		return;
 	}
 
@@ -449,28 +444,25 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 		panel_edit_wearable->updateScrollingPanelUI();
 		if (found_texture && different_grid)
 		{
-			args["EXPORTGRID"] = gridnick;
-			args["CURRENTGRID"] = gHippoGridManager->getConnectedGrid()->getGridNick();
+			args("[EXPORTGRID]", gridnick);
+			args("[CURRENTGRID]", gHippoGridManager->getConnectedGrid()->getGridNick());
 			if (mixed_grids)
 			{
-				LLNotificationsUtil::add("AIXMLImportMixedGrid", args);
+				AIAlert::add_modal("AIXMLImportMixedGrid", args);
 			}
 			else
 			{
-				LLNotificationsUtil::add("AIXMLImportDifferentGrid", args);
+				AIAlert::add_modal("AIXMLImportDifferentGrid", args);
 			}
 		}
 	}
 	else if (found_type)
 	{
-		args["TYPE"] = label;
-		LLNotificationsUtil::add("AIXMLImportEmptyArchetype", args);
+		AIAlert::add("AIXMLImportEmptyArchetype", args("[TYPE]", label));
 	}
 	else if (!wearable_types.empty())
 	{
-		args["TYPE"] = label;
-		args["ARCHETYPENAME"] = wearable_types;
-		LLNotificationsUtil::add("AIXMLImportWearableTypeMismatch", args);
+		AIAlert::add("AIXMLImportWearableTypeMismatch", args("[TYPE]", label)("[ARCHETYPENAME]", wearable_types));
 	}
 }
 
@@ -527,24 +519,21 @@ void LLFloaterCustomize::onBtnExport_continued(LLViewerWearable* edit_wearable, 
 	bool success = false;
 	try
 	{
-		LLFILE* outfile = AIFile::fopen(filename, "wb");
+		AIFile outfile(filename, "wb");
 
 		AIXMLLindenGenepool linden_genepool(outfile);
 		linden_genepool.child(edit_wearable->getArchetype());
 
-		AIFile::close(outfile);
 		success = true;
 	}
-	catch (AIAlert const& alert)
+	catch (AIAlert::Error const& error)
 	{
-		LLNotificationsUtil::add(AIAlert(AIAlertPrefix(), AIAlert::modal, "AIXMLExportWriteError", AIArgs("[FILE]", filename), alert));
+		AIAlert::add_modal("AIXMLExportWriteError", AIArgs("[FILE]", filename), error);
 	}
 
 	if (success)
 	{
-		LLSD args(LLSD::emptyMap());
-		args["FILE"] = filename;
-		LLNotificationsUtil::add("AIXMLExportSuccess", args);
+		AIAlert::add_modal("AIXMLExportSuccess", AIArgs("[FILE]", filename));
 	}
 }
 

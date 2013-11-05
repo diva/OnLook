@@ -55,7 +55,7 @@ AIFile::~AIFile()
 	int errn = errno; \
 	std::ostringstream error; \
 	error << LLFile::strerr(errn) << " (" << errn << ')'; \
-	THROW_MALERT_CLASS(AIAlertCode, errn, __VA_ARGS__ ("[ERROR]", error.str())); \
+	THROW_MALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__ ("[ERROR]", error.str())); \
   } while(0)
 
 //static
