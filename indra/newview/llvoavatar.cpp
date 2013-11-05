@@ -723,15 +723,11 @@ const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const
 		if(pAvatar->isFullyLoaded() && pTextureEntry->getGlow() > 0.0)
 		{
 			///llinfos << "Using new client identifier." << llendl;
-			U8 tag_buffer[UUID_BYTES+1];
-			memset(&tag_buffer, 0, UUID_BYTES);
-			memcpy(&tag_buffer[0], &id.mData, UUID_BYTES);
-			tag_buffer[UUID_BYTES] = 0;
-			U32 tag_len = llmin((S32)strlen((const char*)&tag_buffer[0]), UUID_BYTES);
-			std::string client((char*)&tag_buffer[0], tag_len);
+			U32 tag_len = strnlen((const char*)&id.mData[0], UUID_BYTES);
+			std::string client((const char*)&id.mData[0], tag_len);
 			LLStringFn::replace_ascii_controlchars(client, LL_UNKNOWN_CHAR);
 			LLSD info;
-			info.insert("name", std::string((char*)&tag_buffer[0], tag_len));
+			info.insert("name", client);
 			info.insert("color", pTextureEntry->getColor().getValue());
 			return info;
 		}
