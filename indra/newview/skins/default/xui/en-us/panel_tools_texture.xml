@@ -1,215 +1,449 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel border="true" bottom="-383" follows="left|top|right|bottom" height="367"
-     label="Texture" left="1" mouse_opaque="false" name="Texture" width="270">
-	<texture_picker allow_no_texture="true" allow_invisible_texture="true" bottom="-90" can_apply_immediately="true"
-	     default_image_name="Default" follows="left|top" height="80" label="Texture"
-	     left="10" mouse_opaque="true" name="texture control"
-	     tool_tip="Click to choose a picture" width="64" />
-	<color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom="-90"
-	     can_apply_immediately="true" color="1, 1, 1, 1" follows="left|top"
-	     height="80" label="Color" left_delta="90" mouse_opaque="true"
-	     name="colorswatch" tool_tip="Click to open Color Picker" width="64" />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-11" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="180"
-	     mouse_opaque="true" name="color trans" v_pad="0" width="80">
-		Transparency %
-	</text>
-	<spinner bottom_delta="-20" decimal_digits="0" follows="left|top" height="16"
-	     increment="2" initial_val="0" left="180" max_val="100" min_val="0"
-	     mouse_opaque="true" name="ColorTrans" width="80" />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom_delta="-12" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10"
-	     left="180" mouse_opaque="true" name="glow label" v_pad="0" width="80">
-		Glow
-	</text>
-	<spinner bottom_delta="-20" decimal_digits="2" follows="left|top" height="16"
-	     increment="0.1" initial_val="0" left="180" max_val="1"
-	     min_val="0" mouse_opaque="true" name="glow" width="80" />
-	<check_box bottom_delta="-23" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Full Bright" left="180" mouse_opaque="true"
-	     name="checkbox fullbright" width="81" />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-104" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
-	     mouse_opaque="true" name="tex gen" v_pad="0" width="90">
-		Mapping
-	</text>
-	<combo_box allow_text_entry="false" bottom_delta="-22" follows="left|top" height="18"
-	     left="10" max_chars="20" mouse_opaque="true" name="combobox texgen"
-	     width="80">
-		<combo_item name="Default" value="Default">
-			Default
-		</combo_item>
-		<combo_item name="Planar" value="Planar">
-			Planar
-		</combo_item>
-	</combo_box>
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-104" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="100"
-	     mouse_opaque="true" name="label shininess" v_pad="0" width="70">
-		Shininess
-	</text>
-	<combo_box allow_text_entry="false" bottom_delta="-22" follows="left|top" height="18"
-	     left="100" max_chars="20" mouse_opaque="true" name="combobox shininess"
-	     width="70">
-		<combo_item name="None" value="None">
-			None
-		</combo_item>
-		<combo_item name="Low" value="Low">
-			Low
-		</combo_item>
-		<combo_item name="Medium" value="Medium">
-			Medium
-		</combo_item>
-		<combo_item name="High" value="High">
-			High
-		</combo_item>
-	</combo_box>
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-104" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="180"
-	     mouse_opaque="true" name="label bumpiness" v_pad="0" width="80">
-		Bumpiness
-	</text>
-	<combo_box allow_text_entry="false" bottom_delta="-22" follows="left|top" height="18"
-	     left="180" max_chars="20" mouse_opaque="true" name="combobox bumpiness"
-	     width="80">
-		<combo_item name="None" value="None">
-			None
-		</combo_item>
-		<combo_item name="Brightness" value="Brightness">
-			Brightness
-		</combo_item>
-		<combo_item name="Darkness" value="Darkness">
-			Darkness
-		</combo_item>
-		<combo_item name="woodgrain" value="woodgrain">
-			woodgrain
-		</combo_item>
-		<combo_item name="bark" value="bark">
-			bark
-		</combo_item>
-		<combo_item name="bricks" value="bricks">
-			bricks
-		</combo_item>
-		<combo_item name="checker" value="checker">
-			checker
-		</combo_item>
-		<combo_item name="concrete" value="concrete">
-			concrete
-		</combo_item>
-		<combo_item name="crustytile" value="crustytile">
-			crustytile
-		</combo_item>
-		<combo_item name="cutstone" value="cutstone">
-			cutstone
-		</combo_item>
-		<combo_item name="discs" value="discs">
-			discs
-		</combo_item>
-		<combo_item name="gravel" value="gravel">
-			gravel
-		</combo_item>
-		<combo_item name="petridish" value="petridish">
-			petridish
-		</combo_item>
-		<combo_item name="siding" value="siding">
-			siding
-		</combo_item>
-		<combo_item name="stonetile" value="stonetile">
-			stonetile
-		</combo_item>
-		<combo_item name="stucco" value="stucco">
-			stucco
-		</combo_item>
-		<combo_item name="suction" value="suction">
-			suction
-		</combo_item>
-		<combo_item name="weave" value="weave">
-			weave
-		</combo_item>
-	</combo_box>
-	<check_box bottom="-148" follows="left|top" font="SansSerifSmall" height="16"
-		initial_value="false" enabled="false" label="Align planar textures"
-		left="8" mouse_opaque="true" name="checkbox planar align" width="160"
-		tool_tip="Aligns textures on all selected faces to the last selected face. Requires Planar texture mapping." />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-158" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
-	     mouse_opaque="true" name="tex scale" v_pad="0" width="160">
-		Repeats per Face
-	</text>
-	<spinner bottom="-178" decimal_digits="5" follows="left|top" height="16" increment="0.1"
-	     initial_val="0" label="Horizontal (U)" label_width="90" left="20"
-	     max_val="1000" min_val="0" mouse_opaque="true" name="TexScaleU" width="160" />
-	<check_box bottom="-179" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Flip" left_delta="170" mouse_opaque="true"
-	     name="checkbox flip s" width="70" />
-	<spinner bottom="-196" decimal_digits="5" follows="left|top" height="16" increment="0.1"
-	     initial_val="0" label="Vertical (V)" label_width="90" left="20"
-	     max_val="1000" min_val="0" mouse_opaque="true" name="TexScaleV" width="160" />
-	<check_box bottom="-197" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Flip" left_delta="170" mouse_opaque="true"
-	     name="checkbox flip t" width="70" />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-208" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
-	     mouse_opaque="true" name="tex rotate" v_pad="0" width="102">
-		Rotation (degrees)
-	</text>
-	<spinner bottom="-214" decimal_digits="2" follows="left|top" height="16" increment="1"
-	     initial_val="0" left="112" max_val="9999" min_val="-9999"
-	     mouse_opaque="true" name="TexRot" width="68" />
-	<string name="string repeats per meter">
-		Repeats Per Meter
-	</string>
-	<string name="string repeats per face">
-		Repeats Per Face
-	</string>
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-226" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
-	     mouse_opaque="true" name="rpt" v_pad="0" width="160">
-		Repeats Per Meter
-	</text>
-	<spinner bottom="-232" decimal_digits="1" follows="left|top" height="16" increment="0.1"
-	     initial_val="1" left="112" max_val="10" min_val="0.1" mouse_opaque="true"
-	     name="rptctrl" width="68" />
-	<button bottom="-232" follows="left|top" font="SansSerifSmall" halign="center"
-	     height="20" label="Apply" label_selected="Apply" left_delta="78"
-	     mouse_opaque="true" name="button apply" scale_image="TRUE" width="68" />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-244" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
-	     mouse_opaque="true" name="tex offset" v_pad="0" width="160">
-		Offset
-	</text>
-	<spinner bottom="-264" decimal_digits="4" follows="top" height="16" increment="0.01" initial_val="0" label="Horizontal (U)" label_width="90" left="20"
-	     max_val="1" min_val="-1" mouse_opaque="true" name="TexOffsetU" width="160"/>
-	<spinner bottom_delta="-18" decimal_digits="4" follows="top" height="16" increment="0.01" initial_val="0" label="Vertical (V)" label_width="90"
-	     left="20" max_val="1" min_val="-1" name="TexOffsetV"
-	     width="160"/>
-	<text bottom="-244" v_pad="0" drop_shadow_visible="true" follows="left|top" height="10" left="185" width="85" name="textbox params">Texture Params</text>
-	<button bottom_delta="-24" follows="top|right" font="SansSerifSmall" halign="center"
-	     height="20" label="Copy" left_delta="5" mouse_opaque="true" name="copytextures"  enabled="true"
-	     tool_tip="Copy Texture Params from Clipboard"  width="68" />
-	<button bottom_delta="-20" follows="top" height="20" label="Paste" name="pastetextures" tool_tip="Paste Texture Params from Clipboard"  width="68" />
+<panel
+         border="true"
+         bottom="-383"
+         follows="all"
+         height="367"
+         label="Texture"
+         left="1"
+         mouse_opaque="false"
+         help_topic="toolbox_texture_tab"
+         name="Texture"
+         width="270">
+            <panel.string
+             name="string repeats per meter">
+                Repeats Per Meter
+            </panel.string>
+            <panel.string
+             name="string repeats per face">
+                Repeats Per Face
+            </panel.string>
+            <texture_picker
+             allow_no_texture="true"
+             allow_invisible_texture="true"
+             bottom="-90"
+             can_apply_immediately="true"
+             follows="left|top"
+             height="80"
+             label="Texture"
+             left="10"
+             name="texture control"
+             tool_tip="Click to choose a picture"
+             width="64" />
+            <color_swatch
+             border_color="0.45098, 0.517647, 0.607843, 1"
+             bottom="-90"
+             can_apply_immediately="true"
+             color="1, 1, 1, 1"
+             follows="left|top"
+             height="80"
+             label="Color"
+             left_delta="90"
+             name="colorswatch"
+             tool_tip="Click to open Color Picker"
+             width="64" />
+            <text
+             bottom="-11"
+             follows="left|top"
+             height="10"
+             left="180"
+             name="color trans"
 
-	<text
+             width="80">
+                Transparency %
+            </text>
+            <spinner
+             bottom_delta="-20"
+             decimal_digits="0"
+             follows="left|top"
+             height="16"
+             increment="2"
+             initial_val="0"
+             left="180"
+             max_val="100"
+             min_val="0"
+             name="ColorTrans"
+             width="80" />
+            <text
+             bottom_delta="-12"
+             follows="left|top"
+             height="10"
+             left="180"
+             name="glow label"
+             width="80">
+                Glow
+            </text>
+            <spinner
+             bottom_delta="-20"
+             decimal_digits="2"
+             follows="left|top"
+             height="16"
+             increment="0.1"
+             initial_val="0"
+             left="180"
+             max_val="1"
+             min_val="0"
+             name="glow"
+             width="80" />
+            <check_box
+             bottom_delta="-23"
+             follows="left|top"
+             height="16"
+             label="Full Bright"
+             left="180"
+             name="checkbox fullbright"
+             width="81" />
+            <text
+             bottom="-104"
+             follows="left|top"
+             height="10"
+             left="10"
+             name="tex gen"
+             width="90">
+                Mapping
+            </text>
+            <combo_box
+             bottom_delta="-22"
+             follows="left|top"
+             height="18"
+             left="10"
+             name="combobox texgen"
+             width="80">
+                <combo_box.item
+                 label="Default"
+                 name="Default"
+                 value="Default" />
+                <combo_box.item
+                 label="Planar"
+                 name="Planar"
+                 value="Planar" />
+            </combo_box>
+            <text
+             bottom="-104"
+             follows="left|top"
+             height="10"
+             left="100"
+             name="label shininess"
+             width="70">
+                Shininess
+            </text>
+            <combo_box
+             bottom_delta="-22"
+             follows="left|top"
+             height="18"
+             left="100"
+             name="combobox shininess"
+             width="70">
+                <combo_box.item
+                 label="None"
+                 name="None"
+                 value="None" />
+                <combo_box.item
+                 label="Low"
+                 name="Low"
+                 value="Low" />
+                <combo_box.item
+                 label="Medium"
+                 name="Medium"
+                 value="Medium" />
+                <combo_box.item
+                 label="High"
+                 name="High"
+                 value="High" />
+              <!--
+                 NORSPEC-182, ensure item doesn't show up in menu until it should
+                <combo_box.item
+                 label="Use texture"
+                 name="Use texture"
+                 value="Use texture" />
+                 -->
+            </combo_box>
+            <text
+             bottom="-104"
+             follows="left|top"
+             height="10"
+             left="180"
+             name="label bumpiness"
+             width="80">
+                Bumpiness
+            </text>
+            <combo_box
+             bottom_delta="-22"
+             follows="left|top"
+             height="18"
+             left="180"
+             name="combobox bumpiness"
+             width="80">
+                <combo_box.item
+                 label="None"
+                 name="None"
+                 value="None" />
+                <combo_box.item
+                 label="Brightness"
+                 name="Brightness"
+                 value="Brightness" />
+                <combo_box.item
+                 label="Darkness"
+                 name="Darkness"
+                 value="Darkness" />
+                <combo_box.item
+                 label="woodgrain"
+                 name="woodgrain"
+                 value="woodgrain" />
+                <combo_box.item
+                 label="bark"
+                 name="bark"
+                 value="bark" />
+                <combo_box.item
+                 label="bricks"
+                 name="bricks"
+                 value="bricks" />
+                <combo_box.item
+                 label="checker"
+                 name="checker"
+                 value="checker" />
+                <combo_box.item
+                 label="concrete"
+                 name="concrete"
+                 value="concrete" />
+                <combo_box.item
+                 label="crustytile"
+                 name="crustytile"
+                 value="crustytile" />
+                <combo_box.item
+                 label="cutstone"
+                 name="cutstone"
+                 value="cutstone" />
+                <combo_box.item
+                 label="discs"
+                 name="discs"
+                 value="discs" />
+                <combo_box.item
+                 label="gravel"
+                 name="gravel"
+                 value="gravel" />
+                <combo_box.item
+                 label="petridish"
+                 name="petridish"
+                 value="petridish" />
+                <combo_box.item
+                 label="siding"
+                 name="siding"
+                 value="siding" />
+                <combo_box.item
+                 label="stonetile"
+                 name="stonetile"
+                 value="stonetile" />
+                <combo_box.item
+                 label="stucco"
+                 name="stucco"
+                 value="stucco" />
+                <combo_box.item
+                 label="suction"
+                 name="suction"
+                 value="suction" />
+                <combo_box.item
+                 label="weave"
+                 name="weave"
+                 value="weave" />
+              <!--
+                 NORSPEC-182, ensure item doesn't show up in menu until it should
+                <combo_box.item
+                 label="Use texture"
+                 name="Use texture"
+                 value="Use texture" />
+                 -->
+            </combo_box>
+            <check_box
+             bottom="-148"
+             follows="left|top"
+             height="16"
+             enabled="false"
+             label="Align planar textures"
+             left="8"
+             name="checkbox planar align"
+             width="160"
+             tool_tip="Aligns textures on all selected faces to the last selected face. Requires Planar texture mapping." />
+            <text
+             bottom="-158"
+             follows="left|top"
+             height="10"
+             left="10"
+             name="tex scale"
+             width="160">
+                Repeats per Face
+            </text>
+            <spinner
+             bottom="-178"
+             decimal_digits="5"
+             follows="left|top"
+             height="16"
+             increment="0.1"
+             initial_val="0"
+             label="Horizontal (U)"
+             label_width="90"
+             left="20"
+             max_val="1000"
+             min_val="0"
+             name="TexScaleU"
+             width="160" />
+            <check_box
+             bottom="-179"
+             follows="left|top"
+             height="16"
+             label="Flip"
+             left_delta="170"
+             name="checkbox flip s"
+             width="70" />
+            <spinner
+             bottom="-196"
+             decimal_digits="5"
+             follows="left|top"
+             height="16"
+             increment="0.1"
+             initial_val="0"
+             label="Vertical (V)"
+             label_width="90"
+             left="20"
+             max_val="1000"
+             min_val="0"
+             name="TexScaleV"
+             width="160" />
+            <check_box
+             bottom="-197"
+             follows="left|top"
+             height="16"
+             label="Flip"
+             left_delta="170"
+             name="checkbox flip t"
+             width="70" />
+            <text
+             bottom="-208"
+             follows="left|top"
+             height="10"
+             left="10"
+             name="tex rotate"
+             width="102">
+                Rotation (degrees)
+            </text>
+            <spinner
+             bottom="-214"
+             decimal_digits="2"
+             follows="left|top"
+             height="16"
+             increment="1"
+             initial_val="0"
+             left="112"
+             max_val="9999"
+             min_val="-9999"
+             name="TexRot"
+             width="68" />
+            <text
+             bottom="-226"
+             follows="left|top"
+             height="10"
+             left="10"
+             name="rpt"
+             width="160">
+                Repeats Per Meter
+            </text>
+            <spinner
+             bottom="-232"
+             decimal_digits="1"
+             follows="left|top"
+             height="16"
+             increment="0.1"
+             initial_val="1"
+             left="112"
+             max_val="10"
+             min_val="0.1"
+             name="rptctrl"
+             width="68" />
+            <button
+             bottom="-232"
+             follows="left|top"
+             font="SansSerifSmall"
+             height="20"
+             label="Apply"
+             left_delta="78"
+             name="button apply"
+             width="68" />
+            <text
+             bottom="-244"
+             follows="left|top"
+             height="10"
+             left="10"
+             name="tex offset"
+             width="160">
+                Offset
+            </text>
+            <spinner
+             bottom="-264"
+             decimal_digits="4"
+             follows="top"
+             height="16"
+             increment="0.01"
+             initial_val="0"
+             label="Horizontal (U)"
+             label_width="90"
+             left="20"
+             max_val="1"
+             min_val="-1"
+             name="TexOffsetU"
+             width="160"/>
+            <spinner
+             bottom_delta="-18"
+             decimal_digits="4"
+             follows="top"
+             height="16"
+             increment="0.01"
+             initial_val="0"
+             label="Vertical (V)"
+             label_width="90"
+             left="20"
+             max_val="1"
+             min_val="-1"
+             name="TexOffsetV"
+             width="160"/>
+            <text
+             bottom="-244"
+             follows="left|top"
+             height="10"
+             left="185"
+             width="85"
+             name="textbox params">
+               Texture Params
+            </text>
+            <button
+             bottom_delta="-24"
+             follows="top|right"
+             font="SansSerifSmall"
+             height="20"
+             label="Copy"
+             left_delta="5"
+             name="copytextures"
+             tool_tip="Copy Texture Params from Clipboard"
+             width="68" />
+            <button
+             bottom_delta="-20"
+             follows="top"
+             height="20"
+             label="Paste"
+             name="pastetextures"
+             tool_tip="Paste Texture Params from Clipboard"
+             width="68" />
+            <text
              type="string"
              length="1"
              follows="left|top"
              height="18"
-	     bottom="-307"
+             bottom="-307"
              left="10"
              top_pad="3"
              name="media_tex"
              width="190">
               Media:
-	</text>
+            </text>
     <panel
      border="true"
      follows="left|top"
