@@ -208,6 +208,7 @@ void LLVOClouds::getGeometry(S32 idx,
 								LLStrider<LLVector3>& normalsp, 
 								LLStrider<LLVector2>& texcoordsp,
 								LLStrider<LLColor4U>& colorsp, 
+								LLStrider<LLColor4U>& emissivep,
 								LLStrider<U16>& indicesp)
 {
 

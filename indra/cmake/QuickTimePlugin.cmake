@@ -8,7 +8,7 @@ endif(INSTALL_PROPRIETARY)
 if (DARWIN)
   include(CMakeFindFrameworks)
   find_library(QUICKTIME_LIBRARY QuickTime)
-elseif (WINDOWS)
+elseif (WINDOWS AND WORD_SIZE EQUAL 32)
   set(QUICKTIME_SDK_DIR "$ENV{PROGRAMFILES}/QuickTime SDK"
       CACHE PATH "Location of the QuickTime SDK.")
 

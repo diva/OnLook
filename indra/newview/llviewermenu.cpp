@@ -189,6 +189,7 @@
 #include "llvovolume.h"
 
 #include "hippogridmanager.h"
+#include "wlfPanel_AdvSettings.h"
 
 void toggle_search_floater();
 
@@ -4122,6 +4123,16 @@ void reset_view_final( BOOL proceed )
 	}
 
 	gAgentCamera.switchCameraPreset(CAMERA_PRESET_REAR_VIEW);
+	if (wlfPanel_AdvSettings::instanceExists()) // Fix up the buttons on the wlf panel to match the preset switch
+	{
+		wlfPanel_AdvSettings& inst(wlfPanel_AdvSettings::instance());
+		if (inst.isExpanded())
+		{
+			inst.getChildView("Rear")->setValue(true);
+			inst.getChildView("Front")->setValue(false);
+			inst.getChildView("Group")->setValue(false);
+		}
+	}
 	gAgentCamera.resetView(TRUE, TRUE);
 	gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
 

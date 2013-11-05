@@ -272,7 +272,9 @@ public:
 
 	void addSelectedObjects()
 	{
-		if (LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection())
+		LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+
+		if (selection && selection->getFirstRootObject())
 		{
 			mSaver.mOffset = -selection->getFirstRootObject()->getRenderPosition();
 			mObjectName = selection->getFirstRootNode()->mName;
@@ -285,14 +287,15 @@ public:
 				if (!node->getObject()->getVolume() || !DAEExportUtil::canExportNode(node)) continue;
 				mSaver.add(node->getObject(), node->mName);
 			}
+		}
 
-			if (mSaver.mObjects.empty())
-			{
-				LLNotificationsUtil::add("ExportFailed");
-				close();
-				return;
-			}
-
+		if (mSaver.mObjects.empty())
+		{
+			LLNotificationsUtil::add("ExportFailed");
+			close();
+		}
+		else
+		{
 			mSaver.updateTextureInfo();
 			mNumTextures = mSaver.mTextures.size();
 			mNumExportableTextures = getNumExportableTextures();

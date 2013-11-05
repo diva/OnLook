@@ -65,6 +65,7 @@ public:
 	// </edit>
 
 protected:
+	/*virtual*/ BOOL postBuild();
 	virtual const char *getTitleName() const { return "Sound"; }
 	// <edit>
 	virtual BOOL canSaveAs() const;

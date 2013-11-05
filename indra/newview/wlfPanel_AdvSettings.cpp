@@ -47,6 +47,7 @@
 #include "llfloaterwindlight.h"
 #include "llfloaterwater.h"
 
+#include "llagentcamera.h"
 #include "lldaycyclemanager.h"
 #include "llenvmanager.h"
 #include "llwaterparammanager.h"
@@ -58,6 +59,7 @@ wlfPanel_AdvSettings::wlfPanel_AdvSettings() : mExpanded(false)
 	setVisible(false);
 	setIsChrome(TRUE);
 	setFocusRoot(TRUE);
+	mCommitCallbackRegistrar.add("Wlf.ChangeCameraPreset", boost::bind(&wlfPanel_AdvSettings::onChangeCameraPreset, this, _1, _2));
 	if(rlv_handler_t::isEnabled())
 		gRlvHandler.setBehaviourToggleCallback(boost::bind(&wlfPanel_AdvSettings::onRlvBehaviorChange, this, _1, _2));
 }
@@ -184,6 +186,14 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		mTimeSlider->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onChangeDayTime, this, _2));
 		updateTimeSlider();
 		updateRlvVisibility();
+
+		const U32 preset(gSavedSettings.getU32("CameraPreset"));
+		if (preset == CAMERA_PRESET_REAR_VIEW)
+			getChildView("Rear")->setValue(true);
+		else if (preset == CAMERA_PRESET_FRONT_VIEW)
+			getChildView("Front")->setValue(true);
+		else if (preset == CAMERA_PRESET_GROUP_VIEW)
+			getChildView("Group")->setValue(true);
 	}
 	return TRUE;
 }
@@ -201,6 +211,24 @@ wlfPanel_AdvSettings::~wlfPanel_AdvSettings ()
 void wlfPanel_AdvSettings::onClickExpandBtn(void* user_data)
 {
 	gSavedSettings.setBOOL("wlfAdvSettingsPopup",!gSavedSettings.getBOOL("wlfAdvSettingsPopup"));
+}
+
+void wlfPanel_AdvSettings::onChangeCameraPreset(LLUICtrl* ctrl, const LLSD& param)
+{
+	if (!ctrl->getValue()) // One of these must be set at all times
+	{
+		ctrl->setValue(true);
+		return;
+	}
+
+	// 0 is rear, 1 is front, 2 is group
+	const ECameraPreset preset((param.asInteger() == 0) ? CAMERA_PRESET_REAR_VIEW : (param.asInteger() == 1) ? CAMERA_PRESET_FRONT_VIEW : CAMERA_PRESET_GROUP_VIEW);
+	// Turn off the other preset indicators
+	if (preset != CAMERA_PRESET_REAR_VIEW) getChildView("Rear")->setValue(false);
+	if (preset != CAMERA_PRESET_FRONT_VIEW) getChildView("Front")->setValue(false);
+	if (preset != CAMERA_PRESET_GROUP_VIEW) getChildView("Group")->setValue(false);
+	// Actually switch the camera
+	gAgentCamera.switchCameraPreset(preset);
 }
 
 void wlfPanel_AdvSettings::onUseRegionSettings(const LLSD& value)

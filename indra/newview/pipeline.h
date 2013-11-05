@@ -41,7 +41,8 @@
 #include "llspatialpartition.h"
 #include "m4math.h"
 #include "llpointer.h"
-#include "lldrawpool.h"
+#include "lldrawpoolalpha.h"
+#include "lldrawpoolmaterials.h"
 #include "llgl.h"
 #include "lldrawable.h"
 #include "llrendertarget.h"
@@ -64,7 +65,11 @@ class LLRenderFunc;
 class LLCubeMap;
 class LLCullResult;
 class LLVOAvatar;
+class LLVOPartGroup;
 class LLGLSLShader;
+class LLDrawPoolAlpha;
+
+class LLMeshResponder;
 
 typedef enum e_avatar_skinning_method
 {
@@ -99,6 +104,7 @@ extern LLFastTimer::DeclareTimer FTM_RENDER_WL_SKY;
 extern LLFastTimer::DeclareTimer FTM_RENDER_ALPHA;
 extern LLFastTimer::DeclareTimer FTM_RENDER_CHARACTERS;
 extern LLFastTimer::DeclareTimer FTM_RENDER_BUMP;
+extern LLFastTimer::DeclareTimer FTM_RENDER_MATERIALS;
 extern LLFastTimer::DeclareTimer FTM_RENDER_FULLBRIGHT;
 extern LLFastTimer::DeclareTimer FTM_RENDER_GLOW;
 extern LLFastTimer::DeclareTimer FTM_STATESORT;
@@ -203,6 +209,12 @@ public:
 												LLVector4a* normal = NULL,               // return the surface normal at the intersection point
 												LLVector4a* tangent = NULL             // return the surface tangent at the intersection point  
 		);
+
+	//get the closest particle to start between start and end, returns the LLVOPartGroup and particle index
+	LLVOPartGroup* lineSegmentIntersectParticle(const LLVector4a& start, const LLVector4a& end, LLVector4a* intersection,
+														S32* face_hit);
+
+
 	LLViewerObject* lineSegmentIntersectInHUD(const LLVector4a& start, const LLVector4a& end,
 											  BOOL pick_transparent,
 											  S32* face_hit,                          // return the face hit
@@ -266,6 +278,7 @@ public:
 	void forAllVisibleDrawables(void (*func)(LLDrawable*));
 
 	void renderObjects(U32 type, U32 mask, BOOL texture = TRUE, BOOL batch_texture = FALSE);
+	void renderMaskedObjects(U32 type, U32 mask, BOOL texture = TRUE, BOOL batch_texture = FALSE);
 	void renderGroups(LLRenderPass* pass, U32 type, U32 mask, BOOL texture);
 
 	void grabReferences(LLCullResult& result);
@@ -287,6 +300,7 @@ public:
 
 	void unbindDeferredShader(LLGLSLShader& shader);
 	void renderDeferredLighting();
+	void renderDeferredLightingToRT(LLRenderTarget* target);
 	
 	void generateWaterReflection(LLCamera& camera);
 	void generateSunShadow(LLCamera& camera);
@@ -429,11 +443,14 @@ public:
 		RENDER_TYPE_WL_SKY		= LLDrawPool::POOL_WL_SKY,
 		RENDER_TYPE_GROUND		= LLDrawPool::POOL_GROUND,	
 		RENDER_TYPE_TERRAIN		= LLDrawPool::POOL_TERRAIN,
-		RENDER_TYPE_SIMPLE		= LLDrawPool::POOL_SIMPLE,
-		RENDER_TYPE_GRASS		= LLDrawPool::POOL_GRASS,
-		RENDER_TYPE_FULLBRIGHT	= LLDrawPool::POOL_FULLBRIGHT,
-		RENDER_TYPE_BUMP		= LLDrawPool::POOL_BUMP,
-		RENDER_TYPE_AVATAR		= LLDrawPool::POOL_AVATAR,
+		RENDER_TYPE_SIMPLE						= LLDrawPool::POOL_SIMPLE,
+		RENDER_TYPE_GRASS						= LLDrawPool::POOL_GRASS,
+		RENDER_TYPE_ALPHA_MASK					= LLDrawPool::POOL_ALPHA_MASK,
+		RENDER_TYPE_FULLBRIGHT_ALPHA_MASK		= LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK,
+		RENDER_TYPE_FULLBRIGHT					= LLDrawPool::POOL_FULLBRIGHT,
+		RENDER_TYPE_BUMP						= LLDrawPool::POOL_BUMP,
+		RENDER_TYPE_MATERIALS					= LLDrawPool::POOL_MATERIALS,
+		RENDER_TYPE_AVATAR						= LLDrawPool::POOL_AVATAR,
 		RENDER_TYPE_TREE		= LLDrawPool::POOL_TREE,
 		RENDER_TYPE_INVISIBLE	= LLDrawPool::POOL_INVISIBLE,
 		RENDER_TYPE_VOIDWATER	= LLDrawPool::POOL_VOIDWATER,
@@ -453,6 +470,22 @@ public:
 		RENDER_TYPE_PASS_ALPHA					= LLRenderPass::PASS_ALPHA,
 		RENDER_TYPE_PASS_ALPHA_MASK				= LLRenderPass::PASS_ALPHA_MASK,
 		RENDER_TYPE_PASS_FULLBRIGHT_ALPHA_MASK	= LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK,
+		RENDER_TYPE_PASS_MATERIAL				= LLRenderPass::PASS_MATERIAL,
+		RENDER_TYPE_PASS_MATERIAL_ALPHA			= LLRenderPass::PASS_MATERIAL_ALPHA,
+		RENDER_TYPE_PASS_MATERIAL_ALPHA_MASK	= LLRenderPass::PASS_MATERIAL_ALPHA_MASK,
+		RENDER_TYPE_PASS_MATERIAL_ALPHA_EMISSIVE= LLRenderPass::PASS_MATERIAL_ALPHA_EMISSIVE,
+		RENDER_TYPE_PASS_SPECMAP				= LLRenderPass::PASS_SPECMAP,
+		RENDER_TYPE_PASS_SPECMAP_BLEND			= LLRenderPass::PASS_SPECMAP_BLEND,
+		RENDER_TYPE_PASS_SPECMAP_MASK			= LLRenderPass::PASS_SPECMAP_MASK,
+		RENDER_TYPE_PASS_SPECMAP_EMISSIVE		= LLRenderPass::PASS_SPECMAP_EMISSIVE,
+		RENDER_TYPE_PASS_NORMMAP				= LLRenderPass::PASS_NORMMAP,
+		RENDER_TYPE_PASS_NORMMAP_BLEND			= LLRenderPass::PASS_NORMMAP_BLEND,
+		RENDER_TYPE_PASS_NORMMAP_MASK			= LLRenderPass::PASS_NORMMAP_MASK,
+		RENDER_TYPE_PASS_NORMMAP_EMISSIVE		= LLRenderPass::PASS_NORMMAP_EMISSIVE,
+		RENDER_TYPE_PASS_NORMSPEC				= LLRenderPass::PASS_NORMSPEC,
+		RENDER_TYPE_PASS_NORMSPEC_BLEND			= LLRenderPass::PASS_NORMSPEC_BLEND,
+		RENDER_TYPE_PASS_NORMSPEC_MASK			= LLRenderPass::PASS_NORMSPEC_MASK,
+		RENDER_TYPE_PASS_NORMSPEC_EMISSIVE		= LLRenderPass::PASS_NORMSPEC_EMISSIVE,
 		// Following are object types (only used in drawable mRenderType)
 		RENDER_TYPE_HUD = LLRenderPass::NUM_RENDER_TYPES,
 		RENDER_TYPE_VOLUME,
@@ -561,6 +594,7 @@ public:
 	static BOOL				sPickAvatar;
 	static BOOL				sReflectionRender;
 	static BOOL				sImpostorRender;
+	static BOOL				sImpostorRenderAlphaDepthPass;
 	static BOOL				sUnderWaterRender;
 	static BOOL				sRenderGlow;
 	static BOOL				sTextureBindTest;
@@ -571,6 +605,7 @@ public:
 	static BOOL             sMemAllocationThrottled;
 	static S32				sVisibleLightCount;
 	static F32				sMinRenderSize;
+	static BOOL				sRenderingHUDs;
 
 	//screen texture
 
@@ -750,17 +785,20 @@ protected:
 	// For quick-lookups into mPools (mapped by texture pointer)
 	std::map<uintptr_t, LLDrawPool*>	mTerrainPools;
 	std::map<uintptr_t, LLDrawPool*>	mTreePools;
-	LLDrawPool*					mAlphaPool;
+	LLDrawPoolAlpha*			mAlphaPool;
 	LLDrawPool*					mSkyPool;
 	LLDrawPool*					mTerrainPool;
 	LLDrawPool*					mWaterPool;
 	LLDrawPool*					mGroundPool;
 	LLRenderPass*				mSimplePool;
 	LLRenderPass*				mGrassPool;
+	LLRenderPass*				mAlphaMaskPool;
+	LLRenderPass*				mFullbrightAlphaMaskPool;
 	LLRenderPass*				mFullbrightPool;
 	LLDrawPool*					mInvisiblePool;
 	LLDrawPool*					mGlowPool;
 	LLDrawPool*					mBumpPool;
+	LLDrawPool*					mMaterialsPool;
 	LLDrawPool*					mWLSkyPool;
 	// Note: no need to keep an quick-lookup to avatar pools, since there's only one per avatar
 	

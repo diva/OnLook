@@ -2023,12 +2023,20 @@ LLVector3 LLAgentCamera::getCameraOffsetInitial()
 }
 
 // Adds change to vector CachedControl, vec, at idx
-template <typename T, typename Vec>
+template <typename Vec, typename T>
 void change_vec(const T& change, LLCachedControl<Vec>& vec, const U32& idx = VZ)
 {
 	Vec changed(vec);
 	changed[idx] += change;
 	vec = changed;
+}
+// Same as above, but for ControlVariables
+template <typename Vec, typename T>
+void change_vec(const T& change, LLPointer<LLControlVariable>& vec, const U32& idx = VZ)
+{
+	Vec changed(vec->get());
+	changed[idx] += change;
+	vec->set(changed.getValue());
 }
 
 //-----------------------------------------------------------------------------
@@ -2072,13 +2080,11 @@ void LLAgentCamera::handleScrollWheel(S32 clicks)
 					const F32 change(static_cast<F32>(clicks) * 0.1f);
 					if (mask & MASK_SHIFT)
 					{
-						static LLCachedControl<LLVector3d> focus_offset("FocusOffsetRearView");
-						change_vec(change, focus_offset);
+						change_vec<LLVector3d>(change, mFocusOffsetInitial[mCameraPreset]);
 					}
 					if (mask & MASK_CONTROL)
 					{
-						static LLCachedControl<LLVector3> camera_offset("CameraOffsetRearView");
-						change_vec(change, camera_offset);
+						change_vec<LLVector3>(change, mCameraOffsetInitial[mCameraPreset]);
 					}
 					return;
 				}

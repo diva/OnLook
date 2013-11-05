@@ -304,6 +304,49 @@ LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerTexture *texturep)
 
 }
 
+LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerTexture *texturep, LLViewerTexture *normalp)
+{
+	LLFace *face;
+	face = new LLFace(this, mVObjp);
+	
+	face->setTEOffset(mFaces.size());
+	face->setTexture(texturep);
+	face->setNormalMap(normalp);
+	face->setPoolType(gPipeline.getPoolTypeFromTE(te, texturep));
+	
+	mFaces.push_back(face);
+	
+	if (isState(UNLIT))
+	{
+		face->setState(LLFace::FULLBRIGHT);
+	}
+	
+	return face;
+	
+}
+
+LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerTexture *texturep, LLViewerTexture *normalp, LLViewerTexture *specularp)
+{
+	LLFace *face;
+	face = new LLFace(this, mVObjp);
+	
+	face->setTEOffset(mFaces.size());
+	face->setTexture(texturep);
+	face->setNormalMap(normalp);
+	face->setSpecularMap(specularp);
+	face->setPoolType(gPipeline.getPoolTypeFromTE(te, texturep));
+	
+	mFaces.push_back(face);
+	
+	if (isState(UNLIT))
+	{
+		face->setState(LLFace::FULLBRIGHT);
+	}
+	
+	return face;
+	
+}
+
 void LLDrawable::setNumFaces(const S32 newFaces, LLFacePool *poolp, LLViewerTexture *texturep)
 {
 	if (newFaces == (S32)mFaces.size())
@@ -565,10 +608,10 @@ F32 LLDrawable::updateXform(BOOL undamped)
 			mVObjp->dirtySpatialGroup();
 		}
 	}
-	else if (!isRoot() && (
-				 dist_vec_squared(old_pos, target_pos) > 0.f
-				 || old_rot != target_rot ))
-	{ //fix for BUG-860, MAINT-2275, MAINT-1742, MAINT-2247
+	else if (!isRoot() &&
+			((dist_vec_squared(old_pos, target_pos) > 0.f)
+			|| (1.f - dot(old_rot, target_rot)) > 0.f))
+	{ //fix for BUG-840, MAINT-2275, MAINT-1742, MAINT-2247
 		gPipeline.markRebuild(this, LLDrawable::REBUILD_POSITION, TRUE);
 	}
 	else if (!getVOVolume() && !isAvatar())
