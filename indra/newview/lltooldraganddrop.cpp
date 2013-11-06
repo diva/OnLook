@@ -31,26 +31,19 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-
-#include "message.h"
 #include "lltooldraganddrop.h"
 
+// library headers
 #include "llnotificationsutil.h"
-
-#include "llinstantmessage.h"
-#include "lldir.h"
-
+// project headers
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
 #include "lldictionary.h"
-#include "llviewercontrol.h"
 #include "llfirstuse.h"
-#include "llfloater.h"
 #include "llfloaterinventory.h"
 #include "llfloatertools.h"
-#include "llfocusmgr.h"
 #include "llgesturemgr.h"
 #include "llgiveinventory.h"
 #include "llhudmanager.h"
@@ -66,7 +59,6 @@
 #include "llselectmgr.h"
 #include "lltoolmgr.h"
 #include "lltrans.h"
-#include "llui.h"
 #include "llviewertexturelist.h"
 #include "llviewerinventory.h"
 #include "llviewerobject.h"
@@ -77,14 +69,14 @@
 #include "llvoavatarself.h"
 #include "llvolume.h"
 #include "llworld.h"
-#include "object_flags.h"
+#include "llpanelface.h"
 // <edit>
 #include "llappviewer.h" // System Folders
 #include "llparcel.h" // always rez
 #include "llviewerparcelmgr.h" // always rez
 // </edit>
 
-// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a)
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1)
 #include "rlvhandler.h"
 #include "rlvlocks.h"
 // [/RLVa:KB]
@@ -388,9 +380,12 @@ void LLToolDragAndDrop::setDragStart(S32 x, S32 y)
 
 BOOL LLToolDragAndDrop::isOverThreshold(S32 x,S32 y)
 {
-	const S32 MIN_MANHATTAN_DIST = 3;
-	S32 manhattan_dist = llabs( x - mDragStartX ) + llabs( y - mDragStartY );
-	return manhattan_dist >= MIN_MANHATTAN_DIST;
+	static LLCachedControl<S32> drag_and_drop_threshold(gSavedSettings,"DragAndDropDistanceThreshold");
+
+	S32 mouse_delta_x = x - mDragStartX;
+	S32 mouse_delta_y = y - mDragStartY;
+
+	return (mouse_delta_x * mouse_delta_x) + (mouse_delta_y * mouse_delta_y) > drag_and_drop_threshold * drag_and_drop_threshold;
 }
 
 void LLToolDragAndDrop::beginDrag(EDragAndDropType type,
@@ -1162,10 +1157,56 @@ void LLToolDragAndDrop::dropTextureOneFace(LLViewerObject* hit_obj,
 	// update viewer side image in anticipation of update from simulator
 	//LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
-	//hit_obj->setTEImage(hit_face, image);
-	hit_obj->setTETexture(hit_face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
-												// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
-												// which we don't want.										
+
+	LLTextureEntry* tep = hit_obj ? (hit_obj->getTE(hit_face)) : NULL;
+
+	LLPanelFace* panel_face = gFloaterTools->getPanelFace();
+
+	if (gFloaterTools->getVisible() && panel_face)
+	{
+		switch (LLSelectMgr::getInstance()->getTextureChannel())
+		{
+		case 0:
+		default:
+			{
+				//hit_obj->setTEImage(hit_face, image);
+				hit_obj->setTETexture(hit_face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
+															// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
+															// which we don't want.
+			}
+		break;
+
+		case 1:
+			{
+				LLMaterialPtr old_mat = tep->getMaterialParams();
+				LLMaterialPtr new_mat = panel_face->createDefaultMaterial(old_mat);
+				new_mat->setNormalID(asset_id);
+				tep->setMaterialParams(new_mat);
+				hit_obj->setTENormalMap(hit_face, asset_id);
+				LLMaterialMgr::getInstance()->put(hit_obj->getID(), hit_face, *new_mat);
+			}
+			break;
+
+		case 2:
+			{
+				LLMaterialPtr old_mat = tep->getMaterialParams();
+				LLMaterialPtr new_mat = panel_face->createDefaultMaterial(old_mat);
+				new_mat->setSpecularID(asset_id);
+				tep->setMaterialParams(new_mat);
+				hit_obj->setTESpecularMap(hit_face, asset_id);
+				LLMaterialMgr::getInstance()->put(hit_obj->getID(), hit_face, *new_mat);
+			}
+			break;
+		}
+	}
+	else
+	{
+		//hit_obj->setTEImage(hit_face, image);
+		hit_obj->setTETexture(hit_face, asset_id);	//Singu note: setTETexture will allow the real id to be passed to LLPrimitive::setTETexture,
+													// even if it's null. setTEImage would actually pass down IMG_DEFAULT under such a case,
+													// which we don't want.
+	}
+
 	dialog_refresh_all();
 
 	// send the update to the simulator
@@ -1619,6 +1660,7 @@ bool LLToolDragAndDrop::handleGiveDragAndDrop(LLUUID dest_agent, LLUUID session_
 	case DAD_ANIMATION:
 	case DAD_GESTURE:
 	case DAD_CALLINGCARD:
+	case DAD_MESH:
 	{
 		LLViewerInventoryItem* inv_item = (LLViewerInventoryItem*)cargo_data;
 		if(gInventory.getItem(inv_item->getUUID())
@@ -2353,7 +2395,7 @@ EAcceptance LLToolDragAndDrop::dad3dUpdateInventoryCategory(
 		}
 	}
 
-	// if every item is accepted, go ahead and send it on.
+	// If every item is accepted, send it on
 	if(drop && (ACCEPT_YES_COPY_SINGLE <= rv))
 	{
 		uuid_vec_t ids;
@@ -2595,7 +2637,12 @@ LLInventoryObject* LLToolDragAndDrop::locateInventory(
 {
 	item = NULL;
 	cat = NULL;
-	if(mCargoIDs.empty()) return NULL;
+
+	if (mCargoIDs.empty())
+	{
+		return NULL;
+	}
+
 	if((mSource == SOURCE_AGENT) || (mSource == SOURCE_LIBRARY))
 	{
 		// The object should be in user inventory.
