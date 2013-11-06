@@ -273,6 +273,8 @@ extern LLGLSLShader			gGlowExtractProgram;
 
 //interface shaders
 extern LLGLSLShader			gHighlightProgram;
+extern LLGLSLShader			gHighlightNormalProgram;
+extern LLGLSLShader			gHighlightSpecularProgram;
 
 // avatar shader handles
 extern LLGLSLShader			gAvatarProgram;
