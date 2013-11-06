@@ -3394,6 +3394,7 @@ void LLPieMenuBranch::buildDrawLabel( void )
 // doIt() - do the primary funcationality of the menu item.
 void LLPieMenuBranch::doIt( void )
 {
+	if (getDrawTextDisabled()) return; // Singu Note: Don't open disabled submenus!
 	LLPieMenu *parent = (LLPieMenu *)getParent();
 
 	LLRect rect = parent->getRect();
