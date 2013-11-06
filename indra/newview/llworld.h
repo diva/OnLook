@@ -115,7 +115,7 @@ public:
 	LLVector3				resolveLandNormalGlobal(const LLVector3d &position);		// absolute frame
 
 	// update region size
-	void					setRegionWidth(const U32 width = 0);
+	void					setRegionSize(const U32& width = 0, const U32& length = 0);
 
 	U32						getRegionWidthInPoints() const	{ return mWidth; }
 	F32						getRegionScale() const			{ return mScale; }
@@ -188,6 +188,7 @@ private:
 // <FS:CR> Aurora Sim
 	//static const U32 mWidth;
 	static U32 mWidth;
+	static U32 mLength;
 // </FS:CR> Aurora Sim
 
 	// meters/point, therefore mWidth * mScale = meters per edge
