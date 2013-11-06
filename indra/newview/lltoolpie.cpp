@@ -1101,7 +1101,7 @@ BOOL LLToolPie::handleRightClickPick()
 	{
 		LLParcelSelectionHandle selection = LLViewerParcelMgr::getInstance()->selectParcelAt( mPick.mPosGlobal );
 		gMenuHolder->setParcelSelection(selection);
-		gPieLand->show(x, y, true);
+		gPieLand->show(x, y);
 
 		showVisualContextMenuEffect();
 
@@ -1115,7 +1115,7 @@ BOOL LLToolPie::handleRightClickPick()
 			return TRUE ;
 		}
 
-		gPieSelf->show(x, y, true);
+		gPieSelf->show(x, y);
 	}
 	else if (object)
 	{
@@ -1159,11 +1159,11 @@ BOOL LLToolPie::handleRightClickPick()
 // [/RLVa:KB]
 				/*if (is_other_attachment)
 				{
-					gPieAttachmentOther->show(x, y, true);
+					gPieAttachmentOther->show(x, y);
 				}
 				else*/
 				{
-					gPieAvatar->show(x, y, true);
+					gPieAvatar->show(x, y);
 				}
 // [RLVa:KB] - Checked: 2010-04-11 (RLVa-1.2.0e) | Modified: RLVa-1.1.0l
 			}
@@ -1175,7 +1175,7 @@ BOOL LLToolPie::handleRightClickPick()
 		}
 		else if (object->isAttachment())
 		{
-			gPieAttachment->show(x, y, true);
+			gPieAttachment->show(x, y);
 		}
 		else
 		{
@@ -1204,7 +1204,7 @@ BOOL LLToolPie::handleRightClickPick()
 			{
 // [/RLVa:KB]
 				gMenuHolder->childSetText("Object Mute", mute_msg);
-				gPieObject->show(x, y, true);
+				gPieObject->show(x, y);
 
 				showVisualContextMenuEffect();
 // [RLVa:KB] - Checked: 2010-04-11 (RLVa-1.2.el) | Modified: RLVa-1.1.0l

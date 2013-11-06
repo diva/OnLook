@@ -73,6 +73,7 @@ private:
 	bool mEnableClassicClouds;
 	bool mSpeedRez;
 	U32 mSpeedRezInterval;
+	bool mUseContextMenus;
 	bool mUseWebProfiles;
 	bool mUseWebSearch;
 

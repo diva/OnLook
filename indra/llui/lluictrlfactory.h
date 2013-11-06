@@ -106,7 +106,7 @@ public:
 	bool builtPanel(LLPanel* panelp) {return mBuiltPanels.find(panelp->getHandle()) != mBuiltPanels.end();}
 
 	class LLMenuGL *buildMenu(const std::string &filename, LLView* parentp);
-	class LLPieMenu *buildPieMenu(const std::string &filename, LLView* parentp);
+	class LLContextMenu* buildContextMenu(const std::string& filename, LLView* parentp);
 
 	// Does what you want for LLFloaters and LLPanels
 	// Returns 0 on success

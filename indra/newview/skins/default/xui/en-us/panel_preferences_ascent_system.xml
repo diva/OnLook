@@ -34,9 +34,10 @@
       <check_box bottom_delta="-18" control_name="CloudsEnabled" follows="left|top" initial_value="true" label="Enable Clouds" name="enable_clouds"/>
       <check_box bottom_delta="-18" left_delta="10" control_name="SkyUseClassicClouds" follows="top" initial_value="true" label="Enable Classic Clouds" name="enable_classic_clouds"/>
       <check_box bottom_delta="-18" left_delta="-10" control_name="SpeedRez" follows="top" initial_value="false" label="Enable speed-rezzing via draw distance stepping" name="speed_rez_check" tool_tip="When active, this will progressively increase your draw distance, which allows closer objects/people to rez first."/>
-      <spinner bottom_delta="-20" left="30" control_name="SpeedRezInterval" decimal_digits="0" follows="top" height="16" width="230"
+      <spinner bottom_delta="-16" left="30" control_name="SpeedRezInterval" decimal_digits="0" follows="top" height="16" width="230"
         label="Draw distance stepping interval:" label_width="180" max_val="60" min_val="5" initial_val="20" increment="5" name="speed_rez_interval" />
       <text bottom_delta="0" left_delta="235" follows="left|top" height="16" name="speed_rez_seconds">seconds</text>
+      <check_box bottom_delta="-18" control_name="LiruUseContextMenus" follows="top" left="10" name="use_context_menus" label="Use context menus instead of pie menus"/>
       <check_box bottom_delta="-18" control_name="UseWebProfiles" follows="top" left="10" name="use_web_profiles" label="Use web profiles instead of legacy v1 profiles" tool_tip="May not be available on certain grids"/>
       <check_box bottom_delta="-18" control_name="UseWebSearch" follows="top" left="10" name="use_web_search" label="Use web-based search instead of legacy v1 search" tool_tip="May not be available on certain grids"/>
     </panel>

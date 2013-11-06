@@ -6,8 +6,8 @@
 	<menu_item_call enabled="true" label="Groups..." name="Groups...">
 		<on_click function="ShowAgentGroups" userdata="agent" />
 	</menu_item_call>
-	<pie_menu enabled="true" label="Take Off &gt;" name="Take Off &gt;">
-		<pie_menu enabled="true" label="Clothes &gt;" name="Clothes &gt;">
+	<pie_menu enabled="true" label="Take Off" name="Take Off">
+		<pie_menu enabled="true" label="Clothes" name="Clothes">
 			<menu_item_call bottom="-29" enabled="false" height="19" label="Shirt" left="0"
 			     mouse_opaque="true" name="Shirt" width="118">
 				<on_click function="Edit.TakeOff" userdata="shirt" />
@@ -38,7 +38,7 @@
 				<on_click function="Edit.TakeOff" userdata="gloves" />
 				<on_enable function="Edit.EnableTakeOff" userdata="gloves" />
 			</menu_item_call>
-			<pie_menu enabled="true" label="More &gt;" name="More &gt;">
+			<pie_menu more="true" label="More" name="More">
 				<menu_item_call bottom="-143" enabled="false" height="19" label="Undershirt" left="0"
 				     mouse_opaque="true" name="Self Undershirt" width="118">
 					<on_click function="Edit.TakeOff" userdata="undershirt" />
@@ -76,16 +76,16 @@
 				<on_enable function="Edit.EnableTakeOff" userdata="skirt" />
 			</menu_item_call>
 		</pie_menu>
-		<pie_menu enabled="true" label="HUD &gt;" name="Object Detach HUD" />
+		<pie_menu enabled="true" label="HUD" name="Object Detach HUD" />
 		<menu_item_separator />
-		<pie_menu enabled="true" label="Detach &gt;" name="Object Detach" />
+		<pie_menu enabled="true" label="Detach" name="Object Detach" />
 		<menu_item_separator />
 		<menu_item_call enabled="true" label="Detach All" name="Detach All">
 			<on_click function="Self.RemoveAllAttachments" userdata="" />
 			<on_enable function="Self.EnableRemoveAllAttachments" />
 		</menu_item_call>
 	</pie_menu>
-  <pie_menu label="Tools &gt;" name="Tools &gt;">
+  <pie_menu label="Tools" name="Tools">
       <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
           <on_click function="Avatar.ReloadTextures" />
       </menu_item_call>

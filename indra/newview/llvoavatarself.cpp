@@ -325,29 +325,55 @@ BOOL LLVOAvatarSelf::buildMenus()
 	//-------------------------------------------------------------------------
 	if(gNoRender)
 		return TRUE;
-	gAttachBodyPartPieMenus[0] = NULL;
-	gAttachBodyPartPieMenus[1] = new LLPieMenu(LLTrans::getString("BodyPartsRightArm") + " >");
-	gAttachBodyPartPieMenus[2] = new LLPieMenu(LLTrans::getString("BodyPartsHead") + " >");
-	gAttachBodyPartPieMenus[3] = new LLPieMenu(LLTrans::getString("BodyPartsLeftArm") + " >");
-	gAttachBodyPartPieMenus[4] = NULL;
-	gAttachBodyPartPieMenus[5] = new LLPieMenu(LLTrans::getString("BodyPartsLeftLeg") + " >");
-	gAttachBodyPartPieMenus[6] = new LLPieMenu(LLTrans::getString("BodyPartsTorso") + " >");
-	gAttachBodyPartPieMenus[7] = new LLPieMenu(LLTrans::getString("BodyPartsRightLeg") + " >");
+	buildContextMenus();
 
-	gDetachBodyPartPieMenus[0] = NULL;
-	gDetachBodyPartPieMenus[1] = new LLPieMenu(LLTrans::getString("BodyPartsRightArm") + " >");
-	gDetachBodyPartPieMenus[2] = new LLPieMenu(LLTrans::getString("BodyPartsHead") + " >");
-	gDetachBodyPartPieMenus[3] = new LLPieMenu(LLTrans::getString("BodyPartsLeftArm") + " >");
-	gDetachBodyPartPieMenus[4] = NULL;
-	gDetachBodyPartPieMenus[5] = new LLPieMenu(LLTrans::getString("BodyPartsLeftLeg") + " >");
-	gDetachBodyPartPieMenus[6] = new LLPieMenu(LLTrans::getString("BodyPartsTorso") + " >");
-	gDetachBodyPartPieMenus[7] = new LLPieMenu(LLTrans::getString("BodyPartsRightLeg") + " >");
+	init_meshes_and_morphs_menu();
+
+	return TRUE;
+}
+
+// Convenience function to create context or pie menu with label
+static LLContextMenu* make_part_menu(const std::string& label, bool context)
+{
+	return context ? new LLContextMenu(label) : new LLPieMenu(label + " >");
+}
+
+void LLVOAvatarSelf::buildContextMenus()
+{
+	gAttachBodyPartPieMenus[0] = gDetachBodyPartPieMenus[0] = NULL;
+
+	bool context(gSavedSettings.getBOOL("LiruUseContextMenus"));
+	std::string label = LLTrans::getString("BodyPartsRightArm");
+	gAttachBodyPartPieMenus[1] = make_part_menu(label, context);
+	gDetachBodyPartPieMenus[1] = make_part_menu(label, context);
+
+	label = LLTrans::getString("BodyPartsHead");
+	gAttachBodyPartPieMenus[2] = make_part_menu(label, context);
+	gDetachBodyPartPieMenus[2] = make_part_menu(label, context);
+
+	label = LLTrans::getString("BodyPartsLeftArm");
+	gAttachBodyPartPieMenus[3] = make_part_menu(label, context);
+	gDetachBodyPartPieMenus[3] = make_part_menu(label, context);
+
+	gAttachBodyPartPieMenus[4] = gDetachBodyPartPieMenus[4] = NULL;
+
+	label = LLTrans::getString("BodyPartsLeftLeg");
+	gAttachBodyPartPieMenus[5] = make_part_menu(label, context);
+	gDetachBodyPartPieMenus[5] = make_part_menu(label, context);
+
+	label = LLTrans::getString("BodyPartsTorso");
+	gAttachBodyPartPieMenus[6] = make_part_menu(label, context);
+	gDetachBodyPartPieMenus[6] = make_part_menu(label, context);
+
+	label = LLTrans::getString("BodyPartsRightLeg");
+	gAttachBodyPartPieMenus[7] = make_part_menu(label, context);
+	gDetachBodyPartPieMenus[7] = make_part_menu(label, context);
 
 	for (S32 i = 0; i < 8; i++)
 	{
 		if (gAttachBodyPartPieMenus[i])
 		{
-			gAttachPieMenu->appendPieMenu( gAttachBodyPartPieMenus[i] );
+			gAttachPieMenu->appendContextSubMenu( gAttachBodyPartPieMenus[i] );
 		}
 		else
 		{
@@ -379,7 +405,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 				}
 			}
 
-			if (!attachment_found)
+			if (!context && !attachment_found)
 			{
 				gAttachPieMenu->addSeparator();
 			}
@@ -387,7 +413,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 
 		if (gDetachBodyPartPieMenus[i])
 		{
-			gDetachPieMenu->appendPieMenu( gDetachBodyPartPieMenus[i] );
+			gDetachPieMenu->appendContextSubMenu( gDetachBodyPartPieMenus[i] );
 		}
 		else
 		{
@@ -407,7 +433,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 				}
 			}
 
-			if (!attachment_found)
+			if (!context && !attachment_found)
 			{
 				gDetachPieMenu->addSeparator();
 			}
@@ -466,7 +492,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 				&handle_detach_from_avatar, object_attached, &detach_label, attachment));
 			
 		}
-		if (pass == 0)
+		if (!context && pass == 0)
 		{
 			// put separator between non-hud and hud attachments
 			gAttachSubMenu->addSeparator();
@@ -503,14 +529,17 @@ BOOL LLVOAvatarSelf::buildMenus()
 		for (std::multimap<S32, S32>::iterator attach_it = attachment_pie_menu_map.begin();
 			 attach_it != attachment_pie_menu_map.end(); ++attach_it)
 		{
-			S32 requested_pie_slice = attach_it->first;
-			S32 attach_index = attach_it->second;
-			while (cur_pie_slice < requested_pie_slice)
+			if (!context) // Singu Note: Separators are only needed to keep slices of pies from moving
 			{
-				gAttachBodyPartPieMenus[group]->addSeparator();
-				gDetachBodyPartPieMenus[group]->addSeparator();
-				cur_pie_slice++;
+				S32 requested_pie_slice = attach_it->first;
+				while (cur_pie_slice < requested_pie_slice)
+				{
+					gAttachBodyPartPieMenus[group]->addSeparator();
+					gDetachBodyPartPieMenus[group]->addSeparator();
+					cur_pie_slice++;
+				}
 			}
+			S32 attach_index = attach_it->second;
 
 			LLViewerJointAttachment* attachment = get_if_there(mAttachmentPoints, attach_index, (LLViewerJointAttachment*)NULL);
 			if (attachment)
@@ -527,14 +556,10 @@ BOOL LLVOAvatarSelf::buildMenus()
 				gDetachBodyPartPieMenus[group]->addChild(new LLMenuItemCallGL(attachment->getName(), 
 																			&handle_detach_from_avatar,
 																			object_attached, attachment));
-				cur_pie_slice++;
+				if (!context) cur_pie_slice++;
 			}
 		}
 	}
-
-	init_meshes_and_morphs_menu();
-
-	return TRUE;
 }
 
 void LLVOAvatarSelf::cleanup()
