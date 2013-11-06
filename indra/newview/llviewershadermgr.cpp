@@ -165,7 +165,8 @@ LLGLSLShader		gUnderWaterProgram(LLViewerShaderMgr::SHADER_WATER);
  
  //interface shaders
 LLGLSLShader		gHighlightProgram(LLViewerShaderMgr::SHADER_INTERFACE);			//Not in mShaderList
- 
+LLGLSLShader		gHighlightNormalProgram(LLViewerShaderMgr::SHADER_INTERFACE);
+LLGLSLShader		gHighlightSpecularProgram(LLViewerShaderMgr::SHADER_INTERFACE);
  //avatar shader handles
 LLGLSLShader		gAvatarProgram(LLViewerShaderMgr::SHADER_AVATAR);
 LLGLSLShader		gAvatarWaterProgram(LLViewerShaderMgr::SHADER_AVATAR);
@@ -2803,6 +2804,26 @@ BOOL LLViewerShaderMgr::loadShadersInterface()
 		gHighlightProgram.mShaderFiles.push_back(make_pair("interface/highlightF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gHighlightProgram.mShaderLevel = mVertexShaderLevel[SHADER_INTERFACE];		
 		success = gHighlightProgram.createShader(NULL, NULL);
+	}
+
+	if (success)
+	{
+		gHighlightNormalProgram.mName = "Highlight Normals Shader";
+		gHighlightNormalProgram.mShaderFiles.clear();
+		gHighlightNormalProgram.mShaderFiles.push_back(make_pair("interface/highlightNormV.glsl", GL_VERTEX_SHADER_ARB));
+		gHighlightNormalProgram.mShaderFiles.push_back(make_pair("interface/highlightF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gHighlightNormalProgram.mShaderLevel = mVertexShaderLevel[SHADER_INTERFACE];		
+		success = gHighlightNormalProgram.createShader(NULL, NULL);
+	}
+
+	if (success)
+	{
+		gHighlightSpecularProgram.mName = "Highlight Spec Shader";
+		gHighlightSpecularProgram.mShaderFiles.clear();
+		gHighlightSpecularProgram.mShaderFiles.push_back(make_pair("interface/highlightSpecV.glsl", GL_VERTEX_SHADER_ARB));
+		gHighlightSpecularProgram.mShaderFiles.push_back(make_pair("interface/highlightF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gHighlightSpecularProgram.mShaderLevel = mVertexShaderLevel[SHADER_INTERFACE];		
+		success = gHighlightSpecularProgram.createShader(NULL, NULL);
 	}
 
 	if (success)
