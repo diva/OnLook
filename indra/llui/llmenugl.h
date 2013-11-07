@@ -686,28 +686,58 @@ private:
 
 
 //-----------------------------------------------------------------------------
+// class LLContextMenu
+// A context menu
+//-----------------------------------------------------------------------------
+class LLContextMenu
+: public LLMenuGL
+{
+public:
+	LLContextMenu(const std::string& name, const std::string& label = "");
+
+	virtual LLXMLNodePtr getXML(bool save_children = true) const;
+	void initXML(LLXMLNodePtr node, LLView* context, LLUICtrlFactory* factory, bool is_context);
+
+public:
+	virtual ~LLContextMenu() {}
+
+	// LLView Functionality
+	// can't set visibility directly, must call show or hide
+	virtual void setVisible(BOOL visible);
+
+	virtual void show(S32 x, S32 y, bool context = true);
+	virtual void hide();
+
+	virtual BOOL handleHover( S32 x, S32 y, MASK mask );
+	BOOL handleHoverOver(LLMenuItemGL* item, S32 x, S32 y); // Singu Note: Unify common functionality between Pie and Context hover behaviors
+	virtual BOOL handleRightMouseDown( S32 x, S32 y, MASK mask );
+	virtual BOOL handleRightMouseUp( S32 x, S32 y, MASK mask );
+
+	virtual bool addChild(LLView* view, S32 tab_group = 0);
+
+	BOOL appendContextSubMenu(LLContextMenu* menu);
+
+protected:
+	BOOL			mHoveredAnyItem;
+	LLMenuItemGL*	mHoverItem;
+};
+
+//-----------------------------------------------------------------------------
 // class LLPieMenu
 // A circular menu of items, icons, etc.
 //-----------------------------------------------------------------------------
 
 class LLPieMenu
-: public LLMenuGL
+: public LLContextMenu
 {
 public:
-	LLPieMenu(const std::string& name, const std::string& label);
-	LLPieMenu(const std::string& name);
+	LLPieMenu(const std::string& name, const std::string& label = "");
 	virtual ~LLPieMenu() {}
-
-	virtual LLXMLNodePtr getXML(bool save_children = true) const;
-	void initXML(LLXMLNodePtr node, LLView *context, LLUICtrlFactory *factory);
 
 	// LLView Functionality
 	// hide separators. they are added to 'pad' in empty cells.
 	virtual bool addChild(LLView* view, S32 tab_group = 0);
 
-	// can't set visibility directly, must call show or hide
-	virtual void setVisible(BOOL visible);
-	
 	virtual BOOL handleHover( S32 x, S32 y, MASK mask );
 	virtual BOOL handleMouseDown( S32 x, S32 y, MASK mask );
 	virtual BOOL handleRightMouseDown(S32 x, S32 y, MASK mask);
@@ -721,32 +751,55 @@ private:
 public:
 	virtual BOOL addSeparator();
 
-	BOOL appendPieMenu(LLPieMenu *menu);
-
 	virtual void arrange( void );
 
 	// Display the menu centered on this point on the screen.
-	void show(S32 x, S32 y, BOOL mouse_down);
-	void hide(BOOL item_selected);
+	/*virtual*/ void show(S32 x, S32 y, bool mouse_down = true);
+	/*virtual*/ void hide();
 
 private:
 	LLMenuItemGL *pieItemFromXY(S32 x, S32 y);
 	S32			  pieItemIndexFromXY(S32 x, S32 y);
 
-	// These cause menu items to be spuriously selected by right-clicks
-	// near the window edge at low frame rates.  I don't think they are
-	// needed unless you shift the menu position in the draw() function. JC
-	//S32				mShiftHoriz;	// non-zero if menu had to shift this frame
-	//S32				mShiftVert;		// non-zero if menu had to shift this frame
 	BOOL			mFirstMouseDown;	// true from show until mouse up
 	BOOL			mUseInfiniteRadius;	// allow picking pie menu items anywhere outside of center circle
-	LLMenuItemGL*	mHoverItem;
 	BOOL			mHoverThisFrame;
-	BOOL			mHoveredAnyItem;
 	LLFrameTimer	mShrinkBorderTimer;
 	F32				mOuterRingAlpha; // for rendering pie menus as both bounded and unbounded
 	F32				mCurRadius;
 	BOOL			mRightMouseDown;
+};
+
+//-----------------------------------------------------------------------------
+// class LLContextMenuBranch
+// A branch to another context menu
+//-----------------------------------------------------------------------------
+class LLContextMenuBranch : public LLMenuItemGL
+{
+public:
+	LLContextMenuBranch(const std::string& name, const std::string& label, LLContextMenu* branch);
+
+	virtual LLXMLNodePtr getXML(bool save_children = true) const;
+
+	// called to rebuild the draw label
+	virtual void buildDrawLabel( void );
+
+	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask)
+	{
+		LLMenuItemGL::handleMouseUp(x,y,mask);
+		return TRUE;
+	}
+
+	// doIt() - do the primary funcationality of the menu item.
+	virtual void doIt( void );
+
+	LLContextMenu* getBranch() { return mBranch; }
+	void setHighlight( BOOL highlight );
+
+protected:
+	void showSubMenu();
+
+	LLContextMenu* mBranch;
 };
 
 

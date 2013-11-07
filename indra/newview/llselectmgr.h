@@ -49,6 +49,7 @@
 #include "llpermissions.h"
 #include "llcontrol.h"
 #include "llviewerobject.h"	// LLObjectSelection::getSelectedTEValue template
+#include "llmaterial.h"
 
 #include <deque>
 #include <boost/iterator/filter_iterator.hpp>
@@ -87,6 +88,12 @@ struct LLSelectedTEFunctor
 {
 	virtual ~LLSelectedTEFunctor() {};
 	virtual bool apply(LLViewerObject* object, S32 face) = 0;
+};
+
+struct LLSelectedTEMaterialFunctor
+{
+	virtual ~LLSelectedTEMaterialFunctor() {};
+	virtual LLMaterialPtr apply(LLViewerObject* object, S32 face, LLTextureEntry* tep, LLMaterialPtr& current_material) = 0;
 };
 
 template <typename T> struct LLSelectedTEGetFunctor
@@ -149,7 +156,7 @@ public:
 	// *NOTE: invalidate stored textures and colors when # faces change
 	void saveColors();
 	void saveTextures(const uuid_vec_t& textures);
-	void saveTextureScaleRatios();
+	void saveTextureScaleRatios(LLRender::eTexIndex index_to_query);
 
 	BOOL allowOperationOnNode(PermissionBit op, U64 group_proxy_power) const;
 
@@ -272,6 +279,8 @@ public:
 	LLViewerObject*	getFirstCopyableObject(BOOL get_parent = FALSE);
 	LLViewerObject* getFirstDeleteableObject();
 	LLViewerObject*	getFirstMoveableObject(BOOL get_parent = FALSE);
+
+	/// Return the object that lead to this selection, possible a child
 	LLViewerObject* getPrimaryObject() { return mPrimaryObject; }
 
 	// iterate through texture entries
@@ -344,6 +353,7 @@ public:
 	static BOOL					sRectSelectInclusive;	// do we need to surround an object to pick it?
 	static BOOL					sRenderHiddenSelections;	// do we show selection silhouettes that are occluded?
 	static BOOL					sRenderLightRadius;	// do we show the radius of selected lights?
+
 	static F32					sHighlightThickness;
 	static F32					sHighlightUScale;
 	static F32					sHighlightVScale;
@@ -465,11 +475,11 @@ public:
 	////////////////////////////////////////////////////////////////
 	// Selection accessors
 	////////////////////////////////////////////////////////////////
+	LLObjectSelectionHandle getHoverObjects() { return mHoverObjects; }
 	LLObjectSelectionHandle	getSelection() { return mSelectedObjects; }
 	// right now this just renders the selection with root/child colors instead of a single color
 	LLObjectSelectionHandle	getEditSelection() { convertTransient(); return mSelectedObjects; }
 	LLObjectSelectionHandle	getHighlightedObjects() { return mHighlightedObjects; }
-	LLObjectSelectionHandle getHoverObjects() { return mHoverObjects; }
 
 	////////////////////////////////////////////////////////////////
 	// Grid manipulation
@@ -502,6 +512,11 @@ public:
 	void saveSelectedObjectColors();
 	void saveSelectedObjectTextures();
 
+	// Sets which texture channel to query for scale and rot of display
+	// and depends on UI state of LLPanelFace when editing
+	void setTextureChannel(LLRender::eTexIndex texIndex) { mTextureChannel = texIndex; }
+	LLRender::eTexIndex getTextureChannel() { return mTextureChannel; }
+
 	void selectionUpdatePhysics(BOOL use_physics);
 	void selectionUpdateTemporary(BOOL is_temporary);
 	void selectionUpdatePhantom(BOOL is_ghost);
@@ -532,6 +547,8 @@ public:
 	void selectionSetClickAction(U8 action);
 	void selectionSetIncludeInSearch(bool include_in_search);
 	void selectionSetGlow(const F32 glow);
+	void selectionSetMaterialParams(LLSelectedTEMaterialFunctor* material_func);
+	void selectionRemoveMaterial();
 
 	void selectionSetObjectPermissions(U8 perm_field, BOOL set, U32 perm_mask, BOOL override = FALSE);
 	void selectionSetObjectName(const std::string& name);
@@ -759,8 +776,8 @@ private:
 	LLVector3				mGridScale;
 	EGridMode				mGridMode;
 
-
 	BOOL					mTEMode;			// render te
+	LLRender::eTexIndex	mTextureChannel; // diff, norm, or spec, depending on UI editing mode
 	LLVector3d				mSelectionCenterGlobal;
 	LLBBox					mSelectionBBox;
 

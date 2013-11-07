@@ -2,15 +2,15 @@
 <pie_menu name="Self Pie">
 	<menu_item_call label="Perfil..." name="Profile..."/>
 	<menu_item_call label="Grupos..." name="Groups..."/>
-	<pie_menu label="Quitarse &gt;" name="Take Off &gt;">
-		<pie_menu  label="Ropa &gt;" name="Clothes &gt;">
+	<pie_menu label="Quitarse" name="Take Off">
+		<pie_menu  label="Ropa" name="Clothes">
 			<menu_item_call label="Camisa" name="Shirt"/>
 			<menu_item_call label="Pantalones" name="Pants"/>
 			<menu_item_call label="Zapatos"  name="Shoes"/>
 			<menu_item_call label="Calcetines" name="Socks"/>
 			<menu_item_call label="Chaqueta" name="Jacket"/>
 			<menu_item_call label="Guantes" name="Gloves"/>
-			<pie_menu label="Más &gt;" name="More &gt;">
+			<pie_menu label="Más" name="More">
 				<menu_item_call label="Camiseta" name="Self Undershirt"/>
 				<menu_item_separator />
 				<menu_item_call label="Toda la ropa" name="All Clothes"/>
@@ -21,13 +21,13 @@
 			</pie_menu>
 			<menu_item_call label="Falda" name="Skirt"/>
 		</pie_menu>
-		<pie_menu label="HUD &gt;" name="Object Detach HUD"/>
+		<pie_menu label="HUD" name="Object Detach HUD"/>
 		<menu_item_separator />
-		<pie_menu label="Quitar &gt;" name="Object Detach" />
+		<pie_menu label="Quitar" name="Object Detach" />
 		<menu_item_separator />
 		<menu_item_call label="Quitar todo" name="Detach All"/>
 	</pie_menu>
-	<pie_menu label="Herramientas &gt;" name="Tools &gt;">
+	<pie_menu label="Herramientas" name="Tools">
 		<menu_item_call label="Recargar" name="Reload Textures"/> 
 		<menu_item_call label="Animaciones..." name="Anims..."/>
 		<menu_item_call label="Contar Scripts" name="ScriptCount"/>

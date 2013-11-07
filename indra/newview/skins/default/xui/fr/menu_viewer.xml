@@ -72,6 +72,7 @@
 		<menu_item_check label="Construire" name="Build"/>
 		<menu_item_check label="Vue au joystick" name="Joystick Flycam"/>
 		<menu_item_call label="Réinitialiser l'affichage" name="Reset View"/>
+		<menu_item_check label="Bouger re initialise la cam" name="Motion Resets Camera"/>
 		<menu_item_call label="Regarder le dernier intervenant" name="Look at Last Chatter"/>
 		<menu_item_separator label="-----------" name="separator"/>
 		<menu_item_check label="Barre d'outils" name="Toolbar"/>

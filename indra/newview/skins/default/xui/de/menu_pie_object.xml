@@ -6,16 +6,16 @@
 	<menu_item_call label="Hier sitzen" name="Object Sit"/>
 	<menu_item_call label="Nehmen" name="Pie Object Take"/>
 	<menu_item_call label="Zahlen..." name="Pay..."/>
-	<pie_menu label="Mehr &gt;" name="More &gt;">
+	<pie_menu label="Mehr" name="More">
 		<menu_item_call label="Löschen" name="Delete"/>
 		<menu_item_call label="Anziehen" name="Wear"/>
 		<menu_item_call label="Kopie nehmen" name="Take Copy"/>
-		<pie_menu label="HUD anhängen &gt;" name="Object Attach HUD"/>
-		<pie_menu label="Anhängen &gt;" name="Object Attach"/>
+		<pie_menu label="HUD anhängen" name="Object Attach HUD"/>
+		<pie_menu label="Anhängen" name="Object Attach"/>
 		<menu_item_call label="Zurückgeben..." name="Return..."/>
-		<pie_menu label="Mehr &gt;" name="Rate Menu">
+		<pie_menu label="Mehr" name="Rate Menu">
 			
-			<pie_menu label="Werkzeuge &gt;" name="Rate Menu">
+			<pie_menu label="Werkzeuge" name="Rate Menu">
 				<menu_item_call label="Zerstören" name="Destroy"/>
 				<menu_item_call label="Explode" name="Explode"/>
 				<menu_item_call label="Messen" name="Measure"/>
@@ -29,11 +29,11 @@
 			<menu_item_call label="Untersuchen" name="Object Inspect"/>
 			<menu_item_call label="Nicht anzeigen" name="Derender"/>
 			<menu_item_call label="Melden..." name="Report Abuse..."/>
-            <pie_menu label="Pathfinding &gt;" name="PF Menu">
+            <pie_menu label="Pathfinding" name="PF Menu">
               <menu_item_call label="In Linksets anzeigen" name="show_in_linksets"/>
               <menu_item_call label="In Figuren anzeigen" name="show_in_characters"/>
             </pie_menu>
-            <pie_menu label="Skripte &gt;" name="ScriptsMenu">
+            <pie_menu label="Skripte" name="ScriptsMenu">
               <menu_item_call label="Erzeuge Mono" name="CompileMono"/>
               <menu_item_call label="Erzeuge LSL" name="CompileLSL"/>
               <menu_item_call label="Zurücksetzen" name="Reset Scripts"/>

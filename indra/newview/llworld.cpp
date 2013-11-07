@@ -84,6 +84,7 @@ extern LLColor4U MAX_WATER_COLOR;
 // <FS:CR> Aurora Sim
 //const U32 LLWorld::mWidth = 256;
 U32 LLWorld::mWidth = 256;
+U32 LLWorld::mLength = 256;
 // </FS:CR> Aurora Sim
 
 // meters/point, therefore mWidth * mScale = meters per edge
@@ -152,9 +153,10 @@ void LLWorld::destroyClass()
 	}
 }
 
-void LLWorld::setRegionWidth(const U32 width)
+void LLWorld::setRegionSize(const U32& width, const U32& length)
 {
 	mWidth = width ? width : 256; // Width of 0 is really 256
+	mLength = length ? length : 256; // Length of 0 is really 256
 	mWidthInMeters = mWidth * mScale;
 }
 
@@ -247,7 +249,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 		adj_x = region_x + width * gDirAxes[dir][0];
 		adj_y = region_y + width * gDirAxes[dir][1];
 
-		if (mWidth == 256)
+		if (mWidth == 256 && mLength == 256)
 		{
 			to_region_handle(adj_x, adj_y, &adj_handle);
 			neighborp = getRegionFromHandle(adj_handle);
@@ -1361,7 +1363,9 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 // <FS:CR> Aurora Sim
 	U32 region_size_x = 256;
 	msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeX, region_size_x);
-	LLWorld::getInstance()->setRegionWidth(region_size_x);
+	U32 region_size_y = 256;
+	msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeY, region_size_y);
+	LLWorld::getInstance()->setRegionSize(region_size_x, region_size_y);
 // </FS:CR> Aurora Sim
 	LLWorld::getInstance()->addRegion(handle, sim);
 

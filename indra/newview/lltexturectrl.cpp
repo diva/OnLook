@@ -141,6 +141,8 @@ public:
 	
 	// New functions
 	void setImageID( const LLUUID& image_asset_id);
+	const LLUUID& getWhiteImageAssetID() const { return mWhiteImageAssetID; }
+	void setWhiteImageAssetID(const LLUUID& id) { mWhiteImageAssetID = id; }
 	void updateImageStats();
 	const LLUUID& getAssetID() { return mImageAssetID; }
 	const LLUUID& findItemID(const LLUUID& asset_id, BOOL copyable_only);
@@ -157,6 +159,9 @@ public:
 	PermissionMask 	getFilterPermMask();
 	void updateFilterPermMask();
 	void commitIfImmediateSet();
+
+	void setCanApply(bool can_preview, bool can_apply);
+	void setTextureSelectedCallback(texture_selected_callback cb) {mTextureSelectedCallback = cb;}
 
 	static void		onBtnSetToDefault( void* userdata );
 	static void		onBtnSelect( void* userdata );
@@ -220,6 +225,11 @@ protected:
 	LLSaveFolderState	mSavedFolderState;
 	BOOL				mSelectedItemPinned;
 	LLScrollListCtrl*   mLocalScrollCtrl; // tag: vaa emerald local_asset_browser
+
+private:
+	bool mCanApply;
+	bool mCanPreview;
+	texture_selected_callback mTextureSelectedCallback;
 };
 
 LLFloaterTexturePicker::LLFloaterTexturePicker(	
@@ -254,7 +264,9 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	mDnDFilterPermMask(dnd_filter_perm_mask),
 	mNonImmediateFilterPermMask(non_immediate_filter_perm_mask),
 	mContextConeOpacity(0.f),
-	mSelectedItemPinned(FALSE)
+	mSelectedItemPinned(FALSE),
+	mCanApply(true),
+	mCanPreview(true)
 {
 	mCanApplyImmediately = can_apply_immediately;
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_texture_ctrl.xml");
@@ -353,7 +365,9 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 {
 	BOOL handled = FALSE;
 
-	if (cargo_type == DAD_TEXTURE)
+	bool is_mesh = cargo_type == DAD_MESH;
+
+	if ((cargo_type == DAD_TEXTURE) || is_mesh)
 	{
 		LLInventoryItem *item = (LLInventoryItem *)cargo_data;
 
@@ -373,6 +387,9 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		{
 			if (drop)
 			{
+				// <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
+				setCanApply(true, true);
+				// </FS:Ansariel>
 				setImageID( item->getAssetUUID() );
 				commitIfImmediateSet();
 			}
@@ -607,7 +624,7 @@ void LLFloaterTexturePicker::draw()
 
 	// if we're inactive, gray out "apply immediate" checkbox
 	getChildView("show_folders_check")->setEnabled(mActive && mCanApplyImmediately && !mNoCopyTextureSelected);
-	getChildView("Select")->setEnabled(mActive);
+	getChildView("Select")->setEnabled(mActive && mCanApply);
 	getChildView("Pipette")->setEnabled(mActive);
 	getChild<LLUICtrl>("Pipette")->setValue(LLToolMgr::getInstance()->getCurrentTool() == LLToolPipette::getInstance());
 
@@ -768,8 +785,10 @@ PermissionMask LLFloaterTexturePicker::getFilterPermMask()
 
 void LLFloaterTexturePicker::commitIfImmediateSet()
 {
-	bool apply_immediate = getChild<LLUICtrl>("apply_immediate_check")->getValue().asBoolean();
-	if (!mNoCopyTextureSelected && mOwner && apply_immediate)
+	// <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
+	//if (!mNoCopyTextureSelected && mOwner && mCanApply)
+	if (!mNoCopyTextureSelected && mOwner && mCanApply && mCanPreview)
+	// </FS:Ansariel>
 	{
 		mOwner->onFloaterCommit(LLTextureCtrl::TEXTURE_CHANGE);
 	}
@@ -779,6 +798,7 @@ void LLFloaterTexturePicker::commitIfImmediateSet()
 void LLFloaterTexturePicker::onBtnSetToDefault(void* userdata)
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	self->setCanApply(true, true);
 	if (self->mOwner)
 	{
 		self->setImageID( self->mOwner->getDefaultImageAssetID() );
@@ -790,6 +810,7 @@ void LLFloaterTexturePicker::onBtnSetToDefault(void* userdata)
 void LLFloaterTexturePicker::onBtnWhite(void* userdata)
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	self->setCanApply(true, true);
 	self->setImageID( self->mWhiteImageAssetID );
 	self->commitIfImmediateSet();
 }
@@ -798,6 +819,7 @@ void LLFloaterTexturePicker::onBtnWhite(void* userdata)
 void LLFloaterTexturePicker::onBtnNone(void* userdata)
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	self->setCanApply(true, true);
 	self->setImageID( LLUUID::null );
 	self->commitIfImmediateSet();
 }
@@ -806,6 +828,7 @@ void LLFloaterTexturePicker::onBtnNone(void* userdata)
 void LLFloaterTexturePicker::onBtnInvisible(void* userdata)
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	self->setCanApply(true, true);
 	self->setImageID(self->mInvisibleImageAssetID);
 	self->commitIfImmediateSet();
 }
@@ -815,6 +838,7 @@ void LLFloaterTexturePicker::onBtnInvisible(void* userdata)
 void LLFloaterTexturePicker::onBtnAlpha(void* userdata)
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+	self->setCanApply(true, true);
 	self->setImageID(self->mAlphaImageAssetID);
 	self->commitIfImmediateSet();
 }
@@ -959,6 +983,10 @@ void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem
 		mNoCopyTextureSelected = FALSE;
 		if (itemp)
 		{
+			if (!mTextureSelectedCallback.empty())
+			{
+				mTextureSelectedCallback(itemp);
+			}
 			// <dogmode>
 			if (itemp->getPermissions().getMaskOwner() & PERM_ALL)
 				childSetValue("texture_uuid", mImageAssetID);
@@ -970,9 +998,12 @@ void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem
 			{
 				mNoCopyTextureSelected = TRUE;
 			}
+			// <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
+			setCanApply(true, true);
+			// </FS:Ansariel>
 			mImageAssetID = itemp->getAssetUUID();
 			mIsDirty = TRUE;
-			if (user_action)
+			if (user_action && mCanPreview)
 			{
 				// only commit intentional selections, not implicit ones
 				commitIfImmediateSet();
@@ -1004,7 +1035,9 @@ void LLFloaterTexturePicker::onApplyImmediateCheck(LLUICtrl* ctrl, void *user_da
 
 	LLCheckBoxCtrl* check_box = (LLCheckBoxCtrl*)ctrl;
 	gSavedSettings.setBOOL("ApplyTextureImmediately", check_box->get());
-
+	// <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
+	picker->setCanApply(true, true);
+	// </FS:Ansariel>
 	picker->updateFilterPermMask();
 	picker->commitIfImmediateSet();
 }
@@ -1012,6 +1045,16 @@ void LLFloaterTexturePicker::onApplyImmediateCheck(LLUICtrl* ctrl, void *user_da
 void LLFloaterTexturePicker::updateFilterPermMask()
 {
 	//mInventoryPanel->setFilterPermMask( getFilterPermMask() );  Commented out due to no-copy texture loss.
+}
+
+void LLFloaterTexturePicker::setCanApply(bool can_preview, bool can_apply)
+{
+	getChildRef<LLUICtrl>("Select").setEnabled(can_apply);
+	getChildRef<LLUICtrl>("preview_disabled").setVisible(!can_preview);
+	getChildRef<LLUICtrl>("apply_immediate_check").setVisible(can_preview);
+
+	mCanApply = can_apply;
+	mCanPreview = can_preview ? gSavedSettings.getBOOL("ApplyTextureImmediately") : false;
 }
 
 void LLFloaterTexturePicker::onFilterEdit(const std::string& search_string )
@@ -1054,6 +1097,9 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te )
 	if (inventory_item_id.notNull())
 	{
 		LLToolPipette::getInstance()->setResult(TRUE, "");
+		// <FS:Ansariel> FIRE-8298: Apply now checkbox has no effect
+		setCanApply(true, true);
+		// </FS:Ansariel>
 		setImageID(te.getID());
 
 		mNoCopyTextureSelected = FALSE;
@@ -1094,6 +1140,7 @@ LLTextureCtrl::LLTextureCtrl(
 	mDragCallback(NULL),
 	mDropCallback(NULL),
 	mOnCancelCallback(NULL),
+	mOnCloseCallback(NULL),
 	mOnSelectCallback(NULL),
 	mBorderColor( gColors.getColor("DefaultHighlightLight") ),
 	mImageAssetID( image_id ),
@@ -1221,6 +1268,19 @@ void LLTextureCtrl::setShowLoadingPlaceholder(BOOL showLoadingPlaceholder)
 	mShowLoadingPlaceholder = showLoadingPlaceholder;
 }
 
+// Singu Note: These two functions exist to work like their upstream counterparts
+void LLTextureCtrl::setBlankImageAssetID(const LLUUID& id)
+{
+	if (LLFloaterTexturePicker* floater = dynamic_cast<LLFloaterTexturePicker*>(mFloaterHandle.get()))
+		floater->setWhiteImageAssetID(id);
+}
+const LLUUID& LLTextureCtrl::getBlankImageAssetID() const
+{
+	if (LLFloaterTexturePicker* floater = dynamic_cast<LLFloaterTexturePicker*>(mFloaterHandle.get()))
+		return floater->getWhiteImageAssetID();
+	return LLUUID::null;
+}
+
 void LLTextureCtrl::setCaption(const std::string& caption)
 {
 	mCaption->setText( caption );
@@ -1233,6 +1293,15 @@ void LLTextureCtrl::setCanApplyImmediately(BOOL b)
 	if( floaterp )
 	{
 		floaterp->setCanApplyImmediately(b);
+	}
+}
+
+void LLTextureCtrl::setCanApply(bool can_preview, bool can_apply)
+{
+	LLFloaterTexturePicker* floaterp = dynamic_cast<LLFloaterTexturePicker*>(mFloaterHandle.get());
+	if( floaterp )
+	{
+		floaterp->setCanApply(can_preview, can_apply);
 	}
 }
 
@@ -1341,6 +1410,12 @@ void LLTextureCtrl::showPicker(BOOL take_focus)
 
 		mFloaterHandle = floaterp->getHandle();
 
+		LLFloaterTexturePicker* texture_floaterp = dynamic_cast<LLFloaterTexturePicker*>(floaterp);
+		if (texture_floaterp && mOnTextureSelectedCallback)
+		{
+			texture_floaterp->setTextureSelectedCallback(mOnTextureSelectedCallback);
+		}
+
 		gFloaterView->getParentFloater(this)->addDependentFloater(floaterp);
 		floaterp->open();		/* Flawfinder: ignore */
 	}
@@ -1395,6 +1470,10 @@ void LLTextureCtrl::onFloaterClose()
 
 	if (floaterp)
 	{
+		if (mOnCloseCallback)
+		{
+			mOnCloseCallback(this,LLSD());
+		}
 		floaterp->setOwner(NULL);
 		mLastFloaterLeftTop.set( floaterp->getRect().mLeft, floaterp->getRect().mTop );
 	}
@@ -1465,6 +1544,16 @@ void LLTextureCtrl::onFloaterCommit(ETexturePickOp op, LLUUID id)
 }
 
 // tag: vaa emerald local_asset_browser [end]
+
+void LLTextureCtrl::setOnTextureSelectedCallback(texture_selected_callback cb)
+{
+	mOnTextureSelectedCallback = cb;
+	LLFloaterTexturePicker* floaterp = dynamic_cast<LLFloaterTexturePicker*>(mFloaterHandle.get());
+	if (floaterp)
+	{
+		floaterp->setTextureSelectedCallback(cb);
+	}
+}
 
 void LLTextureCtrl::setImageAssetID( const LLUUID& asset_id )
 {

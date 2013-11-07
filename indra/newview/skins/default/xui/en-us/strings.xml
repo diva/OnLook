@@ -305,6 +305,7 @@
 
 	<!-- build floater -->
 	<string name="multiple_textures">Multiple</string>
+	<string name="use_texture">Use texture</string>
 
 	<!-- world map -->
 	<string name="texture_loading">Loading...</string>
