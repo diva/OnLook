@@ -175,6 +175,7 @@ class AIXMLElementParser
   protected:
 	// Used by AIXMLParser, which initializes mNode directly.
 	AIXMLElementParser(std::string const& filename, std::string const& file_desc, U32 version) : mVersion(version), mFilename(filename), mFileDesc(file_desc) { }
+	virtual ~AIXMLElementParser() { }
 
 	// Used for error reporting.
 	virtual std::string node_name(void) const { return "node '" + mNode->getName() + "'"; }

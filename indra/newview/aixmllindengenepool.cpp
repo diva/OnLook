@@ -46,7 +46,7 @@
 // The reason for this clumsy way to link wearable to extra meta data is to stay
 // compatible with the older format (no metaversion).
 
-#include "sys.h"
+#include "llviewerprecompiledheaders.h"
 #include "aixmllindengenepool.h"
 #include "hippogridmanager.h"
 #include "llvisualparam.h"
