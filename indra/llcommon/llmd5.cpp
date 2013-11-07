@@ -281,7 +281,12 @@ void LLMD5::raw_digest(unsigned char *s) const
 	return;
 }
 
-
+//Singu extension: the inverse of LLMD5::raw_digest.
+void LLMD5::clone(unsigned char const* s)
+{
+	memcpy(digest, s, 16);
+	finalized = 1;
+}
 
 void LLMD5::hex_digest(char *s) const
 {
@@ -305,34 +310,31 @@ void LLMD5::hex_digest(char *s) const
 	return;
 }
 
+//Singu extension: the inverse of LLMD5::hex_digest.
+void LLMD5::clone(std::string const& hash_str)
+{
+  for (int i = 0; i < 16; ++i)
+  {
+	unsigned char byte = 0;
+	for (int j = 0; j < 2; ++j)
+	{
+	  char c = hash_str[i * 2 + j];
+	  unsigned char  nibble = (c >= '0' && c <= '9') ? c - '0' : c - 'a' + 10;
+	  byte += nibble << ((1 - j) << 2);
+	}
+	digest[i] = byte;
+  }
+  finalized = 1;
+}
 
 
 
-
-
-std::ostream& operator<<(std::ostream &stream, LLMD5 context)
+std::ostream& operator<<(std::ostream &stream, LLMD5 const& context)
 {
 	char s[33];		/* Flawfinder: ignore */
 	context.hex_digest(s);
 	stream << s;
 	return stream;
-}
-
-bool operator==(const LLMD5& a, const LLMD5& b)
-{
-	unsigned char a_guts[16];
-	unsigned char b_guts[16];
-	a.raw_digest(a_guts);
-	b.raw_digest(b_guts);
-	if (memcmp(a_guts,b_guts,16)==0)
-		return true;
-	else
-		return false;
-}
-
-bool operator!=(const LLMD5& a, const LLMD5& b)
-{
-	return !(a==b);
 }
 
 // PRIVATE METHODS:

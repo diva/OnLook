@@ -112,6 +112,8 @@
 
 #include "llfloaterexploreanimations.h"
 #include "aihttptimeoutpolicy.h"
+#include "aixmllindengenepool.h"
+#include "aifile.h"
 
 #include "llavatarname.h"
 
@@ -7672,29 +7674,10 @@ bool LLVOAvatar::visualParamWeightsAreDefault()
 
 void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value)
 {
-	std::string type_string = "unknown";
-	if (dynamic_cast<LLTexLayerParamAlpha const*>(viewer_param))
-		type_string = "param_alpha";
-	if (dynamic_cast<LLTexLayerParamColor const*>(viewer_param))
-		type_string = "param_color";
-	if (dynamic_cast<LLDriverParam const*>(viewer_param))
-		type_string = "param_driver";
-	if (dynamic_cast<LLPolyMorphTarget const*>(viewer_param))
-		type_string = "param_morph";
-	if (dynamic_cast<LLPolySkeletalDistortion const*>(viewer_param))
-		type_string = "param_skeleton";
-	S32 wtype = -1;
-	LLViewerVisualParam const* vparam = dynamic_cast<LLViewerVisualParam const*>(viewer_param);
-	if (vparam)
-	{
-		wtype = vparam->getWearableType();
-	}
 	S32 u8_value = F32_to_U8(value,viewer_param->getMinWeight(),viewer_param->getMaxWeight());
 	apr_file_printf(file.getFileHandle(), "    <param id=\"%d\" name=\"%s\" value=\"%.3f\" u8=\"%d\" type=\"%s\" wearable=\"%s\"/>\n",
-					viewer_param->getID(), viewer_param->getName().c_str(), value, u8_value, type_string.c_str(),
-					LLWearableType::getTypeName(LLWearableType::EType(wtype)).c_str()
-//					param_location_name(vparam->getParamLocation()).c_str()
-		);
+					viewer_param->getID(), viewer_param->getName().c_str(), value, u8_value, viewer_param->getTypeString(),
+					viewer_param->getDumpWearableTypeName().c_str());
 }
 
 void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
@@ -8352,127 +8335,83 @@ void LLVOAvatar::dumpArchetypeXML(const std::string& prefix, bool group_by_weara
 	dumpArchetypeXML_cont(fullpath, group_by_wearables);
 }
 
-// metaversion 1.0
-// ===============
-//
-// Added as child of <linden_genepool>:
-//
-//   <meta gridnick="secondlife" date="2013-07-16T16:49:00.40Z"/>
-//
-// Optionally, as child of <archetype>, the following node may appear:
-//
-//   <meta path="clothing/jackets" name="Purple jacket" description="A jacket with mainly the color purple">
-//
-// Furthermore, metaversion 1.0 and higher allow the occurance of one or more <archetype> blocks.
-// If this is used then it is strongly advised to use one <archetype> per wearable, so that
-// the the <meta> node makes sense (it then refers to the wearable of that <archetype>).
-//
-// The reason for this clumsy way to link wearable to extra meta data is to stay
-// compatible with the older format (no metaversion).
-//
-//static
-void LLVOAvatar::dumpArchetypeXML_header(LLAPRFile& file, std::string const& archetype_name)
-{
-	apr_file_t* fp = file.getFileHandle();
-	apr_file_printf(fp, "<?xml version=\"1.0\" encoding=\"US-ASCII\" standalone=\"yes\"?>\n");
-	apr_file_printf(fp, "<linden_genepool version=\"1.0\" metaversion=\"1.0\">\n");
-	apr_file_printf(fp, "  <meta gridnick=\"%s\" date=\"%s\"/>\n",
-		LLXMLNode::escapeXML(gHippoGridManager->getConnectedGrid()->getGridNick()).c_str(),
-		LLDate::now().asString().c_str());
-	apr_file_printf(fp, "  <archetype name=\"%s\">\n", archetype_name.c_str());
-}
-
-//static
-void LLVOAvatar::dumpArchetypeXML_footer(LLAPRFile& file)
-{
-	apr_file_t* fp = file.getFileHandle();
-	apr_file_printf(fp, "  </archetype>\n");
-	apr_file_printf(fp, "</linden_genepool>\n");
-}
-
 void LLVOAvatar::dumpArchetypeXML_cont(std::string const& fullpath, bool group_by_wearables)
 {
-	LLAPRFile outfile;
-	outfile.open(fullpath, LL_APR_WB );
-	apr_file_t* file = outfile.getFileHandle();
-	if (!file)
+	try
 	{
-		return;
+	  AIFile outfile(fullpath, "wb");
+	  AIXMLLindenGenepool linden_genepool(outfile);
+
+	  if (group_by_wearables)
+	  {
+		  for (S32 type = LLWearableType::WT_SHAPE; type < LLWearableType::WT_COUNT; type++)
+		  {
+			  AIArchetype archetype((LLWearableType::EType)type);
+
+			  for (LLVisualParam* param = getFirstVisualParam(); param; param = getNextVisualParam())
+			  {
+				  LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
+				  if( (viewer_param->getWearableType() == type) &&
+					  (viewer_param->isTweakable() ) )
+				  {
+					  archetype.add(AIVisualParamIDValuePair(param));
+				  }
+			  }
+
+			  for (U8 te = 0; te < TEX_NUM_INDICES; te++)
+			  {
+				  if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex)te) == type)
+				  {
+					  // MULTIPLE_WEARABLES: extend to multiple wearables?
+					  LLViewerTexture* te_image = getImage((ETextureIndex)te, 0);
+					  if( te_image )
+					  {
+						  archetype.add(AITextureIDUUIDPair(te, te_image->getID()));
+					  }
+				  }
+			  }
+
+			  linden_genepool.child(archetype);
+		  }
+	  }
+	  else
+	  {
+		  // Just dump all params sequentially.
+		  AIArchetype archetype;			// Legacy: Type is set to WT_NONE and will result in <archetype name="???">.
+
+		  for (LLVisualParam* param = getFirstVisualParam(); param; param = getNextVisualParam())
+		  {
+			  archetype.add(AIVisualParamIDValuePair(param));
+		  }
+
+		  for (U8 te = 0; te < TEX_NUM_INDICES; te++)
+		  {
+			  {
+				  // MULTIPLE_WEARABLES: extend to multiple wearables?
+				  LLViewerTexture* te_image = getImage((ETextureIndex)te, 0);
+				  if( te_image )
+				  {
+					  archetype.add(AITextureIDUUIDPair(te, te_image->getID()));
+				  }
+			  }
+		  }
+
+		  linden_genepool.child(archetype);
+	  }
+
+#if 0	// Wasn't used anyway.
+	  bool ultra_verbose = false;
+	  if (isSelf() && ultra_verbose)
+	  {
+		  // show the cloned params inside the wearables as well.
+		  gAgentAvatarp->dumpWearableInfo(outfile);
+	  }
+#endif
 	}
-	else
+	catch (AIAlert::Error const& error)
 	{
-		llinfos << "xmlfile write handle obtained : " << fullpath << llendl;
+		AIAlert::add_modal("AIXMLdumpArchetypeXMLError", AIArgs("[FILE]", fullpath), error);
 	}
-
-	LLVOAvatar::dumpArchetypeXML_header(outfile);
-
-	if (group_by_wearables)
-	{
-		for (S32 type = LLWearableType::WT_SHAPE; type < LLWearableType::WT_COUNT; type++)
-		{
-			const std::string& wearable_name = LLWearableType::getTypeName((LLWearableType::EType)type);
-			apr_file_printf( file, "\n\t\t<!-- wearable: %s -->\n", wearable_name.c_str() );
-
-			for (LLVisualParam* param = getFirstVisualParam(); param; param = getNextVisualParam())
-			{
-				LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
-				if( (viewer_param->getWearableType() == type) && 
-					(viewer_param->isTweakable() ) )
-				{
-					dump_visual_param(outfile, viewer_param, viewer_param->getWeight());
-				}
-			}
-
-			for (U8 te = 0; te < TEX_NUM_INDICES; te++)
-			{
-				if (LLAvatarAppearanceDictionary::getTEWearableType((ETextureIndex)te) == type)
-				{
-					// MULTIPLE_WEARABLES: extend to multiple wearables?
-					LLViewerTexture* te_image = getImage((ETextureIndex)te, 0);
-					if( te_image )
-					{
-						std::string uuid_str;
-						te_image->getID().toString( uuid_str );
-						apr_file_printf( file, "\t\t<texture te=\"%i\" uuid=\"%s\"/>\n", te, uuid_str.c_str());
-					}
-				}
-			}
-		}
-	}
-	else 
-	{
-		// Just dump all params sequentially.
-		for (LLVisualParam* param = getFirstVisualParam(); param; param = getNextVisualParam())
-		{
-			LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
-			dump_visual_param(outfile, viewer_param, viewer_param->getWeight());
-		}
-
-		for (U8 te = 0; te < TEX_NUM_INDICES; te++)
-		{
-			{
-				// MULTIPLE_WEARABLES: extend to multiple wearables?
-				LLViewerTexture* te_image = getImage((ETextureIndex)te, 0);
-				if( te_image )
-				{
-					std::string uuid_str;
-					te_image->getID().toString( uuid_str );
-					apr_file_printf( file, "\t\t<texture te=\"%i\" uuid=\"%s\"/>\n", te, uuid_str.c_str());
-				}
-			}
-		}
-
-	}
-
-	LLVOAvatar::dumpArchetypeXML_footer(outfile);
-
-	bool ultra_verbose = false;
-	if (isSelf() && ultra_verbose)
-	{
-		// show the cloned params inside the wearables as well.
-		gAgentAvatarp->dumpWearableInfo(outfile);
-	}
-	// File will close when handle goes out of scope
 }
 
 void LLVOAvatar::setVisibilityRank(U32 rank)

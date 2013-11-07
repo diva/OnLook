@@ -204,8 +204,8 @@ public:
 
 	void setSimAccess(U8 sim_access)			{ mSimAccess = sim_access; }
 	U8 getSimAccess() const						{ return mSimAccess; }
-	const std::string getSimAccessString() const;
-	
+	std::string const& getSimAccessString();	// Singu note: return reference to mSimAccessString.
+
 	// Homestead-related getters; there are no setters as nobody should be
 	// setting them other than the individual message handler which is a member
 	S32 getSimClassID()                    const { return mClassID; }
@@ -430,6 +430,8 @@ private:
 	U64		mRegionFlags;			// includes damage flags
 	U64		mRegionProtocols;		// protocols supported by this region
 	U8		mSimAccess;
+	U8		mLastSimAccess;			// Singularity extension.
+	std::string mSimAccessString;	// Singularity extension.
 	F32 	mBillableFactor;
 	U32		mMaxTasks;				// max prim count
 	F32		mCameraDistanceSquared;	// updated once per frame

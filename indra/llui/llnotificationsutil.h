@@ -30,10 +30,50 @@
 // to avoid including the heavyweight llnotifications.h
 
 #include "llnotificationptr.h"
+#include "aialert.h"
 
 #include <boost/function.hpp>
 
 class LLSD;
+
+namespace AIAlert
+{
+	// Add an alert directly to LLNotifications.
+
+	// Look up xml_desc in strings.xml.
+	LLNotificationPtr add(std::string const& xml_desc,
+	                      modal_nt type = not_modal);
+	// ... with replacement args.
+	LLNotificationPtr add(std::string const& xml_desc, AIArgs const& args,
+	                      modal_nt type = not_modal);
+
+	// Append it to an existing alert error.
+	LLNotificationPtr add(Error const& error,
+	                      std::string const& xml_desc,
+	                      unsigned int suppress_mask = 0, modal_nt type = not_modal);
+	LLNotificationPtr add(Error const& error,
+	                      std::string const& xml_desc, AIArgs const& args,
+	                      unsigned int suppress_mask = 0, modal_nt type = not_modal);
+	// Prepend it to an existing alert error.
+	LLNotificationPtr add(std::string const& xml_desc,
+	                      Error const& error,
+	                      unsigned int suppress_mask = 0, modal_nt type = not_modal);
+	LLNotificationPtr add(std::string const& xml_desc, AIArgs const& args,
+	                      Error const& error,
+	                      unsigned int suppress_mask = 0, modal_nt type = not_modal);
+
+	// Just show the caught alert error.
+	LLNotificationPtr add(Error const& error,
+	                      modal_nt type = not_modal, unsigned int suppress_mask = 0);
+
+	// Short cuts for enforcing modal alerts.
+	inline LLNotificationPtr add_modal(std::string const& xml_desc) { return add(xml_desc, modal); }
+	inline LLNotificationPtr add_modal(std::string const& xml_desc, AIArgs const& args) { return add(xml_desc, args, modal); }
+	inline LLNotificationPtr add_modal(Error const& error, std::string const& xml_desc, unsigned int suppress_mask = 0) { return add(error, xml_desc, suppress_mask, modal); }
+	inline LLNotificationPtr add_modal(Error const& error, std::string const& xml_desc, AIArgs const& args, unsigned int suppress_mask = 0) { return add(error, xml_desc, args, suppress_mask, modal); }
+	inline LLNotificationPtr add_modal(std::string const& xml_desc, Error const& error, unsigned int suppress_mask = 0) { return add(xml_desc, error, suppress_mask, modal); }
+	inline LLNotificationPtr add_modal(std::string const& xml_desc, AIArgs const& args, Error const& error, unsigned int suppress_mask = 0) { return add(xml_desc, args, error, suppress_mask, modal); }
+}
 
 namespace LLNotificationsUtil
 {

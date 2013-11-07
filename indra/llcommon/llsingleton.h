@@ -27,6 +27,7 @@
 
 #include "llerror.h"	// *TODO: eliminate this
 
+#include <map>
 #include <typeinfo>
 #include <boost/noncopyable.hpp>
 

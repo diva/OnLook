@@ -555,6 +555,36 @@ void XMLCALL EndXMLNode(void *userData,
 			node->setValue(value);
 		}
 	}
+	// Singu note: moved here from XMLData.
+	if (LLXMLNode::sStripEscapedStrings)
+	{
+		std::string value = node->getValue();
+		int len = value.length();
+		if (len > 1 && value[0] == '"' && value[len - 1] == '"')
+		{
+			// Special-case: Escaped string.
+			std::string unescaped_string;
+			for (S32 pos = 1; pos < len - 1; ++pos)
+			{
+				if (value[pos] == '\\' && value[pos + 1] == '\\')
+				{
+					unescaped_string += '\\';
+					++pos;
+				}
+				else if (value[pos] == '\\' && value[pos + 1] == '"')
+				{
+					unescaped_string += '"';
+					++pos;
+				}
+				else
+				{
+					unescaped_string += value[pos];
+				}
+			}
+			value += unescaped_string;
+			node->setValue(value);
+		}
+	}
 }
 
 void XMLCALL XMLData(void *userData,
@@ -563,6 +593,15 @@ void XMLCALL XMLData(void *userData,
 {
 	LLXMLNode* current_node = (LLXMLNode *)userData;
 	std::string value = current_node->getValue();
+#if 0
+	// Apparently also Lindens who write XML parsers can't read documentation.
+	// "A single block of contiguous text free of markup may still result in a sequence
+	//  of calls to this handler. In other words, if you're searching for a pattern in
+	//  the text, it may be split across calls to this handler."
+	// (http://sepp.oetiker.ch/expat-1.95.6-rs.SEPP/expat-1.95.6/doc/reference.html#XML_SetCharacterDataHandler)
+	//
+	// In other words, this is not guaranteed to work at all -- Aleric.
+
 	if (LLXMLNode::sStripEscapedStrings)
 	{
 		if (s[0] == '\"' && s[len-1] == '\"')
@@ -591,6 +630,7 @@ void XMLCALL XMLData(void *userData,
 			return;
 		}
 	}
+#endif
 	value.append(std::string(s, len));
 	current_node->setValue(value);
 }
@@ -926,12 +966,6 @@ bool LLXMLNode::getLayeredXMLNode(LLXMLNodePtr& root,
 	}
 
 	return true;
-}
-
-// static
-void LLXMLNode::writeHeaderToFile(LLFILE *out_file)
-{
-	fprintf(out_file, "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\" ?>\n");
 }
 
 void LLXMLNode::writeToFile(LLFILE *out_file, const std::string& indent, bool use_type_decorations)

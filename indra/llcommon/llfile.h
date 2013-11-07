@@ -30,15 +30,15 @@
 #ifndef LL_LLFILE_H
 #define LL_LLFILE_H
 
+#include <fstream>
+#include <sys/stat.h>
+
 /**
  * This class provides a cross platform interface to the filesystem.
  * Attempts to mostly mirror the POSIX style IO functions.
  */
 
 typedef FILE LLFILE;
-
-#include <fstream>
-#include <sys/stat.h>
 
 #if LL_WINDOWS
 // windows version of stat function and stat data structure are called _stat
@@ -82,6 +82,9 @@ public:
 			std::ios::openmode mode);
 
 	static  const char * tmpdir();
+
+	static std::string strerr(int errn);
+	static std::string strerr();
 };
 
 /**

@@ -173,6 +173,7 @@ public:
 	// LLVisualParam Virtual functions
 	///*virtual*/ BOOL				parseData(LLXmlTreeNode* node);
 	/*virtual*/ void				apply( ESex sex );
+	/*virtual*/ char const*			getTypeString(void) const { return "param_morph"; }
 	
 	// LLViewerVisualParam Virtual functions
 	/*virtual*/ F32					getTotalDistortion();

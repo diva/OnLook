@@ -30,6 +30,46 @@
 #include "llsd.h"
 #include "llxmlnode.h"	// apparently needed to call LLNotifications::instance()
 
+namespace AIAlert
+{
+
+LLNotificationPtr add(Error const& error, modal_nt type, unsigned int suppress_mask)
+{
+	return LLNotifications::instance().add(error, type, suppress_mask);
+}
+
+LLNotificationPtr add(std::string const& xml_desc, modal_nt type)
+{
+	return LLNotifications::instance().add(Error(Prefix(), type, xml_desc, AIArgs()), type, 0);
+}
+
+LLNotificationPtr add(std::string const& xml_desc, AIArgs const& args, modal_nt type)
+{
+	return LLNotifications::instance().add(Error(Prefix(), type, xml_desc, args), type, 0);
+}
+
+LLNotificationPtr add(Error const& error, std::string const& xml_desc, unsigned int suppress_mask, modal_nt type)
+{
+	return LLNotifications::instance().add(Error(Prefix(), type, error, xml_desc, AIArgs()), type, suppress_mask);
+}
+
+LLNotificationPtr add(Error const& error, std::string const& xml_desc, AIArgs const& args, unsigned int suppress_mask, modal_nt type)
+{
+	return LLNotifications::instance().add(Error(Prefix(), type, error, xml_desc, args), type, suppress_mask);
+}
+
+LLNotificationPtr add(std::string const& xml_desc, Error const& error, unsigned int suppress_mask, modal_nt type)
+{
+	return LLNotifications::instance().add(Error(Prefix(), type, xml_desc, AIArgs(), error), type, suppress_mask);
+}
+
+LLNotificationPtr add(std::string const& xml_desc, AIArgs const& args, Error const& error, unsigned int suppress_mask, modal_nt type)
+{
+	return LLNotifications::instance().add(Error(Prefix(), type, xml_desc, args, error), type, suppress_mask);
+}
+
+} // namespace AIAlert
+
 LLNotificationPtr LLNotificationsUtil::add(const std::string& name)
 {
 	return LLNotifications::instance().add(

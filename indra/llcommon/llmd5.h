@@ -32,6 +32,10 @@
 #ifndef LL_LLMD5_H
 #define LL_LLMD5_H
 
+#include "llpreprocessor.h"
+#include <iosfwd>
+#include <cstring>	// memcmp
+
 // LLMD5.CC - source code for the C++/object oriented translation and 
 //          modification of MD5.
 
@@ -98,18 +102,27 @@ public:
   void  update     (const std::string& str);
   void  finalize   ();
 
+  bool isFinalized() const { return finalized; }
+
 // constructors for special circumstances.  All these constructors finalize
 // the MD5 context.
   LLMD5              (const unsigned char *string); // digest string, finalize
   LLMD5              (std::istream& stream);       // digest stream, finalize
   LLMD5              (FILE *file);            // digest file, close, finalize
   LLMD5              (const unsigned char *string, const unsigned int number);
+
+  // Singu extension: set digest directly, finalize.
+  void clone(unsigned char const* digest);	// Inverse of raw_digest.
+  void clone(std::string const& hash_str);	// Inverse of hex_digest.
   
 // methods to acquire finalized result
   void				raw_digest(unsigned char *array) const;	// provide 16-byte array for binary data
   void				hex_digest(char *string) const;			// provide 33-byte array for ascii-hex string
 
-  friend LL_COMMON_API std::ostream&   operator<< (std::ostream&, LLMD5 context);
+  friend LL_COMMON_API std::ostream& operator<< (std::ostream&, LLMD5 const& context);
+  friend LL_COMMON_API bool operator==(const LLMD5& a, const LLMD5& b) { return std::memcmp(a.digest ,b.digest, 16) == 0; }
+  friend LL_COMMON_API bool operator!=(const LLMD5& a, const LLMD5& b) { return std::memcmp(a.digest ,b.digest, 16) != 0; }
+  friend LL_COMMON_API bool  operator<(const LLMD5& a, const LLMD5& b) { return std::memcmp(a.digest ,b.digest, 16) < 0; }
 
 private:
 
@@ -130,8 +143,5 @@ private:
   static void decode    (uint4 *dest, const uint1 *src, const uint4 length);
 
 };
-
-LL_COMMON_API bool operator==(const LLMD5& a, const LLMD5& b);
-LL_COMMON_API bool operator!=(const LLMD5& a, const LLMD5& b);
 
 #endif // LL_LLMD5_H

@@ -69,25 +69,6 @@
     </form>
   </template>
 
-  <notification name="AIXMLExportWriteError">Export Failure: could not open file "[FILE]" for writing.</notification>
-
-  <notification name="AIXMLImportGridMismatch">Import Warning: could not apply textures: [FILE] was exported on grid "[GRIDNAME]" while the currentgrid is "[CURGRID]".</notification>
-
-  <notification name="AIXMLImportParseError">Import Failure: could not read or parse wearable import file "[FILE]".</notification>
-
-  <notification name="AIXMLImportRootTypeError">Import Failure: the file "[FILE]" is not a linden_genepool XML file.</notification>
-
-  <notification name="AIXMLImportRootVersionError">Import Failure: the file "[FILE]" contains linden_genepool XML data with the wrong [TAG]. Version "[VERSIONMAJOR].0" or less is required.</notification>
-
-  <notification name="AIXMLImportInvalidError">Import Failure: the file "[FILE]" contains invalid data.</notification>
-
-  <notification name="AIXMLImportDifferentGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!</notification>
-
-  <notification name="AIXMLImportMixedGrid">Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have been applied but might not exist here!</notification>
-
-  <notification name="AIXMLImportWearableTypeMismatch">Import Warning: the file "[FILE]" does not contain a wearable of type [TYPE].
-It contains an archetype of type [ARCHETYPENAME]. Please select the correct type before importing.</notification>
-
   <notification name="MediaAlert">Der Besitzer der Parzelle m&#xF6;chte Ihren Viewer anweisen die folgende [TYPE] URL zu laden:[URL]Sie k&#xF6;nnen die korrespondierende Dom&#xE4;ne oder In-Welt Objekt-Skript-Server erlauben oder ablehnen."Erlauben" und "Verweigern" gelten nur f&#xFC;r die aktuelle Sitzung, w&#xE4;hrend "Immer sperren" bzw. "Immer erlauben" dann immer gelten.<form name="form">
     <button name="Allow" text="erlauben"/>
 	<button name="Deny" text="verbieten"/>

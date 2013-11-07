@@ -49,7 +49,8 @@ static std::string empty;
 
 #if LL_WINDOWS
 // On Windows, use strerror_s().
-std::string strerr(int errn)
+//static
+std::string LLFile::strerr(int errn)
 {
 	char buffer[256];
 	strerror_s(buffer, errn);       // infers sizeof(buffer) -- love it!
@@ -98,7 +99,8 @@ std::string message_from(int orig_errno, const char* buffer, size_t bufflen,
 					 << " (error " << stre_errno << ')');
 }
 
-std::string strerr(int errn)
+//static
+std::string LLFile::strerr(int errn)
 {
 	char buffer[256];
 	// Select message_from() function matching the strerror_r() we have on hand.
@@ -108,7 +110,8 @@ std::string strerr(int errn)
 #endif	// ! LL_WINDOWS
 
 // On either system, shorthand call just infers global 'errno'.
-std::string strerr()
+//static
+std::string LLFile::strerr()
 {
 	return strerr(errno);
 }
@@ -125,7 +128,7 @@ int warnif(const std::string& desc, const std::string& filename, int rc, int acc
 		if (errn != accept)
 		{
 			LL_WARNS("LLFile") << "Couldn't " << desc << " '" << filename
-							   << "' (errno " << errn << "): " << strerr(errn) << LL_ENDL;
+							   << "' (errno " << errn << "): " << LLFile::strerr(errn) << LL_ENDL;
 		}
 #if 0 && LL_WINDOWS                 // turn on to debug file-locking problems
 		// If the problem is "Permission denied," maybe it's because another
