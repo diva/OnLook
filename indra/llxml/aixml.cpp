@@ -410,7 +410,7 @@ T AIXMLElementParser::read_integer(char const* type, std::string const& value) c
 {
   long long int result;
   sscanf(value.c_str(),"%lld", &result);
-  if (result < std::numeric_limits<T>::min() || result > std::numeric_limits<T>::max())
+  if (result < (std::numeric_limits<T>::min)() || result > (std::numeric_limits<T>::max)())
   {
 	THROW_MALERT("AIXMLElementParser_read_integer_Invalid_TYPE_VALUE_in_FILEDESC_FILENAME",
 		AIArgs("[TYPE]", type)("[VALUE]", value)("FILEDESC", mFileDesc)("[FILENAME]", mFilename));

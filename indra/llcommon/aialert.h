@@ -45,8 +45,13 @@
 // Throw arbitrary class.
 #define   THROW_ALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                     AIAlert::not_modal, __VA_ARGS__)
 #define  THROW_MALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                         AIAlert::modal, __VA_ARGS__)
+#ifdef __GNUC__
 #define  THROW_FALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix), AIAlert::not_modal, __VA_ARGS__)
 #define THROW_FMALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix),     AIAlert::modal, __VA_ARGS__)
+#else
+#define  THROW_FALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__FUNCTION__, AIAlert::pretty_function_prefix), AIAlert::not_modal, __VA_ARGS__)
+#define THROW_FMALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__FUNCTION__, AIAlert::pretty_function_prefix),     AIAlert::modal, __VA_ARGS__)
+#endif
 
 // Shortcut to throw AIAlert::Error.
 #define   THROW_ALERT(...)   THROW_ALERT_CLASS(AIAlert::Error, __VA_ARGS__)
