@@ -698,7 +698,7 @@ std::ostream& operator<<(std::ostream &s, const LLViewerWearable &w)
 	//w.mSaleInfo
 
 	s << "    Params:" << "\n";
-	for (LLWearable::visual_param_index_map_t::const_iterator iter = w.mVisualParamIndexMap.begin();
+	for (LLViewerWearable::visual_param_index_map_t::const_iterator iter = w.mVisualParamIndexMap.begin();
 		 iter != w.mVisualParamIndexMap.end(); ++iter)
 	{
 		S32 param_id = iter->first;
