@@ -61,8 +61,8 @@ AIFile::~AIFile()
 //static
 void AIFile::mkdir(std::string const& dirname, int perms)
 {
-	int rc = LLFile::mkdir(dirname, perms);
-	if (rc < 0 && rc != EEXIST)
+	int rc = LLFile::mkdir_nowarn(dirname, perms);
+	if (rc < 0 && errno != EEXIST)
 	{
 		THROW_ERROR("AIFile_mkdir_Failed_to_create_DIRNAME", AIArgs("[DIRNAME]", dirname));
 	}
@@ -71,8 +71,8 @@ void AIFile::mkdir(std::string const& dirname, int perms)
 //static
 void AIFile::rmdir(std::string const& dirname)
 {
-	int rc = LLFile::rmdir(dirname);
-	if (rc < 0 && rc != ENOENT)
+	int rc = LLFile::rmdir_nowarn(dirname);
+	if (rc < 0 && errno != ENOENT)
 	{
 		THROW_ERROR("AIFile_rmdir_Failed_to_remove_DIRNAME", AIArgs("[DIRNAME]", dirname));
 	}
@@ -101,7 +101,8 @@ void AIFile::close(LLFILE* file)
 //static
 void AIFile::remove(std::string const& filename)
 {
-	if (LLFile::remove(filename) < 0)
+	int rc = LLFile::remove_nowarn(filename);
+	if (rc < 0 && errno != ENOENT)
 	{
 		THROW_ERROR("AIFile_remove_Failed_to_remove_FILENAME", AIArgs("[FILENAME]", filename));
 	}
@@ -110,7 +111,7 @@ void AIFile::remove(std::string const& filename)
 //static
 void AIFile::rename(std::string const& filename, std::string const& newname)
 {
-	if (LLFile::rename(filename, newname) < 0)
+	if (LLFile::rename_nowarn(filename, newname) < 0)
 	{
 		THROW_ERROR("AIFile_rename_Failed_to_rename_FILE_to_NEWFILE", AIArgs("[FILE]", filename)("[NEWFILE]", newname));
 	}
