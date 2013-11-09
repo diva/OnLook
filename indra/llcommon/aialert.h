@@ -231,6 +231,9 @@ class LL_COMMON_API Error : public std::exception
 	lines_type const& lines(void) const { return mLines; }
 	bool is_modal(void) const { return mModal == modal; }
 
+	// Existing alert, just add a prefix and turn alert into modal if appropriate.
+	Error(Prefix const& prefix, modal_nt type, Error const& alert);
+
 	// A string with zero or more replacements.
 	Error(Prefix const& prefix, modal_nt type,
 		  std::string const& xml_desc, AIArgs const& args = AIArgs());
@@ -269,28 +272,33 @@ class LL_COMMON_API ErrorCode : public Error
 	// Accessor.
 	int getCode(void) const { return mCode; }
 
+	// Just an Error with a code.
+	ErrorCode(Prefix const& prefix, modal_nt type, int code,
+	          Error const& alert) :
+	  Error(prefix, type, alert), mCode(code) { }
+
 	// A string with zero or more replacements.
 	ErrorCode(Prefix const& prefix, modal_nt type, int code,
 		      std::string const& xml_desc, AIArgs const& args = AIArgs()) :
-	  Error(prefix, modal, xml_desc, args) { }
+	  Error(prefix, type, xml_desc, args), mCode(code) { }
 
 	// Same as above bit prepending the message with the text of another alert.
 	ErrorCode(Prefix const& prefix, modal_nt type, int code,
 		      Error const& alert,
 		      std::string const& xml_desc, AIArgs const& args = AIArgs()) :
-	  Error(prefix, modal, alert, xml_desc, args) { }
+	  Error(prefix, type, alert, xml_desc, args), mCode(code) { }
 
 	// Same as above but appending the message with the text of another alert.
 	// (no args)
 	ErrorCode(Prefix const& prefix, modal_nt type, int code,
 		      std::string const& xml_desc,
 		      Error const& alert) :
-	  Error(prefix, modal, xml_desc, alert) { }
+	  Error(prefix, type, xml_desc, alert), mCode(code) { }
 	// (with args)
 	ErrorCode(Prefix const& prefix, modal_nt type, int code,
 		      std::string const& xml_desc, AIArgs const& args,
 		      Error const& alert) :
-	  Error(prefix, modal, xml_desc, args, alert) { }
+	  Error(prefix, type, xml_desc, args, alert), mCode(code) { }
 };
 
 } // namespace AIAlert

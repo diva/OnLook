@@ -64,7 +64,7 @@ namespace AIAlert
 
 	// Just show the caught alert error.
 	LLNotificationPtr add(Error const& error,
-	                      modal_nt type = not_modal, unsigned int suppress_mask = 0);
+	                      unsigned int suppress_mask = 0, modal_nt type = not_modal);
 
 	// Short cuts for enforcing modal alerts.
 	inline LLNotificationPtr add_modal(std::string const& xml_desc) { return add(xml_desc, modal); }
@@ -73,6 +73,10 @@ namespace AIAlert
 	inline LLNotificationPtr add_modal(Error const& error, std::string const& xml_desc, AIArgs const& args, unsigned int suppress_mask = 0) { return add(error, xml_desc, args, suppress_mask, modal); }
 	inline LLNotificationPtr add_modal(std::string const& xml_desc, Error const& error, unsigned int suppress_mask = 0) { return add(xml_desc, error, suppress_mask, modal); }
 	inline LLNotificationPtr add_modal(std::string const& xml_desc, AIArgs const& args, Error const& error, unsigned int suppress_mask = 0) { return add(xml_desc, args, error, suppress_mask, modal); }
+	inline LLNotificationPtr add_modal(Error const& error, unsigned int suppress_mask = 0) { return add(error, suppress_mask, modal); }
+
+	// Return the full, translated, texted of the alert (possibly suppressing certain output).
+	std::string text(Error const& error, int suppress_mask = 0);
 }
 
 namespace LLNotificationsUtil

@@ -36,6 +36,13 @@ namespace AIAlert
 {
 
 Error::Error(Prefix const& prefix, modal_nt type,
+             Error const& alert) : mLines(alert.mLines), mModal(type)
+{
+  if (alert.mModal == modal) mModal = modal;
+  if (prefix) mLines.push_front(Line(prefix));
+}
+
+Error::Error(Prefix const& prefix, modal_nt type,
              std::string const& xml_desc, AIArgs const& args) : mModal(type)
 {
   if (prefix) mLines.push_back(Line(prefix));
