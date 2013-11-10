@@ -3272,7 +3272,7 @@ Ya existe un grid con el mismo nombre.
 	</notification>
 	
 	<notification name="ExportFailed">
-		Permisos incorrectos para el objeto exportado. Se aborta el proceso de exportado.
+		Ninguno de los objetos seleccionados es exportable. Se aborta el proceso de exportado.
 	</notification>
 	
 	<notification name="ExportPartial">
@@ -4304,7 +4304,13 @@ Has subido una textura base (baked) de [RESOLUTION] para '[BODYREGION]' después
 		( [EXISTENCE] segundos vivo )
 Has actualizado en forma local una textura base (baked) [RESOLUTION] para '[BODYREGION]' después de [TIME] segundos.
 	</notification>
-	
+
+	<notification name="LivePreviewUnavailable">
+
+No se puede aplicar esta textura en forma inmediata ya que es no copiable y/o no trasnferible.
+		<usetemplate ignoretext="Advertir que el modo Aplicar Textura Inmediatamente no está disponible para texturas no copiables y/o no trasnferibles" name="okignore" yestext="OK"/>
+	</notification>
+
 	<notification name="FirstAO">
 		Para instrucciones, crea una nueva plantilla en el AO. Usa la barra de herramientas para activar/desactivar el AO.
 	</notification>
