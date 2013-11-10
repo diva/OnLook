@@ -51,6 +51,8 @@ public:
 	/*virtual*/ void handleReshape(const LLRect& new_rect, bool by_user = false);
 
 	LLScrollListColumn* getColumn() { return mColumn; }
+	// Singu Note: Toggles drawing the sort arrow altogether
+	void setDrawArrow(bool draw_arrow) { mDrawArrow = draw_arrow; }
 	void setHasResizableElement(BOOL resizable);
 	void updateResizeBars();
 	BOOL canResize();
@@ -60,6 +62,7 @@ public:
 
 private:
 	LLScrollListColumn* mColumn;
+	bool mDrawArrow;
 	LLResizeBar*		mResizeBar;
 	BOOL				mHasResizableElement;
 };

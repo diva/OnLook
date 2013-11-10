@@ -2851,6 +2851,7 @@ void LLScrollListCtrl::addColumn(const LLScrollListColumn::Params& column_params
 			if (column_params.header.image.isProvided())
 			{
 				new_column->mHeader = new LLScrollColumnHeader("btn_" + name, temp_rect, new_column, column_params.header.image, column_params.header.image);
+				new_column->mHeader->setDrawArrow(false);
 			}
 			else
 			{
@@ -2858,6 +2859,7 @@ void LLScrollListCtrl::addColumn(const LLScrollListColumn::Params& column_params
 				if (column_params.header.image_overlay.isProvided())
 				{
 					new_column->mHeader->setImageOverlay(column_params.header.image_overlay);
+					new_column->mHeader->setDrawArrow(false);
 				}
 				else
 				{
