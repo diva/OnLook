@@ -40,7 +40,7 @@ class LLScrollListCtrl;
 class LLScrollColumnHeader : public LLButton
 {
 public:
-	LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column);
+	LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column, const std::string& unselected_image_name = "square_btn_32x128.tga", const std::string& selected_image_name = "square_btn_selected_32x128.tga");
 	~LLScrollColumnHeader();
 
 	/*virtual*/ void draw();

@@ -40,8 +40,8 @@ const S32 MIN_COLUMN_WIDTH = 20;
 //---------------------------------------------------------------------------
 // LLScrollColumnHeader
 //---------------------------------------------------------------------------
-LLScrollColumnHeader::LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column)
-:	LLButton(name, rect, "square_btn_32x128.tga", "square_btn_selected_32x128.tga", LLStringUtil::null, NULL, LLFontGL::getFontSansSerifSmall()),
+LLScrollColumnHeader::LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column, const std::string& unselected_image_name, const std::string& selected_image_name)
+:	LLButton(name, rect, unselected_image_name, selected_image_name, LLStringUtil::null, NULL, LLFontGL::getFontSansSerifSmall()),
 	mColumn(column),
 	mHasResizableElement(FALSE)
 {
