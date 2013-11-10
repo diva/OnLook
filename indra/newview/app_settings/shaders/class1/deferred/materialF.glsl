@@ -82,18 +82,20 @@ uniform sampler2DShadow shadowMap0;
 uniform sampler2DShadow shadowMap1;
 uniform sampler2DShadow shadowMap2;
 uniform sampler2DShadow shadowMap3;
+uniform sampler2D noiseMap;
 
 uniform mat4 shadow_matrix[6];
 uniform vec4 shadow_clip;
 uniform vec2 shadow_res;
 uniform float shadow_bias;
 
-float pcfShadow(sampler2DShadow shadowMap, vec4 stc)
+float pcfShadow(sampler2DShadow shadowMap, vec4 stc, vec2 pos_screen)
 {
 	stc.xyz /= stc.w;
 	stc.z += shadow_bias;
-		
-	stc.x = floor(stc.x*shadow_res.x + fract(stc.y*shadow_res.y*12345))/shadow_res.x; // add some chaotic jitter to X sample pos according to Y to disguise the snapping going on here
+
+	stc.x += (((texture2D(noiseMap, pos_screen/128.0).x)-.5)/shadow_res.x);
+	//stc.x = floor(stc.x*shadow_res.x + fract(stc.y*shadow_res.y*12345))/shadow_res.x; // add some chaotic jitter to X sample pos according to Y to disguise the snapping going on here
 	
 	float cs = shadow2D(shadowMap, stc.xyz).x;
 	float shadow = cs;
@@ -598,6 +600,7 @@ void main()
 	vec3 pos = vary_position;
 
 #if HAS_SUN_SHADOW
+	vec2 frag = vary_fragcoord.xy;
 	float shadow = 0.0;
 	
 	vec4 spos = vec4(pos,1.0);
@@ -617,7 +620,7 @@ void main()
 			
 			float w = 1.0;
 			w -= max(spos.z-far_split.z, 0.0)/transition_domain.z;
-			shadow += pcfShadow(shadowMap3, lpos)*w;
+			shadow += pcfShadow(shadowMap3, lpos,frag.xy)*w;
 			weight += w;
 			shadow += max((pos.z+shadow_clip.z)/(shadow_clip.z-shadow_clip.w)*2.0-1.0, 0.0);
 		}
@@ -629,7 +632,7 @@ void main()
 			float w = 1.0;
 			w -= max(spos.z-far_split.y, 0.0)/transition_domain.y;
 			w -= max(near_split.z-spos.z, 0.0)/transition_domain.z;
-			shadow += pcfShadow(shadowMap2, lpos)*w;
+			shadow += pcfShadow(shadowMap2, lpos,frag.xy)*w;
 			weight += w;
 		}
 
@@ -640,7 +643,7 @@ void main()
 			float w = 1.0;
 			w -= max(spos.z-far_split.x, 0.0)/transition_domain.x;
 			w -= max(near_split.y-spos.z, 0.0)/transition_domain.y;
-			shadow += pcfShadow(shadowMap1, lpos)*w;
+			shadow += pcfShadow(shadowMap1, lpos,frag.xy)*w;
 			weight += w;
 		}
 
@@ -651,7 +654,7 @@ void main()
 			float w = 1.0;
 			w -= max(near_split.x-spos.z, 0.0)/transition_domain.x;
 				
-			shadow += pcfShadow(shadowMap0, lpos)*w;
+			shadow += pcfShadow(shadowMap0, lpos,frag.xy)*w;
 			weight += w;
 		}
 		
