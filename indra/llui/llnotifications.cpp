@@ -1480,29 +1480,11 @@ LLNotificationPtr LLNotifications::add(const LLNotification::Params& p)
 	return pNotif;
 }
 
+namespace AIAlert { std::string text(Error const& error, int suppress_mask = 0); }
 LLNotificationPtr LLNotifications::add(AIAlert::Error const& error, int type, unsigned int suppress_mask)
 {
-	std::string alert_text;
-	bool suppress_newlines = false;
-	bool last_was_prefix = false;
-	for (AIAlert::Error::lines_type::const_iterator line = error.lines().begin(); line != error.lines().end(); ++line)
-	{
-	  // Even if a line is suppressed, we print its leading newline if requested, but never more than one.
-	  if (!suppress_newlines && line->prepend_newline())
-	  {
-		alert_text += '\n';
-		suppress_newlines = true;
-	  }
-	  if (!line->suppressed(suppress_mask))
-	  {
-		if (last_was_prefix) alert_text += ' ';		// The translation system strips off spaces... add them back.
-	    alert_text += LLTrans::getString(line->getXmlDesc(), line->args());
-		suppress_newlines = false;
-		last_was_prefix = line->is_prefix();
-	  }
-	}
 	LLSD substitutions = LLSD::emptyMap();
-	substitutions["[PAYLOAD]"] = alert_text;
+	substitutions["[PAYLOAD]"] = AIAlert::text(error, suppress_mask);
 	return add(LLNotification::Params((type == AIAlert::modal || error.is_modal()) ? "AIAlertModal" : "AIAlert").substitutions(substitutions));
 }
 
