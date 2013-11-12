@@ -3713,6 +3713,7 @@ LLPieMenu::LLPieMenu(const std::string& name, const std::string& label)
 :	LLContextMenu(name, label),
 	mFirstMouseDown(FALSE),
 	mUseInfiniteRadius(FALSE),
+	mHoverIndex(-1),
 	mHoverThisFrame(FALSE),
 	mOuterRingAlpha(1.f),
 	mCurRadius(0.f),
@@ -3749,11 +3750,13 @@ BOOL LLPieMenu::handleHover( S32 x, S32 y, MASK mask )
 
 	mHoverThisFrame = TRUE;
 
-	LLMenuItemGL* item = pieItemFromXY( x, y );
+	S32 index = mHoverIndex;
+	mHoverIndex = pieItemIndexFromXY(x, y);
+	BOOL handled = handleHoverOver(pieItemFromIndex(mHoverIndex), x, y);
 
-	if (item && item->getEnabled() && item != mHoverItem)
+	if (mHoverItem && mHoverIndex != index)
 	{
-		switch(pieItemIndexFromXY(x, y))
+		switch(mHoverIndex)
 		{
 		case 0:
 			make_ui_sound("UISndPieMenuSliceHighlight0");
@@ -3784,7 +3787,7 @@ BOOL LLPieMenu::handleHover( S32 x, S32 y, MASK mask )
 			break;
 		}
 	}
-	return handleHoverOver(item, x, y);
+	return handled;
 }
 
 BOOL LLPieMenu::handleMouseDown( S32 x, S32 y, MASK mask )
@@ -3798,11 +3801,6 @@ BOOL LLPieMenu::handleMouseDown( S32 x, S32 y, MASK mask )
 		// lie to the item about where the click happened
 		// to make sure it's within the item's rectangle
 		handled = item->handleMouseDown( 0, 0, mask );
-	}
-	else if (!mRightMouseDown)
-	{
-		// call hidemenus to make sure transient selections get cleared
-		((LLMenuHolderGL*)getParent())->hideMenus();
 	}
 
 	// always handle mouse down as mouse up will close open menus
@@ -3890,8 +3888,21 @@ BOOL LLPieMenu::handleMouseUp( S32 x, S32 y, MASK mask )
 	}
 	else if (!mRightMouseDown)
 	{
+		// if shift is held, click is in the view, and a parent menu exists, go back up
+		if (mask & MASK_SHIFT && pointInView(x, y))
+		{
+			if (LLMenuItemGL* branch = getParentMenuItem())
+			{
+				if (LLContextMenu* parent = dynamic_cast<LLContextMenu*>(branch->getParent()))
+				{
+					hide();
+					parent->show(LLMenuHolderGL::sContextMenuSpawnPos.mX, LLMenuHolderGL::sContextMenuSpawnPos.mY, false);
+					return true;
+				}
+			}
+		}
 		// call hidemenus to make sure transient selections get cleared
-		((LLMenuHolderGL*)getParent())->hideMenus();
+		sMenuContainer->hideMenus();
 	}
 
 	if (handled)
@@ -3929,6 +3940,7 @@ void LLPieMenu::draw()
 	{
 		mHoverItem->setHighlight(FALSE);
 		mHoverItem = NULL;
+		mHoverIndex = -1;
 	}
 
 	F32 width = (F32) getRect().getWidth();
@@ -3962,22 +3974,16 @@ void LLPieMenu::draw()
 		gl_washer_2d( mCurRadius, (F32) PIE_CENTER_SIZE, steps, bg_color, outer_color );
 
 		// selected wedge
-		item_list_t::iterator item_iter;
-		S32 i = 0;
-		for (item_iter = mItems.begin(); item_iter != mItems.end(); ++item_iter)
+		if (mHoverItem)
 		{
-			if ((*item_iter)->getHighlight())
-			{
-				F32 arc_size = F_PI * 0.25f;
+			F32 arc_size = F_PI * 0.25f;
 
-				F32 start_radians = (i * arc_size) - (arc_size * 0.5f);
-				F32 end_radians = start_radians + arc_size;
+			F32 start_radians = (mHoverIndex * arc_size) - (arc_size * 0.5f);
+			F32 end_radians = start_radians + arc_size;
 
-				LLColor4 outer_color = selected_color;
-				outer_color.mV[VALPHA] *= mOuterRingAlpha;
-				gl_washer_segment_2d( mCurRadius, (F32)PIE_CENTER_SIZE, start_radians, end_radians, steps / 8, selected_color, outer_color );
-			}
-			i++;
+			LLColor4 outer_color = selected_color;
+			outer_color.mV[VALPHA] *= mOuterRingAlpha;
+			gl_washer_segment_2d( mCurRadius, (F32)PIE_CENTER_SIZE, start_radians, end_radians, steps / 8, selected_color, outer_color );
 		}
 
 		LLUI::setLineWidth( line_width );
@@ -4004,38 +4010,10 @@ void LLPieMenu::draw()
 	LLView::draw();
 }
 
-void LLPieMenu::drawBackground(LLMenuItemGL* itemp, LLColor4& color)
+// virtual
+void LLPieMenu::drawBackground(LLMenuItemGL*, LLColor4&)
 {
-	F32 width = (F32) getRect().getWidth();
-	F32 height = (F32) getRect().getHeight();
-	F32 center_x = width/2;
-	F32 center_y = height/2;
-	S32 steps = 100;
-
-	gGL.color4fv( color.mV );
-	gGL.pushUIMatrix();
-	{
-		gGL.translateUI(center_x - itemp->getRect().mLeft, center_y - itemp->getRect().mBottom, 0.f);
-
-		item_list_t::iterator item_iter;
-		S32 i = 0;
-		for (item_iter = mItems.begin(); item_iter != mItems.end(); ++item_iter)
-		{
-			if ((*item_iter) == itemp)
-			{
-				F32 arc_size = F_PI * 0.25f;
-
-				F32 start_radians = (i * arc_size) - (arc_size * 0.5f);
-				F32 end_radians = start_radians + arc_size;
-
-				LLColor4 outer_color = color;
-				outer_color.mV[VALPHA] *= mOuterRingAlpha;
-				gl_washer_segment_2d( mCurRadius, (F32)PIE_CENTER_SIZE, start_radians, end_radians, steps / 8, color, outer_color );
-			}
-			i++;
-		}
-	}
-	gGL.popUIMatrix();
+	// Selection is drawn in our draw call, do nothing here and override base drawing rectangles.
 }
 
 // virtual
@@ -4107,13 +4085,15 @@ void LLPieMenu::arrange()
 
 LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 {
-	// We might have shifted this menu on draw.  If so, we need
-	// to shift over mouseup events until we get a hover event.
-	//x += mShiftHoriz;
-	//y += mShiftVert; 
+	return pieItemFromIndex(pieItemIndexFromXY(x, y));
+}
 
+S32 LLPieMenu::pieItemIndexFromXY(S32 x, S32 y)
+{
 	// An arc of the pie menu is 45 degrees
 	const F32 ARC_DEG = 45.f;
+
+	// correct for non-square pixels
 	S32 delta_x = x - getRect().getWidth() / 2;
 	S32 delta_y = y - getRect().getHeight() / 2;
 
@@ -4121,14 +4101,14 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 	S32 dist_squared = delta_x*delta_x + delta_y*delta_y;
 	if (dist_squared < PIE_CENTER_SIZE*PIE_CENTER_SIZE)
 	{
-		return NULL;
+		return -1;
 	}
 
 	// infinite radius is only used with right clicks
 	S32 radius = llmax( getRect().getWidth()/2, getRect().getHeight()/2 );
 	if (!(mUseInfiniteRadius && mRightMouseDown) && dist_squared > radius * radius)
 	{
-		return NULL;
+		return -1;
 	}
 
 	F32 angle = RAD_TO_DEG * (F32) atan2((F32)delta_y, (F32)delta_x);
@@ -4140,8 +4120,11 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 	// make sure we're only using positive angles
 	if (angle < 0.f) angle += 360.f;
 
-	S32 which = S32( angle / ARC_DEG );
+	return S32( angle / ARC_DEG );
+}
 
+LLMenuItemGL* LLPieMenu::pieItemFromIndex(S32 which)
+{
 	if (0 <= which && which < (S32)mItems.size() )
 	{
 		item_list_t::iterator item_iter;
@@ -4159,33 +4142,6 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 	}
 
 	return NULL;
-}
-
-S32 LLPieMenu::pieItemIndexFromXY(S32 x, S32 y)
-{
-	// An arc of the pie menu is 45 degrees
-	const F32 ARC_DEG = 45.f;
-	// correct for non-square pixels
-	S32 delta_x = x - getRect().getWidth() / 2;
-	S32 delta_y = y - getRect().getHeight() / 2;
-
-	// circle safe zone in the center
-	if (delta_x*delta_x + delta_y*delta_y < PIE_CENTER_SIZE*PIE_CENTER_SIZE)
-	{
-		return -1;
-	}
-
-	F32 angle = RAD_TO_DEG * (F32) atan2((F32)delta_y, (F32)delta_x);
-	
-	// rotate marks CCW so that east = [0, ARC_DEG) instead of
-	// [-ARC_DEG/2, ARC_DEG/2)
-	angle += ARC_DEG / 2.f;
-
-	// make sure we're only using positive angles
-	if (angle < 0.f) angle += 360.f;
-
-	S32 which = S32( angle / ARC_DEG );
-	return which;
 }
 
 

@@ -174,7 +174,7 @@ int warnif(const std::string& desc, const std::string& filename, int rc, int acc
 }
 
 // static
-int	LLFile::mkdir(const std::string& dirname, int perms)
+int	LLFile::mkdir_nowarn(const std::string& dirname, int perms)
 {
 #if LL_WINDOWS
 	// permissions are ignored on Windows
@@ -184,13 +184,19 @@ int	LLFile::mkdir(const std::string& dirname, int perms)
 #else
 	int rc = ::mkdir(dirname.c_str(), (mode_t)perms);
 #endif
+	return rc;
+}
+
+int LLFile::mkdir(const std::string& dirname, int perms)
+{
+	int rc = LLFile::mkdir_nowarn(dirname, perms);
 	// We often use mkdir() to ensure the existence of a directory that might
 	// already exist. Don't spam the log if it does.
 	return warnif("mkdir", dirname, rc, EEXIST);
 }
 
 // static
-int	LLFile::rmdir(const std::string& dirname)
+int	LLFile::rmdir_nowarn(const std::string& dirname)
 {
 #if LL_WINDOWS
 	// permissions are ignored on Windows
@@ -200,6 +206,12 @@ int	LLFile::rmdir(const std::string& dirname)
 #else
 	int rc = ::rmdir(dirname.c_str());
 #endif
+	return rc;
+}
+
+int	LLFile::rmdir(const std::string& dirname)
+{
+	int rc = LLFile::rmdir_nowarn(dirname);
 	return warnif("rmdir", dirname, rc);
 }
 
@@ -241,8 +253,7 @@ int	LLFile::close(LLFILE * file)
 	return ret_value;
 }
 
-
-int	LLFile::remove(const std::string& filename)
+int	LLFile::remove_nowarn(const std::string& filename)
 {
 #if	LL_WINDOWS
 	std::string utf8filename = filename;
@@ -251,10 +262,16 @@ int	LLFile::remove(const std::string& filename)
 #else
 	int rc = ::remove(filename.c_str());
 #endif
+	return rc;
+}
+
+int	LLFile::remove(const std::string& filename)
+{
+	int rc = LLFile::remove_nowarn(filename);
 	return warnif("remove", filename, rc);
 }
 
-int	LLFile::rename(const std::string& filename, const std::string& newname)
+int	LLFile::rename_nowarn(const std::string& filename, const std::string& newname)
 {
 #if	LL_WINDOWS
 	std::string utf8filename = filename;
@@ -265,6 +282,12 @@ int	LLFile::rename(const std::string& filename, const std::string& newname)
 #else
 	int rc = ::rename(filename.c_str(),newname.c_str());
 #endif
+	return rc;
+}
+
+int	LLFile::rename(const std::string& filename, const std::string& newname)
+{
+	int rc = LLFile::rename_nowarn(filename, newname);
 	return warnif(STRINGIZE("rename to '" << newname << "' from"), filename, rc);
 }
 

@@ -726,8 +726,10 @@ void LLFloaterModelPreview::draw()
 		}
 	}
 
+	/* Singu Note: Dummy views and what for?
 	childSetTextArg("prim_cost", "[PRIM_COST]", llformat("%d", mModelPreview->mResourceCost));
 	childSetTextArg("description_label", "[TEXTURES]", llformat("%d", mModelPreview->mTextureSet.size()));
+	*/
 
 	if (mModelPreview)
 	{
@@ -1155,7 +1157,7 @@ void LLFloaterModelPreview::initDecompControls()
 				mDecompParams[param[i].mName] = LLSD(param[i].mDefault.mBool);
 				//llinfos << "Type: boolean, Default: " << (param[i].mDefault.mBool ? "True" : "False") << llendl;
 
-				LLCheckBoxCtrl* check_box = getChild<LLCheckBoxCtrl>(name);
+				LLCheckBoxCtrl* check_box = findChild<LLCheckBoxCtrl>(name);
 				if (check_box)
 				{
 					check_box->setValue(param[i].mDefault.mBool);
@@ -3710,7 +3712,6 @@ void LLModelPreview::loadModelCallback(S32 lod)
 	mLoading = false;
 	if (mFMP)
 	{
-		mFMP->getChild<LLCheckBoxCtrl>("confirm_checkbox")->set(FALSE);
 		if (!mBaseModel.empty())
 		{
 			if (mFMP->getChild<LLUICtrl>("description_form")->getValue().asString().empty())
@@ -4193,7 +4194,9 @@ void LLModelPreview::updateStatusMessages()
 		}
 	}
 
+	/* Singu Note: Dummy views and what for?
 	mFMP->childSetTextArg("submeshes_info", "[SUBMESHES]", llformat("%d", total_submeshes[LLModel::LOD_HIGH]));
+	*/
 
 	std::string mesh_status_na = mFMP->getString("mesh_status_na");
 
@@ -5523,12 +5526,6 @@ void LLModelPreview::setPreviewLOD(S32 lod)
 		LLComboBox* combo_box = mFMP->getChild<LLComboBox>("preview_lod_combo");
 		combo_box->setCurrentByIndex((NUM_LOD-1)-mPreviewLOD); // combo box list of lods is in reverse order
 		mFMP->childSetText("lod_file_" + lod_name[mPreviewLOD], mLODFile[mPreviewLOD]);
-
-		LLComboBox* combo_box2 = mFMP->getChild<LLComboBox>("preview_lod_combo2");
-		combo_box2->setCurrentByIndex((NUM_LOD-1)-mPreviewLOD); // combo box list of lods is in reverse order
-
-		LLComboBox* combo_box3 = mFMP->getChild<LLComboBox>("preview_lod_combo3");
-		combo_box3->setCurrentByIndex((NUM_LOD-1)-mPreviewLOD); // combo box list of lods is in reverse order
 
 		LLColor4 highlight_color = LLUI::sColorsGroup->getColor("MeshImportTableHighlightColor");
 		LLColor4 normal_color = LLUI::sColorsGroup->getColor("MeshImportTableNormalColor");

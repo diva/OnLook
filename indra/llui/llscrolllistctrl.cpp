@@ -2848,23 +2848,28 @@ void LLScrollListCtrl::addColumn(const LLScrollListColumn::Params& column_params
 
 			LLRect temp_rect = LLRect(left,top+mHeadingHeight,right,top);
 
-			new_column->mHeader = new LLScrollColumnHeader("btn_" + name, temp_rect, new_column);
-			new_column->mHeader->setToolTip(column_params.tool_tip());
-			new_column->mHeader->setTabStop(false);
-			new_column->mHeader->setVisible(mDisplayColumnHeaders);
-
-			if(column_params.header.image.isProvided())
+			if (column_params.header.image.isProvided())
 			{
-				new_column->mHeader->setImages(column_params.header.image, column_params.header.image);
-			}
-			else if(column_params.header.image_overlay.isProvided())
-			{
-				new_column->mHeader->setImageOverlay(column_params.header.image_overlay);
+				new_column->mHeader = new LLScrollColumnHeader("btn_" + name, temp_rect, new_column, column_params.header.image, column_params.header.image);
+				new_column->mHeader->setDrawArrow(false);
 			}
 			else
 			{
-				new_column->mHeader->setLabel(column_params.header.label());
+				new_column->mHeader = new LLScrollColumnHeader("btn_" + name, temp_rect, new_column);
+				if (column_params.header.image_overlay.isProvided())
+				{
+					new_column->mHeader->setImageOverlay(column_params.header.image_overlay);
+					new_column->mHeader->setDrawArrow(false);
+				}
+				else
+				{
+					new_column->mHeader->setLabel(column_params.header.label());
+				}
 			}
+
+			new_column->mHeader->setToolTip(column_params.tool_tip());
+			new_column->mHeader->setTabStop(false);
+			new_column->mHeader->setVisible(mDisplayColumnHeaders);
 
 			addChild(new_column->mHeader);
 

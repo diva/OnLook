@@ -41,10 +41,6 @@ void main()
 	
 
 	vec4 p = projection_matrix * vec4(pos, 1.0);
-#if !DEPTH_CLAMP
 	p.z = max(p.z, -p.w+0.01);
 	gl_Position = p;
-#else
-	gl_Position = p;
-#endif
 }

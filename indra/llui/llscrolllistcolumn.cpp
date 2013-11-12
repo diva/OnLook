@@ -40,9 +40,10 @@ const S32 MIN_COLUMN_WIDTH = 20;
 //---------------------------------------------------------------------------
 // LLScrollColumnHeader
 //---------------------------------------------------------------------------
-LLScrollColumnHeader::LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column)
-:	LLButton(name, rect, "square_btn_32x128.tga", "square_btn_selected_32x128.tga", LLStringUtil::null, NULL, LLFontGL::getFontSansSerifSmall()),
+LLScrollColumnHeader::LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column, const std::string& unselected_image_name, const std::string& selected_image_name)
+:	LLButton(name, rect, unselected_image_name, selected_image_name, LLStringUtil::null, NULL, LLFontGL::getFontSansSerifSmall()),
 	mColumn(column),
+	mDrawArrow(true),
 	mHasResizableElement(FALSE)
 {
 	setClickedCallback(boost::bind(&LLScrollColumnHeader::onClick, this, _2));
@@ -65,20 +66,23 @@ LLScrollColumnHeader::~LLScrollColumnHeader()
 
 void LLScrollColumnHeader::draw()
 {
-	std::string sort_column = mColumn->mParentCtrl->getSortColumnName();
-	BOOL draw_arrow = !mColumn->mLabel.empty()
-			&& mColumn->mParentCtrl->isSorted()
-			// check for indirect sorting column as well as column's sorting name
-			&& (sort_column == mColumn->mSortingColumn || sort_column == mColumn->mName);
+	if (mDrawArrow)
+	{
+		std::string sort_column = mColumn->mParentCtrl->getSortColumnName();
+		BOOL draw_arrow = !mColumn->mLabel.empty()
+				&& mColumn->mParentCtrl->isSorted()
+				// check for indirect sorting column as well as column's sorting name
+				&& (sort_column == mColumn->mSortingColumn || sort_column == mColumn->mName);
 
-	BOOL is_ascending = mColumn->mParentCtrl->getSortAscending();
-	if (draw_arrow)
-	{
-		setImageOverlay(is_ascending ? "up_arrow.tga" : "down_arrow.tga", LLFontGL::RIGHT, LLColor4::white);
-	}
-	else
-	{
-		setImageOverlay(LLUUID::null);
+		BOOL is_ascending = mColumn->mParentCtrl->getSortAscending();
+		if (draw_arrow)
+		{
+			setImageOverlay(is_ascending ? "up_arrow.tga" : "down_arrow.tga", LLFontGL::RIGHT, LLColor4::white);
+		}
+		else
+		{
+			setImageOverlay(LLUUID::null);
+		}
 	}
 
 	// Draw children

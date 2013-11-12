@@ -44,6 +44,10 @@ uniform mat4 modelview_matrix;
 #endif
 
 VARYING vec3 vary_position;
+#if HAS_SUN_SHADOW
+VARYING vec2 vary_fragcoord;
+uniform vec2 screen_res;
+#endif
 
 #endif
 
@@ -138,7 +142,11 @@ vary_normal  = n;
 
 #if (DIFFUSE_ALPHA_MODE == DIFFUSE_ALPHA_MODE_BLEND)
 #if !HAS_SKIN
-	vary_position = (modelview_matrix*vec4(position.xyz, 1.0)).xyz;
+	vec3 pos = (modelview_matrix*vec4(position.xyz, 1.0)).xyz;
+	vary_position = pos;
+#endif
+#if HAS_SUN_SHADOW
+	vary_fragcoord = (pos.xy*0.5+0.5)*screen_res;
 #endif
 #endif
 }

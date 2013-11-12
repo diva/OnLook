@@ -68,6 +68,12 @@ public:
 
 	static	int		close(LLFILE * file);
 
+	// Singu extension: the same as below, but doesn't print a warning as to leave errno alone.
+	static	int		mkdir_nowarn(const std::string& filename, int perms);
+	static	int		rmdir_nowarn(const std::string& filename);
+	static	int		remove_nowarn(const std::string& filename);
+	static	int		rename_nowarn(const std::string& filename, const std::string& newname);
+
 	// perms is a permissions mask like 0777 or 0700.  In most cases it will
 	// be overridden by the user's umask.  It is ignored on Windows.
 	static	int		mkdir(const std::string& filename, int perms = 0700);
