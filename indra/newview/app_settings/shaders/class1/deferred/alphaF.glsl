@@ -534,8 +534,6 @@ void main()
 #endif
 
 #ifdef FOR_IMPOSTOR
-	vec4 color;
-	color.rgb = diff.rgb;
 
 #ifdef USE_VERTEX_COLOR
 	float final_alpha = diff.a * vertex_color.a;
@@ -550,6 +548,7 @@ void main()
 	{
 		discard;
 	}
+	vec4 color = vec4(diff.rgb,final_alpha);
 #else
 	
 #ifdef USE_VERTEX_COLOR
@@ -578,10 +577,7 @@ void main()
 		  final_da = min(final_da, 1.0f);
 		  final_da = pow(final_da, 1.0/1.3);
 
-	vec4 color = vec4(0,0,0,0);
-
-	color.rgb = atmosAmbient(color.rgb);
-	color.a   = final_alpha;
+	vec4 color = vec4(getAmblitColor(),final_alpha);
 
 	float ambient = abs(da);
 	ambient *= 0.5;
