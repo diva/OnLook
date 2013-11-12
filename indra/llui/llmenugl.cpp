@@ -3888,6 +3888,19 @@ BOOL LLPieMenu::handleMouseUp( S32 x, S32 y, MASK mask )
 	}
 	else if (!mRightMouseDown)
 	{
+		// if shift is held, click is in the view, and a parent menu exists, go back up
+		if (mask & MASK_SHIFT && pointInView(x, y))
+		{
+			if (LLMenuItemGL* branch = getParentMenuItem())
+			{
+				if (LLContextMenu* parent = dynamic_cast<LLContextMenu*>(branch->getParent()))
+				{
+					hide();
+					parent->show(LLMenuHolderGL::sContextMenuSpawnPos.mX, LLMenuHolderGL::sContextMenuSpawnPos.mY, false);
+					return true;
+				}
+			}
+		}
 		// call hidemenus to make sure transient selections get cleared
 		sMenuContainer->hideMenus();
 	}
