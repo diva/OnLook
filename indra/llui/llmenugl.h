@@ -759,10 +759,12 @@ public:
 
 private:
 	LLMenuItemGL *pieItemFromXY(S32 x, S32 y);
+	LLMenuItemGL* pieItemFromIndex(S32 which);
 	S32			  pieItemIndexFromXY(S32 x, S32 y);
 
 	BOOL			mFirstMouseDown;	// true from show until mouse up
 	BOOL			mUseInfiniteRadius;	// allow picking pie menu items anywhere outside of center circle
+	S32				mHoverIndex;
 	BOOL			mHoverThisFrame;
 	LLFrameTimer	mShrinkBorderTimer;
 	F32				mOuterRingAlpha; // for rendering pie menus as both bounded and unbounded
