@@ -2,7 +2,7 @@
 <panel name="chat">
 	<text name="voice_unavailable">Le chat vocal n'est pas disponible</text>
 	<check_box label="Activer la voix" name="enable_voice_check"/>
-	<string value="Permet de connecter en mÍme temps plusieurs sessions en voice simultanÈe (dÈco reco)" name="multivoice_label"/>
+	<string value="Permet de connecter en mÍme temps plusieurs sessions en voice simultanÈe (deco reco)" name="multivoice_label"/>
 	<radio_group name="ear_location">
 		<radio_item name="0">Ecouter depuis la position de la cam√©ra</radio_item>
 		<radio_item name="1">Ecouter depuis la position de l'avatar</radio_item>
