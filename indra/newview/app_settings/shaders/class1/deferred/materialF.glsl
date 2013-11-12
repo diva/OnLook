@@ -83,6 +83,7 @@ uniform sampler2DShadow shadowMap1;
 uniform sampler2DShadow shadowMap2;
 uniform sampler2DShadow shadowMap3;
 uniform sampler2D noiseMap;
+VARYING vec2 vary_fragcoord;
 
 uniform mat4 shadow_matrix[6];
 uniform vec4 shadow_clip;
@@ -135,7 +136,6 @@ uniform mat3 env_mat;
 uniform mat3 ssao_effect_mat;
 
 uniform vec3 sun_dir;
-VARYING vec2 vary_fragcoord;
 
 VARYING vec3 vary_position;
 
