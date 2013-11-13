@@ -4888,9 +4888,9 @@ Intenta entrecomillando el camino al editor.
   <string name="AIXMLImportRootVersionError">Fallo de Importación: el archivo "[FILE]" contiene datos linden_genepool XML con [TAG] erróneo. Se requiere Versión "[VERSIONMAJOR].0" o inferior.</string>
   <string name="AIXMLImportDifferentGrid">La importación se ha realizado con exito, pero ten presente que el objeto vestible fue exportado desde el grid [EXPORTGRID] (y el grid actual es [CURRENTGRID]). ¡No se aplicaron las UUIDs de las Texturas!</string>
   <string name="AIXMLImportMixedGrid">La importación se ha realizado con exito, pero ten presente que el objeto vestible fue exportado desde el grid [EXPORTGRID] (y el grid actual es [CURRENTGRID]).¡Se aplicaron las UUIDs de la Texturas pero quizás no existan aquí!</string>
-  <string name="AIXMLImportEmptyArchetype">Import warning: the file "[FILE]" contains a wearable of the selected type ([TYPE]), but contains no parameters or textures for that type. Nothing was imported.</string>
+  <string name="AIXMLImportEmptyArchetype">Aviso de Importación: el archivo "[FILE]" contiene seleccionado un objeto vestible del tipo ([TYPE]), pero no contiene parámetros o texturas para dicho tipo. Nada ha sido importado.</string>
   <string name="AIXMLImportWearableTypeMismatch">Aviso de Importación: el archivo "[FILE]" no contiene un objeto vestible de tipo [TYPE]. Éste contiene un arquetipo de tipo [ARCHETYPENAME]. Por favor, selecciona el tipo correcto antes de comenzar la importación.</string>
-  <string name="AIXMLImportError">Failed to import the [TYPE] wearable:</string>
-  <string name="AIXMLImportNoArchetypeError">No archetype found in wearable import file "[FILE]".</string>
+  <string name="AIXMLImportError">Fallo al importar el objeto [TYPE] vestible:</string>
+  <string name="AIXMLImportNoArchetypeError">No se ha encontrado arquetipo en el objeto vestible del archivo de importación "[FILE]".</string>
 
 </strings>
