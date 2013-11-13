@@ -7994,7 +7994,8 @@ void LLPipeline::renderDeferredLighting()
 			mDeferredLight.flush();
 		}
 
-		if (RenderDeferredSSAO)
+		static const LLCachedControl<bool> SHAlwaysSoftenShadows("SHAlwaysSoftenShadows",true);
+		if (RenderDeferredSSAO || (RenderShadowDetail > 0 && SHAlwaysSoftenShadows))
 		{ //soften direct lighting lightmap
 			LLFastTimer ftm(FTM_SOFTEN_SHADOW);
 			//blur lightmap

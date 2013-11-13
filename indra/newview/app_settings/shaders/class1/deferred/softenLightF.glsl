@@ -391,24 +391,23 @@ void main()
 	float envIntensity = norm.z;
 	norm.xyz = decode_normal(norm.xy); // unpack norm
 		
-	float da = dot(norm.xyz, sun_dir.xyz);
-
-	float final_da = max(0.0,da);
-          final_da = min(final_da, 1.0f);
-	      final_da = pow(final_da, 1.0/1.3);
-
 	vec4 diffuse = texture2DRect(diffuseRect, tc);
 
 	//convert to gamma space
 	diffuse.rgb = linear_to_srgb(diffuse.rgb);
 
-	vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
 	vec3 col;
 	float bloom = 0.0;
 	{
+		vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
 		bloom = spec.r*norm.w;
 		if (norm.w < 0.5)
 		{
+		float da = dot(norm.xyz, sun_dir.xyz);
+
+		float final_da = max(0.0,da);
+          final_da = min(final_da, 1.0f);
+	      final_da = pow(final_da, 1.0/1.3);
 		calcAtmospherics(pos.xyz, 1.0);
 	
 		col = atmosAmbient(vec3(0));

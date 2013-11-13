@@ -716,7 +716,8 @@ void LLVOPartGroup::getGeometry(S32 idx,
 	*colorsp++ = color;
 	*colorsp++ = color;
 
-	//if (pglow.mV[3] || part.mGlow.mV[3])
+	//Only add emissive attributes if glowing (doing it for all particles is INCREDIBLY inefficient as it leads to a second, slower, render pass.)
+	if (pglow.mV[3] > F_ALMOST_ZERO || part.mGlow.mV[3] > F_ALMOST_ZERO)
 	{ //only write glow if it is not zero
 		*emissivep++ = pglow;
 		*emissivep++ = pglow;
