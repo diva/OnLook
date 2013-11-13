@@ -26,8 +26,9 @@
 			<text name="speed_rez_seconds">
 				segundos
 			</text>
+			<check_box name="use_context_menus" label="Usar Menús Contextuales en vez de Menús de Circulares"/>
             <check_box name="use_web_profiles" label="Usar perfiles web por defecto" tool_tip="Muestra los perfiles como una página web en vez de usar los paneles de estilo V1. Puede no estar disponible en determinados Grids"/>
-      <check_box name="use_web_search" label="Usar búsqueda basada en web en vez de la búsqueda del visor V1" tool_tip="Puede no estar disponible en determinados Grids"/>				
+			<check_box name="use_web_search" label="Usar búsqueda basada en web en vez de la búsqueda del visor V1" tool_tip="Puede no estar disponible en determinados Grids"/>				
 		</panel>
 		<!-- =========================== -->
 		<panel label="Línea de Comandos" name="Command Line">

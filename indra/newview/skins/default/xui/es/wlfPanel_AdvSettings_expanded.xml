@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel name="Adv_Settings">
 	<panel filename="panel_bg_tab.xml"/>
+		<text name="Camera Preset:">Predet. Cam:</text>
+		<button label="" name="Rear" tool_tip="Vista Posterior"/>
+		<button label="" name="Front" tool_tip="Vista Frontal"/>
+		<button label="" name="Group" tool_tip="Vista Lateral"/>
 	<slider label="Dist. Dibujo:" name="DrawDistance" tool_tip="Cambiar la distancia máxima de dibujo"/>
 	<slider label="Partículas:" name="MaxParticleCount" tool_tip="Cantidad de Partículas a Renderizar"/>
 	<slider label="Max Avs:" name="RenderAvatarMaxVisible" tool_tip="Cuantos avatares se renderizarán en forma completa. Disminuyendo este valor incrementará los FPS en lugares saturados. Requiere que Avatar Impostors esté activado. [Por Defecto 35]"/>

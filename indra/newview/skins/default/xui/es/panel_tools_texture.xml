@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="Textura" name="Texture">
+	<panel.string name="string repeats per meter">
+		Repeticiones Por Metro
+	</panel.string>
+    <panel.string name="string repeats per face">
+		Repeticiones Por Cara
+	</panel.string>
+	<text name="color label">
+		Color
+	</text>
+	<!-- label is blank because control places it below the box -->
+	<color_swatch label="" name="colorswatch" tool_tip="Pulsa para abrir el selector de color" />
+	<text name="color trans">
+		Transparencia %
+	</text>
+	<spinner name="ColorTrans"/>
+	<text name="glow label">
+		Resplandor
+	</text>
+	<spinner name="glow"/>
+	<check_box label="Brillo Total" name="checkbox fullbright"/>
+	<combo_box name="combobox matmedia">
+		<combo_box.item label="Materiales" name="Materials"/>
+		<combo_box.item label="Media" name="Media"/>
+	</combo_box>
+	<combo_box name="combobox mattype">
+		<combo_box.item label="Textura (difusa)" name="Texture (diffuse)"/>
+		<combo_box.item label="Relieve (normal)" name="Bumpiness (normal)"/>
+		<combo_box.item label="Brillantez (especular)" name="Shininess (specular)"/>
+	</combo_box>
+	<texture_picker label="Textura" name="texture control" tool_tip="Pulsa para seleccionar una imagen"/>
+	<text name="label alphamode">
+		Modo Alfa
+	</text>
+	<combo_box name="combobox alphamode">
+		<combo_box.item label="Ninguno" name="None"/>
+		<combo_box.item label="Degradado Alfa" name="Alpha blending"/>
+		<combo_box.item label="Enmascarado Alfa" name="Alpha masking"/>
+		<combo_box.item label="Máscara de Emisión" name="Emissive mask"/>
+	</combo_box>
+	<text name="label maskcutoff">
+		Corte de la Máscara
+	</text>
+	<spinner name="maskcutoff"/>
+	<texture_picker label="Textura" name="bumpytexture control" tool_tip="Pulsa para seleccionar una imagen"/>
+	<text name="label bumpiness">
+		Relieve
+	</text>
+	<combo_box name="combobox bumpiness">
+		<combo_box.item label="Ninguna" name="None"/>
+		<combo_box.item label="Brillo" name="Brightness"/>
+		<combo_box.item label="Oscuro" name="Darkness"/>
+		<combo_box.item label="grano de Madera" name="woodgrain"/>
+		<combo_box.item label="corteza" name="bark"/>
+		<combo_box.item label="ladrillos" name="bricks"/>
+		<combo_box.item label="cajero" name="checker"/>
+		<combo_box.item label="cemento" name="concrete"/>
+		<combo_box.item label="azulejería" name="crustytile"/>
+		<combo_box.item label="piedra cortada" name="cutstone"/>
+		<combo_box.item label="discos" name="discs"/>
+		<combo_box.item label="grava" name="gravel"/>
+		<combo_box.item label="placa de petri" name="petridish"/>
+		<combo_box.item label="revestimiento" name="siding"/>
+		<combo_box.item label="baldosa de piedra" name="stonetile"/>
+		<combo_box.item label="estuco" name="stucco"/>
+		<combo_box.item label="succión" name="suction"/>
+		<combo_box.item label="tejido" name="weave"/>
+              <!--
+                 NORSPEC-182, ensure item doesn't show up in menu until it should
+                <combo_box.item label="Usar textura" name="Use texture"/>
+                 -->
+	</combo_box>
+	<texture_picker label="Textura" name="shinytexture control" tool_tip="Pulsa para seleccionar una imagen"/>
+	<text name="label shininess">
+		Brillantez
+	</text>
+	<combo_box name="combobox shininess">
+		<combo_box.item label="Ninguna" name="None"/>
+		<combo_box.item label="Baja" name="Low"/>
+		<combo_box.item label="Media" name="Medium"/>
+		<combo_box.item label="Alta" name="High"/>
+		<!--
+                 NORSPEC-182, ensure item doesn't show up in menu until it should
+                <combo_box.item label="Usar textura" name="Use texture"/>
+                 -->
+	</combo_box>
+	<text name="label glossiness">
+		Brillo
+	</text>
+	<spinner name="glossiness"/>
+	<text name="label environment">
+		Entorno
+	</text>
+	<spinner name="environment"/>
+	<text name="label shinycolor">
+		Color
+	</text>
+	<!-- label is blank because control places it below the box -->
+	<color_swatch label="" name="shinycolorswatch" tool_tip="Pulsa para abrir el selector de color"/>
+	<text name="media_info">
+		El URL del medio deseado, si hubiera, se coloca aquí
+	</text>
+	<button name="add_media" tool_tip="Añadir Medio" label="Seleccionar..."/>
+	<button name="delete_media" tool_tip="Borrar la textura del medio" label="Borrar"/>
+	<button label="Alinear" name="button align" tool_tip="Alinear la textura del media (se debe subir primero)"/>
+	<check_box label="Sincronizar materiales" name="checkbox maps sync" tool_tip="Sincroniza los parámetros del mapa de la textura"/>
+	<text name="tex gen">
+		Mapeado
+	</text>
+	<combo_box name="combobox texgen">
+		<combo_box.item label="Predeterminado" name="Default"/>
+		<combo_box.item label="Plano" name="Planar"/>
+	</combo_box>
+	<check_box label="Alinear plano" name="checkbox planar align" tool_tip="Alinear la textura de todas las caras seleccionadas a la última cara seleccionada. Requiere mapeo plano de texturas"/>
+	<spinner label="Escala Horizontal" name="TexScaleU"/>
+	<button name="flipTextureScaleU" label="" tool_tip="Voltear"/>
+	<spinner label="Escala Vertical" name="TexScaleV"/>
+	<button name="flipTextureScaleV" label="" tool_tip="Voltear"/>
+	<spinner label="Repeticiones por metro" name="rptctrl"/>
+	<spinner label="Rotación en grados" name="TexRot"/>
+	
+	<spinner label="Desplazamiento Horizontal" name="TexOffsetU"/>
+	<spinner label="Desplazamiento Vertical" name="TexOffsetV"/>
+	<spinner label="Escala Horizontal" name="bumpyScaleU"/>
+	<spinner label="Escala Vertical" name="bumpyScaleV"/>
+	<spinner label="Rotación en grados" name="bumpyRot"/>
+	
+	<spinner label="Desplazamiento Horizontal" name="bumpyOffsetU"/>
+	<spinner label="Desplazamiento Vertical" name="bumpyOffsetV"/>
+	<spinner label="Escala Horizontal" name="shinyScaleU"/>
+	<spinner label="Escala Vertical" name="shinyScaleV"/>
+	<spinner label="Rotación en grados" name="shinyRot"/>
+
+	<spinner label="Desplazamiento Horizontal" name="shinyOffsetU"/>
+	<spinner label="Desplazamiento Vertical" name="shinyOffsetV"/>
+	<button label="Copiar" name="copytextures" tool_tip="Copiar los Parámetros de la Textura"/>
+	<button label="Pegar" name="pastetextures" tool_tip="Pegar Parámetros de la Textura"/>
+	<web_browser name="title_media"/>
+</panel>
