@@ -74,6 +74,10 @@ uniform float shadow_bias;
 uniform sampler2D diffuseMap;
 #endif
 
+#ifdef IS_AVATAR_SKIN
+uniform float minimum_alpha;
+#endif
+
 VARYING vec3 vary_fragcoord;
 VARYING vec3 vary_position;
 VARYING vec2 vary_texcoord0;
@@ -454,7 +458,33 @@ vec3 fullbrightScaleSoftClip(vec3 light)
 
 void main() 
 {
-	
+#ifdef USE_INDEXED_TEX
+	vec4 diff = diffuseLookup(vary_texcoord0.xy);
+#else
+	vec4 diff = texture2D(diffuseMap,vary_texcoord0.xy);
+#endif
+#ifdef USE_VERTEX_COLOR
+	float final_alpha = diff.a * vertex_color.a;
+	diff.rgb *= vertex_color.rgb;
+#else
+	float final_alpha = diff.a;
+#endif
+
+#ifdef IS_AVATAR_SKIN
+	if(final_alpha < minimum_alpha)
+	{
+		discard;
+	}
+#endif
+#ifdef FOR_IMPOSTOR
+	// Insure we don't pollute depth with invis pixels in impostor rendering
+	//
+	if (final_alpha < 0.01)
+	{
+		discard;
+	}
+#endif
+
 	vec4 pos = vec4(vary_position, 1.0);
 	
 	float shadow = 1.0;
@@ -528,37 +558,10 @@ void main()
 	}
 #endif
 
-#ifdef USE_INDEXED_TEX
-	vec4 diff = diffuseLookup(vary_texcoord0.xy);
-#else
-	vec4 diff = texture2D(diffuseMap,vary_texcoord0.xy);
-#endif
 
 #ifdef FOR_IMPOSTOR
-
-#ifdef USE_VERTEX_COLOR
-	float final_alpha = diff.a * vertex_color.a;
-	diff.rgb *= vertex_color.rgb;
-#else
-	float final_alpha = diff.a;
-#endif
-	
-	// Insure we don't pollute depth with invis pixels in impostor rendering
-	//
-	if (final_alpha < 0.01)
-	{
-		discard;
-	}
 	vec4 color = vec4(diff.rgb,final_alpha);
 #else
-	
-#ifdef USE_VERTEX_COLOR
-	float final_alpha = diff.a * vertex_color.a;
-	diff.rgb *= vertex_color.rgb;
-#else
-	float final_alpha = diff.a;
-#endif
-
 
 	vec4 gamma_diff = diff;	
 	diff.rgb = srgb_to_linear(diff.rgb);
