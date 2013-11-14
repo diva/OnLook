@@ -2798,7 +2798,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 					case KEY_RIGHT:
 					case KEY_UP:
 					case KEY_DOWN:
-						if (mask & MASK_CONTROL)
+						if (mask == MASK_CONTROL)
 							break;
 					case KEY_PAGE_UP:
 					case KEY_PAGE_DOWN:
