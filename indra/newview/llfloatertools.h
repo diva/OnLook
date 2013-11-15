@@ -111,6 +111,8 @@ public:
 	void navigateToTitleMedia( const std::string url );
 	bool selectedMediaEditable();
 
+	LLPanelFace* getPanelFace() { return mPanelFace; }
+
 private:
 	void refresh();
 	void refreshMedia();

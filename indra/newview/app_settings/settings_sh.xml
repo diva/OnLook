@@ -185,28 +185,6 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>SHPackDeferredNormals</key>
-    <map>
-      <key>Comment</key>
-      <string>Pack deferred normals into two components.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>SHPrecisionDeferredNormals</key>
-    <map>
-      <key>Comment</key>
-      <string>Enable usage of RGB10A2 for the deferred normalMap format. Reduces normalmapping artifacts.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
 	<key>SHOcclusionFudge</key>
     <map>
       <key>Comment</key>
@@ -239,6 +217,17 @@
       <string>F32</string>
       <key>Value</key>
       <real>0.09</real>
+    </map>
+    <key>SHAlwaysSoftenShadows</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable optional blur pass on shadows.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <real>1</real>
     </map>
   </map>
 </llsd>

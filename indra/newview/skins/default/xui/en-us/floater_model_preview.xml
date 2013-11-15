@@ -536,6 +536,9 @@
 			 left_delta="100" bottom_delta="0" height="16" width="90">
 				Server: [SIM]
 			</text>
+            <text name="price_breakdown" follows="top|left" left="5" bottom_delta="-18" height="16" width="615">
+                 Price Breakdown:      Streaming: [CURRENCY] [STREAMING]      Physics: [CURRENCY] [PHYSICS]      Instances: [CURRENCY] [INSTANCES]      Textures: [CURRENCY] [TEXTURES]      Model: [CURRENCY] [MODEL]
+            </text>
 
 			<!-- NOTE MESSAGE -->
 			<text name="warning_title" font="SansSerif" follows="top|left"
@@ -554,7 +557,7 @@
 			</text>
 
 			<text name="status" follows="top|left"
-			 left="5" bottom_delta="-20" height="16" width="615">
+			 left="5" bottom_delta="-18" height="16" width="615">
 				[STATUS]
 			</text>
 		</panel>

@@ -668,10 +668,6 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		}
 	}
 
-	static const LLCachedControl<bool> SHPackDeferredNormals("SHPackDeferredNormals",false);
-	if(SHPackDeferredNormals)
-		text[count++] = strdup("#define PACK_NORMALS\n");
-
 	if(defines)
 	{
 		for (std::map<std::string,std::string>::iterator iter = defines->begin(); iter != defines->end(); ++iter)

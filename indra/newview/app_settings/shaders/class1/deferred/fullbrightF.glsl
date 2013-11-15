@@ -169,10 +169,12 @@ void main()
 #ifndef HAS_ALPHA_MASK
 	color.a   = fogged.a;
 #endif
-#elif !HAS_ALPHA_MASK
+#else
+#ifndef HAS_ALPHA_MASK
 	color.a   = final_alpha;
 #endif
-#if HAS_ALPHA_MASK
+#endif
+#ifdef HAS_ALPHA_MASK
 	color.a = 0.0;
 #endif 
 

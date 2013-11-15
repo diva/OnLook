@@ -138,8 +138,8 @@ TOOLMEDIAOPEN           CURSOR                  "toolmediaopen.cur"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,5,0,0
- PRODUCTVERSION 1,5,0,0
+ FILEVERSION 1,8,4,5433
+ PRODUCTVERSION 1,8,4,5433
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -156,12 +156,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Siana Gearz"
             VALUE "FileDescription", "Singularity Viewer"
-            VALUE "FileVersion", "1.5.0.0"
+            VALUE "FileVersion", "1.8.4.5433"
             VALUE "InternalName", "Second Life"
             VALUE "LegalCopyright", "Copyright © 2001-2010, Linden Research, Inc., Copyright 2010 Siana Gearz"
-            VALUE "OriginalFilename", "singularity.exe"
+            VALUE "OriginalFilename", "SingularityViewer.exe"
             VALUE "ProductName", "Singularity Viewer"
-            VALUE "ProductVersion", "1.5.0.0"
+            VALUE "ProductVersion", "1.8.4.5433"
         END
     END
     BLOCK "VarFileInfo"

@@ -156,7 +156,9 @@ float pcfShadow(sampler2DShadow shadowMap, vec4 stc, float scl, vec2 pos_screen)
 	stc.xyz /= stc.w;
 	stc.z += shadow_bias;
 
+	//stc.x += (((texture2D(noiseMap, pos_screen/128.0).x)-.5)/shadow_res.x);	//Random dither.
 	stc.x = floor(stc.x*shadow_res.x + fract(pos_screen.y*0.666666666))/shadow_res.x;
+
 	float cs = shadow2D(shadowMap, stc.xyz).x;
 	
 	float shadow = cs;
@@ -173,6 +175,7 @@ float pcfSpotShadow(sampler2DShadow shadowMap, vec4 stc, float scl, vec2 pos_scr
 {
 	stc.xyz /= stc.w;
 	stc.z += spot_shadow_bias*scl;
+	//stc.x += (((texture2D(noiseMap, pos_screen/128.0).x)-.5)/proj_shadow_res.x);	//Random dither.
 	stc.x = floor(proj_shadow_res.x * stc.x + fract(pos_screen.y*0.666666666)) / proj_shadow_res.x; // snap
 	
 	float cs = shadow2D(shadowMap, stc.xyz).x;

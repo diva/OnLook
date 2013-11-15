@@ -305,6 +305,7 @@
 
 	<!-- build floater -->
 	<string name="multiple_textures">Multiple</string>
+	<string name="use_texture">Use texture</string>
 
 	<!-- world map -->
 	<string name="texture_loading">Loading...</string>
@@ -3466,6 +3467,8 @@ If this message persists, restart your computer.
 	<string name="MBFrozenCrashed">
 		[APP_NAME] appears to have frozen or crashed on the previous run.
 Would you like to send a crash report?
+
+(You can change the options for crash reporting in Preferences -> General -> Crash reports)
 	</string>
 	<string name="MBAlert">Notification</string>
 	<string name="MBNoDirectX">

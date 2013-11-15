@@ -6,14 +6,14 @@
 	<menu_item_call label="Sentar aqui" name="Object Sit"/>
 	<menu_item_call label="Pegar" name="Pie Object Take"/>
 	<menu_item_call label="Pagar..." name="Pay..."/>
-	<pie_menu label="Mais &gt;" name="More &gt;">
+	<pie_menu label="Mais" name="More">
 		<menu_item_call label="Apagar" name="Delete"/>
 		<menu_item_call label="Vestir" name="Wear"/>
 		<menu_item_call label="Pegar Cópia" name="Take Copy"/>
-		<pie_menu label="Anexar HUD &gt;" name="Object Attach HUD"/>
-		<pie_menu label="Anexar &gt;" name="Object Attach"/>
+		<pie_menu label="Anexar HUD" name="Object Attach HUD"/>
+		<pie_menu label="Anexar" name="Object Attach"/>
 		<menu_item_call label="Retornar..." name="Return..."/>
-		<pie_menu label="Mais &gt;" name="Rate Menu">
+		<pie_menu label="Mais" name="Rate Menu">
 			<menu_item_call label="Reportar..." name="Report Abuse..."/>
 			<menu_item_call label="Silenciar" name="Object Mute"/>
 			<menu_item_call label="Inspecionar" name="Object Inspect"/>

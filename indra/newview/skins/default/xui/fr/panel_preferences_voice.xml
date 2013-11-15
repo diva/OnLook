@@ -2,11 +2,11 @@
 <panel name="chat">
 	<text name="voice_unavailable">Le chat vocal n'est pas disponible</text>
 	<check_box label="Activer la voix" name="enable_voice_check"/>
-	<string value="Permet de connecter en m�me temps plusieurs sessions en voice simultan�e (d�co reco)" name="multivoice_label"/>
+	<string value="Permet de connecter en même temps plusieurs sessions en voice simultanée (deco reco)" name="multivoice_label"/>
 	<radio_group name="ear_location">
 		<radio_item name="0">Ecouter depuis la position de la caméra</radio_item>
 		<radio_item name="1">Ecouter depuis la position de l'avatar</radio_item>
-		<radio_item name="3">Entendre la voice de maniere �gale pour tout le monde.</radio_item>
+		<radio_item name="3">Entendre la voice de maniere égale pour tout le monde.</radio_item>
 	</radio_group>
 	<text name="push_to_talk_heading">Appuyer pour parler</text>
 	<check_box label="Utiliser &#x22;Appuyer pour Parler&#x22; en mode bascule" name="push_to_talk_toggle_check" tool_tip="Ce mode vous permet de contrôler l'ouverture du micro en mode bascule. Cliquez sur la touche de contrôle ou le bouton &#x22;Parler&#x22; pour ouvrir et fermer le micro. Si vous n'êtes pas en mode bascule, le micro n'est ouvert que si vous cliquez et maintenez enfoncés la touche de contrôle ou appuyez sur le bouton &#x22;Parler&#x22;."/>

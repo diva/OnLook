@@ -14,15 +14,15 @@
 		<on_enable function="Tools.EnableBuyOrTake" userdata="Comprar,Recoger" name="EnableBuyOrTake"/>
 	</menu_item_call>
 	<menu_item_call label="Pagar..." name="Pay..."/>
-	<pie_menu label="Más &gt;" name="More &gt;">
+	<pie_menu label="Más" name="More">
 		<menu_item_call label="Borrar" name="Delete"/>
 		<menu_item_call label="Vestirse" name="Wear"/>
 		<menu_item_call label="Recoger una copia" name="Take Copy"/>
-		<pie_menu label="Anexar HUD &gt;" name="Object Attach HUD" />
-		<pie_menu label="Anexar &gt;" name="Object Attach" />
+		<pie_menu label="Anexar HUD" name="Object Attach HUD" />
+		<pie_menu label="Anexar" name="Object Attach" />
 		<menu_item_call label="Regresar..." name="Return..."/>
-		<pie_menu label="Más &gt;" name="Rate Menu">
-			<pie_menu label="Herramientas &gt;" name="Rate Menu">
+		<pie_menu label="Más" name="Rate Menu">
+			<pie_menu label="Herramientas" name="Rate Menu">
 				<menu_item_call label="Destruir" name="Destroy"/>
 				<menu_item_call label="Explotar" name="Explode"/>
 				<menu_item_call label="Medir" name="Measure"/>
@@ -36,11 +36,11 @@
 			<menu_item_call label="Examinar" name="Object Inspect"/>
 			<menu_item_call label="Desdibujar" name="Derender"/>
 			<menu_item_call label="Denunciar..." name="Report Abuse..."/>
-			<pie_menu label="Pathfinding &gt;" name="PF Menu">
+			<pie_menu label="Pathfinding" name="PF Menu">
 				<menu_item_call label="Mostrar e/Conj.Enlaces" name="show_in_linksets"/>
               <menu_item_call label="Mostrar en Personajes" name="show_in_characters"/>
 			</pie_menu>
-			<pie_menu label="Scripts &gt;" name="ScriptsMenu">
+			<pie_menu label="Scripts" name="ScriptsMenu">
 				<menu_item_call label="Compilar Mono" name="CompileMono"/>
 				<menu_item_call label="Compilar LSL" name="CompileLSL"/>
               <menu_item_call label="Reiniciar" name="Reset Scripts"/>

@@ -320,7 +320,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 			gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 		}
 
-		gGL.diffuseColor4f(1,0,0,1);
+		gGL.diffuseColor4f(0.9,0,0,0.4);
 				
 		LLViewerFetchedTexture::sSmokeImagep->addTextureStats(1024.f*1024.f);
 		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sSmokeImagep, TRUE) ;
@@ -598,6 +598,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 				// If this alpha mesh has glow, then draw it a second time to add the destination-alpha (=glow).  Interleaving these state-changing calls could be expensive, but glow must be drawn Z-sorted with alpha.
 				if (current_shader && 
 					draw_glow_for_this_partition &&
+					(!is_particle_or_hud_particle || params.mHasGlow) &&	//only do this second pass for batches that actually have glow
 					params.mVertexBuffer->hasDataType(LLVertexBuffer::TYPE_EMISSIVE))
 				{
 					// install glow-accumulating blend mode

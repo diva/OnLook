@@ -60,6 +60,7 @@ uniform sampler2DShadow shadowMap0;
 uniform sampler2DShadow shadowMap1;
 uniform sampler2DShadow shadowMap2;
 uniform sampler2DShadow shadowMap3;
+//uniform sampler2D noiseMap;	//Random dither.
 
 uniform vec2 shadow_res;
 
@@ -71,6 +72,10 @@ uniform float shadow_bias;
 
 #ifdef USE_DIFFUSE_TEX
 uniform sampler2D diffuseMap;
+#endif
+
+#ifdef IS_AVATAR_SKIN
+uniform float minimum_alpha;
 #endif
 
 VARYING vec3 vary_fragcoord;
@@ -198,14 +203,16 @@ vec3 calcPointLightOrSpotLight(vec3 light_col, vec3 diffuse, vec3 v, vec3 n, vec
 }
 
 #if HAS_SHADOW
-float pcfShadow(sampler2DShadow shadowMap, vec4 stc)
+float pcfShadow(sampler2DShadow shadowMap, vec4 stc, vec2 pos_screen)
 {
 	stc.xyz /= stc.w;
 	stc.z += shadow_bias;
-		
-	stc.x = floor(stc.x*shadow_res.x + fract(stc.y*shadow_res.y*12345))/shadow_res.x; // add some chaotic jitter to X sample pos according to Y to disguise the snapping going on here
+
+	//stc.x += (((texture2D(noiseMap, pos_screen/128.0).x)-.5)/shadow_res.x);	//Random dither.
+	stc.x = floor(stc.x*shadow_res.x + fract(pos_screen.y*0.666666666))/shadow_res.x; // add some chaotic jitter to X sample pos according to Y to disguise the snapping going on here
 	
 	float cs = shadow2D(shadowMap, stc.xyz).x;
+
 	float shadow = cs;
 	
     shadow += shadow2D(shadowMap, stc.xyz+vec3(2.0/shadow_res.x, 1.5/shadow_res.y, 0.0)).x;
@@ -451,14 +458,40 @@ vec3 fullbrightScaleSoftClip(vec3 light)
 
 void main() 
 {
-	vec2 frag = vary_fragcoord.xy/vary_fragcoord.z*0.5+0.5;
-	frag *= screen_res;
-	
+#ifdef USE_INDEXED_TEX
+	vec4 diff = diffuseLookup(vary_texcoord0.xy);
+#else
+	vec4 diff = texture2D(diffuseMap,vary_texcoord0.xy);
+#endif
+#ifdef USE_VERTEX_COLOR
+	float final_alpha = diff.a * vertex_color.a;
+	diff.rgb *= vertex_color.rgb;
+#else
+	float final_alpha = diff.a;
+#endif
+
+#ifdef IS_AVATAR_SKIN
+	if(final_alpha < minimum_alpha)
+	{
+		discard;
+	}
+#endif
+#ifdef FOR_IMPOSTOR
+	// Insure we don't pollute depth with invis pixels in impostor rendering
+	//
+	if (final_alpha < 0.01)
+	{
+		discard;
+	}
+#endif
+
 	vec4 pos = vec4(vary_position, 1.0);
 	
 	float shadow = 1.0;
 
 #if HAS_SHADOW
+	vec2 frag = vary_fragcoord.xy/vary_fragcoord.z*0.5+0.5;
+	frag *= screen_res;
 	vec4 spos = pos;
 		
 	if (spos.z > -shadow_clip.w)
@@ -478,7 +511,7 @@ void main()
 			
 			float w = 1.0;
 			w -= max(spos.z-far_split.z, 0.0)/transition_domain.z;
-			shadow += pcfShadow(shadowMap3, lpos)*w;
+			shadow += pcfShadow(shadowMap3, lpos,frag.xy)*w;
 			weight += w;
 			shadow += max((pos.z+shadow_clip.z)/(shadow_clip.z-shadow_clip.w)*2.0-1.0, 0.0);
 		}
@@ -490,7 +523,7 @@ void main()
 			float w = 1.0;
 			w -= max(spos.z-far_split.y, 0.0)/transition_domain.y;
 			w -= max(near_split.z-spos.z, 0.0)/transition_domain.z;
-			shadow += pcfShadow(shadowMap2, lpos)*w;
+			shadow += pcfShadow(shadowMap2, lpos,frag.xy)*w;
 			weight += w;
 		}
 
@@ -501,7 +534,7 @@ void main()
 			float w = 1.0;
 			w -= max(spos.z-far_split.x, 0.0)/transition_domain.x;
 			w -= max(near_split.y-spos.z, 0.0)/transition_domain.y;
-			shadow += pcfShadow(shadowMap1, lpos)*w;
+			shadow += pcfShadow(shadowMap1, lpos,frag.xy)*w;
 			weight += w;
 		}
 
@@ -512,7 +545,7 @@ void main()
 			float w = 1.0;
 			w -= max(near_split.x-spos.z, 0.0)/transition_domain.x;
 				
-			shadow += pcfShadow(shadowMap0, lpos)*w;
+			shadow += pcfShadow(shadowMap0, lpos,frag.xy)*w;
 			weight += w;
 		}
 		
@@ -525,38 +558,10 @@ void main()
 	}
 #endif
 
-#ifdef USE_INDEXED_TEX
-	vec4 diff = diffuseLookup(vary_texcoord0.xy);
-#else
-	vec4 diff = texture2D(diffuseMap,vary_texcoord0.xy);
-#endif
 
 #ifdef FOR_IMPOSTOR
-	vec4 color;
-	color.rgb = diff.rgb;
-
-#ifdef USE_VERTEX_COLOR
-	float final_alpha = diff.a * vertex_color.a;
-	diff.rgb *= vertex_color.rgb;
+	vec4 color = vec4(diff.rgb,final_alpha);
 #else
-	float final_alpha = diff.a;
-#endif
-	
-	// Insure we don't pollute depth with invis pixels in impostor rendering
-	//
-	if (final_alpha < 0.01)
-	{
-		discard;
-	}
-#else
-	
-#ifdef USE_VERTEX_COLOR
-	float final_alpha = diff.a * vertex_color.a;
-	diff.rgb *= vertex_color.rgb;
-#else
-	float final_alpha = diff.a;
-#endif
-
 
 	vec4 gamma_diff = diff;	
 	diff.rgb = srgb_to_linear(diff.rgb);
@@ -576,10 +581,7 @@ void main()
 		  final_da = min(final_da, 1.0f);
 		  final_da = pow(final_da, 1.0/1.3);
 
-	vec4 color = vec4(0,0,0,0);
-
-	color.rgb = atmosAmbient(color.rgb);
-	color.a   = final_alpha;
+	vec4 color = vec4(getAmblitColor(),final_alpha);
 
 	float ambient = abs(da);
 	ambient *= 0.5;

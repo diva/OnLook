@@ -249,11 +249,11 @@ LLMenuGL		*gPopupMenuView = NULL;
 LLMenuBarGL		*gLoginMenuBarView = NULL;
 
 // Pie menus
-LLPieMenu	*gPieSelf	= NULL;
-LLPieMenu	*gPieAvatar = NULL;
-LLPieMenu	*gPieObject = NULL;
-LLPieMenu	*gPieAttachment = NULL;
-LLPieMenu	*gPieLand	= NULL;
+LLContextMenu	*gPieSelf	= NULL;
+LLContextMenu	*gPieAvatar = NULL;
+LLContextMenu	*gPieObject = NULL;
+LLContextMenu	*gPieAttachment = NULL;
+LLContextMenu	*gPieLand	= NULL;
 
 // local constants
 const std::string CLIENT_MENU_NAME("Advanced");
@@ -266,13 +266,13 @@ LLMenuGL* gAttachSubMenu = NULL;
 LLMenuGL* gDetachSubMenu = NULL;
 LLMenuGL* gTakeOffClothes = NULL;
 LLMenuGL* gMeshesAndMorphsMenu = NULL;
-LLPieMenu* gPieRate = NULL;
-LLPieMenu* gAttachScreenPieMenu = NULL;
-LLPieMenu* gAttachPieMenu = NULL;
-LLPieMenu* gAttachBodyPartPieMenus[8];
-LLPieMenu* gDetachPieMenu = NULL;
-LLPieMenu* gDetachScreenPieMenu = NULL;
-LLPieMenu* gDetachBodyPartPieMenus[8];
+LLContextMenu* gPieRate = NULL;
+LLContextMenu* gAttachScreenPieMenu = NULL;
+LLContextMenu* gAttachPieMenu = NULL;
+LLContextMenu* gAttachBodyPartPieMenus[8];
+LLContextMenu* gDetachPieMenu = NULL;
+LLContextMenu* gDetachScreenPieMenu = NULL;
+LLContextMenu* gDetachBodyPartPieMenus[8];
 
 LLMenuItemCallGL* gAFKMenu = NULL;
 LLMenuItemCallGL* gBusyMenu = NULL;
@@ -602,6 +602,42 @@ void set_underclothes_menu_options()
 
 static std::vector<LLPointer<view_listener_t> > sMenus;
 
+void build_pie_menus()
+{
+	if (gPieSelf) delete gPieSelf;
+	gPieSelf = LLUICtrlFactory::getInstance()->buildContextMenu("menu_pie_self.xml", gMenuHolder);
+
+	// TomY TODO: what shall we do about these?
+	gDetachScreenPieMenu = gMenuHolder->getChild<LLContextMenu>("Object Detach HUD", true);
+	gDetachPieMenu = gMenuHolder->getChild<LLContextMenu>("Object Detach", true);
+
+	if (gPieAvatar) delete gPieAvatar;
+	gPieAvatar = LLUICtrlFactory::getInstance()->buildContextMenu("menu_pie_avatar.xml", gMenuHolder);
+
+	if (gPieObject) delete gPieObject;
+	gPieObject = LLUICtrlFactory::getInstance()->buildContextMenu("menu_pie_object.xml", gMenuHolder);
+
+	gAttachScreenPieMenu = gMenuHolder->getChild<LLContextMenu>("Object Attach HUD");
+	gAttachPieMenu = gMenuHolder->getChild<LLContextMenu>("Object Attach");
+	gPieRate = gMenuHolder->getChild<LLContextMenu>("Rate Menu");
+
+	if (gPieAttachment) delete gPieAttachment;
+	gPieAttachment = LLUICtrlFactory::getInstance()->buildContextMenu("menu_pie_attachment.xml", gMenuHolder);
+
+	if (gPieLand) delete gPieLand;
+	gPieLand = LLUICtrlFactory::getInstance()->buildContextMenu("menu_pie_land.xml", gMenuHolder);
+}
+
+void rebuild_context_menus()
+{
+	llassert_always(gMenuHolder);
+	if (!gMenuHolder) return; // This should never happen, if it does, don't do anything, menus haven't been built yet or were destroyed.
+	gMenuHolder->hideMenus();
+	build_pie_menus();
+	if (!gAgentAvatarp) return; // The agent's avatar isn't here yet, don't bother with the dynamic attach/detach submenus.
+	gAgentAvatarp->buildContextMenus();
+}
+
 void init_menus()
 {
 	S32 top = gViewerWindow->getRootView()->getRect().getHeight();
@@ -633,35 +669,14 @@ void init_menus()
 	///
 	/// Pie menus
 	///
-	gPieSelf = LLUICtrlFactory::getInstance()->buildPieMenu("menu_pie_self.xml", gMenuHolder);
+	build_pie_menus();
+	gSavedSettings.getControl("LiruUseContextMenus")->getSignal()->connect(boost::bind(rebuild_context_menus));
 
-	// TomY TODO: what shall we do about these?
-	gDetachScreenPieMenu = gMenuHolder->getChild<LLPieMenu>("Object Detach HUD", true);
-	gDetachPieMenu = gMenuHolder->getChild<LLPieMenu>("Object Detach", true);
-
-	gPieAvatar = LLUICtrlFactory::getInstance()->buildPieMenu("menu_pie_avatar.xml", gMenuHolder);
-
-	gPieObject = LLUICtrlFactory::getInstance()->buildPieMenu("menu_pie_object.xml", gMenuHolder);
-
-	gAttachScreenPieMenu = gMenuHolder->getChild<LLPieMenu>("Object Attach HUD");
-	gAttachPieMenu = gMenuHolder->getChild<LLPieMenu>("Object Attach");
-	gPieRate = gMenuHolder->getChild<LLPieMenu>("Rate Menu");
-
-	gPieAttachment = LLUICtrlFactory::getInstance()->buildPieMenu("menu_pie_attachment.xml", gMenuHolder);
-
-	gPieLand = LLUICtrlFactory::getInstance()->buildPieMenu("menu_pie_land.xml", gMenuHolder);
 
 	///
 	/// set up the colors
 	///
 	LLColor4 color;
-
-	LLColor4 pie_color = gColors.getColor("PieMenuBgColor");
-	gPieSelf->setBackgroundColor( pie_color );
-	gPieAvatar->setBackgroundColor( pie_color );
-	gPieObject->setBackgroundColor( pie_color );
-	gPieAttachment->setBackgroundColor( pie_color );
-	gPieLand->setBackgroundColor( pie_color );
 
 	color = gColors.getColor( "MenuPopupBgColor" );
 	gPopupMenuView->setBackgroundColor( color );
@@ -5549,7 +5564,7 @@ class LLEditDelete : public view_listener_t
 
 		// When deleting an object we may not actually be done
 		// Keep selection so we know what to delete when confirmation is needed about the delete
-		gPieObject->hide(TRUE);
+		gPieObject->hide();
 		return true;
 	}
 };
@@ -5669,7 +5684,7 @@ void handle_object_delete()
 
 		// When deleting an object we may not actually be done
 		// Keep selection so we know what to delete when confirmation is needed about the delete
-		gPieObject->hide(TRUE);
+		gPieObject->hide();
 		return;
 }
 

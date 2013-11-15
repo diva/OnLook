@@ -41,7 +41,7 @@ uniform sampler2DShadow shadowMap2;
 uniform sampler2DShadow shadowMap3;
 uniform sampler2DShadow shadowMap4;
 uniform sampler2DShadow shadowMap5;
-
+//uniform sampler2D noiseMap;	//Random dither.
 
 // Inputs
 uniform mat4 shadow_matrix[6];
@@ -100,15 +100,17 @@ float pcfShadow(sampler2DShadow shadowMap, vec4 stc, float scl, vec2 pos_screen)
 	stc.xyz /= stc.w;
 	stc.z += shadow_bias;
 
-	stc.x = floor(stc.x*shadow_res.x + fract(pos_screen.y*0.666666666))/shadow_res.x; // add some jitter to X sample pos according to Y to disguise the snapping going on here
+	//stc.x += (((texture2D(noiseMap, pos_screen/128.0).x)-.5)/shadow_res.x);	//Random dither.
+	stc.x = floor(stc.x*shadow_res.x + fract(pos_screen.y*0.666666666))/shadow_res.x; // add some chaotic jitter to X sample pos according to Y to disguise the snapping going on here
+
 	float cs = shadow2D(shadowMap, stc.xyz).x;
 
 	float shadow = cs;
 
 	shadow += shadow2D(shadowMap, stc.xyz+vec3(2.0/shadow_res.x, 1.5/shadow_res.y, 0.0)).x;
 	shadow += shadow2D(shadowMap, stc.xyz+vec3(1.0/shadow_res.x, -1.5/shadow_res.y, 0.0)).x;
-	shadow += shadow2D(shadowMap, stc.xyz+vec3(-2.0/shadow_res.x, 1.5/shadow_res.y, 0.0)).x;
-	shadow += shadow2D(shadowMap, stc.xyz+vec3(-1.0/shadow_res.x, -1.5/shadow_res.y, 0.0)).x;
+	shadow += shadow2D(shadowMap, stc.xyz+vec3(-1.0/shadow_res.x, 1.5/shadow_res.y, 0.0)).x;
+	shadow += shadow2D(shadowMap, stc.xyz+vec3(-2.0/shadow_res.x, -1.5/shadow_res.y, 0.0)).x;
 
 			
     return shadow*0.2;
@@ -118,6 +120,7 @@ float pcfSpotShadow(sampler2DShadow shadowMap, vec4 stc, float scl, vec2 pos_scr
 {
 	stc.xyz /= stc.w;
 	stc.z += spot_shadow_bias*scl;
+	//stc.x += (((texture2D(noiseMap, pos_screen/128.0).x)-.5)/proj_shadow_res.x);	//Random dither.
 	stc.x = floor(proj_shadow_res.x * stc.x + fract(pos_screen.y*0.666666666)) / proj_shadow_res.x; // snap
 
 	float cs = shadow2D(shadowMap, stc.xyz).x;

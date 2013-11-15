@@ -1,5 +1,6 @@
 /** 
- * @file attachmentShadowV.glsl
+ * @file highlightV.glsl
+ *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
  * Copyright (C) 2007, Linden Research, Inc.
@@ -22,25 +23,20 @@
  * $/LicenseInfo$
  */
 
-uniform mat4 projection_matrix;
-uniform mat4 modelview_matrix;
 uniform mat4 texture_matrix0;
+uniform mat4 modelview_projection_matrix;
 
 ATTRIBUTE vec3 position;
 ATTRIBUTE vec2 texcoord0;
+ATTRIBUTE vec2 texcoord1;
+ATTRIBUTE vec2 texcoord2;
 
-mat4 getObjectSkinnedTransform();
+VARYING vec2 vary_texcoord0;
 
 void main()
 {
 	//transform vertex
-	mat4 mat = getObjectSkinnedTransform();
-	
-	mat = modelview_matrix * mat;
-	vec3 pos = (mat*vec4(position.xyz, 1.0)).xyz;
-	
-
-	vec4 p = projection_matrix * vec4(pos, 1.0);
-	p.z = max(p.z, -p.w+0.01);
-	gl_Position = p;
+	gl_Position = modelview_projection_matrix * vec4(position.xyz, 1.0);
+	vary_texcoord0 = (texture_matrix0 * vec4(texcoord1,0,1)).xy;
 }
+

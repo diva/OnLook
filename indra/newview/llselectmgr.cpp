@@ -29,6 +29,7 @@
 // file include
 #define LLSELECTMGR_CPP
 #include "llselectmgr.h"
+#include "llmaterialmgr.h"
 
 // library includes
 #include "llcachename.h"
@@ -64,6 +65,7 @@
 #include "llmenugl.h"
 #include "llmeshrepository.h"
 #include "llmutelist.h"
+#include "llparcel.h"
 #include "llnotificationsutil.h"
 #include "llstatusbar.h"
 #include "llsurface.h"
@@ -80,20 +82,18 @@
 #include "llviewermenu.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
+#include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llvoavatarself.h"
 #include "llvovolume.h"
 #include "pipeline.h"
 #include "llviewershadermgr.h"
-
-#include "llparcel.h"
-#include "llviewerparcelmgr.h"
-
+#include "llpanelface.h"
 #include "llglheaders.h"
 #include "hippogridmanager.h"
 
-// [RLVa:KB]
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
@@ -191,6 +191,7 @@ LLSelectMgr::LLSelectMgr()
    mDebugSelectMgr(LLCachedControl<bool>( "DebugSelectMgr", false))
 {
 	mTEMode = FALSE;
+	mTextureChannel = LLRender::DIFFUSE_MAP;
 	mLastCameraPos.clearVec();
 
 	sHighlightThickness	= gSavedSettings.getF32("SelectionHighlightThickness");
@@ -239,6 +240,8 @@ void LLSelectMgr::clearSelections()
 	mHighlightedObjects->deleteAllNodes();
 	mRectSelectedObjects.clear();
 	mGridObjects.deleteAllNodes();
+
+	LLPipeline::setRenderHighlightTextureChannel(LLRender::DIFFUSE_MAP);
 }
 
 void LLSelectMgr::update()
@@ -867,6 +870,10 @@ void LLSelectMgr::addAsIndividual(LLViewerObject *objectp, S32 face, BOOL undoab
 {
 	// check to see if object is already in list
 	LLSelectNode *nodep = mSelectedObjects->findNode(objectp);
+
+	// Reset (in anticipation of being set to an appropriate value by panel refresh, if they're up)
+	//
+	setTextureChannel(LLRender::DIFFUSE_MAP);
 
 	// if not in list, add it
 	if (!nodep)
@@ -2005,6 +2012,76 @@ void LLSelectMgr::selectionSetGlow(F32 glow)
 	mSelectedObjects->applyToObjects( &func2 );
 }
 
+void LLSelectMgr::selectionSetMaterialParams(LLSelectedTEMaterialFunctor* material_func)
+{
+	struct f1 : public LLSelectedTEFunctor
+	{
+		LLMaterialPtr mMaterial;
+		f1(LLSelectedTEMaterialFunctor* material_func) : _material_func(material_func) {}
+
+		bool apply(LLViewerObject* object, S32 face)
+		{
+			if (object && object->permModify() && _material_func)
+			{
+				LLTextureEntry* tep = object->getTE(face);
+				if (tep)
+				{
+					LLMaterialPtr current_material = tep->getMaterialParams();
+					_material_func->apply(object, face, tep, current_material);
+				}
+			}
+			return true;
+		}
+
+		LLSelectedTEMaterialFunctor* _material_func;
+	} func1(material_func);
+	mSelectedObjects->applyToTEs( &func1 );
+
+	struct f2 : public LLSelectedObjectFunctor
+	{
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->sendTEUpdate();
+			}
+			return true;
+		}
+	} func2;
+	mSelectedObjects->applyToObjects( &func2 );
+}
+
+void LLSelectMgr::selectionRemoveMaterial()
+{
+	struct f1 : public LLSelectedTEFunctor
+	{
+		bool apply(LLViewerObject* object, S32 face)
+		{
+			if (object->permModify())
+			{
+			        LL_DEBUGS("Materials") << "Removing material from object " << object->getID() << " face " << face << LL_ENDL;
+				LLMaterialMgr::getInstance()->remove(object->getID(),face);
+				object->setTEMaterialParams(face, NULL);
+			}
+			return true;
+		}
+	} func1;
+	mSelectedObjects->applyToTEs( &func1 );
+
+	struct f2 : public LLSelectedObjectFunctor
+	{
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->sendTEUpdate();
+			}
+			return true;
+		}
+	} func2;
+	mSelectedObjects->applyToObjects( &func2 );
+}
+
 
 //-----------------------------------------------------------------------------
 // findObjectPermissions()
@@ -2044,6 +2121,7 @@ BOOL LLSelectMgr::selectionGetGlow(F32 *glow)
 	*glow = lglow;
 	return identical;
 }
+
 
 void LLSelectMgr::selectionSetPhysicsType(U8 type)
 {
@@ -2139,6 +2217,7 @@ void LLSelectMgr::selectionSetRestitution(F32 restitution)
 	} sendfunc(restitution);
 	getSelection()->applyToObjects(&sendfunc);
 }
+
 
 //-----------------------------------------------------------------------------
 // selectionSetMaterial()
@@ -2424,19 +2503,66 @@ void LLSelectMgr::adjustTexturesByScale(BOOL send_to_sim, BOOL stretch)
 					continue;
 				}
 				
-				LLVector3 scale_ratio = selectNode->mTextureScaleRatios[te_num]; 
 				LLVector3 object_scale = object->getScale();
+				LLVector3 diffuse_scale_ratio  = selectNode->mTextureScaleRatios[te_num];
+
+				// We like these to track together. NORSPEC-96
+				//
+				LLVector3 normal_scale_ratio   = diffuse_scale_ratio;
+				LLVector3 specular_scale_ratio = diffuse_scale_ratio;
 				
 				// Apply new scale to face
 				if (planar)
 				{
-					object->setTEScale(te_num, 1.f/object_scale.mV[s_axis]*scale_ratio.mV[s_axis],
-										1.f/object_scale.mV[t_axis]*scale_ratio.mV[t_axis]);
+					F32 diffuse_scale_s = diffuse_scale_ratio.mV[s_axis]/object_scale.mV[s_axis];
+					F32 diffuse_scale_t = diffuse_scale_ratio.mV[t_axis]/object_scale.mV[t_axis];
+
+					F32 normal_scale_s = normal_scale_ratio.mV[s_axis]/object_scale.mV[s_axis];
+					F32 normal_scale_t = normal_scale_ratio.mV[t_axis]/object_scale.mV[t_axis];
+
+					F32 specular_scale_s = specular_scale_ratio.mV[s_axis]/object_scale.mV[s_axis];
+					F32 specular_scale_t = specular_scale_ratio.mV[t_axis]/object_scale.mV[t_axis];
+
+					object->setTEScale(te_num, diffuse_scale_s, diffuse_scale_t);
+
+					LLTextureEntry* tep = object->getTE(te_num);
+
+					if (tep && !tep->getMaterialParams().isNull())
+					{
+						LLMaterialPtr orig = tep->getMaterialParams();
+						LLMaterialPtr p = gFloaterTools->getPanelFace()->createDefaultMaterial(orig);
+						p->setNormalRepeat(normal_scale_s, normal_scale_t);
+						p->setSpecularRepeat(specular_scale_s, specular_scale_t);
+
+						LLMaterialMgr::getInstance()->put(object->getID(), te_num, *p);
+					}
 				}
 				else
 				{
-					object->setTEScale(te_num, scale_ratio.mV[s_axis]*object_scale.mV[s_axis],
-											scale_ratio.mV[t_axis]*object_scale.mV[t_axis]);
+
+					F32 diffuse_scale_s = diffuse_scale_ratio.mV[s_axis]*object_scale.mV[s_axis];
+					F32 diffuse_scale_t = diffuse_scale_ratio.mV[t_axis]*object_scale.mV[t_axis];
+
+					F32 normal_scale_s = normal_scale_ratio.mV[s_axis]*object_scale.mV[s_axis];
+					F32 normal_scale_t = normal_scale_ratio.mV[t_axis]*object_scale.mV[t_axis];
+
+					F32 specular_scale_s = specular_scale_ratio.mV[s_axis]*object_scale.mV[s_axis];
+					F32 specular_scale_t = specular_scale_ratio.mV[t_axis]*object_scale.mV[t_axis];
+
+					object->setTEScale(te_num, diffuse_scale_s,diffuse_scale_t);
+
+					LLTextureEntry* tep = object->getTE(te_num);
+
+					if (tep && !tep->getMaterialParams().isNull())
+					{
+						LLMaterialPtr orig = tep->getMaterialParams();
+						LLMaterialPtr p = gFloaterTools->getPanelFace()->createDefaultMaterial(orig);
+
+						p->setNormalRepeat(normal_scale_s, normal_scale_t);
+						p->setSpecularRepeat(specular_scale_s, specular_scale_t);
+
+						LLMaterialMgr::getInstance()->put(object->getID(), te_num, *p);
+					}
 				}
 				send = send_to_sim;
 			}
@@ -2888,7 +3014,6 @@ BOOL LLSelectMgr::selectGetViewableCharacters()
 	}
 	return TRUE;
 }
-
 
 //-----------------------------------------------------------------------------
 // selectGetRootsTransfer() - return TRUE if current agent can transfer all
@@ -4473,7 +4598,8 @@ void LLSelectMgr::saveSelectedObjectTransform(EActionType action_type)
 	struct f : public LLSelectedNodeFunctor
 	{
 		EActionType mActionType;
-		f(EActionType a) : mActionType(a) {}
+		LLSelectMgr* mManager;
+		f(EActionType a, LLSelectMgr* p) : mActionType(a), mManager(p) {}
 		virtual bool apply(LLSelectNode* selectNode)
 		{
 			LLViewerObject*	object = selectNode->getObject();
@@ -4520,10 +4646,10 @@ void LLSelectMgr::saveSelectedObjectTransform(EActionType action_type)
 			}
 		
 			selectNode->mSavedScale = object->getScale();
-			selectNode->saveTextureScaleRatios();
+			selectNode->saveTextureScaleRatios(mManager->mTextureChannel);
 			return true;
 		}
-	} func(action_type);
+	} func(action_type, this);
 	getSelection()->applyToNodes(&func);	
 	
 	mSavedSelectionBBox = getBBoxOfSelection();
@@ -5850,36 +5976,42 @@ void LLSelectNode::saveTextures(const uuid_vec_t& textures)
 	}
 }
 
-void LLSelectNode::saveTextureScaleRatios()
+void LLSelectNode::saveTextureScaleRatios(LLRender::eTexIndex index_to_query)
 {
 	mTextureScaleRatios.clear();
+
 	if (mObject.notNull())
 	{
+		LLVector3 scale = mObject->getScale();
+
 		for (U8 i = 0; i < mObject->getNumTEs(); i++)
 		{
-			F32 s,t;
-			const LLTextureEntry* tep = mObject->getTE(i);
-			tep->getScale(&s,&t);
-			U32 s_axis = 0;
-			U32 t_axis = 0;
-
-			LLPrimitive::getTESTAxes(i, &s_axis, &t_axis);
+			F32 diffuse_s = 1.0f;
+			F32 diffuse_t = 1.0f;
 
 			LLVector3 v;
-			LLVector3 scale = mObject->getScale();
+			const LLTextureEntry* tep = mObject->getTE(i);
+			if (!tep)
+				continue;
+
+			U32 s_axis = VX;
+			U32 t_axis = VY;
+			LLPrimitive::getTESTAxes(i, &s_axis, &t_axis);
+
+			tep->getScale(&diffuse_s,&diffuse_t);
 
 			if (tep->getTexGen() == LLTextureEntry::TEX_GEN_PLANAR)
 			{
-				v.mV[s_axis] = s*scale.mV[s_axis];
-				v.mV[t_axis] = t*scale.mV[t_axis];
+				v.mV[s_axis] = diffuse_s*scale.mV[s_axis];
+				v.mV[t_axis] = diffuse_t*scale.mV[t_axis];
+				mTextureScaleRatios.push_back(v);
 			}
 			else
 			{
-				v.mV[s_axis] = s/scale.mV[s_axis];
-				v.mV[t_axis] = t/scale.mV[t_axis];
+				v.mV[s_axis] = diffuse_s/scale.mV[s_axis];
+				v.mV[t_axis] = diffuse_t/scale.mV[t_axis];
+				mTextureScaleRatios.push_back(v);
 			}
-
-			mTextureScaleRatios.push_back(v);
 		}
 	}
 }
@@ -6383,7 +6515,23 @@ void LLSelectMgr::updateSelectionCenter()
 
 		if (mSelectedObjects->mSelectType == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 		{
-			mPauseRequest = gAgentAvatarp->requestPause();
+			// Singu Note: Chalice Yao's pause agent on attachment selection
+			if (object->permYouOwner())
+			{
+				mPauseRequest = gAgentAvatarp->requestPause();
+			}
+			else if (LLViewerObject* objectp = mSelectedObjects->getPrimaryObject())
+			{
+				while (objectp && !objectp->isAvatar())
+				{
+					objectp = (LLViewerObject*)objectp->getParent();
+				}
+
+				if (objectp)
+				{
+					mPauseRequest = objectp->asAvatar()->requestPause();
+				}
+			}
 		}
 		else
 		{
@@ -6430,6 +6578,7 @@ void LLSelectMgr::updateSelectionCenter()
 		LLVector3 bbox_center_agent = bbox.getCenterAgent();
 		mSelectionCenterGlobal = gAgent.getPosGlobalFromAgent(bbox_center_agent);
 		mSelectionBBox = bbox;
+
 	}
 	
 	if ( !(gAgentID == LLUUID::null)) 

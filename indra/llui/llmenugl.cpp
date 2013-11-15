@@ -3306,50 +3306,16 @@ void LLMenuGL::showPopup(LLView* spawning_view, LLMenuGL* menu, S32 x, S32 y)
 	menu->getParent()->sendChildToFront(menu);
 }
 
-//-----------------------------------------------------------------------------
-// class LLPieMenuBranch
-// A branch to another pie menu
-//-----------------------------------------------------------------------------
-class LLPieMenuBranch : public LLMenuItemGL
-{
-public:
-	LLPieMenuBranch(const std::string& name, const std::string& label, LLPieMenu* branch);
-
-	virtual LLXMLNodePtr getXML(bool save_children = true) const;
-
-	// called to rebuild the draw label
-	virtual void buildDrawLabel( void );
-
-	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask)
-	{
-		LLMenuItemGL::handleMouseUp(x,y,mask);
-		return TRUE;
-	}
-
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
-
-	LLPieMenu* getBranch() { return mBranch; }
-
-protected:
-	LLPieMenu* mBranch;
-};
-
-const F32 PIE_MENU_WIDTH = 190;
-const F32 PIE_MENU_HEIGHT = 190;
-
-LLPieMenuBranch::LLPieMenuBranch(const std::string& name,
-								 const std::string& label,
-								 LLPieMenu* branch) 
+LLContextMenuBranch::LLContextMenuBranch(const std::string& name, const std::string& label, LLContextMenu* branch)
 :	LLMenuItemGL( name, label, KEY_NONE, MASK_NONE ),
 	mBranch( branch )
 {
-	mBranch->hide(FALSE);
+	mBranch->hide();
 	mBranch->setParentMenuItem(this);
 }
 
 // virtual
-LLXMLNodePtr LLPieMenuBranch::getXML(bool save_children) const
+LLXMLNodePtr LLContextMenuBranch::getXML(bool save_children) const
 {
 	if (mBranch)
 	{
@@ -3360,7 +3326,7 @@ LLXMLNodePtr LLPieMenuBranch::getXML(bool save_children) const
 }
 
 // called to rebuild the draw label
-void LLPieMenuBranch::buildDrawLabel( void )
+void LLContextMenuBranch::buildDrawLabel( void )
 {
 	{
 		// default enablement is this -- if any of the subitems are
@@ -3386,62 +3352,72 @@ void LLPieMenuBranch::buildDrawLabel( void )
 	std::string st = mDrawAccelLabel;
 	appendAcceleratorString( st );
 	mDrawAccelLabel = st;
-	
-	// No special branch suffix
-	mDrawBranchLabel.clear();
+
+	// Singu Note: This is meaningless to pies
+	mDrawBranchLabel = LLMenuGL::BRANCH_SUFFIX;
+}
+
+void LLContextMenuBranch::showSubMenu()
+{
+	if (getDrawTextDisabled()) return; // Singu Note: Don't open disabled submenus!
+	S32 center_x;
+	S32 center_y;
+	static LLUICachedControl<bool> context("LiruUseContextMenus", false);
+	if (context) // Use the edge of this item
+	{
+		localPointToScreen(getRect().getWidth(), getRect().getHeight(), &center_x, &center_y);
+	}
+	else // Use the center of the parent pie menu, and hide it
+	{
+		LLContextMenu* parent = static_cast<LLContextMenu*>(getParent());
+		const LLRect& rect = parent->getRect();
+		parent->localPointToScreen(rect.getWidth() / 2, rect.getHeight() / 2, &center_x, &center_y);
+		parent->hide();
+	}
+	mBranch->show(center_x, center_y, context);
 }
 
 // doIt() - do the primary funcationality of the menu item.
-void LLPieMenuBranch::doIt( void )
+void LLContextMenuBranch::doIt( void )
 {
-	LLPieMenu *parent = (LLPieMenu *)getParent();
-
-	LLRect rect = parent->getRect();
-	S32 center_x;
-	S32 center_y;
-	parent->localPointToScreen(rect.getWidth() / 2, rect.getHeight() / 2, &center_x, &center_y);
-
-	parent->hide(FALSE);
-	mBranch->show(	center_x, center_y, FALSE );
+	showSubMenu();
 }
 
+void LLContextMenuBranch::setHighlight( BOOL highlight )
+{
+	if (highlight == getHighlight()) return;
+	LLMenuItemGL::setHighlight(highlight);
+
+	// Singu Note: Pie menus show subs only on click
+	static LLUICachedControl<bool> context("LiruUseContextMenus", false);
+	if (!context) return;
+
+	if (highlight)
+	{
+		showSubMenu();
+	}
+	else
+	{
+		mBranch->hide();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
-// class LLPieMenu
-// A circular menu of items, icons, etc.
+// class LLContextMenu
+// A context menu
 //-----------------------------------------------------------------------------
-LLPieMenu::LLPieMenu(const std::string& name, const std::string& label)
-:	LLMenuGL(name, label),
-	mFirstMouseDown(FALSE),
-	mUseInfiniteRadius(FALSE),
-	mHoverItem(NULL),
-	mHoverThisFrame(FALSE),
+LLContextMenu::LLContextMenu(const std::string& name, const std::string& label)
+:	LLMenuGL(name, label.empty() ? name : label),
 	mHoveredAnyItem(FALSE),
-	mOuterRingAlpha(1.f),
-	mCurRadius(0.f),
-	mRightMouseDown(FALSE)
-{ 
-	setRect(LLRect(0,PIE_MENU_HEIGHT,PIE_MENU_WIDTH,0));
+	mHoverItem(NULL)
+{
+	//setBackgroundVisible(TRUE);
 	LLMenuGL::setVisible(FALSE);
 }
-
-LLPieMenu::LLPieMenu(const std::string& name)
-:	LLMenuGL(name, name),
-	mFirstMouseDown(FALSE),
-	mUseInfiniteRadius(FALSE),
-	mHoverItem(NULL),
-	mHoverThisFrame(FALSE),
-	mHoveredAnyItem(FALSE),
-	mOuterRingAlpha(1.f),
-	mCurRadius(0.f),
-	mRightMouseDown(FALSE)
-{ 
-	setRect(LLRect(0,PIE_MENU_HEIGHT,PIE_MENU_WIDTH,0));
-	LLMenuGL::setVisible(FALSE);
-}
-
 
 // virtual
-LLXMLNodePtr LLPieMenu::getXML(bool save_children) const
+LLXMLNodePtr LLContextMenu::getXML(bool save_children) const
 {
 	LLXMLNodePtr node = LLMenuGL::getXML();
 
@@ -3450,22 +3426,34 @@ LLXMLNodePtr LLPieMenu::getXML(bool save_children) const
 	return node;
 }
 
-void LLPieMenu::initXML(LLXMLNodePtr node, LLView *context, LLUICtrlFactory *factory)
+void LLContextMenu::initXML(LLXMLNodePtr node, LLView *context, LLUICtrlFactory *factory, bool is_context)
 {
 	LLXMLNodePtr child;
 	for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
 		if (child->hasName(LL_PIE_MENU_TAG))
 		{
-			// SUBMENU
-			std::string name("menu");
-			child->getAttributeString("name", name);
-			std::string label(name);
-			child->getAttributeString("label", label);
+			// In context menus, more submenu is just an extension of the parent
+			bool more(false);
+			if (is_context && child->getAttribute_bool("more", more) && more)
+			{
+				//addSeparator(); // Singu Note: perhaps a separator (above) is in order, too?
+				initXML(child, context, factory, true);
+				//addSeparator(); // Singu Note: perhaps a separator (below) is in order, too?
+			}
+			else
+			{
+				// SUBMENU
+				std::string name("menu");
+				child->getAttributeString("name", name);
+				std::string label(name);
+				child->getAttributeString("label", label);
 
-			LLPieMenu *submenu = new LLPieMenu(name, label);
-			appendPieMenu(submenu);
-			submenu->initXML(child, context, factory);
+				// Singu Note: Pie Submenus are denoted with >, while context submenus have an obvious arrow at the end
+				LLContextMenu* submenu = is_context ? new LLContextMenu(name, label) : new LLPieMenu(name, label + " >");
+				appendContextSubMenu(submenu);
+				submenu->initXML(child, context, factory, is_context);
+			}
 		}
 		else
 		{
@@ -3474,51 +3462,132 @@ void LLPieMenu::initXML(LLXMLNodePtr node, LLView *context, LLUICtrlFactory *fac
 	}
 }
 
-bool LLPieMenu::addChild(LLView* view, S32 tab_group)
-{
-	if(LLMenuGL::addChild(view, tab_group))
-	{
-		LLMenuItemSeparatorGL* sep = dynamic_cast<LLMenuItemSeparatorGL*>(view);
-		if(sep)
-			sep->setVisible(false);
-		return true;
-	}
-	return false;
-}
-
 // virtual
-void LLPieMenu::setVisible(BOOL visible)
+void LLContextMenu::setVisible(BOOL visible)
 {
 	if (!visible)
 	{
-		hide(FALSE);
+		hide();
 	}
 }
 
-BOOL LLPieMenu::handleHover( S32 x, S32 y, MASK mask )
+void LLContextMenu::show(S32 x, S32 y, bool context)
 {
-	// This is mostly copied from the llview class, but it continues
-	// the hover handle code after a hover handler has been found.
-	BOOL handled = FALSE;
-
-	// If we got a hover event, we've already moved the cursor
-	// for any menu shifts, so subsequent mouseup messages will be in the
-	// correct position.  No need to correct them.
-	//mShiftHoriz = 0;
-	//mShiftVert = 0;
-
-	// release mouse capture after short period of visibility if we're using a finite boundary
-	// so that right click outside of boundary will trigger new pie menu
-	if (hasMouseCapture() && 
-		!mRightMouseDown && 
-		mShrinkBorderTimer.getStarted() && 
-		mShrinkBorderTimer.getElapsedTimeF32() >= PIE_SHRINK_TIME)
+	if (getChildList()->empty())
 	{
-		gFocusMgr.setMouseCapture(NULL);
-		mUseInfiniteRadius = FALSE;
+		// nothing to show, so abort
+		return;
+	}
+	// Save click point for detecting cursor moves before mouse-up.
+	// Must be in local coords to compare with mouseUp events.
+	// If the mouse doesn't move, the menu will stay open ala the Mac.
+	// See also LLMenuGL::showPopup()
+	LLMenuHolderGL::sContextMenuSpawnPos.set(x,y);
+
+	arrangeAndClear();
+
+	S32 width = getRect().getWidth();
+	S32 height = getRect().getHeight();
+	const LLRect menu_region_rect = LLMenuGL::sMenuContainer->getMenuRect();
+	LLView* parent_view = getParent();
+
+	// Singu TODO: These could probably be combined a bit more.
+	if (context) // Singu Note: Determine menu repositioning behavior based on menu type
+	{
+		// Open upwards if menu extends past bottom
+		if (y - height < menu_region_rect.mBottom)
+		{
+			if (getParentMenuItem())
+			{
+				y += height - getParentMenuItem()->getNominalHeight();
+			}
+			else
+			{
+				y += height;
+			}
+		}
+
+		// Open out to the left if menu extends past right edge
+		if (x + width > menu_region_rect.mRight)
+		{
+			if (getParentMenuItem())
+			{
+				x -= getParentMenuItem()->getRect().getWidth() + width;
+			}
+			else
+			{
+				x -= width;
+			}
+		}
+
+		S32 local_x, local_y;
+		parent_view->screenPointToLocal(x, y, &local_x, &local_y);
+
+		LLRect rect;
+		rect.setLeftTopAndSize(local_x, local_y, width, height);
+		setRect(rect);
+	}
+	else
+	{
+		S32 local_x, local_y;
+		parent_view->screenPointToLocal(x, y, &local_x, &local_y);
+
+		LLRect rect;
+		rect.setCenterAndSize(local_x, local_y, width, height);
+		setRect(rect);
+		if (!menu_region_rect.contains(rect)) // Adjust the pie rectangle to keep it on screen
+		{
+			S32 trans[2]={0,0};
+			if (rect.mLeft < menu_region_rect.mLeft)
+			{
+				trans[0] = menu_region_rect.mLeft - rect.mLeft;
+			}
+			else if (rect.mRight > menu_region_rect.mRight)
+			{
+				trans[0] = menu_region_rect.mRight - rect.mRight;
+			}
+			if (rect.mBottom < menu_region_rect.mBottom)
+			{
+				trans[1] = menu_region_rect.mBottom - rect.mBottom;
+			}
+			else if (rect.mTop > menu_region_rect.mTop)
+			{
+				trans[1] = menu_region_rect.mTop - rect.mTop;
+			}
+			setRect(rect.translate(trans[0],trans[1]));
+			LLUI::setMousePositionLocal(getParent(),rect.getCenterX(), rect.getCenterY());
+		}
 	}
 
-	LLMenuItemGL *item = pieItemFromXY( x, y );
+	arrange();
+	LLView::setVisible(TRUE);
+}
+
+void LLContextMenu::hide()
+{
+	if (!getVisible()) return;
+
+	LLView::setVisible(FALSE);
+
+	if (mHoverItem)
+	{
+		mHoverItem->setHighlight( FALSE );
+		mHoverItem = NULL;
+	}
+}
+
+BOOL LLContextMenu::handleHover( S32 x, S32 y, MASK mask )
+{
+	LLMenuGL::handleHover(x, y, mask);
+
+	LLMenuItemGL* item = getHighlightedItem();
+
+	return handleHoverOver(item, x, y);
+}
+
+BOOL LLContextMenu::handleHoverOver(LLMenuItemGL* item, S32 x, S32 y)
+{
+	BOOL handled = FALSE;
 
 	if (item && item->getEnabled())
 	{
@@ -3534,37 +3603,6 @@ BOOL LLPieMenu::handleHover( S32 x, S32 y, MASK mask )
 			}
 			mHoverItem = item;
 			mHoverItem->setHighlight( TRUE );
-
-			switch(pieItemIndexFromXY(x, y))
-			{
-			case 0:
-				make_ui_sound("UISndPieMenuSliceHighlight0");
-				break;
-			case 1:
-				make_ui_sound("UISndPieMenuSliceHighlight1");
-				break;
-			case 2:
-				make_ui_sound("UISndPieMenuSliceHighlight2");
-				break;
-			case 3:
-				make_ui_sound("UISndPieMenuSliceHighlight3");
-				break;
-			case 4:
-				make_ui_sound("UISndPieMenuSliceHighlight4");
-				break;
-			case 5:
-				make_ui_sound("UISndPieMenuSliceHighlight5");
-				break;
-			case 6:
-				make_ui_sound("UISndPieMenuSliceHighlight6");
-				break;
-			case 7:
-				make_ui_sound("UISndPieMenuSliceHighlight7");
-				break;
-			default:
-				make_ui_sound("UISndPieMenuSliceHighlight0");
-				break;
-			}
 		}
 		mHoveredAnyItem = TRUE;
 	}
@@ -3585,8 +3623,170 @@ BOOL LLPieMenu::handleHover( S32 x, S32 y, MASK mask )
 		handled = TRUE;
 	}
 
+	return handled;
+}
+
+// handleMouseUp and handleMouseDown are handled by LLMenuGL
+
+
+BOOL LLContextMenu::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	BOOL handled = FALSE;
+
+	// The click was somewhere within our rectangle
+	LLMenuItemGL* item = getHighlightedItem();
+
+	S32 local_x = x - getRect().mLeft;
+	S32 local_y = y - getRect().mBottom;
+
+	BOOL clicked_in_menu = pointInView(local_x, local_y);
+
+	// grab mouse if right clicking anywhere within pie (even deadzone in middle), to detect drag outside of pie
+	if (clicked_in_menu)
+	{
+		// capture mouse cursor as if on initial menu show
+		handled = TRUE;
+	}
+
+	if (item)
+	{
+		// lie to the item about where the click happened
+		// to make sure it's within the item's rectangle
+		if (item->handleMouseDown( 0, 0, mask ))
+		{
+			handled = TRUE;
+		}
+	}
+
+	return handled;
+}
+
+BOOL LLContextMenu::handleRightMouseUp( S32 x, S32 y, MASK mask )
+{
+	S32 local_x = x - getRect().mLeft;
+	S32 local_y = y - getRect().mBottom;
+
+	if (!mHoveredAnyItem && !pointInView(local_x, local_y))
+	{
+		sMenuContainer->hideMenus();
+		return TRUE;
+	}
+
+
+	BOOL result = handleMouseUp( x, y, mask );
+	mHoveredAnyItem = FALSE;
+
+	return result;
+}
+
+bool LLContextMenu::addChild(LLView* view, S32 tab_group)
+{
+	if (LLContextMenu* context = dynamic_cast<LLContextMenu*>(view))
+		return appendContextSubMenu(context);
+	if (LLMenuItemGL* item = dynamic_cast<LLMenuItemGL*>(view))
+		return append(item);
+	if (LLMenuGL* menu = dynamic_cast<LLMenuGL*>(view))
+		return appendMenu(menu);
+	return false;
+}
+
+
+BOOL LLContextMenu::appendContextSubMenu(LLContextMenu* menu)
+{
+	if (menu == this)
+	{
+		llerrs << "Can't attach a context menu to itself" << llendl;
+	}
+	LLContextMenuBranch* item = new LLContextMenuBranch(menu->getName(), menu->getLabel(), menu);
+	getParent()->addChild(item->getBranch());
+	return append(item);
+}
+
+const S32 PIE_MENU_HEIGHT = 190;
+const S32 PIE_MENU_WIDTH = 190;
+
+//-----------------------------------------------------------------------------
+// class LLPieMenu
+// A circular menu of items, icons, etc.
+//-----------------------------------------------------------------------------
+LLPieMenu::LLPieMenu(const std::string& name, const std::string& label)
+:	LLContextMenu(name, label),
+	mFirstMouseDown(FALSE),
+	mUseInfiniteRadius(FALSE),
+	mHoverIndex(-1),
+	mHoverThisFrame(FALSE),
+	mOuterRingAlpha(1.f),
+	mCurRadius(0.f),
+	mRightMouseDown(FALSE)
+{
+	setRect(LLRect(0,PIE_MENU_HEIGHT,PIE_MENU_WIDTH,0));
+}
+
+// Separators on pie menus are invisible
+bool LLPieMenu::addChild(LLView* view, S32 tab_group)
+{
+	if (LLContextMenu::addChild(view, tab_group))
+	{
+		LLMenuItemSeparatorGL* sep = dynamic_cast<LLMenuItemSeparatorGL*>(view);
+		if(sep)
+			sep->setVisible(false);
+		return true;
+	}
+	return false;
+}
+
+BOOL LLPieMenu::handleHover( S32 x, S32 y, MASK mask )
+{
+	// release mouse capture after short period of visibility if we're using a finite boundary
+	// so that right click outside of boundary will trigger new pie menu
+	if (hasMouseCapture() &&
+		!mRightMouseDown &&
+		mShrinkBorderTimer.getStarted() &&
+		mShrinkBorderTimer.getElapsedTimeF32() >= PIE_SHRINK_TIME)
+	{
+		gFocusMgr.setMouseCapture(NULL);
+		mUseInfiniteRadius = FALSE;
+	}
+
 	mHoverThisFrame = TRUE;
 
+	S32 index = mHoverIndex;
+	mHoverIndex = pieItemIndexFromXY(x, y);
+	BOOL handled = handleHoverOver(pieItemFromIndex(mHoverIndex), x, y);
+
+	if (mHoverItem && mHoverIndex != index)
+	{
+		switch(mHoverIndex)
+		{
+		case 0:
+			make_ui_sound("UISndPieMenuSliceHighlight0");
+			break;
+		case 1:
+			make_ui_sound("UISndPieMenuSliceHighlight1");
+			break;
+		case 2:
+			make_ui_sound("UISndPieMenuSliceHighlight2");
+			break;
+		case 3:
+			make_ui_sound("UISndPieMenuSliceHighlight3");
+			break;
+		case 4:
+			make_ui_sound("UISndPieMenuSliceHighlight4");
+			break;
+		case 5:
+			make_ui_sound("UISndPieMenuSliceHighlight5");
+			break;
+		case 6:
+			make_ui_sound("UISndPieMenuSliceHighlight6");
+			break;
+		case 7:
+			make_ui_sound("UISndPieMenuSliceHighlight7");
+			break;
+		default:
+			make_ui_sound("UISndPieMenuSliceHighlight0");
+			break;
+		}
+	}
 	return handled;
 }
 
@@ -3601,11 +3801,6 @@ BOOL LLPieMenu::handleMouseDown( S32 x, S32 y, MASK mask )
 		// lie to the item about where the click happened
 		// to make sure it's within the item's rectangle
 		handled = item->handleMouseDown( 0, 0, mask );
-	}
-	else if (!mRightMouseDown)
-	{
-		// call hidemenus to make sure transient selections get cleared
-		((LLMenuHolderGL*)getParent())->hideMenus();
 	}
 
 	// always handle mouse down as mouse up will close open menus
@@ -3688,13 +3883,26 @@ BOOL LLPieMenu::handleMouseUp( S32 x, S32 y, MASK mask )
 		if (item->getEnabled())
 		{
 			handled = item->handleMouseUp( 0, 0, mask );
-			hide(TRUE);
+			hide();
 		}
 	}
 	else if (!mRightMouseDown)
 	{
+		// if shift is held, click is in the view, and a parent menu exists, go back up
+		if (mask & MASK_SHIFT && pointInView(x, y))
+		{
+			if (LLMenuItemGL* branch = getParentMenuItem())
+			{
+				if (LLContextMenu* parent = dynamic_cast<LLContextMenu*>(branch->getParent()))
+				{
+					hide();
+					parent->show(LLMenuHolderGL::sContextMenuSpawnPos.mX, LLMenuHolderGL::sContextMenuSpawnPos.mY, false);
+					return true;
+				}
+			}
+		}
 		// call hidemenus to make sure transient selections get cleared
-		((LLMenuHolderGL*)getParent())->hideMenus();
+		sMenuContainer->hideMenus();
 	}
 
 	if (handled)
@@ -3732,6 +3940,7 @@ void LLPieMenu::draw()
 	{
 		mHoverItem->setHighlight(FALSE);
 		mHoverItem = NULL;
+		mHoverIndex = -1;
 	}
 
 	F32 width = (F32) getRect().getWidth();
@@ -3765,22 +3974,16 @@ void LLPieMenu::draw()
 		gl_washer_2d( mCurRadius, (F32) PIE_CENTER_SIZE, steps, bg_color, outer_color );
 
 		// selected wedge
-		item_list_t::iterator item_iter;
-		S32 i = 0;
-		for (item_iter = mItems.begin(); item_iter != mItems.end(); ++item_iter)
+		if (mHoverItem)
 		{
-			if ((*item_iter)->getHighlight())
-			{
-				F32 arc_size = F_PI * 0.25f;
+			F32 arc_size = F_PI * 0.25f;
 
-				F32 start_radians = (i * arc_size) - (arc_size * 0.5f);
-				F32 end_radians = start_radians + arc_size;
+			F32 start_radians = (mHoverIndex * arc_size) - (arc_size * 0.5f);
+			F32 end_radians = start_radians + arc_size;
 
-				LLColor4 outer_color = selected_color;
-				outer_color.mV[VALPHA] *= mOuterRingAlpha;
-				gl_washer_segment_2d( mCurRadius, (F32)PIE_CENTER_SIZE, start_radians, end_radians, steps / 8, selected_color, outer_color );
-			}
-			i++;
+			LLColor4 outer_color = selected_color;
+			outer_color.mV[VALPHA] *= mOuterRingAlpha;
+			gl_washer_segment_2d( mCurRadius, (F32)PIE_CENTER_SIZE, start_radians, end_radians, steps / 8, selected_color, outer_color );
 		}
 
 		LLUI::setLineWidth( line_width );
@@ -3807,38 +4010,10 @@ void LLPieMenu::draw()
 	LLView::draw();
 }
 
-void LLPieMenu::drawBackground(LLMenuItemGL* itemp, LLColor4& color)
+// virtual
+void LLPieMenu::drawBackground(LLMenuItemGL*, LLColor4&)
 {
-	F32 width = (F32) getRect().getWidth();
-	F32 height = (F32) getRect().getHeight();
-	F32 center_x = width/2;
-	F32 center_y = height/2;
-	S32 steps = 100;
-
-	gGL.color4fv( color.mV );
-	gGL.pushUIMatrix();
-	{
-		gGL.translateUI(center_x - itemp->getRect().mLeft, center_y - itemp->getRect().mBottom, 0.f);
-
-		item_list_t::iterator item_iter;
-		S32 i = 0;
-		for (item_iter = mItems.begin(); item_iter != mItems.end(); ++item_iter)
-		{
-			if ((*item_iter) == itemp)
-			{
-				F32 arc_size = F_PI * 0.25f;
-
-				F32 start_radians = (i * arc_size) - (arc_size * 0.5f);
-				F32 end_radians = start_radians + arc_size;
-
-				LLColor4 outer_color = color;
-				outer_color.mV[VALPHA] *= mOuterRingAlpha;
-				gl_washer_segment_2d( mCurRadius, (F32)PIE_CENTER_SIZE, start_radians, end_radians, steps / 8, color, outer_color );
-			}
-			i++;
-		}
-	}
-	gGL.popUIMatrix();
+	// Selection is drawn in our draw call, do nothing here and override base drawing rectangles.
 }
 
 // virtual
@@ -3853,22 +4028,7 @@ BOOL LLPieMenu::append(LLMenuItemGL *item)
 BOOL LLPieMenu::addSeparator()
 {
 	LLMenuItemGL* separator = new LLMenuItemBlankGL();
-	separator->setFont( LLFontGL::getFontSansSerifSmall() );
 	return append( separator );
-}
-
-
-BOOL LLPieMenu::appendPieMenu(LLPieMenu *menu)
-{
-	if (menu == this)
-	{
-		llerrs << "Can't attach a pie menu to itself" << llendl;
-	}
-	LLPieMenuBranch *item;
-	item = new LLPieMenuBranch(menu->getName(), menu->getLabel(), menu);
-	getParent()->addChild(item->getBranch());
-	item->setFont( LLFontGL::getFontSansSerifSmall() );
-	return append( item );
 }
 
 // virtual
@@ -3925,13 +4085,15 @@ void LLPieMenu::arrange()
 
 LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 {
-	// We might have shifted this menu on draw.  If so, we need
-	// to shift over mouseup events until we get a hover event.
-	//x += mShiftHoriz;
-	//y += mShiftVert; 
+	return pieItemFromIndex(pieItemIndexFromXY(x, y));
+}
 
+S32 LLPieMenu::pieItemIndexFromXY(S32 x, S32 y)
+{
 	// An arc of the pie menu is 45 degrees
 	const F32 ARC_DEG = 45.f;
+
+	// correct for non-square pixels
 	S32 delta_x = x - getRect().getWidth() / 2;
 	S32 delta_y = y - getRect().getHeight() / 2;
 
@@ -3939,14 +4101,14 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 	S32 dist_squared = delta_x*delta_x + delta_y*delta_y;
 	if (dist_squared < PIE_CENTER_SIZE*PIE_CENTER_SIZE)
 	{
-		return NULL;
+		return -1;
 	}
 
 	// infinite radius is only used with right clicks
 	S32 radius = llmax( getRect().getWidth()/2, getRect().getHeight()/2 );
 	if (!(mUseInfiniteRadius && mRightMouseDown) && dist_squared > radius * radius)
 	{
-		return NULL;
+		return -1;
 	}
 
 	F32 angle = RAD_TO_DEG * (F32) atan2((F32)delta_y, (F32)delta_x);
@@ -3958,8 +4120,11 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 	// make sure we're only using positive angles
 	if (angle < 0.f) angle += 360.f;
 
-	S32 which = S32( angle / ARC_DEG );
+	return S32( angle / ARC_DEG );
+}
 
+LLMenuItemGL* LLPieMenu::pieItemFromIndex(S32 which)
+{
 	if (0 <= which && which < (S32)mItems.size() )
 	{
 		item_list_t::iterator item_iter;
@@ -3979,74 +4144,11 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 	return NULL;
 }
 
-S32 LLPieMenu::pieItemIndexFromXY(S32 x, S32 y)
+
+// virtual
+void LLPieMenu::show(S32 x, S32 y, bool mouse_down)
 {
-	// An arc of the pie menu is 45 degrees
-	const F32 ARC_DEG = 45.f;
-	// correct for non-square pixels
-	S32 delta_x = x - getRect().getWidth() / 2;
-	S32 delta_y = y - getRect().getHeight() / 2;
-
-	// circle safe zone in the center
-	if (delta_x*delta_x + delta_y*delta_y < PIE_CENTER_SIZE*PIE_CENTER_SIZE)
-	{
-		return -1;
-	}
-
-	F32 angle = RAD_TO_DEG * (F32) atan2((F32)delta_y, (F32)delta_x);
-	
-	// rotate marks CCW so that east = [0, ARC_DEG) instead of
-	// [-ARC_DEG/2, ARC_DEG/2)
-	angle += ARC_DEG / 2.f;
-
-	// make sure we're only using positive angles
-	if (angle < 0.f) angle += 360.f;
-
-	S32 which = S32( angle / ARC_DEG );
-	return which;
-}
-
-void LLPieMenu::show(S32 x, S32 y, BOOL mouse_down)
-{
-	S32 width = getRect().getWidth();
-	S32 height = getRect().getHeight();
-
-	const LLRect menu_region_rect = LLMenuGL::sMenuContainer->getMenuRect();
-
-	LLView* parent_view = getParent();
-
-	S32 local_x, local_y;
-	parent_view->screenPointToLocal(x, y, &local_x, &local_y);
-
-	LLRect rect;
-	rect.setCenterAndSize(local_x, local_y, width, height);
-	setRect(rect);
-	
-	arrange();
-
-	// Adjust the pie rectangle to keep it on screen
-	if(!menu_region_rect.contains(rect))
-	{
-		S32 trans[2]={0,0};
-		if (rect.mLeft < menu_region_rect.mLeft) 
-		{
-			trans[0] = menu_region_rect.mLeft - rect.mLeft;
-		}
-		else if (rect.mRight > menu_region_rect.mRight) 
-		{
-			trans[0] = menu_region_rect.mRight - rect.mRight;
-		}
-		if (rect.mBottom < menu_region_rect.mBottom)
-		{
-			trans[1] = menu_region_rect.mBottom - rect.mBottom;
-		}
-		else if (rect.mTop > menu_region_rect.mTop)
-		{
-			trans[1] = menu_region_rect.mTop - rect.mTop;
-		}
-		setRect(rect.translate(trans[0],trans[1]));
-		LLUI::setMousePositionLocal(getParent(),rect.getCenterX(), rect.getCenterY());
-	}
+	LLContextMenu::show(x, y, false);
 
 	// *FIX: what happens when mouse buttons reversed?
 	mRightMouseDown = mouse_down;
@@ -4058,8 +4160,6 @@ void LLPieMenu::show(S32 x, S32 y, BOOL mouse_down)
 	{
 		make_ui_sound("UISndPieMenuAppear");
 	}
-
-	LLView::setVisible(TRUE);
 
 	// we want all mouse events in case user does quick right click again off of pie menu
 	// rectangle, to support gestural menu traversal
@@ -4075,24 +4175,16 @@ void LLPieMenu::show(S32 x, S32 y, BOOL mouse_down)
 	}
 }
 
-void LLPieMenu::hide(BOOL item_selected)
+// virtual
+void LLPieMenu::hide()
 {
-	if (!getVisible()) return;
-
-	if (mHoverItem)
-	{
-		mHoverItem->setHighlight( FALSE );
-		mHoverItem = NULL;
-	}
-
+	LLContextMenu::hide();
 	make_ui_sound("UISndPieMenuHide");
 
 	mFirstMouseDown = FALSE;
 	mRightMouseDown = FALSE;
 	mUseInfiniteRadius = FALSE;
 	mHoveredAnyItem = FALSE;
-
-	LLView::setVisible(FALSE);
 
 	gFocusMgr.setMouseCapture(NULL);
 }

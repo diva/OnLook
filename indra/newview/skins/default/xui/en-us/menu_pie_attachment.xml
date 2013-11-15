@@ -19,8 +19,8 @@
 		<on_click function="Attachment.Detach" />
 		<on_enable function="Attachment.EnableDetach" />
 	</menu_item_call>
-	<pie_menu label="Tools &gt;" name="Tools &gt;">
-        <pie_menu label="Scripts &gt;" name="ScriptsMenu">
+	<pie_menu label="Tools" name="Tools">
+        <pie_menu label="Scripts" name="ScriptsMenu">
           <menu_item_call mouse_opaque="true" label="Make Mono" name="CompileMono">
             <on_click function="Tools.SelectedScriptAction" userdata="compile mono" />
             <on_enable function="EditableSelectedMono" />

@@ -167,24 +167,24 @@ extern LLViewerMenuHolderGL*	gMenuHolder;
 extern LLMenuBarGL*		gLoginMenuBarView;
 
 // Pie menus
-extern LLPieMenu		*gPieSelf;
-extern LLPieMenu		*gPieAvatar;
-extern LLPieMenu		*gPieObject;
-extern LLPieMenu		*gPieAttachment;
-extern LLPieMenu		*gPieLand;
-extern LLPieMenu		*gPieRate;
+extern LLContextMenu		*gPieSelf;
+extern LLContextMenu		*gPieAvatar;
+extern LLContextMenu		*gPieObject;
+extern LLContextMenu		*gPieAttachment;
+extern LLContextMenu		*gPieLand;
+extern LLContextMenu		*gPieRate;
 
 // Needed to build menus when attachment site list available
 extern LLMenuGL* gAttachSubMenu;
 extern LLMenuGL* gDetachSubMenu;
 extern LLMenuGL* gTakeOffClothes;
 extern LLMenuGL* gMeshesAndMorphsMenu;
-extern LLPieMenu* gAttachScreenPieMenu;
-extern LLPieMenu* gDetachScreenPieMenu;
-extern LLPieMenu* gAttachPieMenu;
-extern LLPieMenu* gDetachPieMenu;
-extern LLPieMenu* gAttachBodyPartPieMenus[8];
-extern LLPieMenu* gDetachBodyPartPieMenus[8];
+extern LLContextMenu* gAttachScreenPieMenu;
+extern LLContextMenu* gDetachScreenPieMenu;
+extern LLContextMenu* gAttachPieMenu;
+extern LLContextMenu* gDetachPieMenu;
+extern LLContextMenu* gAttachBodyPartPieMenus[8];
+extern LLContextMenu* gDetachBodyPartPieMenus[8];
 
 extern LLMenuItemCallGL* gAFKMenu;
 extern LLMenuItemCallGL* gBusyMenu;

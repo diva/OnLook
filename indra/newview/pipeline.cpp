@@ -109,6 +109,8 @@
 #include "llwaterparammanager.h"
 #include "llspatialpartition.h"
 #include "llmutelist.h"
+#include "llfloatertools.h"
+#include "llpanelface.h"
 
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
@@ -319,6 +321,7 @@ BOOL	LLPipeline::sRenderParticleBeacons = FALSE;
 BOOL	LLPipeline::sRenderSoundBeacons = FALSE;
 BOOL	LLPipeline::sRenderBeacons = FALSE;
 BOOL	LLPipeline::sRenderHighlight = TRUE;
+LLRender::eTexIndex LLPipeline::sRenderHighlightTextureChannel = LLRender::DIFFUSE_MAP;
 BOOL	LLPipeline::sForceOldBakedUpload = FALSE;
 S32		LLPipeline::sUseOcclusion = 0;
 BOOL	LLPipeline::sDelayVBUpdate = FALSE;
@@ -3839,6 +3842,8 @@ void LLPipeline::postSort(LLCamera& camera)
 	{
 		mSelectedFaces.clear();
 		
+		LLPipeline::setRenderHighlightTextureChannel(gFloaterTools->getPanelFace()->getTextureChannelToEdit());
+
 		// Draw face highlights for selected faces.
 		if (LLSelectMgr::getInstance()->getTEMode())
 		{
@@ -3938,13 +3943,14 @@ void LLPipeline::renderHighlights()
 		gGL.diffuseColor4f(1,1,1,0.5f);
 	}
 	
-	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED))
+	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && !mFaceSelectImagep)
+	{
+		mFaceSelectImagep = LLViewerTextureManager::getFetchedTexture(IMG_FACE_SELECT);
+	}
+
+	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && (sRenderHighlightTextureChannel == LLRender::DIFFUSE_MAP))
 	{
 		// Make sure the selection image gets downloaded and decoded
-		if (!mFaceSelectImagep)
-		{
-			mFaceSelectImagep = LLViewerTextureManager::getFetchedTexture(IMG_FACE_SELECT);
-		}
 		mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
 
 		U32 count = mSelectedFaces.size();
@@ -3981,6 +3987,67 @@ void LLPipeline::renderHighlights()
 	if (LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0)
 	{
 		gHighlightProgram.unbind();
+	}
+
+
+	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && (sRenderHighlightTextureChannel == LLRender::NORMAL_MAP))
+	{
+		color.setVec(1.0f, 0.5f, 0.5f, 0.5f);
+		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
+		{
+			gHighlightNormalProgram.bind();
+			gGL.diffuseColor4f(1,1,1,0.5f);
+		}
+
+		mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
+
+		U32 count = mSelectedFaces.size();
+		for (U32 i = 0; i < count; i++)
+		{
+			LLFace *facep = mSelectedFaces[i];
+			if (!facep || facep->getDrawable()->isDead())
+			{
+				llerrs << "Bad face on selection" << llendl;
+				return;
+			}
+
+			facep->renderSelected(mFaceSelectImagep, color);
+		}
+
+		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
+		{
+			gHighlightNormalProgram.unbind();
+		}
+	}
+
+	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && (sRenderHighlightTextureChannel == LLRender::SPECULAR_MAP))
+	{
+		color.setVec(0.0f, 0.3f, 1.0f, 0.8f);
+		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
+		{
+			gHighlightSpecularProgram.bind();
+			gGL.diffuseColor4f(1,1,1,0.5f);
+		}
+
+		mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
+
+		U32 count = mSelectedFaces.size();
+		for (U32 i = 0; i < count; i++)
+		{
+			LLFace *facep = mSelectedFaces[i];
+			if (!facep || facep->getDrawable()->isDead())
+			{
+				llerrs << "Bad face on selection" << llendl;
+				return;
+			}
+
+			facep->renderSelected(mFaceSelectImagep, color);
+		}
+
+		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
+		{
+			gHighlightSpecularProgram.unbind();
+		}
 	}
 }
 
@@ -6399,6 +6466,12 @@ BOOL LLPipeline::getRenderHighlights(void*)
 	return sRenderHighlight;
 }
 
+// static
+void LLPipeline::setRenderHighlightTextureChannel(LLRender::eTexIndex channel)
+{
+	sRenderHighlightTextureChannel = channel;
+}
+
 LLVOPartGroup* LLPipeline::lineSegmentIntersectParticle(const LLVector4a& start, const LLVector4a& end, LLVector4a* intersection,
 														S32* face_hit)
 {
@@ -7921,7 +7994,8 @@ void LLPipeline::renderDeferredLighting()
 			mDeferredLight.flush();
 		}
 
-		if (RenderDeferredSSAO)
+		static const LLCachedControl<bool> SHAlwaysSoftenShadows("SHAlwaysSoftenShadows",true);
+		if (RenderDeferredSSAO || (RenderShadowDetail > 0 && SHAlwaysSoftenShadows))
 		{ //soften direct lighting lightmap
 			LLFastTimer ftm(FTM_SOFTEN_SHADOW);
 			//blur lightmap
@@ -9642,7 +9716,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 		renderMaskedObjects(LLRenderPass::PASS_ALPHA_MASK, mask, TRUE, TRUE);
 		renderMaskedObjects(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, mask, TRUE, TRUE);
 		gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.598f);
-		//renderObjects(LLRenderPass::PASS_ALPHA, mask, TRUE, TRUE);
+		renderObjects(LLRenderPass::PASS_ALPHA, mask, TRUE, TRUE);
 
 		mask = mask & ~LLVertexBuffer::MAP_TEXTURE_INDEX;
 

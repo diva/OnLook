@@ -7703,6 +7703,18 @@ You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME]
   </notification>
 
   <notification
+   icon="alertmodal.tga"
+   name="LivePreviewUnavailable"
+   type="alert">
+
+We cannot apply this texture immediately because it is no-copy and/or no-transfer.
+  <usetemplate
+    ignoretext="Warn me that Apply Texture Immediately mode is not available for no-copy and/or no-transfer textures"
+    name="okignore"
+    yestext="OK"/>
+  </notification>
+
+  <notification
    icon="notify.tga"
    name="FirstAO"
    type="notify">
