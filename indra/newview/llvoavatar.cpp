@@ -116,6 +116,7 @@
 #include "aifile.h"
 
 #include "llavatarname.h"
+#include "../lscript/lscript_byteformat.h"
 
 #include "hippogridmanager.h"
 
@@ -6606,14 +6607,8 @@ void LLVOAvatar::getOffObject()
 
 		if (sit_object && !sit_object->permYouOwner() && gSavedSettings.getBOOL("RevokePermsOnStandUp"))
 		{
-			gMessageSystem->newMessageFast(_PREHASH_RevokePermissions);
-			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-			gMessageSystem->nextBlockFast(_PREHASH_Data);
-			gMessageSystem->addUUIDFast(_PREHASH_ObjectID, sit_object->getID());
-			gMessageSystem->addU32Fast(_PREHASH_ObjectPermissions, 0xFFFFFFFF);
-			gAgent.sendReliableMessage();
+			U32 permissions = LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_TRIGGER_ANIMATION] | LSCRIPTRunTimePermissionBits[SCRIPT_PERMISSION_OVERRIDE_ANIMATIONS];
+			gAgent.sendRevokePermissions(sit_object->getID(), permissions);
 		}
 	}
 }

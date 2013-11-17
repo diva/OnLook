@@ -38,6 +38,7 @@ include(LLXML)
 #include(LScript)
 include(Linking)
 include(NDOF)
+include(NVAPI)
 include(StateMachine)
 include(TemplateCheck)
 include(UI)
@@ -1598,6 +1599,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLMATH_LIBRARIES}
     ${LLCOMMON_LIBRARIES}
     ${NDOF_LIBRARY}
+    ${NVAPI_LIBRARY}
     ${viewer_LIBRARIES}
     ${Boost_CONTEXT_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
