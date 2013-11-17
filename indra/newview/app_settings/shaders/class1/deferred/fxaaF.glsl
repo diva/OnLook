@@ -23,8 +23,8 @@
  * $/LicenseInfo$
  */
  
-#extension GL_ARB_texture_rectangle : enable
-#extension GL_ARB_shader_texture_lod : enable
+//#extension GL_ARB_texture_rectangle : enable
+//#extension GL_ARB_shader_texture_lod : enable
 
 #ifdef DEFINE_GL_FRAGCOLOR
 out vec4 frag_color;
@@ -34,7 +34,7 @@ out vec4 frag_color;
 
 #define FXAA_PC 1
 //#define FXAA_GLSL_130 1
-#define FXAA_QUALITY__PRESET 12
+#define FXAA_QUALITY_M_PRESET 12
 
 /*============================================================================
 
@@ -67,7 +67,7 @@ Example,
 
   #define FXAA_PC 1
   #define FXAA_HLSL_5 1
-  #define FXAA_QUALITY__PRESET 12
+  #define FXAA_QUALITY_M_PRESET 12
 
 Or,
 
@@ -366,7 +366,7 @@ A. Or use FXAA_GREEN_AS_LUMA.
 /*============================================================================
                       FXAA CONSOLE PS3 - TUNING KNOBS
 ============================================================================*/
-#ifndef FXAA_CONSOLE__PS3_EDGE_SHARPNESS
+#ifndef FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS
     //
     // Consoles the sharpness of edges on PS3 only.
     // Non-PS3 tuning is done with shader input.
@@ -380,17 +380,17 @@ A. Or use FXAA_GREEN_AS_LUMA.
     // 2.0 is really soft (good for vector graphics inputs)
     //
     #if 1
-        #define FXAA_CONSOLE__PS3_EDGE_SHARPNESS 8.0
+        #define FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS 8.0
     #endif
     #if 0
-        #define FXAA_CONSOLE__PS3_EDGE_SHARPNESS 4.0
+        #define FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS 4.0
     #endif
     #if 0
-        #define FXAA_CONSOLE__PS3_EDGE_SHARPNESS 2.0
+        #define FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS 2.0
     #endif
 #endif
 /*--------------------------------------------------------------------------*/
-#ifndef FXAA_CONSOLE__PS3_EDGE_THRESHOLD
+#ifndef FXAA_CONSOLE_M_PS3_EDGE_THRESHOLD
     //
     // Only effects PS3.
     // Non-PS3 tuning is done with shader input.
@@ -408,9 +408,9 @@ A. Or use FXAA_GREEN_AS_LUMA.
     // 0.25 leaves more aliasing, and is sharper
     //
     #if 1
-        #define FXAA_CONSOLE__PS3_EDGE_THRESHOLD 0.125
+        #define FXAA_CONSOLE_M_PS3_EDGE_THRESHOLD 0.125
     #else
-        #define FXAA_CONSOLE__PS3_EDGE_THRESHOLD 0.25
+        #define FXAA_CONSOLE_M_PS3_EDGE_THRESHOLD 0.25
     #endif
 #endif
 
@@ -419,7 +419,7 @@ A. Or use FXAA_GREEN_AS_LUMA.
 ------------------------------------------------------------------------------
 NOTE the other tuning knobs are now in the shader function inputs!
 ============================================================================*/
-#ifndef FXAA_QUALITY__PRESET
+#ifndef FXAA_QUALITY_M_PRESET
     //
     // Choose the quality preset.
     // This needs to be compiled into the shader as it effects code.
@@ -440,7 +440,7 @@ NOTE the other tuning knobs are now in the shader function inputs!
     //  _ = the lowest digit is directly related to performance
     // _  = the highest digit is directly related to style
     // 
-    #define FXAA_QUALITY__PRESET 12
+    #define FXAA_QUALITY_M_PRESET 12
 #endif
 
 
@@ -453,198 +453,198 @@ NOTE the other tuning knobs are now in the shader function inputs!
 /*============================================================================
                      FXAA QUALITY - MEDIUM DITHER PRESETS
 ============================================================================*/
-#if (FXAA_QUALITY__PRESET == 10)
-    #define FXAA_QUALITY__PS 3
-    #define FXAA_QUALITY__P0 1.5
-    #define FXAA_QUALITY__P1 3.0
-    #define FXAA_QUALITY__P2 12.0
+#if (FXAA_QUALITY_M_PRESET == 10)
+    #define FXAA_QUALITY_M_PS 3
+    #define FXAA_QUALITY_M_P0 1.5
+    #define FXAA_QUALITY_M_P1 3.0
+    #define FXAA_QUALITY_M_P2 12.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 11)
-    #define FXAA_QUALITY__PS 4
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 3.0
-    #define FXAA_QUALITY__P3 12.0
+#if (FXAA_QUALITY_M_PRESET == 11)
+    #define FXAA_QUALITY_M_PS 4
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 3.0
+    #define FXAA_QUALITY_M_P3 12.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 12)
-    #define FXAA_QUALITY__PS 5
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 4.0
-    #define FXAA_QUALITY__P4 12.0
+#if (FXAA_QUALITY_M_PRESET == 12)
+    #define FXAA_QUALITY_M_PS 5
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 4.0
+    #define FXAA_QUALITY_M_P4 12.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 13)
-    #define FXAA_QUALITY__PS 6
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 4.0
-    #define FXAA_QUALITY__P5 12.0
+#if (FXAA_QUALITY_M_PRESET == 13)
+    #define FXAA_QUALITY_M_PS 6
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 4.0
+    #define FXAA_QUALITY_M_P5 12.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 14)
-    #define FXAA_QUALITY__PS 7
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 4.0
-    #define FXAA_QUALITY__P6 12.0
+#if (FXAA_QUALITY_M_PRESET == 14)
+    #define FXAA_QUALITY_M_PS 7
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 4.0
+    #define FXAA_QUALITY_M_P6 12.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 15)
-    #define FXAA_QUALITY__PS 8
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 2.0
-    #define FXAA_QUALITY__P6 4.0
-    #define FXAA_QUALITY__P7 12.0
+#if (FXAA_QUALITY_M_PRESET == 15)
+    #define FXAA_QUALITY_M_PS 8
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 2.0
+    #define FXAA_QUALITY_M_P6 4.0
+    #define FXAA_QUALITY_M_P7 12.0
 #endif
 
 /*============================================================================
                      FXAA QUALITY - LOW DITHER PRESETS
 ============================================================================*/
-#if (FXAA_QUALITY__PRESET == 20)
-    #define FXAA_QUALITY__PS 3
-    #define FXAA_QUALITY__P0 1.5
-    #define FXAA_QUALITY__P1 2.0
-    #define FXAA_QUALITY__P2 8.0
+#if (FXAA_QUALITY_M_PRESET == 20)
+    #define FXAA_QUALITY_M_PS 3
+    #define FXAA_QUALITY_M_P0 1.5
+    #define FXAA_QUALITY_M_P1 2.0
+    #define FXAA_QUALITY_M_P2 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 21)
-    #define FXAA_QUALITY__PS 4
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 8.0
+#if (FXAA_QUALITY_M_PRESET == 21)
+    #define FXAA_QUALITY_M_PS 4
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 22)
-    #define FXAA_QUALITY__PS 5
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 8.0
+#if (FXAA_QUALITY_M_PRESET == 22)
+    #define FXAA_QUALITY_M_PS 5
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 23)
-    #define FXAA_QUALITY__PS 6
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 8.0
+#if (FXAA_QUALITY_M_PRESET == 23)
+    #define FXAA_QUALITY_M_PS 6
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 24)
-    #define FXAA_QUALITY__PS 7
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 3.0
-    #define FXAA_QUALITY__P6 8.0
+#if (FXAA_QUALITY_M_PRESET == 24)
+    #define FXAA_QUALITY_M_PS 7
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 3.0
+    #define FXAA_QUALITY_M_P6 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 25)
-    #define FXAA_QUALITY__PS 8
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 2.0
-    #define FXAA_QUALITY__P6 4.0
-    #define FXAA_QUALITY__P7 8.0
+#if (FXAA_QUALITY_M_PRESET == 25)
+    #define FXAA_QUALITY_M_PS 8
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 2.0
+    #define FXAA_QUALITY_M_P6 4.0
+    #define FXAA_QUALITY_M_P7 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 26)
-    #define FXAA_QUALITY__PS 9
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 2.0
-    #define FXAA_QUALITY__P6 2.0
-    #define FXAA_QUALITY__P7 4.0
-    #define FXAA_QUALITY__P8 8.0
+#if (FXAA_QUALITY_M_PRESET == 26)
+    #define FXAA_QUALITY_M_PS 9
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 2.0
+    #define FXAA_QUALITY_M_P6 2.0
+    #define FXAA_QUALITY_M_P7 4.0
+    #define FXAA_QUALITY_M_P8 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 27)
-    #define FXAA_QUALITY__PS 10
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 2.0
-    #define FXAA_QUALITY__P6 2.0
-    #define FXAA_QUALITY__P7 2.0
-    #define FXAA_QUALITY__P8 4.0
-    #define FXAA_QUALITY__P9 8.0
+#if (FXAA_QUALITY_M_PRESET == 27)
+    #define FXAA_QUALITY_M_PS 10
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 2.0
+    #define FXAA_QUALITY_M_P6 2.0
+    #define FXAA_QUALITY_M_P7 2.0
+    #define FXAA_QUALITY_M_P8 4.0
+    #define FXAA_QUALITY_M_P9 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 28)
-    #define FXAA_QUALITY__PS 11
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 2.0
-    #define FXAA_QUALITY__P6 2.0
-    #define FXAA_QUALITY__P7 2.0
-    #define FXAA_QUALITY__P8 2.0
-    #define FXAA_QUALITY__P9 4.0
-    #define FXAA_QUALITY__P10 8.0
+#if (FXAA_QUALITY_M_PRESET == 28)
+    #define FXAA_QUALITY_M_PS 11
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 2.0
+    #define FXAA_QUALITY_M_P6 2.0
+    #define FXAA_QUALITY_M_P7 2.0
+    #define FXAA_QUALITY_M_P8 2.0
+    #define FXAA_QUALITY_M_P9 4.0
+    #define FXAA_QUALITY_M_P10 8.0
 #endif
 /*--------------------------------------------------------------------------*/
-#if (FXAA_QUALITY__PRESET == 29)
-    #define FXAA_QUALITY__PS 12
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.5
-    #define FXAA_QUALITY__P2 2.0
-    #define FXAA_QUALITY__P3 2.0
-    #define FXAA_QUALITY__P4 2.0
-    #define FXAA_QUALITY__P5 2.0
-    #define FXAA_QUALITY__P6 2.0
-    #define FXAA_QUALITY__P7 2.0
-    #define FXAA_QUALITY__P8 2.0
-    #define FXAA_QUALITY__P9 2.0
-    #define FXAA_QUALITY__P10 4.0
-    #define FXAA_QUALITY__P11 8.0
+#if (FXAA_QUALITY_M_PRESET == 29)
+    #define FXAA_QUALITY_M_PS 12
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.5
+    #define FXAA_QUALITY_M_P2 2.0
+    #define FXAA_QUALITY_M_P3 2.0
+    #define FXAA_QUALITY_M_P4 2.0
+    #define FXAA_QUALITY_M_P5 2.0
+    #define FXAA_QUALITY_M_P6 2.0
+    #define FXAA_QUALITY_M_P7 2.0
+    #define FXAA_QUALITY_M_P8 2.0
+    #define FXAA_QUALITY_M_P9 2.0
+    #define FXAA_QUALITY_M_P10 4.0
+    #define FXAA_QUALITY_M_P11 8.0
 #endif
 
 /*============================================================================
                      FXAA QUALITY - EXTREME QUALITY
 ============================================================================*/
-#if (FXAA_QUALITY__PRESET == 39)
-    #define FXAA_QUALITY__PS 12
-    #define FXAA_QUALITY__P0 1.0
-    #define FXAA_QUALITY__P1 1.0
-    #define FXAA_QUALITY__P2 1.0
-    #define FXAA_QUALITY__P3 1.0
-    #define FXAA_QUALITY__P4 1.0
-    #define FXAA_QUALITY__P5 1.5
-    #define FXAA_QUALITY__P6 2.0
-    #define FXAA_QUALITY__P7 2.0
-    #define FXAA_QUALITY__P8 2.0
-    #define FXAA_QUALITY__P9 2.0
-    #define FXAA_QUALITY__P10 4.0
-    #define FXAA_QUALITY__P11 8.0
+#if (FXAA_QUALITY_M_PRESET == 39)
+    #define FXAA_QUALITY_M_PS 12
+    #define FXAA_QUALITY_M_P0 1.0
+    #define FXAA_QUALITY_M_P1 1.0
+    #define FXAA_QUALITY_M_P2 1.0
+    #define FXAA_QUALITY_M_P3 1.0
+    #define FXAA_QUALITY_M_P4 1.0
+    #define FXAA_QUALITY_M_P5 1.5
+    #define FXAA_QUALITY_M_P6 2.0
+    #define FXAA_QUALITY_M_P7 2.0
+    #define FXAA_QUALITY_M_P8 2.0
+    #define FXAA_QUALITY_M_P9 2.0
+    #define FXAA_QUALITY_M_P10 4.0
+    #define FXAA_QUALITY_M_P11 8.0
 #endif
 
 
@@ -869,7 +869,7 @@ FxaaFloat4 FxaaPixelShader(
     // This used to be the FXAA_CONSOLE__EDGE_SHARPNESS define.
     // It is here now to allow easier tuning.
     // This does not effect PS3, as this needs to be compiled in.
-    //   Use FXAA_CONSOLE__PS3_EDGE_SHARPNESS for PS3.
+    //   Use FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS for PS3.
     //   Due to the PS3 being ALU bound,
     //   there are only three safe values here: 2 and 4 and 8.
     //   These options use the shaders ability to a free *|/ by 2|4|8.
@@ -883,7 +883,7 @@ FxaaFloat4 FxaaPixelShader(
     // This used to be the FXAA_CONSOLE__EDGE_THRESHOLD define.
     // It is here now to allow easier tuning.
     // This does not effect PS3, as this needs to be compiled in.
-    //   Use FXAA_CONSOLE__PS3_EDGE_THRESHOLD for PS3.
+    //   Use FXAA_CONSOLE_M_PS3_EDGE_THRESHOLD for PS3.
     //   Due to the PS3 being ALU bound,
     //   there are only two safe values here: 1/4 and 1/8.
     //   These options use the shaders ability to a free *|/ by 2|4|8.
@@ -1041,11 +1041,11 @@ FxaaFloat4 FxaaPixelShader(
     if( horzSpan) posB.y += lengthSign * 0.5;
 /*--------------------------------------------------------------------------*/
     FxaaFloat2 posN;
-    posN.x = posB.x - offNP.x * FXAA_QUALITY__P0;
-    posN.y = posB.y - offNP.y * FXAA_QUALITY__P0;
+    posN.x = posB.x - offNP.x * FXAA_QUALITY_M_P0;
+    posN.y = posB.y - offNP.y * FXAA_QUALITY_M_P0;
     FxaaFloat2 posP;
-    posP.x = posB.x + offNP.x * FXAA_QUALITY__P0;
-    posP.y = posB.y + offNP.y * FXAA_QUALITY__P0;
+    posP.x = posB.x + offNP.x * FXAA_QUALITY_M_P0;
+    posP.y = posB.y + offNP.y * FXAA_QUALITY_M_P0;
     FxaaFloat subpixD = ((-2.0)*subpixC) + 3.0;
     FxaaFloat lumaEndN = FxaaLuma(FxaaTexTop(tex, posN));
     FxaaFloat subpixE = subpixC * subpixC;
@@ -1061,11 +1061,11 @@ FxaaFloat4 FxaaPixelShader(
     lumaEndP -= lumaNN * 0.5;
     FxaaBool doneN = abs(lumaEndN) >= gradientScaled;
     FxaaBool doneP = abs(lumaEndP) >= gradientScaled;
-    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P1;
-    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P1;
+    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P1;
+    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P1;
     FxaaBool doneNP = (!doneN) || (!doneP);
-    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P1;
-    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P1;
+    if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P1;
+    if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P1;
 /*--------------------------------------------------------------------------*/
     if(doneNP) {
         if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
@@ -1074,13 +1074,13 @@ FxaaFloat4 FxaaPixelShader(
         if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
         doneN = abs(lumaEndN) >= gradientScaled;
         doneP = abs(lumaEndP) >= gradientScaled;
-        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P2;
-        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P2;
+        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P2;
+        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P2;
         doneNP = (!doneN) || (!doneP);
-        if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P2;
-        if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P2;
+        if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P2;
+        if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P2;
 /*--------------------------------------------------------------------------*/
-        #if (FXAA_QUALITY__PS > 3)
+        #if (FXAA_QUALITY_M_PS > 3)
         if(doneNP) {
             if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
             if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1088,13 +1088,13 @@ FxaaFloat4 FxaaPixelShader(
             if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
             doneN = abs(lumaEndN) >= gradientScaled;
             doneP = abs(lumaEndP) >= gradientScaled;
-            if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P3;
-            if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P3;
+            if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P3;
+            if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P3;
             doneNP = (!doneN) || (!doneP);
-            if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P3;
-            if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P3;
+            if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P3;
+            if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P3;
 /*--------------------------------------------------------------------------*/
-            #if (FXAA_QUALITY__PS > 4)
+            #if (FXAA_QUALITY_M_PS > 4)
             if(doneNP) {
                 if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                 if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1102,13 +1102,13 @@ FxaaFloat4 FxaaPixelShader(
                 if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                 doneN = abs(lumaEndN) >= gradientScaled;
                 doneP = abs(lumaEndP) >= gradientScaled;
-                if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P4;
-                if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P4;
+                if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P4;
+                if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P4;
                 doneNP = (!doneN) || (!doneP);
-                if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P4;
-                if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P4;
+                if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P4;
+                if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P4;
 /*--------------------------------------------------------------------------*/
-                #if (FXAA_QUALITY__PS > 5)
+                #if (FXAA_QUALITY_M_PS > 5)
                 if(doneNP) {
                     if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                     if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1116,13 +1116,13 @@ FxaaFloat4 FxaaPixelShader(
                     if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                     doneN = abs(lumaEndN) >= gradientScaled;
                     doneP = abs(lumaEndP) >= gradientScaled;
-                    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P5;
-                    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P5;
+                    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P5;
+                    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P5;
                     doneNP = (!doneN) || (!doneP);
-                    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P5;
-                    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P5;
+                    if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P5;
+                    if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P5;
 /*--------------------------------------------------------------------------*/
-                    #if (FXAA_QUALITY__PS > 6)
+                    #if (FXAA_QUALITY_M_PS > 6)
                     if(doneNP) {
                         if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                         if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1130,13 +1130,13 @@ FxaaFloat4 FxaaPixelShader(
                         if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                         doneN = abs(lumaEndN) >= gradientScaled;
                         doneP = abs(lumaEndP) >= gradientScaled;
-                        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P6;
-                        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P6;
+                        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P6;
+                        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P6;
                         doneNP = (!doneN) || (!doneP);
-                        if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P6;
-                        if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P6;
+                        if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P6;
+                        if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P6;
 /*--------------------------------------------------------------------------*/
-                        #if (FXAA_QUALITY__PS > 7)
+                        #if (FXAA_QUALITY_M_PS > 7)
                         if(doneNP) {
                             if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                             if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1144,13 +1144,13 @@ FxaaFloat4 FxaaPixelShader(
                             if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                             doneN = abs(lumaEndN) >= gradientScaled;
                             doneP = abs(lumaEndP) >= gradientScaled;
-                            if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P7;
-                            if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P7;
+                            if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P7;
+                            if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P7;
                             doneNP = (!doneN) || (!doneP);
-                            if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P7;
-                            if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P7;
+                            if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P7;
+                            if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P7;
 /*--------------------------------------------------------------------------*/
-    #if (FXAA_QUALITY__PS > 8)
+    #if (FXAA_QUALITY_M_PS > 8)
     if(doneNP) {
         if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
         if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1158,13 +1158,13 @@ FxaaFloat4 FxaaPixelShader(
         if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
         doneN = abs(lumaEndN) >= gradientScaled;
         doneP = abs(lumaEndP) >= gradientScaled;
-        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P8;
-        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P8;
+        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P8;
+        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P8;
         doneNP = (!doneN) || (!doneP);
-        if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P8;
-        if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P8;
+        if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P8;
+        if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P8;
 /*--------------------------------------------------------------------------*/
-        #if (FXAA_QUALITY__PS > 9)
+        #if (FXAA_QUALITY_M_PS > 9)
         if(doneNP) {
             if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
             if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1172,13 +1172,13 @@ FxaaFloat4 FxaaPixelShader(
             if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
             doneN = abs(lumaEndN) >= gradientScaled;
             doneP = abs(lumaEndP) >= gradientScaled;
-            if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P9;
-            if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P9;
+            if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P9;
+            if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P9;
             doneNP = (!doneN) || (!doneP);
-            if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P9;
-            if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P9;
+            if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P9;
+            if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P9;
 /*--------------------------------------------------------------------------*/
-            #if (FXAA_QUALITY__PS > 10)
+            #if (FXAA_QUALITY_M_PS > 10)
             if(doneNP) {
                 if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                 if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1186,13 +1186,13 @@ FxaaFloat4 FxaaPixelShader(
                 if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                 doneN = abs(lumaEndN) >= gradientScaled;
                 doneP = abs(lumaEndP) >= gradientScaled;
-                if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P10;
-                if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P10;
+                if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P10;
+                if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P10;
                 doneNP = (!doneN) || (!doneP);
-                if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P10;
-                if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P10;
+                if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P10;
+                if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P10;
 /*--------------------------------------------------------------------------*/
-                #if (FXAA_QUALITY__PS > 11)
+                #if (FXAA_QUALITY_M_PS > 11)
                 if(doneNP) {
                     if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                     if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1200,13 +1200,13 @@ FxaaFloat4 FxaaPixelShader(
                     if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                     doneN = abs(lumaEndN) >= gradientScaled;
                     doneP = abs(lumaEndP) >= gradientScaled;
-                    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P11;
-                    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P11;
+                    if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P11;
+                    if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P11;
                     doneNP = (!doneN) || (!doneP);
-                    if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P11;
-                    if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P11;
+                    if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P11;
+                    if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P11;
 /*--------------------------------------------------------------------------*/
-                    #if (FXAA_QUALITY__PS > 12)
+                    #if (FXAA_QUALITY_M_PS > 12)
                     if(doneNP) {
                         if(!doneN) lumaEndN = FxaaLuma(FxaaTexTop(tex, posN.xy));
                         if(!doneP) lumaEndP = FxaaLuma(FxaaTexTop(tex, posP.xy));
@@ -1214,11 +1214,11 @@ FxaaFloat4 FxaaPixelShader(
                         if(!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
                         doneN = abs(lumaEndN) >= gradientScaled;
                         doneP = abs(lumaEndP) >= gradientScaled;
-                        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY__P12;
-                        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY__P12;
+                        if(!doneN) posN.x -= offNP.x * FXAA_QUALITY_M_P12;
+                        if(!doneN) posN.y -= offNP.y * FXAA_QUALITY_M_P12;
                         doneNP = (!doneN) || (!doneP);
-                        if(!doneP) posP.x += offNP.x * FXAA_QUALITY__P12;
-                        if(!doneP) posP.y += offNP.y * FXAA_QUALITY__P12;
+                        if(!doneP) posP.x += offNP.x * FXAA_QUALITY_M_P12;
+                        if(!doneP) posP.y += offNP.y * FXAA_QUALITY_M_P12;
 /*--------------------------------------------------------------------------*/
                     }
                     #endif
@@ -1291,9 +1291,9 @@ FxaaFloat4 FxaaPixelShader(
                          
 ------------------------------------------------------------------------------
 Instead of using this on PC, I'd suggest just using FXAA Quality with
-    #define FXAA_QUALITY__PRESET 10
+    #define FXAA_QUALITY_M_PRESET 10
 Or 
-    #define FXAA_QUALITY__PRESET 20
+    #define FXAA_QUALITY_M_PRESET 20
 Either are higher qualilty and almost as fast as this on modern PC GPUs.
 ============================================================================*/
 #if (FXAA_PC_CONSOLE == 1)
@@ -1704,7 +1704,7 @@ half4 FxaaPixelShader(
 // (5)
     half4 dir1_pos;
     dir1_pos.xy = normalize(dir.xyz).xz;
-    half dirAbsMinTimesC = min(abs(dir1_pos.x), abs(dir1_pos.y)) * half(FXAA_CONSOLE__PS3_EDGE_SHARPNESS);
+    half dirAbsMinTimesC = min(abs(dir1_pos.x), abs(dir1_pos.y)) * half(FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS);
 /*--------------------------------------------------------------------------*/
 // (6)
     half4 dir2_pos;
@@ -2019,7 +2019,7 @@ half4 FxaaPixelShader(
 // (6)
     half4 dir1_pos;
     dir1_pos.xy = normalize(dir).xz;
-    half dirAbsMinTimes8 = min(abs(dir1_pos.x), abs(dir1_pos.y)) * half(FXAA_CONSOLE__PS3_EDGE_SHARPNESS);
+    half dirAbsMinTimes8 = min(abs(dir1_pos.x), abs(dir1_pos.y)) * half(FXAA_CONSOLE_M_PS3_EDGE_SHARPNESS);
 /*--------------------------------------------------------------------------*/
 // (7)
     half4 dir2_pos;
@@ -2061,7 +2061,7 @@ half4 FxaaPixelShader(
     temp2N = h4tex2Dlod(tex, half4(temp2N.xy, 0.0, 0.0));
     half4 rgby2;
     rgby2.xy = dir2_pos.zw + dir2_pos.xy * fxaaConsoleRcpFrameOpt2.zw;
-    half lumaRangeM = (lumaMaxM - lumaMinM) / FXAA_CONSOLE__PS3_EDGE_THRESHOLD;
+    half lumaRangeM = (lumaMaxM - lumaMinM) / FXAA_CONSOLE_M_PS3_EDGE_THRESHOLD;
 /*--------------------------------------------------------------------------*/
 // (12)
     rgby2 = h4tex2Dlod(tex, half4(rgby2.xy, 0.0, 0.0));
