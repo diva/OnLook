@@ -715,7 +715,11 @@ class DarwinManifest(ViewerManifest):
 
 class LinuxManifest(ViewerManifest):
     def construct(self):
+        import shutil
+        shutil.rmtree("./packaged/app_settings/shaders", ignore_errors=True);
+
         super(LinuxManifest, self).construct()
+
         self.path("licenses-linux.txt","licenses.txt")
 
         self.path("res/"+self.icon_name(),self.icon_name())

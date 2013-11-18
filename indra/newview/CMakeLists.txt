@@ -1434,13 +1434,7 @@ if (!DISABLE_TEMPLATE_CHECK)
 	check_message_template(${VIEWER_BINARY_NAME})
 endif (!DISABLE_TEMPLATE_CHECK)
 
-# We package by default on Linux so we can run from newview/packaged.
-if (LINUX)
-  set(PACKAGE_DEFAULT ON)
-else (LINUX)
-  set(PACKAGE_DEFAULT OFF)
-endif (LINUX)
-set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
+set(PACKAGE OFF CACHE BOOL
     "Add a package target that builds an installer package.")
 
 if (WINDOWS)
