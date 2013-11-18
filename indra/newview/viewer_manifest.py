@@ -806,12 +806,11 @@ class LinuxManifest(ViewerManifest):
         try:
             # --numeric-owner hides the username of the builder for
             # security etc.
-            # I'm leaving this disabled for speed
-            #self.run_command("tar -C '%(dir)s' --numeric-owner -cjf "
-            #                 "'%(inst_path)s.tar.bz2' %(inst_name)s" % {
-            #    'dir': self.get_build_prefix(),
-            #    'inst_name': installer_name,
-            #    'inst_path':self.build_path_of(installer_name)})
+            self.run_command("tar -C '%(dir)s' --numeric-owner -cjf "
+                             "'%(inst_path)s.tar.bz2' %(inst_name)s" % {
+                'dir': self.get_build_prefix(),
+                'inst_name': installer_name,
+                'inst_path':self.build_path_of(installer_name)})
             print ''
         finally:
             self.run_command("mv '%(inst)s' '%(dst)s'" % {
