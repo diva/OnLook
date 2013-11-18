@@ -1141,7 +1141,7 @@ if (DARWIN)
     ${VIEWER_BRANDING_ID}.icns
     macview.r
     gpu_table.txt
-    Info-${VIEWER_BRANDING_NAME_CAMELCASE}.plist
+    Info-${VIEWER_BRANDING_ID}.plist
     SecondLife.nib/
     # CMake doesn't seem to support Xcode language variants well just yet
     English.lproj/InfoPlist.strings
