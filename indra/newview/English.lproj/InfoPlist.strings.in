@@ -1,0 +1,6 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleName = "Singularity";
+
+CFBundleShortVersionString = "Singularity Viewer ${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}";
+CFBundleGetInfoString = "Singularity Viewer ${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}, Copyright 2012 Siana Gearz";

@@ -45,6 +45,13 @@ if (WINDOWS)
    )
 endif (WINDOWS)
 
+if (DARWIN)
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/English.lproj/InfoPlist.strings.in
+       ${CMAKE_SOURCE_DIR}/newview/English.lproj/InfoPlist.strings
+   )
+endif (DARWIN)
+
 # Compose the version.
 set(viewer_VERSION "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}")
 if (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
