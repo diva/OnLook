@@ -33,6 +33,18 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/llcommon/llversionviewer.h
 )
 
+if (WINDOWS)
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/res/viewerRes.rc.in
+       ${CMAKE_SOURCE_DIR}/newview/res/viewerRes.rc
+   )
+   
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/res/viewerRes_bc.rc.in
+       ${CMAKE_SOURCE_DIR}/newview/res/viewerRes_bc.rc
+   )
+endif (WINDOWS)
+
 # Compose the version.
 set(viewer_VERSION "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}")
 if (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")

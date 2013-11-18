@@ -26,3 +26,5 @@ qtcreator-build/
 /.pc
 /build-*
 /viewer-*
+/indra/newview/res/viewerRes.rc
+/indra/newview/res/viewerRes_bc.rc
