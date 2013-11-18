@@ -626,6 +626,10 @@ void LLFeatureManager::applyBaseMasks()
 	{
 		maskFeatures("GeForceFX");
 	}
+	if (gGLManager.mIsIntel && gGLManager.mGLVersion<3.0f)
+	{
+		maskFeatures("IntelPre30");
+	}
 	if (gGLManager.mIsIntel)
 	{
 		maskFeatures("Intel");

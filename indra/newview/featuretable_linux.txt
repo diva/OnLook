@@ -1,4 +1,4 @@
-version 27
+version 28
 
 // NOTE: This is mostly identical to featuretable_mac.txt with a few differences
 // Should be combined into one table
@@ -301,7 +301,7 @@ RenderObjectBump			0	0
 list OpenGLPre15
 RenderVBOEnable				1	0
 
-list Intel
+list IntelPre30
 RenderAnisotropic			1	0
 // Avoid some Intel crashes on Linux
 RenderCubeMap				0	0
