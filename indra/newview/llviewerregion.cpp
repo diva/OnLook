@@ -297,6 +297,8 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mRegionFlags( REGION_FLAGS_DEFAULT ),
 	mRegionProtocols( 0 ),
 	mSimAccess( SIM_ACCESS_MIN ),
+	mLastSimAccess( 0 ),
+	mSimAccessString( "unknown" ),
 	mBillableFactor(1.0),
 	mMaxTasks(DEFAULT_MAX_REGION_WIDE_PRIM_COUNT),
 	mCentralBakeVersion(0),
@@ -599,9 +601,15 @@ BOOL LLViewerRegion::canManageEstate() const
 		|| gAgent.getID() == getOwner();
 }
 
-const std::string LLViewerRegion::getSimAccessString() const
+std::string const& LLViewerRegion::getSimAccessString()
 {
-	return accessToString(mSimAccess);
+	// Singu: added a cache because this is called every frame.
+	if (mLastSimAccess != mSimAccess)
+	{
+		mSimAccessString = accessToString(mSimAccess);
+		mLastSimAccess = mSimAccess;
+	}
+	return mSimAccessString;
 }
 
 std::string LLViewerRegion::getLocalizedSimProductName() const

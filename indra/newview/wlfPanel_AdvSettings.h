@@ -57,8 +57,10 @@ public:
 	static void updateClass();
 
 	static void onClickExpandBtn(void* user_data);
+	void onChangeCameraPreset(LLUICtrl* ctrl, const LLSD& param);
 	void onChangeWWPresetName(const LLSD& value);
 	void onChangeWLPresetName(const LLSD& value);
+	const bool& isExpanded() const { return mExpanded; }
 
 protected:
 	void build();

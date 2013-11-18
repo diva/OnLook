@@ -38,7 +38,7 @@
 const S32 TEM_CHANGE_NONE = 0x0;
 const S32 TEM_CHANGE_COLOR = 0x1;
 const S32 TEM_CHANGE_TEXTURE = 0x2;
-const S32 TEM_CHANGE_MEDIA = 0x4; //Currently doesn't do anything, (not that TEM_CHANGE_TEXTURE either)
+const S32 TEM_CHANGE_MEDIA = 0x4;
 const S32 TEM_INVALID = 0x8;
 
 const S32 TEM_BUMPMAP_COUNT = 32;
@@ -133,7 +133,13 @@ public:
 	virtual const LLUUID &getID() const { return mID; }
 	const LLColor4 &getColor() const { return mColor; }
 	void getScale(F32 *s, F32 *t) const { *s = mScaleS; *t = mScaleT; }
+	F32  getScaleS() const { return mScaleS; }
+	F32  getScaleT() const { return mScaleT; }
+
 	void getOffset(F32 *s, F32 *t) const { *s = mOffsetS; *t = mOffsetT; }
+	F32  getOffsetS() const { return mOffsetS; }
+	F32  getOffsetT() const { return mOffsetT; }
+
 	F32  getRotation() const { return mRotation; }
 	void getRotation(F32 *theta) const { *theta = mRotation; }
 
@@ -144,7 +150,7 @@ public:
  	U8	 getBumpShinyFullbright() const { return mBump; }
 
 	U8	 getMediaFlags() const { return mMediaFlags & TEM_MEDIA_MASK; }
-	U8	 getTexGen() const	{ return mMediaFlags & TEM_TEX_GEN_MASK; }
+	LLTextureEntry::e_texgen	 getTexGen() const	{ return LLTextureEntry::e_texgen(mMediaFlags & TEM_TEX_GEN_MASK); }
 	U8	 getMediaTexGen() const { return mMediaFlags; }
     F32  getGlow() const { return mGlow; }
 	const LLMaterialID& getMaterialID() const { return mMaterialID; };

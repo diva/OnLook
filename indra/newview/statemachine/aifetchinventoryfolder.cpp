@@ -155,7 +155,7 @@ void AIFetchInventoryFolder::multiplex_impl(state_type run_state)
 		  // Create the folder.
 		  mFolderUUID = gInventory.createNewCategory(mParentFolder, LLFolderType::FT_NONE, mFolderName);
 		  llassert_always(!mFolderUUID.isNull());
-		  Dout(dc::statemachine, "Created folder \"" << mFolderName << "\".");
+		  Dout(dc::statemachine(mSMDebug), "Created folder \"" << mFolderName << "\".");
 		  mNeedNotifyObservers = true;
 		}
 		mCreated = true;

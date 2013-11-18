@@ -6,11 +6,11 @@
   <menu_item_call label="Melden..." name="abuse"/>
 	<menu_item_call label="Freund hinzufügen..." name="Add Friend"/>
 	<menu_item_call label="Zahlen..." name="Pay..."/>
-	<pie_menu label="Mehr &gt;" name="More &gt;">
+	<pie_menu label="Mehr" name="More">
 		<menu_item_call label="Einfrieren..." name="Freeze..."/>
 		<menu_item_call label="Karte geben" name="Give Card"/>
 		<menu_item_call label="Gruppeneinladung..." name="Invite..."/>
-		<pie_menu label="Werkzeuge &gt;" name="Tools &gt;">
+		<pie_menu label="Werkzeuge" name="Tools">
 			<menu_item_call label="S. Count" name="ScriptCount"/>
 			<menu_item_call label="UUID kopieren" name="CopyUUID"/>
 			<menu_item_call label="Client ID" name="ClientID"/>

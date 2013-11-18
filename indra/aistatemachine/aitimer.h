@@ -76,7 +76,11 @@ class AITimer : public AIStateMachine {
 	F64 mInterval;					//!< Input variable: interval after which the event will be generated, in seconds.
 
   public:
-	AITimer(void) : mInterval(0) { DoutEntering(dc::statemachine, "AITimer(void) [" << (void*)this << "]"); }
+	AITimer(CWD_ONLY(bool debug = false)) :
+#ifdef CWDEBUG
+		AIStateMachine(debug),
+#endif
+		mInterval(0) { DoutEntering(dc::statemachine(mSMDebug), "AITimer(void) [" << (void*)this << "]"); }
 
 	/**
 	 * @brief Set the interval after which the timer should expire.
@@ -96,7 +100,7 @@ class AITimer : public AIStateMachine {
 
   protected:
 	// Call finish() (or abort()), not delete.
-	/*virtual*/ ~AITimer() { DoutEntering(dc::statemachine, "~AITimer() [" << (void*)this << "]"); mFrameTimer.cancel(); }
+	/*virtual*/ ~AITimer() { DoutEntering(dc::statemachine(mSMDebug), "~AITimer() [" << (void*)this << "]"); mFrameTimer.cancel(); }
 
 	// Handle initializing the object.
 	/*virtual*/ void initialize_impl(void);

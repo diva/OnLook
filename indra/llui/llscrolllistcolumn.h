@@ -40,7 +40,7 @@ class LLScrollListCtrl;
 class LLScrollColumnHeader : public LLButton
 {
 public:
-	LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column);
+	LLScrollColumnHeader(const std::string& name, const LLRect& rect, LLScrollListColumn* column, const std::string& unselected_image_name = "square_btn_32x128.tga", const std::string& selected_image_name = "square_btn_selected_32x128.tga");
 	~LLScrollColumnHeader();
 
 	/*virtual*/ void draw();
@@ -51,6 +51,8 @@ public:
 	/*virtual*/ void handleReshape(const LLRect& new_rect, bool by_user = false);
 
 	LLScrollListColumn* getColumn() { return mColumn; }
+	// Singu Note: Toggles drawing the sort arrow altogether
+	void setDrawArrow(bool draw_arrow) { mDrawArrow = draw_arrow; }
 	void setHasResizableElement(BOOL resizable);
 	void updateResizeBars();
 	BOOL canResize();
@@ -60,6 +62,7 @@ public:
 
 private:
 	LLScrollListColumn* mColumn;
+	bool mDrawArrow;
 	LLResizeBar*		mResizeBar;
 	BOOL				mHasResizableElement;
 };

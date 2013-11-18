@@ -275,6 +275,13 @@ namespace
 		{
 			if (LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection())
 			{
+				if (!selection->getFirstRootObject())
+				{
+					if (gSavedSettings.getBOOL("OBJExportNotifyFailed"))
+						LLNotificationsUtil::add("ExportFailed");
+					return true;
+				}
+
 				WavefrontSaver* wfsaver = new WavefrontSaver; // deleted in callback
 				wfsaver->offset = -selection->getFirstRootObject()->getRenderPosition();
 				S32 total = 0;

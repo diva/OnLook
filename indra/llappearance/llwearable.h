@@ -41,6 +41,7 @@ class LLVisualParam;
 class LLTexGlobalColorInfo;
 class LLTexGlobalColor;
 class LLAvatarAppearance;
+class AIArchetype;
 
 // Abstract class.
 class LLWearable

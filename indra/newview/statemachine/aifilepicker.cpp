@@ -60,7 +60,11 @@ char const* AIFilePicker::state_str_impl(state_type run_state) const
 	return "UNKNOWN STATE";
 }
 
-AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mCanceled(false)
+AIFilePicker::AIFilePicker(CWD_ONLY(bool debug)) :
+#ifdef CWDEBUG
+	AIStateMachine(debug),
+#endif
+	mPluginManager(NULL), mCanceled(false)
 {
 }
 

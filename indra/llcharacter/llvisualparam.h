@@ -162,6 +162,10 @@ public:
 	void					setParamLocation(EParamLocation loc);
 	EParamLocation			getParamLocation() const { return mParamLocation; }
 
+	// Singu extensions. Used for dumping the archtype.
+	virtual char const*		getTypeString(void) const = 0;
+	virtual std::string		getDumpWearableTypeName(void) const = 0;
+
 protected:
 	F32					mCurWeight;			// current weight
 	F32					mLastWeight;		// last weight

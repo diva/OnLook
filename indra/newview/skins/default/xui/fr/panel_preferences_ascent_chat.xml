@@ -37,11 +37,14 @@
     <panel label="Chat UI" name="ChatUI">
       <check_box label="IMs Verticaux (Déco Reco)" name="use_vertical_ims_check"/>
       <check_box label="Ouvre les nouveaux IMs séparements" name="chats_torn_off"/>
+      <check_box label="Signale les nouveaux IM entrants" name="chat_steal_focus"/>
       <check_box label="Montre la barre du chat local séparée (Déco Reco)" tool_tip="" name="show_local_chat_floater_bar"/>
       <check_box label="boutons horizontaux pour les contacts (Déco Reco)" tool_tip="Activé, les boutons amis/groupes seront en bas et horizontaux et non plus verticaux et à droite." name="horiz_butt"/>
+      <check_box label="Utilise les anciens noms pour la liste des voices actives" tool_tip="Aide à une meilleure modération en ne montrant que le nom àl'ancienne" name="legacy_speaker_names"/>
       <check_box label="Boutons sur la même ligne que les noms pour les IMs" name="im_concise_butt"/>
       <check_box label="Boutons sur la ligne des noms des chats de groupe" name="group_concise_butt"/>
       <check_box label="Boutons sur la ligne de titre des conférences" name="conf_concise_butt"/>
+      <check_box label="Ouvre les logs avec un éditeur de texte externe (windows)" name="legacy_log_launch"/>
       <check_box label="Désactive le raccourci ouvrant détacher la liste d'amis" name="only_comm"/>
       <check_box label="Ecrit en Italiques le /me" name="italicize_actions"/>
     </panel>
@@ -91,6 +94,10 @@ Et aussi : #n Pour le nom classique, #d Pour le Display, #r Pour la SLURL de vô
       <check_box label="Scripts" name="Scripts"/>
       <check_box label="Offres de TP" name="Teleport Offers"/>
       <check_box label="Notices de groupes" name="Group Notices"/>
+      <check_box label="Demande de TP" name="Teleport Requests"/>
+      <text name="Except those from:">Excepté ceux venant de :</text>
+      <check_box label="Mes objets" name="My objects"/>
+      <check_box label="Mes amis" name="My friends"/>
       <check_box label="Active les sons des gestures" name="Enable Gesture Sounds"/>
     </panel>
 

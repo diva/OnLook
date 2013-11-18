@@ -134,67 +134,17 @@
   </template>
 
   <notification
-   icon="alertmodal.tga"
-   name="AIXMLExportWriteError"
-   type="alertmodal">
-Export Failure: could not open file &quot;[FILE]&quot; for writing.
-  </notification>
-
-  <notification
    icon="alert.tga"
-   name="AIXMLImportGridMismatch"
+   name="AIAlert"
    type="alert">
-Import Warning: could not apply textures: [FILE] was exported on grid &quot;[GRIDNAME]&quot; while the currentgrid is &quot;[CURGRID]&quot;.
+[PAYLOAD]
   </notification>
 
   <notification
    icon="alertmodal.tga"
-   name="AIXMLImportParseError"
+   name="AIAlertModal"
    type="alertmodal">
-Import Failure: could not read or parse wearable import file &quot;[FILE]&quot;.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="AIXMLImportRootTypeError"
-   type="alertmodal">
-Import Failure: the file &quot;[FILE]&quot; is not a linden_genepool XML file.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="AIXMLImportRootVersionError"
-   type="alertmodal">
-Import Failure: the file &quot;[FILE]&quot; contains linden_genepool XML data with the wrong [TAG]. Version &quot;[VERSIONMAJOR].0&quot; or less is required.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="AIXMLImportInvalidError"
-   type="alertmodal">
-Import Failure: the file &quot;[FILE]&quot; contains invalid data.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="AIXMLImportDifferentGrid"
-   type="alertmodal">
-Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have NOT been applied!
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="AIXMLImportMixedGrid"
-   type="alertmodal">
-Import was successful but note that the wearable was exported on grid [EXPORTGRID] (and the current grid is [CURRENTGRID]). Texture UUIDs have been applied but might not exist here!
-  </notification>
-
-  <notification
-   icon="alert.tga"
-   name="AIXMLImportWearableTypeMismatch"
-   type="alert">
-Import Warning: the file &quot;[FILE]&quot; does not contain a wearable of type [TYPE].
-It contains an archetype of type [ARCHETYPENAME]. Please select the correct type before importing.
+[PAYLOAD]
   </notification>
 
   <notification
@@ -5869,7 +5819,7 @@ Builds with extended hollow or extended hole size do not render properly on othe
    icon="alertmodal.tga"
    name="ExportFailed"
    type="alertmodal">
-Bad permissions for the exported object. Export aborted.
+None of the selected objects are exportable. Export aborted.
   </notification>
 
   <notification
@@ -7750,6 +7700,18 @@ You uploaded a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] second
    type="notifytip">
 ( [EXISTENCE] seconds alive )
 You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] seconds.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="LivePreviewUnavailable"
+   type="alert">
+
+We cannot apply this texture immediately because it is no-copy and/or no-transfer.
+  <usetemplate
+    ignoretext="Warn me that Apply Texture Immediately mode is not available for no-copy and/or no-transfer textures"
+    name="okignore"
+    yestext="OK"/>
   </notification>
 
   <notification

@@ -48,6 +48,7 @@ class LLViewerFetchedTexture;
 
 // used for setting drag & drop callbacks.
 typedef boost::function<BOOL (LLUICtrl*, LLInventoryItem*)> drag_n_drop_callback;
+typedef boost::function<void (LLInventoryItem*)> texture_selected_callback;
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +80,6 @@ public:
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 
 	virtual BOOL	handleMouseDown(S32 x, S32 y, MASK mask);
-
 	virtual BOOL	handleDragAndDrop(S32 x, S32 y, MASK mask,
 						BOOL drop, EDragAndDropType cargo_type, void *cargo_data,
 						EAcceptance *accept,
@@ -124,11 +124,16 @@ public:
 
 	const std::string&	getDefaultImageName() const					{ return mDefaultImageName; }
 
+	void			setBlankImageAssetID(const LLUUID& id);
+	const LLUUID&	getBlankImageAssetID() const;
+
 	void			setFallbackImageName( const std::string& name ) { mFallbackImageName = name; }			
 	const std::string& 	getFallbackImageName() const { return mFallbackImageName; }	   
 
 	void			setCaption(const std::string& caption);
 	void			setCanApplyImmediately(BOOL b);
+
+	void			setCanApply(bool can_preview, bool can_apply);
 
 	void			setImmediateFilterPermMask(PermissionMask mask)
 					{ mImmediateFilterPermMask = mask; }
@@ -155,10 +160,17 @@ public:
 	void setDropCallback(drag_n_drop_callback cb)	{ mDropCallback = cb; }
 
 	void setOnCancelCallback(commit_callback_t cb)	{ mOnCancelCallback = cb; }
-	
+	void setOnCloseCallback(commit_callback_t cb)	{ mOnCloseCallback = cb; }
 	void setOnSelectCallback(commit_callback_t cb)	{ mOnSelectCallback = cb; }
 
+	/*
+	 * callback for changing texture selection in inventory list of texture floater
+	 */
+	void setOnTextureSelectedCallback(texture_selected_callback cb);
+
 	void setShowLoadingPlaceholder(BOOL showLoadingPlaceholder);
+
+	LLViewerFetchedTexture* getTexture() { return mTexturep; }
 
 	static void handleClickOpenTexture(void* userdata);
 	static void handleClickCopyAssetID(void* userdata);
@@ -172,6 +184,8 @@ private:
 	drag_n_drop_callback	 mDropCallback;
 	commit_callback_t		 mOnCancelCallback;
 	commit_callback_t		 mOnSelectCallback;
+	commit_callback_t		 	mOnCloseCallback;
+	texture_selected_callback	mOnTextureSelectedCallback;
 	LLPointer<LLViewerFetchedTexture> mTexturep;
 	LLColor4				 mBorderColor;
 	LLUUID					 mImageItemID;

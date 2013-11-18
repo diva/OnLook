@@ -413,6 +413,7 @@ public:
 	static void setRenderHighlights(BOOL val);
 	static void toggleRenderHighlights(void* data);
 	static BOOL getRenderHighlights(void* data);
+	static void setRenderHighlightTextureChannel(LLRender::eTexIndex channel); // sets which UV setup to display in highlight overlay
 
 	static void updateRenderDeferred();
 	static void refreshCachedSettings();
@@ -836,6 +837,10 @@ protected:
 public:
 	static BOOL				sRenderBeacons;
 	static BOOL				sRenderHighlight;
+
+	// Determines which set of UVs to use in highlight display
+	//
+	static LLRender::eTexIndex sRenderHighlightTextureChannel;
 
 	//debug use
 	static U32              sCurRenderPoolType ;

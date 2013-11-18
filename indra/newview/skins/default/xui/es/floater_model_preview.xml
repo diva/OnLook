@@ -322,6 +322,9 @@
 			<text name="server_weight">
 				Servidor: [SIM]
 			</text>
+			<text name="price_breakdown" >
+                 Desglose del Precio:      Flujo: [CURRENCY] [STREAMING]      Físicas: [CURRENCY] [PHYSICS]      Instancias: [CURRENCY] [INSTANCES]      Texturas: [CURRENCY] [TEXTURES]      Modelo: [CURRENCY] [MODEL]
+            </text>
 
 			<!-- NOTE MESSAGE -->
 			<text name="warning_title">

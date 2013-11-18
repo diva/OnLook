@@ -37,6 +37,8 @@
 
 #include <vector>
 #include <boost/shared_ptr.hpp>
+#include "llpreprocessor.h"
+#include "stdtypes.h"
 
 class LLRunnable;
 

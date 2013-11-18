@@ -49,7 +49,8 @@ static std::string empty;
 
 #if LL_WINDOWS
 // On Windows, use strerror_s().
-std::string strerr(int errn)
+//static
+std::string LLFile::strerr(int errn)
 {
 	char buffer[256];
 	strerror_s(buffer, errn);       // infers sizeof(buffer) -- love it!
@@ -98,7 +99,8 @@ std::string message_from(int orig_errno, const char* buffer, size_t bufflen,
 					 << " (error " << stre_errno << ')');
 }
 
-std::string strerr(int errn)
+//static
+std::string LLFile::strerr(int errn)
 {
 	char buffer[256];
 	// Select message_from() function matching the strerror_r() we have on hand.
@@ -108,7 +110,8 @@ std::string strerr(int errn)
 #endif	// ! LL_WINDOWS
 
 // On either system, shorthand call just infers global 'errno'.
-std::string strerr()
+//static
+std::string LLFile::strerr()
 {
 	return strerr(errno);
 }
@@ -125,7 +128,7 @@ int warnif(const std::string& desc, const std::string& filename, int rc, int acc
 		if (errn != accept)
 		{
 			LL_WARNS("LLFile") << "Couldn't " << desc << " '" << filename
-							   << "' (errno " << errn << "): " << strerr(errn) << LL_ENDL;
+							   << "' (errno " << errn << "): " << LLFile::strerr(errn) << LL_ENDL;
 		}
 #if 0 && LL_WINDOWS                 // turn on to debug file-locking problems
 		// If the problem is "Permission denied," maybe it's because another
@@ -171,7 +174,7 @@ int warnif(const std::string& desc, const std::string& filename, int rc, int acc
 }
 
 // static
-int	LLFile::mkdir(const std::string& dirname, int perms)
+int	LLFile::mkdir_nowarn(const std::string& dirname, int perms)
 {
 #if LL_WINDOWS
 	// permissions are ignored on Windows
@@ -181,13 +184,19 @@ int	LLFile::mkdir(const std::string& dirname, int perms)
 #else
 	int rc = ::mkdir(dirname.c_str(), (mode_t)perms);
 #endif
+	return rc;
+}
+
+int LLFile::mkdir(const std::string& dirname, int perms)
+{
+	int rc = LLFile::mkdir_nowarn(dirname, perms);
 	// We often use mkdir() to ensure the existence of a directory that might
 	// already exist. Don't spam the log if it does.
 	return warnif("mkdir", dirname, rc, EEXIST);
 }
 
 // static
-int	LLFile::rmdir(const std::string& dirname)
+int	LLFile::rmdir_nowarn(const std::string& dirname)
 {
 #if LL_WINDOWS
 	// permissions are ignored on Windows
@@ -197,6 +206,12 @@ int	LLFile::rmdir(const std::string& dirname)
 #else
 	int rc = ::rmdir(dirname.c_str());
 #endif
+	return rc;
+}
+
+int	LLFile::rmdir(const std::string& dirname)
+{
+	int rc = LLFile::rmdir_nowarn(dirname);
 	return warnif("rmdir", dirname, rc);
 }
 
@@ -238,8 +253,7 @@ int	LLFile::close(LLFILE * file)
 	return ret_value;
 }
 
-
-int	LLFile::remove(const std::string& filename)
+int	LLFile::remove_nowarn(const std::string& filename)
 {
 #if	LL_WINDOWS
 	std::string utf8filename = filename;
@@ -248,10 +262,16 @@ int	LLFile::remove(const std::string& filename)
 #else
 	int rc = ::remove(filename.c_str());
 #endif
+	return rc;
+}
+
+int	LLFile::remove(const std::string& filename)
+{
+	int rc = LLFile::remove_nowarn(filename);
 	return warnif("remove", filename, rc);
 }
 
-int	LLFile::rename(const std::string& filename, const std::string& newname)
+int	LLFile::rename_nowarn(const std::string& filename, const std::string& newname)
 {
 #if	LL_WINDOWS
 	std::string utf8filename = filename;
@@ -262,6 +282,12 @@ int	LLFile::rename(const std::string& filename, const std::string& newname)
 #else
 	int rc = ::rename(filename.c_str(),newname.c_str());
 #endif
+	return rc;
+}
+
+int	LLFile::rename(const std::string& filename, const std::string& newname)
+{
+	int rc = LLFile::rename_nowarn(filename, newname);
 	return warnif(STRINGIZE("rename to '" << newname << "' from"), filename, rc);
 }
 

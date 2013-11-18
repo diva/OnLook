@@ -755,10 +755,12 @@ bool LLGLManager::initGL()
 #endif
 	stop_glerror();
 
+#if LL_WINDOWS
 	if (mIsIntel && mGLVersion <= 3.f)
 	{ //never try to use framebuffer objects on older intel drivers (crashy)
 		mHasFramebufferObject = FALSE;
 	}
+#endif
 
 	stop_glerror();
 	

@@ -40,6 +40,7 @@
 #include "lltrans.h"
 
 #include "llnotifications.h"
+#include "aialert.h"
 
 #include "../newview/hippogridmanager.h"
 
@@ -1477,6 +1478,14 @@ LLNotificationPtr LLNotifications::add(const LLNotification::Params& p)
 	LLNotificationPtr pNotif(new LLNotification(p));
 	add(pNotif);
 	return pNotif;
+}
+
+namespace AIAlert { std::string text(Error const& error, int suppress_mask = 0); }
+LLNotificationPtr LLNotifications::add(AIAlert::Error const& error, int type, unsigned int suppress_mask)
+{
+	LLSD substitutions = LLSD::emptyMap();
+	substitutions["[PAYLOAD]"] = AIAlert::text(error, suppress_mask);
+	return add(LLNotification::Params((type == AIAlert::modal || error.is_modal()) ? "AIAlertModal" : "AIAlert").substitutions(substitutions));
 }
 
 

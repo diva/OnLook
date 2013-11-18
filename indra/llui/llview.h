@@ -357,6 +357,11 @@ public:
 	BOOL focusNextRoot();
 	BOOL focusPrevRoot();
 
+	// Normally we want the app menus to get priority on accelerated keys
+	// However, sometimes we want to give specific views a first chance
+	// at handling them. (eg. the script editor)
+	virtual bool	hasAccelerators() const { return false; }
+
 	virtual void deleteAllChildren();
 
 	virtual void	setTentative(BOOL b);

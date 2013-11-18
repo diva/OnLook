@@ -446,7 +446,7 @@ LLMenuGL *LLUICtrlFactory::buildMenu(const std::string &filename, LLView* parent
 //-----------------------------------------------------------------------------
 // buildMenu()
 //-----------------------------------------------------------------------------
-LLPieMenu *LLUICtrlFactory::buildPieMenu(const std::string &filename, LLView* parentp)
+LLContextMenu* LLUICtrlFactory::buildContextMenu(const std::string& filename, LLView* parentp)
 {
 	LLXMLNodePtr root;
 
@@ -465,9 +465,10 @@ LLPieMenu *LLUICtrlFactory::buildPieMenu(const std::string &filename, LLView* pa
 	std::string name("menu");
 	root->getAttributeString("name", name);
 
-	LLPieMenu *menu = new LLPieMenu(name);
+	static LLUICachedControl<bool> context("LiruUseContextMenus", false);
+	LLContextMenu* menu = context ? new LLContextMenu(name) : new LLPieMenu(name);
 	parentp->addChild(menu);
-	menu->initXML(root, parentp, this);
+	menu->initXML(root, parentp, this, context);
 
 	if (LLUI::sShowXUINames)
 	{

@@ -32,6 +32,7 @@
 #include <typeinfo>
 
 #include "string_table.h"
+#include "llerror.h"			// llassert_always
 #include <boost/utility.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>

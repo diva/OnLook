@@ -82,6 +82,7 @@ public:
 	
 	// LLVisualParam Virtual functions
 	///*virtual*/ BOOL			parseData(LLXmlTreeNode* node);
+	/*virtual*/ std::string		getDumpWearableTypeName(void) const;
 
 	// New Virtual functions
 	virtual F32					getTotalDistortion() = 0;

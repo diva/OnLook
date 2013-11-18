@@ -108,6 +108,8 @@
 #include "llnotificationptr.h"
 #include "llnotificationcontext.h"
 
+namespace AIAlert { class Error; }
+
 typedef enum e_notification_priority
 {
 	NOTIFICATION_PRIORITY_UNSPECIFIED,
@@ -737,6 +739,7 @@ public:
 						const LLSD& substitutions,
 						const LLSD& payload,
 						LLNotificationFunctorRegistry::ResponseFunctor functor);
+	LLNotificationPtr add(AIAlert::Error const& error, int type, unsigned int suppress_mask);
 	LLNotificationPtr add(const LLNotification::Params& p);
 
 	void forceResponse(const LLNotification::Params& params, S32 option);

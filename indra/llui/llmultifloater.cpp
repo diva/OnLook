@@ -187,7 +187,8 @@ BOOL LLMultiFloater::closeAllFloaters()
 			//Tab did not actually close, possibly due to a pending Save Confirmation dialog..
 			//so try and close the next one in the list...
 			tabToClose++;
-		}else
+		}
+		else
 		{
 			//Tab closed ok.
 			lastTabCount = mTabContainer->getTabCount();
@@ -252,7 +253,7 @@ void LLMultiFloater::addFloater(LLFloater* floaterp, BOOL select_added_floater, 
 	else if (floaterp->getHost())
 	{
 		// floaterp is hosted by somebody else and
-		// this is adding it, so remove it from it's old host
+		// this is adding it, so remove it from its old host
 		floaterp->getHost()->removeFloater(floaterp);
 	}
 	else if (floaterp->getParent() == gFloaterView)
@@ -302,7 +303,20 @@ void LLMultiFloater::addFloater(LLFloater* floaterp, BOOL select_added_floater, 
 	{
 		floaterp->setVisible(FALSE);
 	}
+
+	// Tabs sometimes overlap resize handle
+	moveResizeHandlesToFront();
 }
+
+void LLMultiFloater::updateFloaterTitle(LLFloater* floaterp)
+{
+	S32 index = mTabContainer->getIndexForPanel(floaterp);
+	if (index != -1)
+	{
+		mTabContainer->setPanelTitle(index, floaterp->getShortTitle());
+	}
+}
+
 
 /**
 	BOOL selectFloater(LLFloater* floaterp)
@@ -329,8 +343,9 @@ void LLMultiFloater::selectPrevFloater()
 	mTabContainer->selectPrevTab();
 }
 
-void LLMultiFloater::showFloater(LLFloater* floaterp)
+void LLMultiFloater::showFloater(LLFloater* floaterp, LLTabContainer::eInsertionPoint insertion_point)
 {
+	if(!floaterp) return;
 	// we won't select a panel that already is selected
 	// it is hard to do this internally to tab container
 	// as tab selection is handled via index and the tab at a given
@@ -338,7 +353,7 @@ void LLMultiFloater::showFloater(LLFloater* floaterp)
 	if (floaterp != mTabContainer->getCurrentPanel() &&
 		!mTabContainer->selectTabPanel(floaterp))
 	{
-		addFloater(floaterp, TRUE);
+		addFloater(floaterp, TRUE, insertion_point);
 	}
 }
 
@@ -417,6 +432,13 @@ BOOL LLMultiFloater::handleKeyHere(KEY key, MASK mask)
 		if (floater && floater->canClose() && floater->isCloseable())
 		{
 			floater->close();
+
+			// EXT-5695 (Tabbed IM window loses focus if close any tabs by Ctrl+W)
+			// bring back focus on tab container if there are any tab left
+			if(mTabContainer->getTabCount() > 0)
+			{
+				mTabContainer->setFocus(TRUE);
+			}
 		}
 		return TRUE;
 	}
@@ -468,12 +490,17 @@ void LLMultiFloater::setFloaterFlashing(LLFloater* floaterp, BOOL flashing)
 
 void LLMultiFloater::onTabSelected()
 {
-	tabOpen((LLFloater*)mTabContainer->getCurrentPanel());
+	LLFloater* floaterp = dynamic_cast<LLFloater*>(mTabContainer->getCurrentPanel());
+	if (floaterp)
+	{
+		tabOpen(floaterp);
+	}
 }
 
 void LLMultiFloater::setCanResize(BOOL can_resize)
 {
 	LLFloater::setCanResize(can_resize);
+	if (!mTabContainer) return;
 	if (isResizable() && mTabContainer->getTabPosition() == LLTabContainer::BOTTOM)
 	{
 		mTabContainer->setRightTabBtnOffset(RESIZE_HANDLE_WIDTH);
@@ -510,16 +537,9 @@ void LLMultiFloater::updateResizeLimits()
 	// initialize minimum size constraint to the original xml values.
 	S32 new_min_width = mOrigMinWidth;
 	S32 new_min_height = mOrigMinHeight;
-	// possibly increase minimum size constraint due to children's minimums.
-	for (S32 tab_idx = 0; tab_idx < mTabContainer->getTabCount(); ++tab_idx)
-	{
-		LLFloater* floaterp = (LLFloater*)mTabContainer->getPanelByIndex(tab_idx);
-		if (floaterp)
-		{
-			new_min_width = llmax(new_min_width, floaterp->getMinWidth() + LLPANEL_BORDER_WIDTH * 2);
-			new_min_height = llmax(new_min_height, floaterp->getMinHeight() + LLFLOATER_HEADER_SIZE + TABCNTR_HEADER_HEIGHT);
-		}
-	}
+
+	computeResizeLimits(new_min_width, new_min_height);
+
 	setResizeLimits(new_min_width, new_min_height);
 
 	S32 cur_height = getRect().getHeight();
@@ -543,5 +563,19 @@ void LLMultiFloater::updateResizeLimits()
 		// make sure this window is visible on screen when it has been modified
 		// (tab added, etc)
 		gFloaterView->adjustToFitScreen(this, TRUE);
+	}
+}
+
+void LLMultiFloater::computeResizeLimits(S32& new_min_width, S32& new_min_height)
+{
+	// possibly increase minimum size constraint due to children's minimums.
+	for (S32 tab_idx = 0; tab_idx < mTabContainer->getTabCount(); ++tab_idx)
+	{
+		LLFloater* floaterp = (LLFloater*)mTabContainer->getPanelByIndex(tab_idx);
+		if (floaterp)
+		{
+			new_min_width = llmax(new_min_width, floaterp->getMinWidth() + LLPANEL_BORDER_WIDTH * 2);
+			new_min_height = llmax(new_min_height, floaterp->getMinHeight() + LLFLOATER_HEADER_SIZE + TABCNTR_HEADER_HEIGHT);
+		}
 	}
 }

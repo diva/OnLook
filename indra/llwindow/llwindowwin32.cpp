@@ -749,7 +749,7 @@ void LLWindowWin32::close()
 	LL_DEBUGS("Window") << "Destroying Window" << LL_ENDL;
 	
 	// Don't process events in our mainWindowProc any longer.
-	SetWindowLong(mWindowHandle, GWL_USERDATA, NULL);
+	SetWindowLongPtr(mWindowHandle, GWLP_USERDATA, NULL);
 
 	// Make sure we don't leave a blank toolbar button.
 	ShowWindow(mWindowHandle, SW_HIDE);
@@ -1660,7 +1660,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 		LL_DEBUGS("Window") << "Keeping vertical sync" << LL_ENDL;
 	}
 
-	SetWindowLong(mWindowHandle, GWL_USERDATA, (U32)this);
+	SetWindowLongPtr(mWindowHandle, GWLP_USERDATA, (LONG_PTR)this);
 
 	// register this window as handling drag/drop events from the OS
 	DragAcceptFiles( mWindowHandle, TRUE );
@@ -1983,7 +1983,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 	// This helps prevent avatar walking after maximizing the window by double-clicking the title bar.
 	static bool sHandleLeftMouseUp = true;
 
-	LLWindowWin32 *window_imp = (LLWindowWin32 *)GetWindowLong(h_wnd, GWL_USERDATA);
+	LLWindowWin32 *window_imp = (LLWindowWin32 *)GetWindowLongPtr(h_wnd, GWLP_USERDATA);
 
 
 	if (NULL != window_imp)

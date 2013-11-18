@@ -171,9 +171,10 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 		LLXMLNodePtr child;
 		for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 		{
-			if (child->hasName("combo_item"))
+			if (child->hasName("combo_item") || child->hasName("combo_box.item"))
 			{
 				std::string label = child->getTextContents();
+				child->getAttributeString("label", label);
 
 				std::string value = label;
 				child->getAttributeString("value", value);

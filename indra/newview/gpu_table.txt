@@ -301,7 +301,11 @@ Intel Eaglelake					.*Intel.*Eaglelake.*						0		1
 Intel Graphics Media HD			.*Intel.*Graphics Media.*HD.*				0		1
 Intel HD Graphics 2000			.*Intel.*HD Graphics 2000.*					1		1
 Intel HD Graphics 3000			.*Intel.*HD Graphics 3000.*					2		1
+Intel HD Graphics 3000			.*Intel.*Sandybridge.*					2		1
 Intel HD Graphics 4000			.*Intel.*HD Graphics 4000.*					2		1
+Intel HD Graphics 4000			.*Intel.*Ivybridge.*					2		1
+Intel HD Graphics 5000			.*Intel.*HD Graphics 5.*					2		1
+Intel HD Graphics 5000			.*Intel.*Haswell.*					2		1
 Intel HD Graphics				.*Intel.*HD Graphics.*						2		1
 Intel Mobile 4 Series			.*Intel.*Mobile.* 4 Series.*				0		1
 Intel Media Graphics HD			.*Intel.*Media Graphics HD.*				0		1
@@ -312,6 +316,7 @@ Intel HD Graphics 2000			.*Intel.*HD2000.*							1		1
 Intel HD Graphics 3000			.*Intel.*HD3000.*							2		1
 Matrox							.*Matrox.*									0		0
 Mesa							.*Mesa.*									0		0
+Gallium							.*Gallium.*							1		1
 NVIDIA 205						.*NVIDIA .*GeForce 205.*					2		1
 NVIDIA 210						.*NVIDIA .*GeForce 210.*					2		1
 NVIDIA 310M						.*NVIDIA .*GeForce 310M.*					1		1
@@ -407,6 +412,12 @@ NVIDIA GTX 670					.*NVIDIA .*GTX *67.*						3		1
 NVIDIA GTX 680M					.*NVIDIA .*GTX *680M.*						3		1
 NVIDIA GTX 680					.*NVIDIA .*GTX *68.*						3		1
 NVIDIA GTX 690					.*NVIDIA .*GTX *69.*						3		1
+NVIDIA GTX 750					.*NVIDIA .*GTX *75.*						3		1
+NVIDIA GTX 760					.*NVIDIA .*GTX *76.*						3		1
+NVIDIA GTX 770					.*NVIDIA .*GTX *77.*						3		1
+NVIDIA GTX 780					.*NVIDIA .*GTX *78.*						3		1
+NVIDIA GTX TITAN				.*NVIDIA .*GTX *TITAN.*						3		1
+NVIDIA GT 7xxM					.*NVIDIA .*GT *7.*						3		1
 NVIDIA C51						.*NVIDIA .*C51.*							0		1
 NVIDIA G72						.*NVIDIA .*G72.*							1		1
 NVIDIA G73						.*NVIDIA .*G73.*							1		1

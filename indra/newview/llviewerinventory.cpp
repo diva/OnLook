@@ -655,13 +655,16 @@ bool LLViewerInventoryCategory::fetch()
 		{
 			llwarns << "agent region is null" << llendl;
 		}
-		if (!url.empty()) //Capability found.  Build up LLSD and use it.
+		if (!url.empty() && gSavedSettings.getBOOL("UseHTTPInventory")) //Capability found and HTTP inventory enabled.  Build up LLSD and use it.
 		{
 			LLInventoryModelBackgroundFetch::instance().start(mUUID, false);			
 		}
 		else
-		{	//Deprecated, but if we don't have a capability, use the old system.
-			llinfos << "FetchInventoryDescendents2 capability not found.  Using deprecated UDP message." << llendl;
+		{	//We don't have a capability or the use of HTTP inventory is disabled, use the old system.
+			if (gSavedSettings.getBOOL("UseHTTPInventory"))
+			{
+				llinfos << "FetchInventoryDescendents2 capability not found.  Using UDP message." << llendl;
+			}
 			LLMessageSystem* msg = gMessageSystem;
 			msg->newMessage("FetchInventoryDescendents");
 			msg->nextBlock("AgentData");

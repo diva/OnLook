@@ -49,7 +49,7 @@ set_source_files_properties(${llplugin_HEADER_FILES}
 
 if(NOT WORD_SIZE EQUAL 32)
 	if(WINDOWS)
-		add_definitions(/FIXED:NO)
+		# add_definitions(/FIXED:NO)
 	else(WINDOWS) # not windows therefore gcc LINUX and DARWIN
 		add_definitions(-fPIC)
 	endif(WINDOWS)

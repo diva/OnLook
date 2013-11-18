@@ -60,9 +60,35 @@ const F32 SOUND_GAIN = 1.0f;
 
 LLPreviewSound::LLPreviewSound(const std::string& name, const LLRect& rect, const std::string& title, const LLUUID& item_uuid, const LLUUID& object_uuid)	:
 	LLPreview( name, rect, title, item_uuid, object_uuid)
+,	mIsCopyable(false)
 {
 	
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_sound.xml");
+
+	setTitle(title);
+
+	if (!getHost())
+	{
+		LLRect curRect = getRect();
+		translate(rect.mLeft - curRect.mLeft, rect.mTop - curRect.mTop);
+	}
+}
+
+// virtual
+BOOL LLPreviewSound::postBuild()
+{
+	const LLInventoryItem* item = getItem();
+	if (item)
+	{
+		getChild<LLUICtrl>("desc")->setValue(item->getDescription());
+		mIsCopyable = (item->getPermissions().getCreator() == gAgentID);
+		if (gAudiop)
+			// <edit>
+			// that thing above doesn't actually start a sound transfer, so I will do it
+			if (LLAudioSource* asp = gAgentAvatarp->getAudioSource(gAgentID))
+				asp->preload(item->getAssetUUID()); // preload the sound
+			// </edit>
+	}
 
 	childSetAction("Sound play btn",&LLPreviewSound::playSound,this);
 	childSetAction("Sound audition btn",&LLPreviewSound::auditionSound,this);
@@ -77,40 +103,10 @@ LLPreviewSound::LLPreviewSound(const std::string& name, const LLRect& rect, cons
 	button = getChild<LLButton>("Sound audition btn");
 	button->setSoundFlags(LLView::SILENT);
 
-	const LLInventoryItem* item = getItem();
-
-	mIsCopyable = false;
-	if(item)
-	{
-		const LLPermissions& perm = item->getPermissions();
-		mIsCopyable = (perm.getCreator() == gAgent.getID());
-	}
-	
 	childSetCommitCallback("desc", LLPreview::onText, this);
-	childSetText("desc", item->getDescription());
 	getChild<LLLineEditor>("desc")->setPrevalidate(&LLLineEditor::prevalidatePrintableNotPipe);
-	
-	// preload the sound
-	if(item && gAudiop)
-	{
-		// <edit>
-		// that thing above doesn't actually start a sound transfer, so I will do it
-		LLAudioSource *asp = gAgentAvatarp->getAudioSource(gAgent.getID());
-		if(asp)
-		{
-			asp->preload(item->getAssetUUID());
-		}
-		// </edit>
-	}
-	
-	setTitle(title);
 
-	if (!getHost())
-	{
-		LLRect curRect = getRect();
-		translate(rect.mLeft - curRect.mLeft, rect.mTop - curRect.mTop);
-	}
-
+	return LLPreview::postBuild();
 }
 
 // static

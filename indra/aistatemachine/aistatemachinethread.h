@@ -181,7 +181,11 @@ class AIStateMachineThreadBase : public AIStateMachine {
 	static state_type const max_state = wait_stopped + 1;
 
   protected:
-	AIStateMachineThreadBase(void) { }
+	AIStateMachineThreadBase(CWD_ONLY(bool debug))
+#ifdef CWDEBUG
+	  : AIStateMachine(debug)
+#endif
+	{ }
 
   private:
 	// Handle initializing the object.
@@ -217,7 +221,10 @@ class AIStateMachineThread : public AIStateMachineThreadBase {
 
   public:
 	// Constructor.
-	AIStateMachineThread(void)
+	AIStateMachineThread(CWD_ONLY(bool debug))
+#ifdef CWDEBUG
+		: AIStateMachineThreadBase(debug)
+#endif
 	{
 	  *AIThreadImpl::StateMachineThread_wat(mThreadImpl.mStateMachineThread) = this;
 	}

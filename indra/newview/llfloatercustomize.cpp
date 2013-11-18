@@ -53,8 +53,9 @@
 #include "llvoavatarself.h"
 
 #include "statemachine/aifilepicker.h"
-#include "llxmltree.h"
 #include "hippogridmanager.h"
+#include "aixmllindengenepool.h"
+#include "aifile.h"
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -330,215 +331,112 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 	LLPanelEditWearable* panel_edit_wearable = getCurrentWearablePanel();
 	LLViewerWearable* edit_wearable = panel_edit_wearable->getWearable();
 
+	LLWearableType::EType panel_wearable_type = panel_edit_wearable->getType();
+	std::string label = utf8str_tolower(panel_edit_wearable->getLabel());
+
 	std::string const filename = filepicker->getFilename();
-	LLSD args(LLSD::emptyMap());
-	args["FILE"] = gDirUtilp->getBaseFileName(filename);
 
-	LLXmlTree xml;
-	BOOL success = xml.parseFile(filename, FALSE);
-	if (!success)
-	{
-		LLNotificationsUtil::add("AIXMLImportParseError", args);
-		return;
-	}
-	LLXmlTreeNode* root = xml.getRoot();
-	if (!root)
-	{
-		llwarns << "No root node found in wearable import file: " << filename << llendl;
-		LLNotificationsUtil::add("AIXMLImportParseError", args);
-		return;
-	}
+	AIArgs args("[FILE]", gDirUtilp->getBaseFileName(filename));
 
-	//-------------------------------------------------------------------------
-	// <linden_genepool version="1.0" [metaversion="?"]> (root)
-	//-------------------------------------------------------------------------
-	if (!root->hasName("linden_genepool"))
-	{
-		llwarns << "Invalid wearable import file (missing linden_genepool header): " << filename << llendl;
-		LLNotificationsUtil::add("AIXMLImportRootTypeError", args);
-		return;
-	}
-	static LLStdStringHandle const version_string = LLXmlTree::addAttributeString("version");
-	std::string version;
-	if (!root->getFastAttributeString(version_string, version) || (version != "1.0"))
-	{
-		llwarns << "Invalid or incompatible linden_genepool version: " << version << " in file: " << filename << llendl;
-		args["TAG"] = "version";
-		args["VERSIONMAJOR"] = "1";
-		LLNotificationsUtil::add("AIXMLImportRootVersionError", args);
-		return;
-	}
-	static LLStdStringHandle const metaversion_string = LLXmlTree::addAttributeString("metaversion");
-	std::string metaversion;
-	U32 metaversion_major;
-	if (!root->getFastAttributeString(metaversion_string, metaversion))
-	{
-		llwarns << "Invalid linden_genepool metaversion: " << metaversion << " in file: " << filename << llendl;
-		metaversion_major = 0;
-	}
-	else if (!LLStringUtil::convertToU32(metaversion, metaversion_major) || metaversion_major > 1)
-	{
-		llwarns << "Invalid or incompatible linden_genepool metaversion: " << metaversion << " in file: " << filename << llendl;
-		args["TAG"] = "metaversion";
-		args["VERSIONMAJOR"] = "1";
-		LLNotificationsUtil::add("AIXMLImportRootVersionError", args);
-		return;
-	}
-
-	//-------------------------------------------------------------------------
-	// <meta gridnick="secondlife" date="2013-07-20T15:27:55.80Z">
-	//-------------------------------------------------------------------------
-	std::string gridnick;
-	LLDate date;
-	bool different_grid = false;		// By default assume it was exported on the same grid as we're on now.
-	bool mixed_grids = false;			// Set to true if two different grids (might) share UUIDs. Currently only "secondlife" and "secondlife_beta".
-	if (metaversion_major >= 1)
-	{
-		static LLStdStringHandle const gridnick_string = LLXmlTree::addAttributeString("gridnick");
-		static LLStdStringHandle const date_string = LLXmlTree::addAttributeString("date");
-		std::string date_s;
-		bool invalid = true;
-		LLXmlTreeNode* meta_node = root->getChildByName("meta");
-		if (!meta_node)
-		{
-			llwarns << "No meta (1) in wearable import file: " << filename << llendl;
-		}
-		else if (!meta_node->getFastAttributeString(gridnick_string, gridnick))
-		{
-			llwarns << "meta tag in file: " << filename << " is missing the 'gridnick' parameter." << llendl;
-		}
-		else if (!meta_node->getFastAttributeString(date_string, date_s) || !date.fromString(date_s))
-		{
-			llwarns << "meta tag in file: " << filename << " is missing or invalid 'date' parameter." << llendl;
-		}
-		else
-		{
-			invalid = false;
-			std::string current_gridnick = gHippoGridManager->getConnectedGrid()->getGridNick();
-			different_grid = gridnick != current_gridnick;
-			mixed_grids = (gridnick == "secondlife" && current_gridnick == "secondlife_beta") ||
-			              (gridnick == "secondlife_beta" && current_gridnick == "secondlife");
-		}
-		if (invalid)
-		{
-			LLNotificationsUtil::add("AIXMLImportInvalidError", args);
-			return;
-		}
-	}
-
-	static LLStdStringHandle const name_string = LLXmlTree::addAttributeString("name");
-
-	//-------------------------------------------------------------------------
-	// <archetype name="???">
-	//-------------------------------------------------------------------------
-	LLXmlTreeNode* archetype_node = root->getChildByName("archetype");
-	if (!archetype_node)
-	{
-		llwarns << "No archetype in wearable import file: " << filename << llendl;
-		LLNotificationsUtil::add("AIXMLImportInvalidError", args);
-		return;
-	}
-	// Legacy that name="" exists. Using it as human (only) readable type label of contents. Don't use it for anything else because it might not be set.
-	std::string label = "???";
-	if (metaversion_major >= 1)
-	{
-		if (!archetype_node->getFastAttributeString(name_string, label))
-		{
-			llwarns << "archetype tag in file: " << filename << " is missing the 'name' parameter." << llendl;
-		}
-	}
-
-	//-------------------------------------------------------------------------
-	// <meta path="Clothing" name="New Shirt27" description="Some description"/>
-	//-------------------------------------------------------------------------
-	std::string path;
-	std::string wearable_name;
-	std::string wearable_description;
-	if (metaversion_major >= 1)
-	{
-		static LLStdStringHandle const path_string = LLXmlTree::addAttributeString("path");
-		static LLStdStringHandle const description_string = LLXmlTree::addAttributeString("description");
-		bool invalid = true;
-		LLXmlTreeNode* meta_node = archetype_node->getChildByName("meta");
-		if (!meta_node)
-		{
-			llwarns << "No meta (2) in wearable import file: " << filename << llendl;
-		}
-		else if (!meta_node->getFastAttributeString(path_string, path))
-		{
-			llwarns << "meta tag in file: " << filename << " is missing the 'path' parameter." << llendl;
-		}
-		else if (!meta_node->getFastAttributeString(name_string, wearable_name))
-		{
-			llwarns << "meta tag in file: " << filename << " is missing the 'name' parameter." << llendl;
-		}
-		else if (!meta_node->getFastAttributeString(description_string, wearable_description))
-		{
-			llwarns << "meta tag in file: " << filename << " is missing the 'description' parameter." << llendl;
-		}
-		else
-		{
-			invalid = false;
-		}
-		if (invalid)
-		{
-			LLNotificationsUtil::add("AIXMLImportInvalidError", args);
-			return;
-		}
-	}
-
-	// Parse the XML content.
-	static LLStdStringHandle const id_string = LLXmlTree::addAttributeString("id");
-	static LLStdStringHandle const value_string = LLXmlTree::addAttributeString("value");
-	static LLStdStringHandle const te_string = LLXmlTree::addAttributeString("te");
-	static LLStdStringHandle const uuid_string = LLXmlTree::addAttributeString("uuid");
 	bool found_param = false;
 	bool found_texture = false;
-	for(LLXmlTreeNode* child = archetype_node->getFirstChild(); child; child = archetype_node->getNextChild())
+	bool found_type = false;
+
+	bool different_grid = false;		// By default assume it was exported on the same grid as we're on now.
+	bool mixed_grids = false;			// Set to true if two different grids (might) share UUIDs. Currently only "secondlife" and "secondlife_beta".
+	std::string gridnick;
+	std::string wearable_types;
+
+	try
 	{
-		if (child->hasName("param"))
+		//-------------------------------------------------------------------------
+		// <linden_genepool version="1.0" [metaversion="?"]> (root)
+		//-------------------------------------------------------------------------
+		std::string metaversion;
+		U32 metaversion_major;
+
+		AIXMLParser linden_genepool(filename, "wearable import file", "linden_genepool", 1);
+		linden_genepool.attribute("version", "1.0");
+		linden_genepool.attribute("metaversion", metaversion);
+
+		if (!LLStringUtil::convertToU32(metaversion, metaversion_major) || metaversion_major > 1)
 		{
-			std::string id_s;
-			U32 id;
-			std::string value_s;
-			F32 value;
-			if (!child->getFastAttributeString(id_string, id_s) || !LLStringUtil::convertToU32(id_s, id) ||
-				!child->getFastAttributeString(value_string, value_s) || !LLStringUtil::convertToF32(value_s, value))
-			{
-				llwarns << "Possible syntax error or corruption for <param id=... value=... /> node in " << filename << llendl;
-				continue;
-			}
-			LLVisualParam* visual_param = edit_wearable->getVisualParam(id);
-			if (visual_param)
-			{
-				found_param = true;
-				visual_param->setWeight(value, FALSE);
-			}
+			THROW_MALERT("AIXMLImportRootVersionError", args("[TAG]", "metaversion")("[VERSIONMAJOR]", "1"));
 		}
-		else if (child->hasName("texture"))
+
+		//-------------------------------------------------------------------------
+		// <meta gridnick="secondlife" date="2013-07-20T15:27:55.80Z">
+		//-------------------------------------------------------------------------
+		AIXMLLindenGenepool::MetaData meta_data;
+
+		if (metaversion_major >= 1)
 		{
-			std::string te_s;
-			S32 te;
-			std::string uuid_s;
-			LLUUID uuid;
-			if (!child->getFastAttributeString(te_string, te_s) || !LLStringUtil::convertToS32(te_s, te) || te < 0 || te >= TEX_NUM_INDICES ||
-				!child->getFastAttributeString(uuid_string, uuid_s) || !uuid.set(uuid_s, TRUE))
+			linden_genepool.child("meta", meta_data);
+			std::string current_gridnick = gHippoGridManager->getConnectedGrid()->getGridNick();
+			gridnick = meta_data.mGridNick;
+			different_grid = gridnick != current_gridnick;
+			mixed_grids = (gridnick == "secondlife" && current_gridnick == "secondlife_beta") ||
+						  (gridnick == "secondlife_beta" && current_gridnick == "secondlife");
+		}
+
+		std::vector<AIArchetype> archetypes;
+		linden_genepool.setVersion(metaversion_major);
+		linden_genepool.push_back_children("archetype", archetypes);
+
+		if (archetypes.empty())
+		{
+			THROW_ALERT("AIXMLImportNoArchetypeError", AIArgs("[FILE]", filename));
+		}
+
+		for (std::vector<AIArchetype>::iterator archetype = archetypes.begin(); archetype != archetypes.end(); ++archetype)
+		{
+			LLWearableType::EType type = archetype->getType();
+			if (type != LLWearableType::WT_NONE)
 			{
-				llwarns << "Possible syntax error or corruption for <texture te=... uuid=... /> node in " << filename << llendl;
-				continue;
-			}
-			ETextureIndex te_index = (ETextureIndex)te;
-			LLWearableType::EType te_wearable_type = LLAvatarAppearanceDictionary::getTEWearableType(te_index);
-			if (te_wearable_type == edit_wearable->getType())
-			{
-				found_texture = true;
-				if (!different_grid || mixed_grids)
+				if (!wearable_types.empty())
 				{
-					panel_edit_wearable->setNewImageID(te_index, uuid);
+					wearable_types += "/";
+				}
+				wearable_types += LLWearableType::getTypeName(type);
+				if (panel_wearable_type == type)
+				{
+					found_type = true;
+				}
+			}
+			for (AIArchetype::params_type::const_iterator param = archetype->getParams().begin(); param != archetype->getParams().end(); ++param)
+			{
+				LLVisualParam* visual_param = edit_wearable->getVisualParam(param->getID());
+				if (visual_param)
+				{
+					found_param = true;
+					visual_param->setWeight(param->getValue(), FALSE);
+				}
+			}
+			for (AIArchetype::textures_type::const_iterator texture = archetype->getTextures().begin(); texture != archetype->getTextures().end(); ++texture)
+			{
+				U32 te = texture->getID();
+				if (te >= TEX_NUM_INDICES)
+				{
+				}
+				ETextureIndex te_index = (ETextureIndex)te;
+				LLWearableType::EType te_wearable_type = LLAvatarAppearanceDictionary::getTEWearableType(te_index);
+				if (te_wearable_type == edit_wearable->getType())
+				{
+					found_texture = true;
+					if (!different_grid || mixed_grids)
+					{
+						panel_edit_wearable->setNewImageID(te_index, texture->getUUID());
+					}
 				}
 			}
 		}
 	}
+	catch (AIAlert::Error const& error)
+	{
+		AIAlert::add_modal("AIXMLImportError", AIArgs("[TYPE]", label), error);
+		return;
+	}
+
 	if (found_param || found_texture)
 	{
 		edit_wearable->writeToAvatar(gAgentAvatarp);
@@ -546,23 +444,25 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 		panel_edit_wearable->updateScrollingPanelUI();
 		if (found_texture && different_grid)
 		{
-			args["EXPORTGRID"] = gridnick;
-			args["CURRENTGRID"] = gHippoGridManager->getConnectedGrid()->getGridNick();
+			args("[EXPORTGRID]", gridnick);
+			args("[CURRENTGRID]", gHippoGridManager->getConnectedGrid()->getGridNick());
 			if (mixed_grids)
 			{
-				LLNotificationsUtil::add("AIXMLImportMixedGrid", args);
+				AIAlert::add_modal("AIXMLImportMixedGrid", args);
 			}
 			else
 			{
-				LLNotificationsUtil::add("AIXMLImportDifferentGrid", args);
+				AIAlert::add_modal("AIXMLImportDifferentGrid", args);
 			}
 		}
 	}
-	else
+	else if (found_type)
 	{
-		args["TYPE"] = panel_edit_wearable->LLPanel::getLabel();
-		args["ARCHETYPENAME"] = label;
-		LLNotificationsUtil::add("AIXMLImportWearableTypeMismatch", args);
+		AIAlert::add("AIXMLImportEmptyArchetype", args("[TYPE]", label));
+	}
+	else if (!wearable_types.empty())
+	{
+		AIAlert::add("AIXMLImportWearableTypeMismatch", args("[TYPE]", label)("[ARCHETYPENAME]", wearable_types));
 	}
 }
 
@@ -615,21 +515,26 @@ void LLFloaterCustomize::onBtnExport_continued(LLViewerWearable* edit_wearable, 
 	}
 
 	std::string filename = filepicker->getFilename();
-	LLSD args(LLSD::emptyMap());
-	args["FILE"] = filename;
 
-	LLAPRFile outfile;
-	outfile.open(filename, LL_APR_WB);
-	if (!outfile.getFileHandle())
+	bool success = false;
+	try
 	{
-		llwarns << "Could not open \"" << filename << "\" for writing." << llendl;
-		LLNotificationsUtil::add("AIXMLExportWriteError", args);
-		return;
+		AIFile outfile(filename, "wb");
+
+		AIXMLLindenGenepool linden_genepool(outfile);
+		linden_genepool.child(edit_wearable->getArchetype());
+
+		success = true;
+	}
+	catch (AIAlert::Error const& error)
+	{
+		AIAlert::add_modal("AIXMLExportWriteError", AIArgs("[FILE]", filename), error);
 	}
 
-	LLVOAvatar::dumpArchetypeXML_header(outfile, edit_wearable->getTypeName());
-	edit_wearable->archetypeExport(outfile);
-	LLVOAvatar::dumpArchetypeXML_footer(outfile);
+	if (success)
+	{
+		AIAlert::add_modal("AIXMLExportSuccess", AIArgs("[FILE]", filename));
+	}
 }
 
 void LLFloaterCustomize::onBtnOk()

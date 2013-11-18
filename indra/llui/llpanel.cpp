@@ -530,11 +530,13 @@ BOOL LLPanel::initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *f
 
 void LLPanel::initChildrenXML(LLXMLNodePtr node, LLUICtrlFactory* factory)
 {
+	std::string kidstring(node->getName()->mString);
+	kidstring += ".string";
 	LLXMLNodePtr child;
 	for (child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
 		// look for string declarations for programmatic text
-		if (child->hasName("string"))
+		if (child->hasName("string") || child->hasName(kidstring))
 		{
 			std::string string_name;
 			child->getAttributeString("name", string_name);

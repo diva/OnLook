@@ -143,6 +143,12 @@ BOOL LLViewerVisualParam::setInfo(LLViewerVisualParamInfo *info)
 	return TRUE;
 }
 
+//virtual
+std::string LLViewerVisualParam::getDumpWearableTypeName(void) const
+{
+  return LLWearableType::getTypeName(LLWearableType::EType(getInfo()->mWearableType));
+}
+
 /*
 //=============================================================================
 // These virtual functions should always be overridden,

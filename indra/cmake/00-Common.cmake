@@ -46,6 +46,10 @@ if (WINDOWS)
     set(MSVC_DIR 10.0)
     set(MSVC_SUFFIX 100)
   endif (MSVC10)
+  if (MSVC11)
+    set(MSVC_DIR 11.0)
+    set(MSVC_SUFFIX 110)
+  endif (MSVC11)
 
   # Remove default /Zm1000 flag that cmake inserts
   string (REPLACE "/Zm1000" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -78,11 +82,17 @@ if (WINDOWS)
       /W3
       /c
       /Zc:forScope
-	  /Zc:wchar_t-
+	    /Zc:wchar_t-
       /nologo
       /Oy-
-	  /arch:SSE2
       )
+  
+  # SSE2 is implied on win64
+  if(WORD_SIZE EQUAL 32)
+    add_definitions(/arch:SSE2)
+  else(WORD_SIZE EQUAL 32)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4267 /wd4250 /wd4244")
+  endif(WORD_SIZE EQUAL 32)
 
   # configure win32 API for windows XP+ compatibility
   set(WINVER "0x0501" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")

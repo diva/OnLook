@@ -2022,6 +2022,22 @@ LLVector3 LLAgentCamera::getCameraOffsetInitial()
 	return convert_from_llsd<LLVector3>(mCameraOffsetInitial[mCameraPreset]->get(), TYPE_VEC3, "");
 }
 
+// Adds change to vector CachedControl, vec, at idx
+template <typename Vec, typename T>
+void change_vec(const T& change, LLCachedControl<Vec>& vec, const U32& idx = VZ)
+{
+	Vec changed(vec);
+	changed[idx] += change;
+	vec = changed;
+}
+// Same as above, but for ControlVariables
+template <typename Vec, typename T>
+void change_vec(const T& change, LLPointer<LLControlVariable>& vec, const U32& idx = VZ)
+{
+	Vec changed(vec->get());
+	changed[idx] += change;
+	vec->set(changed.getValue());
+}
 
 //-----------------------------------------------------------------------------
 // handleScrollWheel()
@@ -2057,6 +2073,23 @@ void LLAgentCamera::handleScrollWheel(S32 clicks)
 		}
 		else if (mFocusOnAvatar && (mCameraMode == CAMERA_MODE_THIRD_PERSON))
 		{
+			if (MASK mask = gKeyboard->currentMask(true)) // Singu Note: Conveniently set view offsets while modifier keys are held during scroll
+			{
+				static const LLCachedControl<bool> enableCameraOffsetScroll("SinguOffsetScrollKeys");
+				if (mask & MASK_CONTROL|MASK_SHIFT && enableCameraOffsetScroll)
+				{
+					const F32 change(static_cast<F32>(clicks) * 0.1f);
+					if (mask & MASK_SHIFT)
+					{
+						change_vec<LLVector3d>(change, mFocusOffsetInitial[mCameraPreset]);
+					}
+					if (mask & MASK_CONTROL)
+					{
+						change_vec<LLVector3>(change, mCameraOffsetInitial[mCameraPreset]);
+					}
+					return;
+				}
+			}
 			F32 camera_offset_initial_mag = getCameraOffsetInitial().magVec();
 			
 			static const LLCachedControl<F32> camera_offset_scale("CameraOffsetScale");

@@ -40,6 +40,7 @@
 #include "llviewerregion.h"
 #include "llinventoryobserver.h"
 #include "llinventoryfunctions.h"
+#include "aixmllindengenepool.h"
 
 using namespace LLAvatarAppearanceDefines;
 
@@ -134,32 +135,18 @@ LLWearable::EImportResult LLViewerWearable::importStream( std::istream& input_st
 	return result;
 }
 
-extern void dump_visual_param(LLAPRFile& file, LLVisualParam const* viewer_param, F32 value);
-
-void LLViewerWearable::archetypeExport(LLAPRFile& file) const
+AIArchetype LLViewerWearable::getArchetype(void) const
 {
-	apr_file_t* fp = file.getFileHandle();
-
-	std::string path;
-	append_path_short(mItemID, path);
-	apr_file_printf(fp,   "    <meta path=\"%s\" name=\"%s\" description=\"%s\"/>\n",
-		LLXMLNode::escapeXML(path).c_str(),
-		LLXMLNode::escapeXML(mName).c_str(),
-		LLXMLNode::escapeXML(mDescription).c_str());
-
+	AIArchetype archetype(this);
 	for (visual_param_index_map_t::const_iterator iter = mVisualParamIndexMap.begin(); iter != mVisualParamIndexMap.end(); ++iter)
 	{
-		LLVisualParam const* param = iter->second;
-		dump_visual_param(file, param, param->getWeight());
+		archetype.add(AIVisualParamIDValuePair(iter->second));
 	}
 	for (te_map_t::const_iterator iter = mTEMap.begin(); iter != mTEMap.end(); ++iter)
 	{
-		S32 te = iter->first;
-		LLUUID const& image_id = iter->second->getID();
-		apr_file_printf(fp,   "    <texture te=\"%i\" uuid=\"%s\"/>\n", te, image_id.asString().c_str());
+		archetype.add(AITextureIDUUIDPair(iter->first, iter->second->getID()));
 	}
-
-	apr_file_printf(fp, "\n");
+	return archetype;
 }
 
 // Avatar parameter and texture definitions can change over time.
@@ -698,7 +685,7 @@ std::ostream& operator<<(std::ostream &s, const LLViewerWearable &w)
 	//w.mSaleInfo
 
 	s << "    Params:" << "\n";
-	for (LLWearable::visual_param_index_map_t::const_iterator iter = w.mVisualParamIndexMap.begin();
+	for (LLViewerWearable::visual_param_index_map_t::const_iterator iter = w.mVisualParamIndexMap.begin();
 		 iter != w.mVisualParamIndexMap.end(); ++iter)
 	{
 		S32 param_id = iter->first;

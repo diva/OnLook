@@ -311,7 +311,7 @@ void reset_login();
 void apply_udp_blacklist(const std::string& csv);
 // <FS:CR> Aurora Sim
 //bool process_login_success_response(std::string& password);
-bool process_login_success_response(std::string& password, U32& first_sim_size_x);
+bool process_login_success_response(std::string& password, U32& first_sim_size_x, U32& first_sim_size_y);
 // </FS:CR> Aurora Sim
 void transition_back_to_login_panel(const std::string& emsg);
 
@@ -484,6 +484,7 @@ bool idle_startup()
 
 // <FS:CR> Aurora Sim
 	static U32 first_sim_size_x = 256;
+	static U32 first_sim_size_y = 256;
 // </FS:CR> Aurora Sim
 	static LLVector3 initial_sun_direction(1.f, 0.f, 0.f);
 	static LLVector3 agent_start_position_region(10.f, 10.f, 10.f);		// default for when no space server
@@ -1550,7 +1551,7 @@ bool idle_startup()
 		if (successful_login)
 		{
 			// unpack login data needed by the application
-			if (process_login_success_response(password, first_sim_size_x))
+			if (process_login_success_response(password, first_sim_size_x, first_sim_size_y))
 			{
 				std::string name = firstname;
 				if (!gHippoGridManager->getCurrentGrid()->isSecondLife() ||
@@ -1670,7 +1671,7 @@ bool idle_startup()
 		display_startup();
 
 // <FS:CR> Aurora Sim
-		LLWorld::getInstance()->setRegionWidth(first_sim_size_x);
+		LLWorld::getInstance()->setRegionSize(first_sim_size_x, first_sim_size_y);
 // </FS:CR> Aurora Sim
 		LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim);
 		display_startup();
@@ -3856,7 +3857,7 @@ void apply_udp_blacklist(const std::string& csv)
 	
 }
 
-bool process_login_success_response(std::string& password, U32& first_sim_size_x)
+bool process_login_success_response(std::string& password, U32& first_sim_size_x, U32& first_sim_size_y)
 {
 	LLSD response = LLUserAuth::getInstance()->getResponse();
 
@@ -4000,6 +4001,9 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 // <FS:CR> Aurora Sim
 	text = response["region_size_x"].asString();
 	if (!text.empty()) LLViewerParcelMgr::getInstance()->init(first_sim_size_x = atoi(text.c_str()));
+	// Patrick Sapinski commented here on 2/10/2011 that y is currently unused and major refactor is required - Liru (11/6/2013)
+	text = response["region_size_y"].asString();
+	if (!text.empty()) first_sim_size_y = atoi(text.c_str());
 // </FS:CR> Aurora Sim	
 
 	const std::string look_at_str = response["look_at"];
