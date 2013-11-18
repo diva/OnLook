@@ -33,6 +33,8 @@
 #include "linden_common.h"
 
 #include "llstyle.h"
+
+#include "llfontgl.h"
 #include "llstring.h"
 #include "llui.h"
 

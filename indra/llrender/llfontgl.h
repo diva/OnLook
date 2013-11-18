@@ -28,23 +28,24 @@
 #ifndef LL_LLFONTGL_H
 #define LL_LLFONTGL_H
 
-#include "llfontfreetype.h"
-#include "lltexture.h"
-#include "v2math.h"
 #include "llcoord.h"
-#include "llrect.h"
-
 #include "llfontregistry.h"
+#include "lltexture.h"
+#include "llpointer.h"
+#include "llrect.h"
+#include "v2math.h"
+
+class LLImageGL;
 
 class LLColor4;
-
 // Key used to request a font.
 class LLFontDescriptor;
+class LLFontFreetype;
 
 // Structure used to store previously requested fonts.
 class LLFontRegistry;
 
-class LLFontGL : public LLFontFreetype
+class LLFontGL
 {
 public:
 	enum HAlign
@@ -88,7 +89,7 @@ public:
 
 	void destroyGL();
 
-	/* virtual*/ BOOL loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback);
+	BOOL loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback);
 
 	S32 render(const LLWString &text, S32 begin_offset, 
 				const LLRect& rect, 
@@ -118,9 +119,9 @@ public:
 	S32 renderUTF8(const std::string &text, S32 begin_offset, S32 x, S32 y, const LLColor4 &color, HAlign halign, VAlign valign, U8 style = NORMAL, ShadowType shadow = NO_SHADOW) const;
 
 	// font metrics - override for LLFont that returns units of virtual pixels
-	/*virtual*/ F32 getLineHeight() const		{ return (F32)llround(mLineHeight / sScaleY); }
-	/*virtual*/ F32 getAscenderHeight() const	{ return (F32)llround(mAscender / sScaleY); }
-	/*virtual*/ F32 getDescenderHeight() const	{ return (F32)llround(mDescender / sScaleY); }
+	F32 getAscenderHeight() const;
+	F32 getDescenderHeight() const;
+	F32 getLineHeight() const;
 	
 	S32 getWidth(const std::string& utf8text) const;
 	S32 getWidth(const llwchar* wchars) const;
@@ -151,8 +152,7 @@ public:
 	// Returns the index of the character closest to pixel position x (ignoring text to the right of max_pixels and max_chars)
 	S32 charFromPixelOffset(const llwchar* wchars, const S32 char_offset, F32 x, F32 max_pixels=F32_MAX, S32 max_chars = S32_MAX, BOOL round = TRUE, BOOL use_embedded = FALSE) const;
 
-	const LLFontDescriptor &getFontDesc() const { return mFontDesc; }
-	void setFontDesc(const LLFontDescriptor& font_desc) { mFontDesc = font_desc; }
+	const LLFontDescriptor& getFontDesc() const;
 
 	LLTexture *getTexture() const;
 
@@ -217,19 +217,20 @@ public:
 	static F32 sScaleY;
 	static BOOL     sDisplayFont ;
 	static std::string sAppDir;			// For loading fonts
+private:
+	friend class LLFontRegistry;
 	friend class LLTextBillboard;
 	friend class LLHUDText;
 
 	LLFontGL(const LLFontGL &source);
 	LLFontGL &operator=(const LLFontGL &source);
-protected:
-	/*virtual*/ BOOL addChar(const llwchar wch) const;
 
 protected:
 	typedef std::map<llwchar,embedded_data_t*> embedded_map_t;
 	mutable embedded_map_t mEmbeddedChars;
 	
-	LLFontDescriptor mFontDesc;
+	LLFontDescriptor mFontDescriptor;
+	LLPointer<LLFontFreetype> mFontFreetype;
 
 	void renderQuad(const LLRectf& screen_rect, const LLRectf& uv_rect, F32 slant_amt) const;
 	void drawGlyph(const LLRectf& screen_rect, const LLRectf& uv_rect, const LLColor4& color, U8 style, ShadowType shadow, F32 drop_shadow_fade) const;

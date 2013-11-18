@@ -421,7 +421,8 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 		llwarns << "createFont failed, no file names specified" << llendl;
 		return NULL;
 	}
-	LLFontList *fontlistp = new LLFontList;
+
+	LLFontFreetype::font_vector_t fontlist;
 	LLFontGL *result = NULL;
 
 	// Snarf all fonts we can into fontlistp.  First will get pulled
@@ -466,19 +467,24 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 				is_first_found = false;
 			}
 			else
-				fontlistp->addAtEnd(fontp);
+			{
+				fontlist.push_back(fontp->mFontFreetype);
+				delete fontp;
+				fontp = NULL;
+			}
 		}
 	}
-	if (result && !fontlistp->empty())
+
+	if (result && !fontlist.empty())
 	{
-		result->setFallbackFont(fontlistp);
+		result->mFontFreetype->setFallbackFonts(fontlist);
 	}
 
-	norm_desc.setStyle(match_desc->getStyle());
 	if (result)
-		result->setFontDesc(norm_desc);
-
-	if (!result)
+	{
+		result->mFontDescriptor = desc;
+	}
+	else
 	{
 		llwarns << "createFont failed in some way" << llendl;
 	}

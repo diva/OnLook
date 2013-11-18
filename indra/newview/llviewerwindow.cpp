@@ -60,6 +60,7 @@
 #include "llaudioengine.h"		// mute on minimize
 #include "llassetstorage.h"
 #include "llfontgl.h"
+#include "llfontfreetype.h"
 #include "llmousehandler.h"
 #include "llrect.h"
 #include "llsky.h"
