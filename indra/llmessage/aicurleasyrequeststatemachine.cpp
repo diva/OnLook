@@ -121,6 +121,7 @@ void AICurlEasyRequestStateMachine::multiplex_impl(state_type run_state)
 	  bool empty_url = AICurlEasyRequest_rat(*mCurlEasyRequest)->getLowercaseServicename().empty();
 	  if (empty_url)
 	  {
+		AICurlEasyRequest_wat(*mCurlEasyRequest)->aborted(HTTP_INTERNAL_ERROR_OTHER, "Not a valid URL.");
 		abort();
 		break;
 	  }
@@ -195,16 +196,14 @@ void AICurlEasyRequestStateMachine::multiplex_impl(state_type run_state)
 	case AICurlEasyRequestStateMachine_removed:
 	{
 	  // The request was removed from the multi handle.
-	  if (mTimedOut)
-	  {
-		AICurlEasyRequest_wat easy_request_w(*mCurlEasyRequest);
-		easy_request_w->timed_out();
-	  }
 
 	  // We're done. If we timed out, abort -- or else the application will
 	  // think that getResult() will return a valid error code from libcurl.
 	  if (mTimedOut)
+	  {
+		AICurlEasyRequest_wat(*mCurlEasyRequest)->aborted(HTTP_INTERNAL_ERROR_CURL_LOCKUP, "Request timeout, aborted.");
 		abort();
+	  }
 	  else
 		finish();
 
@@ -212,7 +211,7 @@ void AICurlEasyRequestStateMachine::multiplex_impl(state_type run_state)
 	}
 	case AICurlEasyRequestStateMachine_bad_file_descriptor:
 	{
-	  AICurlEasyRequest_wat(*mCurlEasyRequest)->bad_socket();
+	  AICurlEasyRequest_wat(*mCurlEasyRequest)->aborted(HTTP_INTERNAL_ERROR_CURL_BADSOCKET, "File descriptor went bad! Aborted.");
 	  abort();
 	}
   }
@@ -224,7 +223,7 @@ void AICurlEasyRequestStateMachine::abort_impl(void)
   // Revert call to addRequest() if that was already called (and the request wasn't removed again already).
   if (mAdded)
   {
-	// Note that it's safe to call this even if the curl thread already removed it, or will removes it
+	// Note that it's safe to call this even if the curl thread already removed it, or will remove it
 	// after we called this, before processing the remove command; only the curl thread calls
 	// MultiHandle::remove_easy_request, which is a no-op when called twice for the same easy request.
 	mAdded = false;

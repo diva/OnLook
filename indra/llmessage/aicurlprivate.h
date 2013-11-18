@@ -385,11 +385,8 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	buffer_ptr_t& getInput(void) { return mInput; }
 	buffer_ptr_t& getOutput(void) { return mOutput; }
 
-	// Called if libcurl doesn't deliver within AIHTTPTimeoutPolicy::mMaximumTotalDelay seconds.
-	void timed_out(void);
-
-	// Called if the underlaying socket went bad (ie, when accidently closed by a buggy library).
-	void bad_socket(void);
+	// Called if the state machine is (about to be) aborted due to some error.
+	void aborted(U32 http_status, std::string const& reason);
 
 	// Called after removed_from_multi_handle was called.
 	void processOutput(void);
@@ -462,7 +459,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	bool success(void) const { return mResult == CURLE_OK && mStatus >= 200 && mStatus < 400; }
 
 	// Return true when prepRequest was already called and the object has not been
-	// invalidated as a result of calling timed_out().
+	// invalidated as a result of calling aborted().
 	bool isValid(void) const { return mResponder; }
 
 	// Return the capability type of this request.

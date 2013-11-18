@@ -636,7 +636,7 @@ static LLSD blocking_request(
 			response["body"] = responder->getLLSD();
 		}
 	}
-	else if (result == CURLE_OK)
+	else if (result == CURLE_OK && !is_internal_http_error(http_status))
 	{
 		// We expect 404s, don't spam for them.
 		if (http_status != 404)

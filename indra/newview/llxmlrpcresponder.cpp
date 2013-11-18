@@ -168,7 +168,7 @@ void XMLRPCResponder::completed_headers(U32 status, std::string const& reason, A
 
 void XMLRPCResponder::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
-	if (mCode == CURLE_OK)
+	if (mCode == CURLE_OK && !is_internal_http_error(status))
 	{
 		mBufferSize = buffer->count(channels.in());
 		if (200 <= status && status < 400)
