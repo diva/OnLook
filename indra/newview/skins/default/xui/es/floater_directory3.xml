@@ -488,7 +488,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<button label="" name="back_btn"/>
 			<button label="" name="forward_btn"/>
 			<button label="" name="reload_btn"/>
-			<button label="" tooltip="restablecer" name="reset_btn"/>
+			<button label="" tool_tip="restablecer" name="reset_btn"/>
 			<web_browser name="market_browser"/>
 			<text name="status_text"/>
 			<string name="loading_text">Cargando...</string>

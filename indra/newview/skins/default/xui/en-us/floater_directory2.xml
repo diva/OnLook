@@ -626,7 +626,7 @@ To buy direct, visit the land and click on the place name in the title bar.
       <button bottom="-30" follows="top|left" height="25" label="" left="10" name="back_btn" width="25" image_overlay="go-previous.png"/>
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next.png" />
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="reload_btn" width="25" image_overlay="view-refresh-5.png"/>
-      <button bottom_delta="0" follows="top|left" height="25" label="" tooltip="reset" left_delta="27" name="reset_btn" width="25" image_overlay="go-reload.png"/>
+      <button bottom_delta="0" follows="top|left" height="25" label="" tool_tip="reset" left_delta="27" name="reset_btn" width="25" image_overlay="go-reload.png"/>
       <web_browser name="market_browser" trusted_content="true" bottom="25" follows="all" left="10" right="-10" top="-40"/>
       <text bottom="5" follows="bottom|left" left="10" height="16" name="status_text"/>
       <string name="loading_text">Loading...</string>

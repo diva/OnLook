@@ -280,7 +280,7 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
       
       
       
-      <button tooltip="Zurücksetzen" name="reset_btn"/>
+      <button tool_tip="Zurücksetzen" name="reset_btn"/>
       <web_browser name="market_browser" trusted_content="true"/>
       
       <string name="loading_text">Wird geladen...</string>
