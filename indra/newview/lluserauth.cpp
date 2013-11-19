@@ -298,6 +298,11 @@ LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 
 	// if curl was ok, parse the download area.
 	CURLcode result = mResponder->result_code();
+	if (is_internal_http_error(mResponder->http_status()))
+	{
+		// result can be a meaningless CURLE_OK in the case of an internal error.
+		result = CURLE_FAILED_INIT;		// Just some random error to get the default case below.
+	}
 	switch (result)
 	{
 	case CURLE_OK:

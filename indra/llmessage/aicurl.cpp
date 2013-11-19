@@ -52,7 +52,6 @@
 #include "llsdserialize.h"
 #include "aithreadsafe.h"
 #include "llqueuedthread.h"
-#include "lltimer.h"		// ms_sleep
 #include "llproxy.h"
 #include "llhttpstatuscodes.h"
 #include "aihttpheaders.h"
@@ -1287,8 +1286,9 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 	// If the responder is still alive, then that means that BufferedCurlEasyRequest::processOutput was
 	// never called, which means that the removed_from_multi_handle event never happened.
 	// This is definitely an internal error as it can only happen when libcurl is too slow,
-	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
-	// calls BufferedCurlEasyRequest::timed_out().
+	// in which case AICurlEasyRequestStateMachine::mTimer times out, a socket goes bad, or
+	// the state machine is aborted, but those already call BufferedCurlEasyRequest::aborted()
+	// which sets mResponder to NULL.
 	llmaybeerrs << "Calling ~BufferedCurlEasyRequest() with active responder!" << llendl;
 	if (!LLApp::isRunning())
 	{
@@ -1298,30 +1298,23 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 	else
 	{
 	  // User chose to continue.
-	  timed_out();
+	  aborted(HTTP_INTERNAL_ERROR_OTHER, "BufferedCurlEasyRequest destructed with active responder");
 	}
   }
   --AICurlInterface::Stats::BufferedCurlEasyRequest_count;
 }
 
-void BufferedCurlEasyRequest::timed_out(void)
+void BufferedCurlEasyRequest::aborted(U32 http_status, std::string const& reason)
 {
-  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR_CURL_LOCKUP, "Request timeout, aborted.", sChannels, mOutput);
-  if (mResponder->needsHeaders())
+  if (mResponder)
   {
-	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
+	mResponder->finished(CURLE_OK, http_status, reason, sChannels, mOutput);
+	if (mResponder->needsHeaders())
+	{
+	  send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
+	}
+	mResponder = NULL;
   }
-  mResponder = NULL;
-}
-
-void BufferedCurlEasyRequest::bad_socket(void)
-{
-  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR_CURL_BADSOCKET, "File descriptor went bad! Aborted.", sChannels, mOutput);
-  if (mResponder->needsHeaders())
-  {
-	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
-  }
-  mResponder = NULL;
 }
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)

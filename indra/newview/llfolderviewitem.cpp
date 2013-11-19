@@ -1062,7 +1062,7 @@ void LLFolderViewItem::draw()
 				&&	root_is_loading
 				&&	mShowLoadStatus))
 	{
-		std::string load_string = " ( " + LLTrans::getString("LoadingData") + " ) ";
+		static std::string const load_string = " ( " + LLTrans::getString("LoadingData") + " ) ";
 		font->renderUTF8(load_string, 0, right_x, y, sSearchStatusColor,
 						 LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 
 						 S32_MAX, S32_MAX, &right_x, FALSE);
