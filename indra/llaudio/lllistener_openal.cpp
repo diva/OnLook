@@ -39,7 +39,7 @@ LLListener_OpenAL::~LLListener_OpenAL()
 {
 }
 
-LLListener_OpenAL::init()
+void LLListener_OpenAL::init()
 {
 	// do inherited
 	LLListener::init();
