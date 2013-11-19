@@ -1038,8 +1038,10 @@ void LLPanelLogin::onSelectGrid(LLUICtrl *ctrl)
 	{
 		HippoGridInfo* info(new HippoGridInfo("")); // Start off with empty grid name, otherwise we don't know what to name
 		info->setLoginUri(grid);
-		if (info->retrieveGridInfo()) // There's info from this URI
+		try
 		{
+			info->getGridInfo();
+
 			grid = info->getGridName();
 			if (HippoGridInfo* nick_info = gHippoGridManager->getGrid(info->getGridNick())) // Grid of same nick exists
 			{
@@ -1051,8 +1053,23 @@ void LLPanelLogin::onSelectGrid(LLUICtrl *ctrl)
 				gHippoGridManager->addGrid(info); // deletes info if not needed (existing or no name)
 			}
 		}
-		else
+		catch(AIAlert::ErrorCode const& error)
 		{
+			// Inform the user of the problem, but only if something was entered that at least looks like a Login URI.
+			std::string::size_type pos1 = grid.find('.');
+			std::string::size_type pos2 = grid.find_last_of(".:");
+			if (grid.substr(0, 4) == "http" || (pos1 != std::string::npos && pos1 != pos2))
+			{
+				if (error.getCode() == HTTP_METHOD_NOT_ALLOWED || error.getCode() == HTTP_OK)
+				{
+					AIAlert::add("GridInfoError", error);
+				}
+				else
+				{
+					// Append GridInfoErrorInstruction to error message.
+					AIAlert::add("GridInfoError", AIAlert::Error(AIAlert::Prefix(), AIAlert::not_modal, error, "GridInfoErrorInstruction"));
+				}
+			}
 			delete info;
 			grid = gHippoGridManager->getCurrentGridName();
 		}

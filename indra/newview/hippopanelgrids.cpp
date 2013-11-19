@@ -42,7 +42,7 @@
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
 #include "llnotificationsutil.h"
-
+#include "llhttpstatuscodes.h"
 
 // ********************************************************************
 
@@ -152,7 +152,7 @@ BOOL HippoPanelGridsImpl::postBuild()
 	
 	childSetCommitCallback("grid_selector", onSelectGrid, this);
 	childSetCommitCallback("platform", onSelectPlatform, this);
-	
+
 	// !!!### 	server_choice_combo->setFocusLostCallback(onServerComboLostFocus);
 	
 	reset();
@@ -294,7 +294,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 	HippoGridInfo *gridInfo = 0;
 	
 	gridInfo = gHippoGridManager->getGrid(mCurGrid);
-	//gridInfo->retrieveGridInfo();
+	//gridInfo->getGridInfo();
 	refresh();
 	
 	std::string gridname = childGetValue("gridname");
@@ -333,9 +333,30 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		mCurGrid = gridname;
 		gridInfo = new HippoGridInfo(gridname);
 		gHippoGridManager->addGrid(gridInfo);
-	    gridInfo->retrieveGridInfo();
+		try
+		{
+			gridInfo->getGridInfo();
+		}
+		catch (AIAlert::ErrorCode const& error)
+		{
+			if (error.getCode() == HTTP_NOT_FOUND || error.getCode() == HTTP_METHOD_NOT_ALLOWED)
+			{
+				// Ignore this error; it might be a user entered entry for a grid that has no get_grid_info support.
+				llwarns << AIAlert::text(error) << llendl;
+			}
+			else if (error.getCode() == HTTP_OK)
+			{
+				// XML parse error.
+				AIAlert::add("GridInfoError", error);
+			}
+			else
+			{
+				// Append GridInfoErrorInstruction to error message.
+				AIAlert::add("GridInfoError", AIAlert::Error(AIAlert::Prefix(), AIAlert::not_modal, error, "GridInfoErrorInstruction"));
+			}
+		}
 	}
-	
+
 	if (!gridInfo) {
 		llwarns << "Grid not found, ignoring changes." << llendl;
 		return true;
@@ -394,7 +415,10 @@ void HippoPanelGridsImpl::retrieveGridInfo()
 	}
 	
 	grid->setLoginUri(loginuri);
-	if (grid->retrieveGridInfo()) {
+	try
+	{
+		grid->getGridInfo();
+
 		if (grid->getPlatform() != HippoGridInfo::PLATFORM_OTHER)
 			getChild<LLComboBox>("platform")->setCurrentByIndex(grid->getPlatform());
 		if (grid->getGridName() != "") childSetText("gridname", grid->getGridName());
@@ -407,10 +431,20 @@ void HippoPanelGridsImpl::retrieveGridInfo()
 		if (grid->getPasswordUrl() != "") childSetText("password", grid->getPasswordUrl());
 		if (grid->getSearchUrl() != "") childSetText("search", grid->getSearchUrl());
 		if (grid->getGridMessage() != "") childSetText("gridmessage", grid->getGridMessage());
-	} else {
-		LLNotificationsUtil::add("GridInfoError");
 	}
-	
+	catch(AIAlert::ErrorCode const& error)
+	{
+		if (error.getCode() == HTTP_METHOD_NOT_ALLOWED || error.getCode() == HTTP_OK)
+		{
+			AIAlert::add("GridInfoError", error);
+		}
+		else
+		{
+			// Append GridInfoErrorInstruction to error message.
+			AIAlert::add("GridInfoError", AIAlert::Error(AIAlert::Prefix(), AIAlert::not_modal, error, "GridInfoErrorInstruction"));
+		}
+	}
+
 	if (cleanupGrid) delete grid;
 }
 
@@ -472,8 +506,10 @@ void HippoPanelGridsImpl::onClickDefault(void *data)
 {
 	HippoPanelGridsImpl *self = (HippoPanelGridsImpl*)data;
 	if (self->mState == NORMAL) {
-		self->saveCurGrid();
-		gHippoGridManager->setDefaultGrid(self->mCurGrid);
+		if (self->saveCurGrid())
+		{
+			gHippoGridManager->setDefaultGrid(self->mCurGrid);
+		}
 		self->refresh();
 	}
 }

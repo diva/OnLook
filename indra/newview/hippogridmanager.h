@@ -98,7 +98,7 @@ public:
 	bool getAutoUpdate();
 	void setAutoUpdate(bool b);	
 
-	bool retrieveGridInfo();
+	void getGridInfo();
 
 	static const char* getPlatformString(Platform platform);
 	static std::string sanitizeGridNick(const std::string &gridnick);
@@ -142,7 +142,8 @@ private:
 	};
 	XmlState mXmlState;
 
-	static std::string sanitizeUri(std::string &uri);
+	static std::string sanitizeUri(std::string const& uri_in);
+	void useHttps(void);
 	void formatFee(std::string &fee, int cost, bool showFree) const;
 
 	static void onXmlElementStart(void* userData, const XML_Char* name, const XML_Char** atts);

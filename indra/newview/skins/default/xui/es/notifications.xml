@@ -3262,11 +3262,7 @@ Ya existe un grid con el mismo nombre.
 	<notification name="GridInfoNoLoginUri">
 		Se requiere un URI de inicio de sesión para recuperar la información del grid.
 	</notification>
-	
-	<notification name="GridInfoError">
-		No se puede recuperar la información del grid desde el servidor.
-	</notification>
-	
+
 	<notification name="HelpRenderCompat">
 		Las construcciones con huecos extendidos o tamaños de agujeros extendidos no se renderizarán adecuadamente en otros visores. Por favor, mantén esta opción marcada si quieres que tus construcciones se vean adecuadamente in otros visores.
 	</notification>

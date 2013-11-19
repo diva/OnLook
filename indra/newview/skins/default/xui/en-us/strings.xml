@@ -13,6 +13,15 @@
 	<string name="TeleportLureMaturity">
 	  [NAME]'s teleport lure is to [DESTINATION]
 	</string>
+	<string name="GridInfoError">Cannot retrieve grid info from server:</string>
+	<!-- The following entry starts and ends with a ", this is to allow the newline at the beginning. It also requires to use \" for quotes within. -->
+	<string name="GridInfoErrorInstruction">"
+Make sure you entered the correct Login URI. An example of a Login URI is: \"http://cool.grid.com:8002/\", this url can usually be found on the website of the grid."
+	</string>
+	<string name="GridInfoErrorNoLoginURI">A login URI is required to retrieve the Grid Info.</string>
+	<string name="GridInfoErrorNotFound">404 Page not found</string>
+	<string name="GridInfoErrorNotAllowed">This grid does not support retrieving 'Grid Info'</string>
+	<string name="GridInfoParseError">XML Parse Error: [XML_ERROR]</string>
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
@@ -4368,9 +4377,11 @@ Try enclosing path to the editor with double quotes.
   <string name="completed_from">Teleport completed from</string>
 
   <!-- AIAlert messages -->
+  <!-- These two do not need translation ;) -->
+  <string name="AIError">"\"[ERROR]\""</string>
   <string name="AIPrefix">"[PREFIX]: "</string>
 
-    <!-- AIFile exception alerts -->
+	<!-- AIFile exception alerts -->
 	<string name="AIFile_mkdir_Failed_to_create_DIRNAME">Failed to create folder [DIRNAME]: [ERROR]</string>
 	<string name="AIFile_rmdir_Failed_to_remove_DIRNAME">Failed to remove folder [DIRNAME]: [ERROR]</string>
 	<string name="AIFile_fopen_Failed_to_open_FILENAME">Failed to open file "[FILENAME]": [ERROR]</string>

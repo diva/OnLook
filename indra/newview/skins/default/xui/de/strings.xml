@@ -9,6 +9,7 @@
 	<string name="hippo_label_week">week</string>
 	<string name="TeleportOfferMaturity">[NAME] is offering a TP to [DESTINATION]</string>
 	<string name="TeleportLureMaturity">[NAME]'s teleport lure is to [DESTINATION]</string>
+	<string name="GridInfoError">Grid Info kann nicht vom Server abgerufen werden:</string>
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
