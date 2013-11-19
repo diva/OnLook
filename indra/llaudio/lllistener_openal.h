@@ -38,6 +38,7 @@ class LLListener_OpenAL  : public LLListener
  public:  
 	LLListener_OpenAL();
 	virtual ~LLListener_OpenAL();
+	virtual void init();
 
 	virtual void translate(LLVector3 offset);
 	virtual void setPosition(LLVector3 pos);

@@ -36,6 +36,7 @@
 #include "linden_common.h"
 
 #include "llresmgr.h"
+#include "llimagegl.h"
 #include "llfontgl.h"
 #include "llerror.h"
 #include "llstring.h"
