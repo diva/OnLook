@@ -1141,7 +1141,6 @@ if (DARWIN)
     ${VIEWER_BRANDING_ID}.icns
     macview.r
     gpu_table.txt
-    Info-${VIEWER_BRANDING_ID}.plist
     SecondLife.nib/
     # CMake doesn't seem to support Xcode language variants well just yet
     English.lproj/InfoPlist.strings
@@ -1707,7 +1706,7 @@ if (DARWIN)
     MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_BRANDING_NAME}"
     MACOSX_BUNDLE_SHORT_VERSION_STRING "${viewer_VERSION}"
     MACOSX_BUNDLE_BUNDLE_VERSION "${viewer_VERSION}"
-    MACOSX_BUNDLE_COPYRIGHT "Copyright 2010 Balseraph Software Group"
+    MACOSX_BUNDLE_COPYRIGHT "Copyright 2013 Siana Gearz"
     )
 
   add_custom_command(
@@ -1756,32 +1755,10 @@ if (DARWIN)
           --grid=${GRID}
           --login_channel=${VIEWER_LOGIN_CHANNEL}
           --source=${CMAKE_CURRENT_SOURCE_DIR}
-          --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
+          --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${Product}.touched
         DEPENDS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
-# Viewer-Development doesn't have this duplicate of the above command, here..
-# this may be a botched merge, but Mac seems to be picky, so I'm leaving it ~Liru
-      add_custom_command(
-        TARGET package POST_BUILD
-        COMMAND ${PYTHON_EXECUTABLE}
-        ARGS
-          ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
-          --artwork=${ARTWORK_DIR}
-          --branding_id=${VIEWER_BRANDING_ID}
-          --build=${CMAKE_CURRENT_BINARY_DIR}
-          --buildtype=${CMAKE_BUILD_TYPE}
-          --channel=${VIEWER_CHANNEL}
-          --configuration=${CMAKE_CFG_INTDIR}
-          --dest=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${product}.app
-          --grid=${GRID}
-          --login_channel=${VIEWER_LOGIN_CHANNEL}
-          --source=${CMAKE_CURRENT_SOURCE_DIR}
-          --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
-        DEPENDS
-          ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
-      )
-
   endif (PACKAGE)
 endif (DARWIN)
 

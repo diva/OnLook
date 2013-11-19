@@ -139,10 +139,7 @@ class ViewerManifest(LLManifest):
     def viewer_branding_id(self):
         return self.args['branding_id']
     def installer_prefix(self):
-        mapping={"secondlife":'SecondLife_',
-                 "snowglobe":'Snowglobe_',
-                 "singularity":'Singularity_'}
-        return mapping[self.viewer_branding_id()]
+        return self.channel_oneword() + "_"
 
     def flags_list(self):
         """ Convenience function that returns the command-line flags
@@ -496,8 +493,6 @@ class DarwinManifest(ViewerManifest):
         self.path(self.args['configuration'] + "/" + self.app_name() + ".app", dst="")
 
         if self.prefix(src="", dst="Contents"):  # everything goes in Contents
-            self.path(self.info_plist_name(), dst="Info.plist")
-
             # copy additional libs in <bundle>/Contents/MacOS/
             self.path("../../libraries/universal-darwin/lib/release/libndofdev.dylib", dst="Resources/libndofdev.dylib")
             self.path("../../libraries/universal-darwin/lib/release/libhunspell-1.3.0.dylib", dst="Resources/libhunspell-1.3.0.dylib")
@@ -618,10 +613,7 @@ class DarwinManifest(ViewerManifest):
                                  { 'viewer_binary' : self.dst_path_of('Contents/MacOS/'+self.app_name())})
 
     def app_name(self):
-        return "Singularity"
-
-    def info_plist_name(self):
-        return "Info-Singularity.plist"
+        return self.channel_oneword()
 
     def package_finish(self):
         channel_standin = self.app_name()
