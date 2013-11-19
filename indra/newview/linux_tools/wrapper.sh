@@ -77,7 +77,9 @@ fi
 export SDL_VIDEO_X11_DGAMOUSE=0
 
 ## - Works around a problem with misconfigured 64-bit systems not finding GL
-export LIBGL_DRIVERS_PATH="${LIBGL_DRIVERS_PATH}":/usr/lib64/dri:/usr/lib32/dri:/usr/lib/dri
+# This is less needed nowadays; don't uncomment this unless LibGL can't find your
+# drivers automatically.
+#export LIBGL_DRIVERS_PATH="${LIBGL_DRIVERS_PATH}":/usr/lib64/dri:/usr/lib32/dri:/usr/lib/dri
 
 ## - The 'scim' GTK IM module widely crashes the viewer.  Avoid it.
 if [ "$GTK_IM_MODULE" = "scim" ]; then

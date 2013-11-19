@@ -1219,6 +1219,12 @@ S32 LLViewerTextureList::getMinVideoRamSetting()
 // Returns max setting for TextureMemory (in MB)
 S32 LLViewerTextureList::getMaxVideoRamSetting(bool get_recommended)
 {
+#if LL_LINUX
+	if (gGLManager.mIsIntel && gGLManager.mGLVersion >= 3.f && !gGLManager.mVRAM)
+	{
+		gGLManager.mVRAM = 512;
+	}
+#endif
 	S32 max_texmem;
 	if (gGLManager.mVRAM != 0)
 	{

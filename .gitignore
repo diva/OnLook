@@ -26,3 +26,6 @@ qtcreator-build/
 /.pc
 /build-*
 /viewer-*
+/indra/newview/res/viewerRes.rc
+/indra/newview/res/viewerRes_bc.rc
+/indra/newview/English.lproj/InfoPlist.strings

@@ -1,32 +1,26 @@
 /** 
- * @file llfont.h
+ * @file llfontfreetype.h
  * @brief Font library wrapper
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -34,7 +28,7 @@
 #define LL_LLFONTFREETYPE_H
 
 #include <map>
-#include "llmemory.h"
+#include "llpointer.h"
 #include "llstl.h"
 
 #include "llimagegl.h"
@@ -51,25 +45,23 @@ class LLFontFreetype;
 struct FT_FaceRec_;
 typedef struct FT_FaceRec_* LLFT_Face;
 
-extern LLFontManager *gFontManagerp;
-
 class LLFontManager
 {
 public:
 	static void initClass();
 	static void cleanupClass();
 
-public:
+private:
 	LLFontManager();
-	virtual ~LLFontManager();
+	~LLFontManager();
 };
 
-class LLFontGlyphInfo
+struct LLFontGlyphInfo
 {
-public:
 	LLFontGlyphInfo(U32 index);
-public:
+
 	U32 mGlyphIndex;
+
 	// Metrics
 	S32 mWidth;			// In pixels
 	S32 mHeight;		// In pixels
@@ -86,37 +78,29 @@ public:
 	S32 mBitmapNum; // Which bitmap in the bitmap cache contains this glyph
 };
 
-// Used for lists of fallback fonts
-class LLFontList : public std::vector<LLFontFreetype*>
-{
-public:
-	LLFontList();
-	~LLFontList();
-	void addAtEnd(LLFontFreetype *font);
-};
+extern LLFontManager *gFontManagerp;
 
-class LLFontFreetype
+class LLFontFreetype : public LLRefCount
 {
 public:
 	LLFontFreetype();
-	virtual ~LLFontFreetype();
+	~LLFontFreetype();
 
 	// is_fallback should be true for fallback fonts that aren't used
 	// to render directly (Unicode backup, primarily)
-	virtual BOOL loadFace(const std::string& filename,
-							const F32 point_size,
-							const F32 vert_dpi,
-							const F32 horz_dpi,
-							const S32 components,
-							BOOL is_fallback);
-	void setFallbackFont(LLFontList *fontp)		{ mFallbackFontp = fontp; }
+	BOOL loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback);
+
+	typedef std::vector<LLPointer<LLFontFreetype> > font_vector_t;
+
+	void setFallbackFonts(const font_vector_t &font);
+	const font_vector_t &getFallbackFonts() const;
 
 	void setCharToGlyphMap(llwchar wch, U32 glyph_index) const;
 
 	// Global font metrics - in units of pixels
-	virtual F32 getLineHeight() const;
-	virtual F32 getAscenderHeight() const;
-	virtual F32 getDescenderHeight() const;
+	F32 getLineHeight() const;
+	F32 getAscenderHeight() const;
+	F32 getDescenderHeight() const;
 
 
 // For a lowercase "g":
@@ -148,48 +132,49 @@ public:
 	const LLFontGlyphInfo &getMetrics(const llwchar wc) const;
 	F32 getXAdvance(const llwchar wc) const;
 	F32 getXKerning(const llwchar char_left, const llwchar char_right) const; // Get the kerning between the two characters
-	virtual void reset() = 0;
+	LLFontGlyphInfo* getGlyphInfo(const llwchar wch) const;
+
+	void reset(F32 vert_dpi, F32 horz_dpi);
+
+	void destroyGL();
+
+	const std::string& getName() const;
+
+	const LLPointer<LLFontBitmapCache> getFontBitmapCache() const;
 
 	static bool sOpenGLcrashOnRestart;
 
-protected:
-	virtual BOOL hasGlyph(const llwchar wch) const;		// Has a glyph for this character
-	virtual BOOL addChar(const llwchar wch) const;		// Add a new character to the font if necessary
-	virtual BOOL addGlyph(const llwchar wch, const U32 glyph_index) const;	// Add a new glyph to the existing font
-	virtual BOOL addGlyphFromFont(const LLFontFreetype *fontp, const llwchar wch, const U32 glyph_index) const;	// Add a glyph from this font to the other (returns the glyph_index, 0 if not found)
-
-	virtual LLFontGlyphInfo* getGlyphInfo(const llwchar wch) const;
-
-	void insertGlyphInfo(llwchar wch, LLFontGlyphInfo* gi) const;
+private:
+	void resetBitmapCache();
+	void setSubImageLuminanceAlpha(const U32 x, const U32 y, const U32 bitmap_num, const U32 width, const U32 height, const U8 *data, S32 stride = 0) const;
+public:
+	BOOL hasGlyph(const llwchar wch) const;		// Has a glyph for this character
+	BOOL addGlyph(const llwchar wch) const;		// Add a new character to the font if necessary
+private:
+	BOOL addGlyphFromFont(const LLFontFreetype *fontp, const llwchar wch, const U32 glyph_index) const;	// Add a glyph from this font to the other (returns the glyph_index, 0 if not found)
 	void renderGlyph(const U32 glyph_index) const;
 
-	void resetBitmapCache();
+	void insertGlyphInfo(llwchar wch, LLFontGlyphInfo* gi) const;
 
-protected:
 	std::string mName;
+
 	F32 mPointSize;
 	F32 mAscender;			
 	F32 mDescender;
 	F32 mLineHeight;
 
-	mutable LLPointer<LLFontBitmapCache> mFontBitmapCachep;
-
 	LLFT_Face mFTFace;
 
 	BOOL mIsFallback;
-	LLFontList *mFallbackFontp; // A list of fallback fonts to look for glyphs in (for Unicode chars)
+	font_vector_t mFallbackFonts; // A list of fallback fonts to look for glyphs in (for Unicode chars)
+
+	BOOL mValid;
 
 	typedef std::map<llwchar, LLFontGlyphInfo*> char_glyph_info_map_t;
 	mutable char_glyph_info_map_t mCharGlyphInfoMap; // Information about glyph location in bitmap
 
-	BOOL mValid;
-	void setSubImageLuminanceAlpha(const U32 x,
-								   const U32 y,
-								   const U32 bitmap_num,
-								   const U32 width,
-								   const U32 height,
-								   const U8 *data,
-								   S32 stride = 0) const;
+	mutable LLPointer<LLFontBitmapCache> mFontBitmapCachep;
+
 	mutable S32 mRenderGlyphCount;
 	mutable S32 mAddGlyphCount;
 };

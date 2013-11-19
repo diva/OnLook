@@ -2109,7 +2109,7 @@ bool LLVertexBuffer::bindGLBuffer(bool force_bind)
 
 	if (useVBOs() && (force_bind || (mGLBuffer && (mGLBuffer != sGLRenderBuffer || !sVBOActive))))
 	{
-		LLFastTimer t(FTM_BIND_GL_BUFFER);
+		//LLFastTimer t(FTM_BIND_GL_BUFFER);
 		/*if (sMapped)
 		{
 			llerrs << "VBO bound while another VBO mapped!" << llendl;
