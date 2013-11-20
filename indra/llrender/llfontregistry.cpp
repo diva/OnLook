@@ -480,6 +480,8 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 		result->mFontFreetype->setFallbackFonts(fontlist);
 	}
 
+	norm_desc.setStyle(match_desc->getStyle());
+
 	if (result)
 	{
 		result->mFontDescriptor = desc;

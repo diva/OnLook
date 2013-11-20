@@ -266,6 +266,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		}
 	}
 
+	const LLFontGlyphInfo* next_glyph = NULL;
 
 	// Remember last-used texture to avoid unnecesssary bind calls.
 	LLImageGL *last_bound_texture = NULL;
@@ -336,13 +337,12 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		}
 		else
 		{
-			//new
-			/*if (!mFontFreetype->hasGlyph(wch))
+			const LLFontGlyphInfo* fgi = next_glyph;
+			next_glyph = NULL;
+			if(!fgi)
 			{
-				addChar(wch);
-			}*/
-
-			const LLFontGlyphInfo* fgi= mFontFreetype->getGlyphInfo(wch);
+				fgi = mFontFreetype->getGlyphInfo(wch);
+			}
 			if (!fgi)
 			{
 				llerrs << "Missing Glyph Info" << llendl;
@@ -384,13 +384,8 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 			if (next_char && (next_char < LAST_CHARACTER))
 			{
 				// Kern this puppy.
-				//new
-				/*if (!mFontFreetype->hasGlyph(next_char))
-				{
-					addChar(next_char);
-				}*/
-				mFontFreetype->getGlyphInfo(next_char);
-				cur_x += mFontFreetype->getXKerning(wch, next_char);
+				next_glyph = mFontFreetype->getGlyphInfo(next_char);
+				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
 
 			// Round after kerning.
@@ -527,13 +522,13 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 
 	F32 cur_x = 0;
 	const S32 max_index = begin_offset + max_chars;
-	for (S32 i = begin_offset; i < max_index; i++)
+
+	const LLFontGlyphInfo* next_glyph = NULL;
+
+	F32 width_padding = 0.f;
+	for (S32 i = begin_offset; i < max_index && wchars[i] != 0; i++)
 	{
 		const llwchar wch = wchars[i];
-		if (wch == 0)
-		{
-			break; // done
-		}
 		const embedded_data_t* ext_data = use_embedded ? getEmbeddedCharData(wch) : NULL;
 		if (ext_data)
 		{
@@ -547,7 +542,23 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 		}
 		else
 		{
-			cur_x += mFontFreetype->getXAdvance(wch);
+			const LLFontGlyphInfo* fgi = next_glyph;
+			next_glyph = NULL;
+			if(!fgi)
+			{
+				fgi = mFontFreetype->getGlyphInfo(wch);
+			}
+
+			F32 advance = mFontFreetype->getXAdvance(fgi);
+
+			// for the last character we want to measure the greater of its width and xadvance values
+			// so keep track of the difference between these values for the each character we measure
+			// so we can fix things up at the end
+			width_padding = llmax(	0.f,											// always use positive padding amount
+									width_padding - advance,						// previous padding left over after advance of current character
+									(F32)(fgi->mWidth + fgi->mXBearing) - advance);	// difference between width of this character and advance to next character
+
+			cur_x += advance;
 			llwchar next_char = wchars[i+1];
 
 			if (((i + 1) < begin_offset + max_chars) 
@@ -555,12 +566,16 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 				&& (next_char < LAST_CHARACTER))
 			{
 				// Kern this puppy.
-				cur_x += mFontFreetype->getXKerning(wch, next_char);
+				next_glyph = mFontFreetype->getGlyphInfo(next_char);
+				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
+			// Round after kerning.
+			cur_x = (F32)llround(cur_x);
 		}
-		// Round after kerning.
-		cur_x = (F32)llround(cur_x);
 	}
+
+	// add in extra pixels for last character's width past its xadvance
+	cur_x += width_padding;
 
 	return cur_x / sScaleX;
 }
@@ -590,7 +605,11 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 	S32 start_of_last_word = 0;
 	BOOL in_word = FALSE;
 
-	F32 scaled_max_pixels =	(F32)llceil(max_pixels * sScaleX);
+	// avoid S32 overflow when max_pixels == S32_MAX by staying in floating point
+	F32 scaled_max_pixels =	max_pixels * sScaleX;
+	F32 width_padding = 0.f;
+	
+	LLFontGlyphInfo* next_glyph = NULL;
 
 	S32 i;
 	for (i=0; (i < max_chars); i++)
@@ -651,9 +670,22 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 				}
 			}
 
-			cur_x += mFontFreetype->getXAdvance(wch);
-			
-			if (scaled_max_pixels < cur_x)
+			LLFontGlyphInfo* fgi = next_glyph;
+			next_glyph = NULL;
+			if(!fgi)
+			{
+				fgi = mFontFreetype->getGlyphInfo(wch);
+			}
+
+			// account for glyphs that run beyond the starting point for the next glyphs
+			width_padding = llmax(	0.f,													// always use positive padding amount
+									width_padding - fgi->mXAdvance,							// previous padding left over after advance of current character
+									(F32)(fgi->mWidth + fgi->mXBearing) - fgi->mXAdvance);	// difference between width of this character and advance to next character
+
+			cur_x += fgi->mXAdvance;
+		
+			// clip if current character runs past scaled_max_pixels (using width_padding)
+			if (scaled_max_pixels < cur_x + width_padding)
 			{
 				clip = TRUE;
 				break;
@@ -662,7 +694,8 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 			if (((i+1) < max_chars) && wchars[i+1])
 			{
 				// Kern this puppy.
-				cur_x += mFontFreetype->getXKerning(wch, wchars[i+1]);
+				next_glyph = mFontFreetype->getGlyphInfo(wchars[i+1]);
+				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
 		}
 		// Round after kerning.
@@ -717,34 +750,29 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 		llwchar wch = wchars[i];
 
 		const embedded_data_t* ext_data = getEmbeddedCharData(wch);
-		F32 char_width = 0;
+		F32 width = 0;
 		
 		if(ext_data)
 		{
-			char_width = getEmbeddedCharAdvance(ext_data);
+			width = getEmbeddedCharAdvance(ext_data);
 		}
 		else
 		{
-			//new
 			const LLFontGlyphInfo* fgi= mFontFreetype->getGlyphInfo(wch);
 
 			// last character uses character width, since the whole character needs to be visible
 			// other characters just use advance
-			char_width = (i == start) 
+			width = (i == start) 
 				? (F32)(fgi->mWidth + fgi->mXBearing)  	// use actual width for last character
-				: fgi->mXAdvance;						// use advance for all other characters	
-				
-			//old
-			//const LLFontGlyphInfo* fgi= mFontFreetype->getGlyphInfo(wch);
-			//mFontFreetype->getXAdvance(wch);
+				: fgi->mXAdvance;						// use advance for all other characters										
 		}
 
-		if( scaled_max_pixels < (total_width + char_width) )
+		if( scaled_max_pixels < (total_width + width) )
 		{
 			break;
 		}
 
-		total_width += char_width;
+		total_width += width;
 		drawable_chars++;
 
 		if( max_chars >= 0 && drawable_chars >= max_chars )
@@ -759,10 +787,20 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 		}
 
 		// Round after kerning.
-		total_width = llround(total_width);
+		total_width = (F32)llround(total_width);
 	}
 
-	return start_pos - drawable_chars;
+	if (drawable_chars == 0)
+	{
+		return start_pos; // just draw last character
+	}
+	else
+	{
+		// if only 1 character is drawable, we want to return start_pos as the first character to draw
+		// if 2 are drawable, return start_pos and character before start_pos, etc.
+		return start_pos + 1 - drawable_chars;
+	}
+	
 }
 
 
@@ -781,6 +819,8 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 	const S32 max_index = begin_offset + llmin(S32_MAX - begin_offset, max_chars);
 
 	F32 scaled_max_pixels =	max_pixels * sScaleX;
+	
+	const LLFontGlyphInfo* next_glyph = NULL;
 
 	S32 pos;
 	for (pos = begin_offset; pos < max_index; pos++)
@@ -790,83 +830,60 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 		{
 			break; // done
 		}
+
 		const embedded_data_t* ext_data = use_embedded ? getEmbeddedCharData(wch) : NULL;
-		if (ext_data)
+		const LLFontGlyphInfo* glyph = next_glyph;
+		next_glyph = NULL;
+		if(!glyph && !ext_data)
 		{
-			F32 ext_advance = getEmbeddedCharAdvance(ext_data);
+			glyph = mFontFreetype->getGlyphInfo(wch);
+		}
+		
+		F32 char_width = ext_data ? getEmbeddedCharAdvance(ext_data) : mFontFreetype->getXAdvance(glyph);
 
-			if (round)
-			{
-				// Note: if the mouse is on the left half of the character, the pick is to the character's left
-				// If it's on the right half, the pick is to the right.
-				if (target_x  < cur_x + ext_advance/2)
-				{
-					break;
-				}
-			}
-			else
-			{
-				if (target_x  < cur_x + ext_advance)
-				{
-					break;
-				}
-			}
-
-			if (scaled_max_pixels < cur_x + ext_advance)
+		if (round)
+		{
+			// Note: if the mouse is on the left half of the character, the pick is to the character's left
+			// If it's on the right half, the pick is to the right.
+			if (target_x  < cur_x + char_width*0.5f)
 			{
 				break;
 			}
+		}
+		else if (target_x  < cur_x + char_width)
+		{
+			break;
+		}
 
-			pos++;
-			cur_x += ext_advance;
+		if (scaled_max_pixels < cur_x + char_width)
+		{
+			break;
+		}
 
-			if (((pos + 1) < max_index)
-				&& (wchars[(pos + 1)]))
+		cur_x += char_width;
+
+		if (((pos + 1) < max_index)
+			&& (wchars[(pos + 1)]))
+		{
+			
+			if(ext_data)
 			{
 				cur_x += EXT_KERNING * sScaleX;
 			}
-			// Round after kerning.
-			cur_x = (F32)llfloor(cur_x + 0.5f);
+			else
+			{
+				next_glyph = mFontFreetype->getGlyphInfo(wchars[pos + 1]);
+				cur_x += mFontFreetype->getXKerning(glyph, next_glyph);
+			}
 		}
-		else
-		{
-			F32 char_width = mFontFreetype->getXAdvance(wch);
 
-			if (round)
-			{
-				// Note: if the mouse is on the left half of the character, the pick is to the character's left
-				// If it's on the right half, the pick is to the right.
-				if (target_x  < cur_x + char_width*0.5f)
-				{
-					break;
-				}
-			}
-			else if (target_x  < cur_x + char_width)
-			{
-				break;
-			}
 
-			if (scaled_max_pixels < cur_x + char_width)
-			{
-				break;
-			}
-
-			pos++;
-			cur_x += char_width;
-
-			if (((pos + 1) < max_index)
-				&& (wchars[(pos + 1)]))
-			{
-				// Kern this puppy.
-				cur_x += mFontFreetype->getXKerning(wch, wchars[pos + 1]);
-			}
-
-			// Round after kerning.
-			cur_x = (F32)llround(cur_x);
-		}
+		// Round after kerning.
+		cur_x = (F32)llround(cur_x);
+		
 	}
 
-	return pos;
+	return llmin(max_chars, pos - begin_offset);
 }
 
 const LLFontDescriptor& LLFontGL::getFontDesc() const

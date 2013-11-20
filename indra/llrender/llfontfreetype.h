@@ -27,7 +27,7 @@
 #ifndef LL_LLFONTFREETYPE_H
 #define LL_LLFONTFREETYPE_H
 
-#include <map>
+#include <boost/unordered_map.hpp>
 #include "llpointer.h"
 #include "llstl.h"
 
@@ -67,10 +67,8 @@ struct LLFontGlyphInfo
 	S32 mHeight;		// In pixels
 	F32 mXAdvance;		// In pixels
 	F32 mYAdvance;		// In pixels
-	BOOL mMetricsValid; // We have up-to-date metrics for this glyph
 
 	// Information for actually rendering
-	BOOL mIsRendered;	// We actually have rendered this glyph
 	S32 mXBitmapOffset; // Offset to the origin in the bitmap
 	S32 mYBitmapOffset; // Offset to the origin in the bitmap
 	S32 mXBearing;	// Distance from baseline to left in pixels
@@ -129,9 +127,10 @@ public:
 		LAST_CHAR_FULL = 255
 	};
 
-	const LLFontGlyphInfo &getMetrics(const llwchar wc) const;
-	F32 getXAdvance(const llwchar wc) const;
-	F32 getXKerning(const llwchar char_left, const llwchar char_right) const; // Get the kerning between the two characters
+	F32 getXAdvance(llwchar wc) const;
+	F32 getXAdvance(const LLFontGlyphInfo* glyph) const;
+	F32 getXKerning(llwchar char_left, llwchar char_right) const; // Get the kerning between the two characters
+	F32 getXKerning(const LLFontGlyphInfo* left_glyph_info, const LLFontGlyphInfo* right_glyph_info) const; // Get the kerning between the two characters
 	LLFontGlyphInfo* getGlyphInfo(const llwchar wch) const;
 
 	void reset(F32 vert_dpi, F32 horz_dpi);
@@ -147,13 +146,10 @@ public:
 private:
 	void resetBitmapCache();
 	void setSubImageLuminanceAlpha(const U32 x, const U32 y, const U32 bitmap_num, const U32 width, const U32 height, const U8 *data, S32 stride = 0) const;
-public:
-	BOOL hasGlyph(const llwchar wch) const;		// Has a glyph for this character
-	BOOL addGlyph(const llwchar wch) const;		// Add a new character to the font if necessary
-private:
-	BOOL addGlyphFromFont(const LLFontFreetype *fontp, const llwchar wch, const U32 glyph_index) const;	// Add a glyph from this font to the other (returns the glyph_index, 0 if not found)
-	void renderGlyph(const U32 glyph_index) const;
-
+	BOOL hasGlyph(llwchar wch) const;		// Has a glyph for this character
+	LLFontGlyphInfo* addGlyph(llwchar wch) const;		// Add a new character to the font if necessary
+	LLFontGlyphInfo* addGlyphFromFont(const LLFontFreetype *fontp, llwchar wch, U32 glyph_index) const;	// Add a glyph from this font to the other (returns the glyph_index, 0 if not found)
+	void renderGlyph(U32 glyph_index) const;
 	void insertGlyphInfo(llwchar wch, LLFontGlyphInfo* gi) const;
 
 	std::string mName;
@@ -170,7 +166,7 @@ private:
 
 	BOOL mValid;
 
-	typedef std::map<llwchar, LLFontGlyphInfo*> char_glyph_info_map_t;
+	typedef boost::unordered_map<llwchar, LLFontGlyphInfo*> char_glyph_info_map_t;
 	mutable char_glyph_info_map_t mCharGlyphInfoMap; // Information about glyph location in bitmap
 
 	mutable LLPointer<LLFontBitmapCache> mFontBitmapCachep;
