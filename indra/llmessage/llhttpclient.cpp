@@ -526,7 +526,7 @@ private:
 	LLSD mResponse;
 
 protected:
-	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK); return mResponse; }
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		decode_llsd_body(status, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
@@ -539,7 +539,7 @@ private:
 	std::string mResponse;
 
 protected:
-	/*virtual*/ std::string const& getRaw(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	/*virtual*/ std::string const& getRaw(void) const { llassert(mFinished && mCode == CURLE_OK); return mResponse; }
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		decode_raw_body(mCode, reason, channels, buffer, mResponse);

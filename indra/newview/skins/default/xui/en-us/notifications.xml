@@ -5803,13 +5803,6 @@ A login URI is required to retrieve the grid info.
 
   <notification
    icon="alertmodal.tga"
-   name="GridInfoError"
-   type="alertmodal">
-Cannot retrieve grid info from server.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="HelpRenderCompat"
    type="alertmodal">
 Builds with extended hollow or extended hole size do not render properly on other viewers. Please keep this option checked, if you want your builds looking properly in other viewers.

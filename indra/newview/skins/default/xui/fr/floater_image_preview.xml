@@ -49,7 +49,7 @@
 Sauvegarder en Targa 24 bits (.tga).
 	</text>
 	<check_box label="Compression sans perte" name="lossless_check"/>
-	<check_box label="Temporaire (Gratuit)" name="temp_check" tooltip="chargement gratuit mais qui disparaitra &#xE0; votre de&#xE9;connection."/>
+	<check_box label="Temporaire (Gratuit)" name="temp_check" tool_tip="chargement gratuit mais qui disparaitra &#xE0; votre de&#xE9;connection."/>
 	<button label="Annuler" name="cancel_btn"/>
 	<button label="Charger ([UPLOADFEE])" name="ok_btn"/>
 </floater>

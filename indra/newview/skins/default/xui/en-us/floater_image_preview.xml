@@ -60,7 +60,7 @@ Try saving image as 24 bit Targa (.tga).
 	<check_box bottom="37" control_name="TemporaryUpload" enabled="true"
              follows="bottom|left" font="SansSerifSmall" height="16"
              initial_value="false" label="Temporary (Free)"
-             left_delta="155" name="temp_check" width="280" tooltip="Sets the asset to be temporary, meaning its free, but in return, only good for a short time before it ceases to exist." />
+             left_delta="155" name="temp_check" width="280" tool_tip="Sets the asset to be temporary, meaning its free, but in return, only good for a short time before it ceases to exist." />
 	<button bottom="10" follows="bottom|right" height="20" label="Cancel" left="165"
 	     name="cancel_btn" width="125" />
 	<button bottom="10" follows="bottom|left" height="20" label="Upload ([UPLOADFEE])"
