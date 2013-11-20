@@ -150,7 +150,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		return wstr.length() ;
 	}
 
-	if (wstr.empty())
+	if (wstr.empty() || !max_pixels)
 	{
 		return 0;
 	} 
@@ -440,11 +440,14 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		}
 	}
 
-	gGL.begin(LLRender::QUADS);
+	if(glyph_count)
 	{
-		gGL.vertexBatchPreTransformed(vertices, uvs, colors, glyph_count * 4);
+		gGL.begin(LLRender::QUADS);
+		{
+			gGL.vertexBatchPreTransformed(vertices, uvs, colors, glyph_count * 4);
+		}
+		gGL.end();
 	}
-	gGL.end();
 
 
 	if (right_x)
