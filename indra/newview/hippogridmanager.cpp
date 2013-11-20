@@ -57,6 +57,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mRenderCompat(true),
 	mInvLinks(false),
 	mAutoUpdate(false),
+	mLocked(false),
 	mMaxAgentGroups(-1),
 	mCurrencySymbol("OS$"),
 	mCurrencyText("OS Dollars"),
@@ -174,10 +175,12 @@ void HippoGridInfo::setLoginUri(const std::string& loginUri)
 	{
 		mIsInProductionGrid = true;
 		useHttps();
+		setPlatform(PLATFORM_SECONDLIFE);
 	}
 	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.aditi.lindenlab.com")
 	{
 		useHttps();
+		setPlatform(PLATFORM_SECONDLIFE);
 	}
 	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.com" ||
 		utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.net")
@@ -654,11 +657,6 @@ bool HippoGridInfo::getAutoUpdate()
 		return mAutoUpdate;
 }
 
-void HippoGridInfo::setAutoUpdate(bool b)
-{
-	mAutoUpdate = b;
-}
-
 bool HippoGridInfo::getUPCSupported()
 {
 	if(isSecondLife())
@@ -1014,7 +1012,8 @@ void HippoGridManager::parseData(LLSD &gridInfo, bool mergeIfNewer)
 			if (gridMap.has("search")) grid->setSearchUrl(gridMap["search"]);
 			if (gridMap.has("render_compat")) grid->setRenderCompat(gridMap["render_compat"]);
 			if (gridMap.has("inventory_links")) grid->setSupportsInvLinks(gridMap["inventory_links"]);
-			if (gridMap.has("auto_update")) grid->setAutoUpdate(gridMap["auto_update"]);
+			if (gridMap.has("auto_update")) grid->mAutoUpdate = gridMap["auto_update"];
+			if (gridMap.has("locked")) grid->mLocked = gridMap["locked"];
 			if (newGrid) addGrid(grid);
 		}
 	}
@@ -1051,6 +1050,7 @@ void HippoGridManager::saveFile()
 		gridInfo[i]["render_compat"] = grid->isRenderCompat();
 		gridInfo[i]["inventory_links"] = grid->supportsInvLinks();
 		gridInfo[i]["auto_update"] = grid->getAutoUpdate();
+		gridInfo[i]["locked"] = grid->getLocked();
 	}
 
 	// write client grid info file

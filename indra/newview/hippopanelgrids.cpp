@@ -61,6 +61,7 @@ class HippoPanelGridsImpl : public HippoPanelGrids
 		enum State { NORMAL, ADD_NEW, ADD_COPY };
 		State mState;
 		std::string mCurGrid;
+		bool mIsEditable;
 
 		void loadCurGrid();
 		bool saveCurGrid();
@@ -78,6 +79,8 @@ class HippoPanelGridsImpl : public HippoPanelGrids
 		static void onClickGridInfo(void *data);
 		static void onClickHelpRenderCompat(void *data);
 		static void onClickAdvanced(void *data);
+
+		void enableEditing(bool);
 };
 
 
@@ -103,7 +106,7 @@ HippoPanelGrids *HippoPanelGrids::create()
 
 
 HippoPanelGridsImpl::HippoPanelGridsImpl() :
-	mState(NORMAL)
+	mState(NORMAL), mIsEditable(true)
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_grids.xml");
 }
@@ -194,27 +197,10 @@ void HippoPanelGridsImpl::refresh()
 
 	childSetTextArg("default_grid", "[DEFAULT]", (defaultGrid != "")? defaultGrid: " ");
 
-	childSetEnabled("btn_delete", (selectIndex >= 0));
+	childSetEnabled("btn_delete", (selectIndex >= 0) && mIsEditable );
 	childSetEnabled("btn_copy", (mState == NORMAL) && (selectIndex >= 0));
 	childSetEnabled("btn_default", (mState == NORMAL) && (selectIndex > 0));
-	childSetEnabled("gridname", (mState == ADD_NEW) || (mState == ADD_COPY));
-	
-	if (childGetValue("platform").asString() == "SecondLife") {
-		// disable platform selector, if logged into the grid edited and it is SL
-		// so object export restrictions cannot be circumvented by changing the platform
-		bool enablePlatform = (LLStartUp::getStartupState() < STATE_LOGIN_CLEANUP) ||
-			(mCurGrid != gHippoGridManager->getConnectedGrid()->getGridName());
-		childSetEnabled("platform", enablePlatform);
-		childSetEnabled("search", false);
-		childSetText("search", LLStringExplicit(""));
-		childSetEnabled("render_compat", false);
-		childSetValue("render_compat", false);
-	} else {
-		childSetEnabled("platform", true);
-		childSetEnabled("search", true);
-		childSetText("search", gHippoGridManager->getConnectedGrid()->getSearchUrl());
-		childSetEnabled("render_compat", true);
-	}
+	childSetEnabled("gridname", (mState == ADD_NEW) || (mState == ADD_COPY));	
 }
 
 
@@ -256,9 +242,11 @@ void HippoPanelGridsImpl::loadCurGrid()
 		childSetText("helperuri", gridInfo->getHelperUri());
 		childSetText("website", gridInfo->getWebSite());
 		childSetText("support", gridInfo->getSupportUrl());
+		childSetText("search", gridInfo->getSearchUrl());
 		childSetText("register", gridInfo->getRegisterUrl());
 		childSetText("password", gridInfo->getPasswordUrl());
 		childSetValue("render_compat", gridInfo->isRenderCompat());
+		enableEditing(!gridInfo->getLocked());
 	} else {
 		std::string empty = "";
 		LLComboBox *platform = getChild<LLComboBox>("platform");
@@ -269,10 +257,11 @@ void HippoPanelGridsImpl::loadCurGrid()
 		childSetText("helperuri", empty);
 		childSetText("website", empty);
 		childSetText("support", empty);
+		childSetText("search", empty);
 		childSetText("register", empty);
 		childSetText("password", empty);
-		childSetEnabled("render_compat", true);
 		childSetValue("render_compat", true);
+		enableEditing(true);
 	}
 
 	if (mState == ADD_NEW) {
@@ -281,6 +270,7 @@ void HippoPanelGridsImpl::loadCurGrid()
 		childSetText("loginuri", required);
 	} else if (mState == ADD_COPY) {
 		childSetText("gridname", std::string("<required>"));
+		enableEditing(true);
 	} else if (mState != NORMAL) {
 		llwarns << "Illegal state " << mState << '.' << llendl;
 	}
@@ -573,4 +563,32 @@ void HippoPanelGridsImpl::onClickAdvanced(void *data)
 void HippoPanelGridsImpl::onClickHelpRenderCompat(void *data)
 {
 	LLNotificationsUtil::add("HelpRenderCompat");
+}
+
+
+void HippoPanelGridsImpl::enableEditing(bool b)
+{
+	static const char * elements [] = {
+		"platform",
+		"gridname",
+		"loginuri",
+		"loginpage",
+		"helperuri",
+		"website",
+		"support",
+		"register",
+		"password",
+		"search",
+		"btn_delete",
+		"btn_gridinfo",
+		"render_compat",
+		"gridmessage",
+		0
+	};
+
+	for(int i = 0; elements[i]; ++i ) {
+		this->childSetEnabled(elements[i], b);
+	}
+
+	mIsEditable = b;
 }

@@ -22,6 +22,7 @@ class LLSD;
 
 class HippoGridInfo
 {
+	friend class HippoGridManager;
 public:
 	enum Platform {
 		PLATFORM_OTHER = 0,
@@ -96,7 +97,7 @@ public:
 	bool supportsInvLinks();
 	void setSupportsInvLinks(bool b);
 	bool getAutoUpdate();
-	void setAutoUpdate(bool b);	
+	bool getLocked() { return mLocked; }
 
 	void getGridInfo();
 
@@ -124,6 +125,7 @@ private:
 	bool mRenderCompat;
 	bool mInvLinks;
 	bool mAutoUpdate;
+	bool mLocked;
 	bool mUPCSupported;
 	int mMaxAgentGroups;
 

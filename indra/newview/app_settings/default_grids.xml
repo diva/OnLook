@@ -2,7 +2,7 @@
   <array>
 
     <map>
-      <key>default_grids_version</key><string>21</string>
+      <key>default_grids_version</key><string>22</string>
     </map>
 
     <!-- Second Life -->
@@ -20,6 +20,7 @@
       <key>render_compat</key><boolean>1</boolean>
       <key>inventory_links</key><boolean>1</boolean>
       <key>auto_update</key><boolean>0</boolean>
+      <key>locked</key><boolean>1</boolean>
     </map>
 
     <map>
