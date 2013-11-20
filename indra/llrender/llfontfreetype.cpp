@@ -343,7 +343,7 @@ LLFontGlyphInfo* LLFontFreetype::addGlyphFromFont(const LLFontFreetype *fontp, l
 	if (mFTFace == NULL)
 		return NULL;
 
-	llassert(!mIsFallback);
+	//llassert(!mIsFallback);
 	fontp->renderGlyph(glyph_index);
 	S32 width = fontp->mFTFace->glyph->bitmap.width;
 	S32 height = fontp->mFTFace->glyph->bitmap.rows;
@@ -540,7 +540,7 @@ void LLFontFreetype::setSubImageLuminanceAlpha(const U32 x, const U32 y, const U
 {
 	LLImageRaw *image_raw = mFontBitmapCachep->getImageRaw(bitmap_num);
 
-	llassert(!mIsFallback);
+	//llassert(!mIsFallback);
 	llassert(image_raw && (image_raw->getComponents() == 2));
 
 	
