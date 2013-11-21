@@ -1095,6 +1095,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   DoutCurlEntering("CurlEasyRequest::finalizeRequest(\"" << url << "\", " << policy.name() << ", " << (void*)state_machine << ")");
   llassert(!mTimeoutPolicy);		// May only call finalizeRequest once!
   mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_msg_queue when msg is CURLMSG_DONE.
+  mIsHttps = strncmp(url.c_str(), "https:", 6) == 0;
 #ifdef SHOW_ASSERT
   // Do a sanity check on the headers.
   int content_type_count = 0;
@@ -1139,7 +1140,13 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 // // get less connect time, while it still (also) has to wait for this DNS lookup.
 void CurlEasyRequest::set_timeout_opts(void)
 {
-  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(getLowercaseHostname()));
+  U16 connect_timeout = mTimeoutPolicy->getConnectTimeout(getLowercaseHostname());
+  if (mIsHttps && connect_timeout < 30)
+  {
+	DoutCurl("Incrementing CURLOPT_CONNECTTIMEOUT of \"" << mTimeoutPolicy->name() << "\" from " << connect_timeout << " to 30 seconds.");
+	connect_timeout = 30;
+  }
+  setopt(CURLOPT_CONNECTTIMEOUT, connect_timeout);
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
 }
 

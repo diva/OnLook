@@ -315,6 +315,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	AIPerServicePtr mPerServicePtr;				// Pointer to the corresponding AIPerService.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
+	bool mIsHttps;								// Set if the url starts with "https:".
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
   public:
 	bool mDebugIsHeadOrGetMethod;
