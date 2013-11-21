@@ -250,7 +250,7 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 }
 
 AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(CWD_ONLY(bool debug)) :
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 	AIStateMachine(debug),
 #endif
     mTotalDelayTimeout(AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout().getTotalDelay())

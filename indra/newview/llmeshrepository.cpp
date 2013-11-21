@@ -1414,7 +1414,7 @@ void LLMeshUploadThread::preStart()
 
 AIMeshUpload::AIMeshUpload(LLMeshUploadThread::instance_list& data, LLVector3& scale, bool upload_textures, bool upload_skin, bool upload_joints, std::string const& upload_url, bool do_upload,
 	LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer) :
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		AIStateMachine(false),
 #endif
 		mMeshUpload(new AIStateMachineThread<LLMeshUploadThread>(CWD_ONLY(false))), mWholeModelUploadURL(upload_url)
