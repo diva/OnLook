@@ -565,7 +565,7 @@ void debug_curl_remove_easy(CURL* handle)
 	handles.erase(iter);
 	Dout(dc::warning, "debug_curl_remove_easy(" << (void*)handle << "): removed");
   }
-  llassert(!print_debug(handle));
+  llassert(!gDebugCurlTerse || !print_debug(handle));
 }
 
 bool debug_curl_print_debug(CURL* handle)
