@@ -949,9 +949,7 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 
 bool LLFloaterIMPanel::isInviteAllowed() const
 {
-
-	return ( (IM_SESSION_CONFERENCE_START == mDialog) 
-			 || (IM_SESSION_INVITE == mDialog) );
+	return mSessionType != P2P_SESSION;
 }
 
 void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)
