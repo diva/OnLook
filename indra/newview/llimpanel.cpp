@@ -867,7 +867,7 @@ BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 								  std::string& tooltip_msg)
 {
 
-	if (mDialog == IM_NOTHING_SPECIAL)
+	if (mSessionType == P2P_SESSION)
 	{
 		LLToolDragAndDrop::handleGiveDragAndDrop(mOtherParticipantUUID, mSessionUUID, drop,
 												 cargo_type, cargo_data, accept);
