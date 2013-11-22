@@ -874,7 +874,7 @@ BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 	}
 	
 	// handle case for dropping calling cards (and folders of calling cards) onto invitation panel for invites
-	else
+	else if (isInviteAllowed())
 	{
 		*accept = ACCEPT_NO;
 		
@@ -944,7 +944,7 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 
 bool LLFloaterIMPanel::isInviteAllowed() const
 {
-	return mSessionType != P2P_SESSION;
+	return mSessionType == ADHOC_SESSION;
 }
 
 void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)
