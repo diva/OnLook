@@ -2140,7 +2140,8 @@ void BufferedCurlEasyRequest::processOutput(void)
   sResponderCallbackMutex.unlock();
   mResponder = NULL;
 
-  resetState();
+  // Commented out because this easy handle is not going to be reused; it makes no sense to reset its state.
+  //resetState();
 }
 
 //static
