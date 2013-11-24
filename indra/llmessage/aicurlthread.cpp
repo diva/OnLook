@@ -2354,6 +2354,24 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
   return header_len;
 }
 
+//static
+int BufferedCurlEasyRequest::curlProgressCallback(void* user_data, double dltotal, double dlnow, double ultotal, double ulnow)
+{
+  if (ultotal > 0)				// Zero just means it isn't known yet.
+  {
+	ThreadSafeBufferedCurlEasyRequest* lockobj = static_cast<ThreadSafeBufferedCurlEasyRequest*>(user_data);
+	DoutEntering(dc::curl, "BufferedCurlEasyRequest::curlProgressCallback(" << (void*)lockobj << ", " << dltotal << ", " << dlnow << ", " << ultotal << ", " << ulnow << ")");
+
+	if (ulnow == ultotal)		// Everything uploaded?
+	{
+	  AICurlEasyRequest_wat self_w(*lockobj);
+	  self_w->httptimeout()->upload_finished();
+	}
+  }
+
+  return 0;
+}
+
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
