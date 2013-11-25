@@ -9742,4 +9742,11 @@ Do you wish to export anyway?
 Object successfully exported to: [FILENAME]
   </notification>
 
+  <notification
+   icon="notifytip.tga"
+   name="CrashReportSent"
+   type="notifytip">
+Thank you for submitting the crash report! Report ID is [REPORT_ID]
+  </notification>
+
 </notifications>

@@ -40,13 +40,14 @@ public:
 	LLCrashLogger();
 	virtual ~LLCrashLogger();
 	S32 loadCrashBehaviorSetting();
-    bool readDebugFromXML(LLSD& dest, const std::string& filename );
+	static S32 sReportID;
+	bool readDebugFromXML(LLSD& dest, const std::string& filename );
 	void gatherFiles();
-    void mergeLogs( LLSD src_sd );
+	void mergeLogs( LLSD src_sd );
 
 	virtual void gatherPlatformSpecificFiles() {}
 	bool saveCrashBehaviorSetting(S32 crash_behavior);
-    bool sendCrashLog(std::string dump_dir);
+	bool sendCrashLog(std::string dump_dir);
 	LLSD constructPostData();
 	void setUserText(const std::string& text) { mCrashInfo["UserNotes"] = text; }
 	S32 getCrashBehavior() { return mCrashBehavior; }
