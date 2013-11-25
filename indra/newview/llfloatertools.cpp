@@ -1313,7 +1313,7 @@ void LLFloaterTools::getMediaState()
 		getChildView("media_tex")->setEnabled(bool_has_media && editable);
 		getChildView("edit_media")->setEnabled(bool_has_media && LLFloaterMediaSettings::getInstance()->mIdenticalHasMediaInfo && editable );
 		getChildView("delete_media")->setEnabled(bool_has_media && editable );
-		getChildView("add_media")->setEnabled(( ! bool_has_media ) && editable );
+		getChildView("add_media")->setEnabled(editable);
 			// TODO: display a list of all media on the face - use 'identical' flag
 	}
 	else // not all face has media but at least one does.
@@ -1343,7 +1343,7 @@ void LLFloaterTools::getMediaState()
 		getChildView("media_tex")->setEnabled(TRUE);
 		getChildView("edit_media")->setEnabled(LLFloaterMediaSettings::getInstance()->mIdenticalHasMediaInfo);
 		getChildView("delete_media")->setEnabled(TRUE);
-		getChildView("add_media")->setEnabled(FALSE );
+		getChildView("add_media")->setEnabled(editable);
 	}
 	media_info->setText(media_title);
 	
@@ -1353,6 +1353,8 @@ void LLFloaterTools::getMediaState()
 	if(mTitleMedia)
 		LLFloaterMediaSettings::initValues(mMediaSettings, editable );
 }
+
+
 //////////////////////////////////////////////////////////////////////////////
 // called when a user wants to add media to a prim or prim face
 void LLFloaterTools::onClickBtnAddMedia()
