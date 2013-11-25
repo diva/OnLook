@@ -157,10 +157,11 @@ void HTTPTimeout::upload_starting(void)
 //                                                                             |
 void HTTPTimeout::upload_finished(void)
 {
-  // Disable this assert when there isn't enough debug output to do anything with it.
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
-  llassert(!mUploadFinished);	// If we get here twice, then the 'upload finished' detection failed.
-#endif
+  // This function can be called more than once. Ignore the second call.
+  if (mUploadFinished)
+  {
+	return;
+  }
   mUploadFinished = true;
   // Only accept a call to upload_starting() if being_redirected() is called after this point.
   mBeingRedirected = false;

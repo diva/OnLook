@@ -83,8 +83,8 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	//DECLARE_SETOPT(curl_read_callback);	Same type as curl_write_callback
 	DECLARE_SETOPT(curl_ssl_ctx_callback);
 	DECLARE_SETOPT(curl_conv_callback);
-#if 0	// Not used by the viewer.
 	DECLARE_SETOPT(curl_progress_callback);
+#if 0	// Not used by the viewer.
 	DECLARE_SETOPT(curl_seek_callback);
 	DECLARE_SETOPT(curl_ioctl_callback);
 	DECLARE_SETOPT(curl_sockopt_callback);
@@ -235,6 +235,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
 	static size_t readCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
 	static CURLcode SSLCtxCallback(CURL* curl, void* sslctx, void* userdata);
+	static int progressCallback(void* userdata, double, double, double, double);
 
 	curl_write_callback mHeaderCallback;
 	void* mHeaderCallbackUserData;
@@ -244,12 +245,15 @@ class CurlEasyRequest : public CurlEasyHandle {
 	void* mReadCallbackUserData;
 	curl_ssl_ctx_callback mSSLCtxCallback;
 	void* mSSLCtxCallbackUserData;
+	curl_progress_callback mProgressCallback;
+	void* mProgressCallbackUserData;
 
   public:
 	void setHeaderCallback(curl_write_callback callback, void* userdata);
 	void setWriteCallback(curl_write_callback callback, void* userdata);
 	void setReadCallback(curl_read_callback callback, void* userdata);
 	void setSSLCtxCallback(curl_ssl_ctx_callback callback, void* userdata);
+	void setProgressCallback(curl_progress_callback callback, void* userdata);
 
 	// Call this if the set callbacks are about to be invalidated.
 	void revokeCallbacks(void);
@@ -315,6 +319,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	AIPerServicePtr mPerServicePtr;				// Pointer to the corresponding AIPerService.
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
+	bool mIsHttps;								// Set if the url starts with "https:".
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
   public:
 	bool mDebugIsHeadOrGetMethod;
@@ -440,6 +445,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
     static size_t curlWriteCallback(char* data, size_t size, size_t nmemb, void* user_data);
     static size_t curlReadCallback(char* data, size_t size, size_t nmemb, void* user_data);
     static size_t curlHeaderCallback(char* data, size_t size, size_t nmemb, void* user_data);
+	static int curlProgressCallback(void* user_data, double dltotal, double dlnow, double ultotal, double ulnow);
 
 	// Called from curlHeaderCallback.
 	void setStatusAndReason(U32 status, std::string const& reason);

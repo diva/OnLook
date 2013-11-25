@@ -74,6 +74,8 @@ struct fake_channel {
   char const* mLabel;
   fake_channel(int on, char const* label) : mOn(on), mLabel(label) { }
   fake_channel(void) : mOn(0) { }
+  fake_channel& operator()(bool) { return *this; }
+  fake_channel const& operator()(bool) const { return *this; }
   bool is_on() const { return !!mOn; }
   bool is_off() const { return !mOn; }
   void on() const { }
@@ -144,7 +146,11 @@ extern LL_COMMON_API fake_channel const snapshot;
 #define CWDEBUG_MARKER 0
 
 #define BACKTRACE do { } while(0)
+#ifdef DEBUG_CURLIO
+#define CWD_ONLY(...) __VA_ARGS__
+#else
 #define CWD_ONLY(...)
+#endif
 
 #endif // !DOXYGEN
 
