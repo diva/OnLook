@@ -9474,7 +9474,6 @@ class ListStartIM : public view_listener_t
 	}
 };
 
-/* Singu TODO: Figure out why this wouldn't work
 class ListAbuseReport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9483,7 +9482,6 @@ class ListAbuseReport : public view_listener_t
 		return true;
 	}
 };
-*/
 
 // Create the args for administrative notifications used in lists, tossing the selected names into it.
 LLSD create_args(const uuid_vec_t& ids, const std::string& token)
@@ -9898,7 +9896,7 @@ void initialize_menus()
 	addMenu(new ListStartCall(), "List.StartCall");
 	addMenu(new ListStartConference(), "List.StartConference");
 	addMenu(new ListStartIM(), "List.StartIM");
-	//addMenu(new ListAbuseReport(), "List.AbuseReport");
+	addMenu(new ListAbuseReport(), "List.AbuseReport");
 	addMenu(new ListEject(), "List.ParcelEject");
 	addMenu(new ListFreeze(), "List.Freeze");
 	addMenu(new ListEstateBan(), "List.EstateBan");
