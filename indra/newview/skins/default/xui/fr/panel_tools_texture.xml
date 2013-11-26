@@ -89,6 +89,7 @@
     <button label="Choisir..." name="add_media" tool_tip="Ajouter un média"/>
     <button label="Supprimer" name="delete_media" tool_tip="Supprimer cette texture de média"/>
     <button label="Aligner" label_selected="Aligner le média" name="button align" tool_tip="Ajuster la texture du média (le chargement doit d’abord se terminer)"/>
+    <check_box label="Synchroniser les materials" name="checkbox maps sync" tool_tip="Synchronise les parametres de la map de la texture"/>
     <text name="tex gen">
         Application
     </text>
