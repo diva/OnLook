@@ -129,14 +129,14 @@
   </menu>
   <menu label="Moderation" name="Moderation" create_jump_keys="true">
     <menu_item_call label="Mute/Unmute" name="Mute/Unmute">
-      <on_click function="List.Mute"/>
+      <on_click function="List.ToggleMute"/>
       <on_enable function="List.EnableMute"/>
       <on_visible function="List.EnableAnySelected"/>
     </menu_item_call>
-    <!--menu_item_call label="Report Abuse" name="Report Abuse">
-      <on_click function="List.ReportAbuse"/>
+    <menu_item_call label="Report Abuse" name="Report Abuse">
+      <on_click function="List.AbuseReport"/>
       <on_visible function="List.EnableSingleSelected"/>
-    </menu_item_call-->
+    </menu_item_call>
     <menu_item_separator/>
     <menu_item_call label="Freeze" name="Freeze">
       <on_click function="List.Freeze"/>

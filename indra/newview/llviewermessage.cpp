@@ -4018,7 +4018,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		std::string prefix = mesg.substr(0, 4);
 		if (prefix == "/me " || prefix == "/me'")
 		{
-			chat.mText = from_name;
+			chat.mText = chat.mFromName;
 			mesg = mesg.substr(3);
 			ircstyle = TRUE;
 			// This block was moved up to allow bubbles with italicized chat
@@ -4191,7 +4191,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				break;
 			}
 
-			chat.mText = from_name + verb + mesg;
+			chat.mText = chat.mFromName + verb + mesg;
 		}
 
 		if (chatter)

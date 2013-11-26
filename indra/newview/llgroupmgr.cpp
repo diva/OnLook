@@ -995,6 +995,11 @@ void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 					static std::string localized_online(LLTrans::getString("group_member_status_online"));
 					online_status = localized_online;
 				}
+				else if (online_status == "unknown")
+				{
+					static std::string localized_unknown(LLTrans::getString("group_member_status_unknown"));
+					online_status = localized_unknown;
+				}
 				else
 				{
 					formatDateString(online_status); // reformat for sorting, e.g. 12/25/2008 -> 2008/12/25
@@ -2058,6 +2063,8 @@ void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
 			online_status = member_info["last_login"].asString();
 			if (online_status == "Online")
 				online_status = LLTrans::getString("group_member_status_online");
+			else if (online_status == "unknown")
+				online_status = LLTrans::getString("group_member_status_unknown");
 			else
 				formatDateString(online_status);
 		}

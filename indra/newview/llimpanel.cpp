@@ -867,7 +867,7 @@ BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 								  std::string& tooltip_msg)
 {
 
-	if (mDialog == IM_NOTHING_SPECIAL)
+	if (mSessionType == P2P_SESSION)
 	{
 		LLToolDragAndDrop::handleGiveDragAndDrop(mOtherParticipantUUID, mSessionUUID, drop,
 												 cargo_type, cargo_data, accept);
@@ -898,28 +898,23 @@ BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 
 BOOL LLFloaterIMPanel::dropCallingCard(LLInventoryItem* item, BOOL drop)
 {
-	BOOL rv = isInviteAllowed();
-	if(rv && item && item->getCreatorUUID().notNull())
+	if (item && item->getCreatorUUID().notNull())
 	{
-		if(drop)
+		if (drop)
 		{
 			LLDynamicArray<LLUUID> ids;
 			ids.put(item->getCreatorUUID());
 			inviteToSession(ids);
 		}
+		return true;
 	}
-	else
-	{
-		// set to false if creator uuid is null.
-		rv = FALSE;
-	}
-	return rv;
+	// return false if creator uuid is null.
+	return false;
 }
 
 BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 {
-	BOOL rv = isInviteAllowed();
-	if(rv && category)
+	if (category)
 	{
 		LLInventoryModel::cat_array_t cats;
 		LLInventoryModel::item_array_t items;
@@ -932,7 +927,7 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 		S32 count = items.count();
 		if(count == 0)
 		{
-			rv = FALSE;
+			return false;
 		}
 		else if(drop)
 		{
@@ -944,14 +939,12 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 			inviteToSession(ids);
 		}
 	}
-	return rv;
+	return true;
 }
 
 bool LLFloaterIMPanel::isInviteAllowed() const
 {
-
-	return ( (IM_SESSION_CONFERENCE_START == mDialog) 
-			 || (IM_SESSION_INVITE == mDialog) );
+	return mSessionType == ADHOC_SESSION;
 }
 
 void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)

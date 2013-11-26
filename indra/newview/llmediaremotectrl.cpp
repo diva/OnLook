@@ -279,6 +279,9 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 					LLChat chat;
 					chat.mText = getString("Now_playing") + " " + info_text;
 					chat.mSourceType = CHAT_SOURCE_SYSTEM;
+					// Lie to RLVa so it won't filter this
+					chat.mRlvLocFiltered = true;
+					chat.mRlvNamesFiltered = true;
 					LLFloaterChat::addChat(chat);
 				}
 			}
