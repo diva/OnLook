@@ -88,6 +88,7 @@
 //
 const char* DEFAULT_DESC = "(No Description)";
 const F32 DELAY_BEFORE_SHOW_TIP = 0.35f;
+const F32 DELAY_BEFORE_REFRESH_TIP = 0.50f;
 
 //
 // Local globals
@@ -113,6 +114,9 @@ LLHoverView::LLHoverView(const std::string& name, const LLRect& rect)
 	mUseHover = TRUE;
 	mTyping = FALSE;
 	mHoverOffset.clearVec();
+	//<singu>
+	mLastTextHoverObject = NULL;
+	//</singu>
 }
 
 LLHoverView::~LLHoverView()
@@ -139,6 +143,9 @@ void LLHoverView::updateHover(LLTool* current_tool)
 				mStartHoverPickTimer = TRUE;
 				//  Clear the existing text so that we do not briefly show the wrong data.
 				mText.clear();
+				//<singu>
+				mLastTextHoverObject = NULL;
+				//</singu>
 			}
 
 			if (mDoneHoverPick)
@@ -221,6 +228,18 @@ void LLHoverView::updateText()
 {
 	LLViewerObject* hit_object = getLastHoverObject();
 	std::string line;
+
+	//<singu>
+	if (hit_object == mLastTextHoverObject &&
+		!(mLastTextHoverObjectTimer.getStarted() && mLastTextHoverObjectTimer.hasExpired()))
+	{
+		// mText is already up to date.
+		return;
+	}
+	mLastTextHoverObject = hit_object;
+	mLastTextHoverObjectTimer.stop();
+	bool retrieving_data = false;
+	//</singu>
 
 	mText.clear();
 	if ( hit_object )
@@ -403,6 +422,7 @@ void LLHoverView::updateText()
 							else
 							{
 								line.append(LLTrans::getString("RetrievingData"));
+								retrieving_data = true;
 							}
 						}
 						else
@@ -417,12 +437,14 @@ void LLHoverView::updateText()
 							else
 							{
 								line.append(LLTrans::getString("RetrievingData"));
+								retrieving_data = true;
 							}
 						}
 					}
 					else
 					{
 						line.append(LLTrans::getString("RetrievingData"));
+						retrieving_data = true;
 					}
 					mText.push_back(line);
 
@@ -514,6 +536,7 @@ void LLHoverView::updateText()
 					{
 						LLStringUtil::format_map_t args;
 						args["[MESSAGE]"] = LLTrans::getString("RetrievingData");
+						retrieving_data = true;
 						line.append(LLTrans::getString("TooltipForSaleMsg", args));
 					}
 					mText.push_back(line);
@@ -604,6 +627,7 @@ void LLHoverView::updateText()
 				else
 				{
 					line.append(LLTrans::getString("RetrievingData"));
+					retrieving_data = true;
 				}
 			}
 			else if(gCacheName->getFullName(owner, name))
@@ -616,11 +640,13 @@ void LLHoverView::updateText()
 			else
 			{
 				line.append(LLTrans::getString("RetrievingData"));
+				retrieving_data = true;
 			}
 		}
 		else
 		{
 			line.append(LLTrans::getString("RetrievingData"));
+			retrieving_data = true;
 		}
 		mText.push_back(line);
 
@@ -699,8 +725,15 @@ void LLHoverView::updateText()
 			mText.push_back(line);
 		}
 	}
-}
 
+	//<singu>
+	if (retrieving_data)
+	{
+		// Keep doing this twice per second, until all data was retrieved.
+		mLastTextHoverObjectTimer.start(DELAY_BEFORE_REFRESH_TIP);
+	}
+	//</singu>
+}
 
 void LLHoverView::draw()
 {
