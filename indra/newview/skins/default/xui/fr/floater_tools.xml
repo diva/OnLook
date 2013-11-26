@@ -531,33 +531,6 @@
 					Tissage
 				</combo_item>
 			</combo_box>
-			<text name="tex scale">
-				Répétitions par face
-			</text>
-			<check_box label="Inverser" name="checkbox flip s"/>
-			<check_box label="Inverser" name="checkbox flip t"/>
-			<text name="tex rotate">
-				Rotation (degrés)
-			</text>
-			<spinner left="122" name="TexRot" width="58"/>
-			<string name="string repeats per meter">
-				Répétitions au mètre
-			</string>
-			<string name="string repeats per face">
-				Répétitions par face
-			</string>
-			<text name="rpt" width="160">
-				Répétitions au mètre
-			</text>
-			<spinner left="122" name="rptctrl" width="58"/>
-			<button label="Appliquer" label_selected="Appliquer" left_delta="68" name="button apply" width="75"/>
-			<text name="tex offset">
-				Décalage
-			</text>
-			<button label="Ajuster" label_selected="Ajuster" left="140" name="button align" width="45"/>
-			<text name="textbox params">Paramètres</text>
-			<button label="Copier" name="copytextures" tool_tip="Copie les paramètres de la texture dans le presse papier"  width="55"/>
-			<button label="Coller" name="pastetextures" tool_tip="Colle les paramètres de la texture du presse papier"  width="55"/>
 		</panel>
 		<panel label="Contenu" name="Contents">
 			<button label="Nouveau script" label_selected="Nouveau script" name="button new script"/>
