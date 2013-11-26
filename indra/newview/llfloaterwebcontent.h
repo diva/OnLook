@@ -50,6 +50,7 @@ public:
 	{
 		Optional<std::string>	url,
 								target,
+								initial_mime_type,
 								window_class,
 								id;
 		Optional<bool>			show_chrome,
