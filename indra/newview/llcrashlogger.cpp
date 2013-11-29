@@ -68,6 +68,12 @@ public:
 			msg += ": " + content["message"].asString();
 		}
 		llinfos << msg << llendl;
+
+		if (content.has("report_id"))
+		{
+			gSavedSettings.setS32("CrashReportID", content["report_id"].asInteger());
+		}
+
 	}
 
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const 

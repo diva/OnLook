@@ -17791,6 +17791,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>CrashReportID</key>
+    <map>
+      <key>Comment</key>
+      <string>ID of the last crash report sent. Zero indicates that no crash report has been sent. Non-zero value can be useful infermation for developers to track a specific issue</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
   </map>
 </llsd>
 
