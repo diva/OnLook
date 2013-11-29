@@ -8,6 +8,6 @@
 	</menu>
 	<menu name="Help" label="Ayuda" >
 		<menu_item_call name="Second Life Help" label="Ayuda de Second Life"/>
-		<menu_item_call name="About Second Life..." label="Acerca de Singularity..."/>
+		<menu_item_call name="About Second Life..." label="Acerca de [APP_NAME]..."/>
 	</menu>
 </menu_bar>

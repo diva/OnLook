@@ -1,13 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floater_about" title="Acerca de Singularity Viewer">
-	<tab_container name="about_tab">
-		<panel label="Información" help_topic="about_support_tab" name="support_panel">
-			<button label="Copiar al portapapeles" name="copy_btn"/>
-		</panel>
-
-		<panel label="Créditos" help_topic="about_credits_tab" name="credits_panel"/>
-
-		<panel label="Licencias" name="licenses_panel"/>
-	</tab_container>  
-	<string name="you_are_at">Estás en [POSITION]</string>
+  <tab_container name="about_tab">
+    <panel label="Información" name="support_panel">
+      <button label="Copiar al portapapeles" name="copy_btn"/>
+    </panel>
+    <panel label="Créditos" name="credits_panel"/>
+    <panel label="Licencias" name="licenses_panel"/>
+  </tab_container>
+  <string name="you_are_at">Estás en [POSITION]</string>
 </floater>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="network" label="Connessione">
+	<text name="text_box">
+		Larghezza massima di banda:
+	</text>
+  <slider name="max_bandwidth" left_delta="150"/>
+	<text name="text_box2" left_delta="190">
+		kbps (kilobits al secondo)
+	</text>
+	<text name="cache_size_label_l">
+		Dimensione della cache del disco:
+	</text>
+  <slider name="cache_size" left_delta="175"/>
+	<text name="text_box5">
+		MB
+	</text>
+	<text name="cache_location_label">
+		Percorso della cache del disco:
+	</text>
+  <button name="open_cache_loc" label="Aprire" width="70"/>
+  <button name="set_cache" label="Imposta" label_selected="Imposta" width="80" left_delta="50"/>
+	<button name="reset_cache" label="Reimposta" label_selected="Imposta" left_delta="60"/>
+  <button name="open_soundcache_loc" label="Aprire" width="70"/>
+  <button name="set_sound_cache" label="Imposta" label_selected="Imposta" width="80" left_delta="50"/>
+  <button name="reset_sound_cache" label="Reimposta" label_selected="Imposta" left_delta="60"/>
+  <button name="open_chat_logs_loc" label="Aprire" width="70"/>
+  <button name="set_chat_logs" label="Imposta" label_selected="Imposta" width="80" left_delta="50"/>
+  <button name="reset_chat_logs" label="Reimposta" label_selected="Imposta" left_delta="60"/>
+  <button name="open_crash_logs_loc" label="Aprire"/>
+  <text name="cannot_change_crash_label">
+    (Non può cambiare)
+  </text>
+  <button name="open_user_loc" label="Aprire"/>
+  <text name="cannot_change_user_label">
+    (Non può cambiare)
+  </text>
+  <button name="clear_cache" label="Elimina contenuto della cache" width="180" left_delta="250"/>
+  <button name="clear_inv_cache" left_delta="0" bottom_delta="-25" />
+  <check_box name="connection_port_enabled" label="Connessione mediante porta personalizzata"/>
+  <check_box name="socks5_proxy_enabled" bottom_delta="-15"/>
+	<spinner name="connection_port" label="Numero porta:"/>
+</panel>

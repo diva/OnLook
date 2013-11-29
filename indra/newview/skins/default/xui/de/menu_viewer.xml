@@ -257,7 +257,7 @@
 			<menu_item_call label="Singularity Problem berichten..." name="Report Singularity Bug..."/>
 			<menu_item_call label="Neue Funktionalität nachfragen..." name="Request New Feature..."/>
 		</menu>
-		<menu_item_call label="Über Snowglobe..." name="About Second Life..."/>
+		<menu_item_call label="Über [APP_NAME]..." name="About Second Life..."/>
 	</menu>
 	<menu label="Singularity" name="Singularity">
 		<menu_item_call label="Alle Dialoge schließen" name="Close All Dialogs"/>

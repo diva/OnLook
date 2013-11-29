@@ -240,6 +240,6 @@
 			<menu_item_separator label="-----------" name="separator9"/>
 			<menu_item_call label="Signaler un bug" name="Report Bug..."/>
 		</menu>
-		<menu_item_call label="A propos de Singularity" name="About Second Life..."/>
+		<menu_item_call label="A propos de [APP_NAME]" name="About Second Life..."/>
 	</menu>
 </menu_bar>
