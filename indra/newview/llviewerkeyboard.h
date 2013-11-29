@@ -94,4 +94,5 @@ protected:
 
 extern LLViewerKeyboard gViewerKeyboard;
 extern bool isCrouch;
+void agent_push_forward(EKeystate s);
 #endif // LL_LLVIEWERKEYBOARD_H
