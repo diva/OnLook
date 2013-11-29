@@ -4694,14 +4694,6 @@ void LLAppViewer::handleLoginComplete()
 		gDebugInfo["MainloopTimeoutState"] = LLAppViewer::instance()->mMainloopTimeout->getState();
 	}
 
-	// After login is complete, check if the crash report has been sent in this session
-	// If it has, insert a notification
-	if (LLCrashLogger::sReportID)
-	{
-		LLNotificationsUtil::add("CrashReportSent", LLSD().with("REPORT_ID", llformat("%d", LLCrashLogger::sReportID)));
-		LLCrashLogger::sReportID = 0;
-	}
-
 	mOnLoginCompleted();
 
 	writeDebugInfo();

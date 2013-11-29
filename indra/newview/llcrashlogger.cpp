@@ -63,17 +63,11 @@ public:
 	virtual void result(const LLSD& content)
 	{
 		std::string msg = "Crash report successfully sent";
-
 		if (content.has("message"))
 		{
 			msg += ": " + content["message"].asString();
 		}
 		llinfos << msg << llendl;
-
-		if (content.has("report_id"))
-		{
-			LLCrashLogger::sReportID = content["report_id"].asInteger();
-		}
 	}
 
 	virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const 
@@ -98,8 +92,6 @@ LLCrashLogger::~LLCrashLogger()
 {
 
 }
-
-/*static*/ S32 LLCrashLogger::sReportID = 0;
 
 // TRIM_SIZE must remain larger than LINE_SEARCH_SIZE.
 const int TRIM_SIZE = 128000;
