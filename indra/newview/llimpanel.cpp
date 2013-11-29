@@ -506,7 +506,7 @@ BOOL LLFloaterIMPanel::postBuild()
 			mSpeakerPanel->refreshSpeakers();
 		}
 
-		if (mDialog == IM_NOTHING_SPECIAL)
+		if (mSessionType == P2P_SESSION)
 		{
 			getChild<LLUICtrl>("mute_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickMuteVoice, this));
 			getChild<LLUICtrl>("speaker_volume")->setCommitCallback(boost::bind(&LLVoiceClient::setUserVolume, LLVoiceClient::getInstance(), mOtherParticipantUUID, _2));
@@ -1145,7 +1145,7 @@ bool convert_roleplay_text(std::string& text); // Returns true if text is an act
 void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
-		&& (mDialog == IM_NOTHING_SPECIAL)
+		&& (mSessionType == P2P_SESSION)
 		&& mOtherParticipantUUID.isNull())
 	{
 		llinfos << "Cannot send IM to everyone unless you're a god." << llendl;
@@ -1258,7 +1258,7 @@ void LLFloaterIMPanel::onSendMsg()
 				}
 
 				// local echo
-				if((mDialog == IM_NOTHING_SPECIAL) && 
+				if((mSessionType == P2P_SESSION) &&
 				   (mOtherParticipantUUID.notNull()))
 				{
 					std::string name;
@@ -1390,7 +1390,7 @@ void LLFloaterIMPanel::sendTypingState(bool typing)
 		return;
 	// Don't want to send typing indicators to multiple people, potentially too
 	// much network traffic.  Only send in person-to-person IMs.
-	if (mDialog != IM_NOTHING_SPECIAL) return;
+	if (mSessionType == P2P_SESSION) return;
 
 	std::string name;
 	gAgent.buildFullname(name);
