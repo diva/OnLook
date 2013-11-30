@@ -14,7 +14,7 @@
 		<menu_item_call name="Second Life Help" label="Aide de Second Life">
 			<on_click function="ShowFloater" userdata="help f1" />
 		</menu_item_call>
-		<menu_item_call name="About Second Life..." label="A propos de Singularity">
+		<menu_item_call name="About Second Life..." label="A propos de [APP_NAME]">
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>
 	</menu>

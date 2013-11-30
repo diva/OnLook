@@ -946,7 +946,7 @@
 			<menu_item_call bottom="-94" enabled="true" height="19" label="Singularity Issue Tracker..."
 			     left="0" mouse_opaque="true" name="Singularity Issue Tracker..." width="166">
 				<on_click function="PromptShowURL" name="SinguIssueTracker_url"
-						userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/list" />
+						userdata="WebLaunchSinguIssue,http://links.singularityviewer.org/?to=issues" />
 			</menu_item_call>
 			<menu_item_separator bottom="-411" enabled="true" height="8" label="-----------" left="0"
 			     mouse_opaque="true" name="separator7" width="250" />
@@ -981,7 +981,7 @@
 				<on_click function="PromptShowURL" name="RequestFeature_url" userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry?template=Feature%20request"/>
 			</menu_item_call>
 		</menu>
-		<menu_item_call bottom="-313" enabled="true" height="19" label="About Singularity..." left="0"
+		<menu_item_call bottom="-313" enabled="true" height="19" label="About [APP_NAME]..." left="0"
 		     mouse_opaque="true" name="About Second Life..." width="166">
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>

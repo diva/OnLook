@@ -45,6 +45,7 @@
 #include "llagentcamera.h"
 #include "llbutton.h"
 #include "llviewercontrol.h"
+#include "llviewerkeyboard.h"
 #include "lldrawable.h"
 #include "llhoverview.h"
 #include "llhudmanager.h"
@@ -312,9 +313,15 @@ BOOL LLToolCamera::handleMouseUp(S32 x, S32 y, MASK mask)
 	return TRUE;
 }
 
+static bool right_hold_mouse_walk=false;
 
 BOOL LLToolCamera::handleHover(S32 x, S32 y, MASK mask)
 {
+	if(right_hold_mouse_walk)
+	{
+		agent_push_forward(KEYSTATE_LEVEL);
+	}
+
 	S32 dx = gViewerWindow->getCurrentMouseDX();
 	S32 dy = gViewerWindow->getCurrentMouseDY();
 
@@ -449,8 +456,36 @@ BOOL LLToolCamera::handleHover(S32 x, S32 y, MASK mask)
 	return TRUE;
 }
 
+BOOL LLToolCamera::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	if(mMouseSteering)
+	{
+		agent_push_forward(KEYSTATE_DOWN);
+		right_hold_mouse_walk = true;
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+BOOL LLToolCamera::handleRightMouseUp(S32 x, S32 y, MASK mask)
+{
+	if(mMouseSteering || right_hold_mouse_walk)
+	{
+		agent_push_forward(KEYSTATE_UP);
+		right_hold_mouse_walk = false;
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
 
 void LLToolCamera::onMouseCaptureLost()
 {
 	releaseMouse();
+	handleRightMouseUp(0,0,0);
 }

@@ -302,35 +302,16 @@ class WindowsManifest(ViewerManifest):
         if not self.is_win64():
             self.path(release_lib_dir+"/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
 
-        #try:
-        #    if self.prefix(release_lib_dir+"/msvcrt", dst=""):
-        #        self.path("*.dll")
-        #        self.path("*.manifest")
-        #        self.end_prefix()
-        #except:
-        #    pass
-        
         try:
             self.path("msvc*.dll")
         except:
-            pass
-
-
-        # These need to be installed as a SxS assembly, currently a 'private' assembly.
-        # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
-        #~ if self.prefix(src=self.args['configuration'], dst=""):
-                #~ if self.args['configuration'] == 'Debug':
-            #~ self.path("msvcr80d.dll")
-            #~ self.path("msvcp80d.dll")
-            #~ self.path("Microsoft.VC80.DebugCRT.manifest")
-                #~ else:
-            #~ self.path("msvcr80.dll")
-            #~ self.path("msvcp80.dll")
-            #~ self.path("Microsoft.VC80.CRT.manifest")
-                #~ self.end_prefix()
-
-        # The config file name needs to match the exe's name.
-        #~ self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
+            try:
+                if self.prefix(release_lib_dir+"/msvcrt", dst=""):
+                    self.path("*.dll")
+                    self.path("*.manifest")
+                    self.end_prefix()
+            except:
+                pass
 
         # Vivox runtimes
         if self.prefix(src="vivox-runtime/i686-win32", dst=""):

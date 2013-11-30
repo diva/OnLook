@@ -15,7 +15,7 @@ echo $DIR
 
 cd $SAVEDIR
 
-for TRANSLATION_LANGUAGE in fr es 
+for TRANSLATION_LANGUAGE in fr es it pt de
 do
   cd $DIR/../indra/newview/skins/default/xui/$TRANSLATION_LANGUAGE || exit 1;
   dos2unix *

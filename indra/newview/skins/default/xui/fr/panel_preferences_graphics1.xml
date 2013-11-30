@@ -41,7 +41,7 @@
 	<check_box label="Lumi&#xE8;re locales" name="LightingDetailRadio"/>
 	<check_box label="Effets de base" name="BasicShaders" tool_tip="D&#xE9;sactiver cette option peut emp&#xEA;cher certains drivers de cartes graphiques de planter."/>
 	<check_box label="Effets atmosph&#xE9;riques" name="WindLightUseAtmosShaders"/>
-	<check_box label="D&#xE9;lissage" name="RenderDeferred" width="256" />
+	<check_box label="Modèle d'éclairage avancé (materials)" name="RenderDeferred" width="256" />
 	<check_box label="Occlusion ambiante" name="UseSSAO"/>
 	<check_box label="Profondeur de champ" name="RenderDepthOfField"/>
 	<check_box label="Illumination globale (Experimental)" name="RenderDeferredGI" width="256"/>
