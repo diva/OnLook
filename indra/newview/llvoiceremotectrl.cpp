@@ -154,7 +154,7 @@ void LLVoiceRemoteCtrl::draw()
 	LLIconCtrl* icon = mVoiceVolIcon;
 	if (icon)
 	{
-		icon->setImage(talk_blip_image);
+		icon->setValue(talk_blip_image);
 	}
 
 	LLFloater* voice_floater = LLFloaterChatterBox::getInstance()->getCurrentVoiceFloater();
@@ -185,7 +185,7 @@ void LLVoiceRemoteCtrl::draw()
 		LLIconCtrl* voice_channel_icon = findChild<LLIconCtrl>("voice_channel_icon");
 		if (voice_channel_icon && voice_floater)
 		{
-			voice_channel_icon->setImage(voice_floater->getString("voice_icon"));
+			voice_channel_icon->setValue(voice_floater->getString("voice_icon"));
 		}
 
 		if (voice_channel_bg)

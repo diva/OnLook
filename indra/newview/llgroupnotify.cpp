@@ -163,7 +163,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	{
 		icon = new LLIconCtrl(std::string("icon"),
 							  LLRect(x, y, x+ICON_WIDTH, y-ICON_WIDTH),
-							  group_insignia);
+							  group_insignia.asString());
 	}
 	else
 	{
