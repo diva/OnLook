@@ -43,6 +43,8 @@ static LLRegisterWidget<LLUICtrl> r("ui_ctrl");
 
 LLUICtrl::LLUICtrl() :
 	mViewModel(LLViewModelPtr(new LLViewModel)),
+	mEnabledControlVariable(NULL),
+	mDisabledControlVariable(NULL),
 	mMakeVisibleControlVariable(NULL),
 	mMakeInvisibleControlVariable(NULL),
 	mCommitSignal(NULL),
@@ -67,6 +69,10 @@ LLUICtrl::LLUICtrl(const std::string& name, const LLRect rect, BOOL mouse_opaque
 :	// can't make this automatically follow top and left, breaks lots
 	// of buttons in the UI. JC 7/20/2002
 	LLView( name, rect, mouse_opaque, reshape ),
+	mEnabledControlVariable(NULL),
+	mDisabledControlVariable(NULL),
+	mMakeVisibleControlVariable(NULL),
+	mMakeInvisibleControlVariable(NULL),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
 	mViewModel(LLViewModelPtr(new LLViewModel)),
@@ -227,6 +233,36 @@ LLViewModel* LLUICtrl::getViewModel() const
 	return mViewModel;
 }
 
+void LLUICtrl::setEnabledControlVariable(LLControlVariable* control)
+{
+	if (mEnabledControlVariable)
+	{
+		mEnabledControlConnection.disconnect(); // disconnect current signal
+		mEnabledControlVariable = NULL;
+	}
+	if (control)
+	{
+		mEnabledControlVariable = control;
+		mEnabledControlConnection = mEnabledControlVariable->getSignal()->connect(boost::bind(&controlListener, _2, getHandle(), std::string("enabled")));
+		setEnabled(mEnabledControlVariable->getValue().asBoolean());
+	}
+}
+
+void LLUICtrl::setDisabledControlVariable(LLControlVariable* control)
+{
+	if (mDisabledControlVariable)
+	{
+		mDisabledControlConnection.disconnect(); // disconnect current signal
+		mDisabledControlVariable = NULL;
+	}
+	if (control)
+	{
+		mDisabledControlVariable = control;
+		mDisabledControlConnection = mDisabledControlVariable->getSignal()->connect(boost::bind(&controlListener, _2, getHandle(), std::string("disabled")));
+		setEnabled(!(mDisabledControlVariable->getValue().asBoolean()));
+	}
+}
+
 void LLUICtrl::setMakeVisibleControlVariable(LLControlVariable* control)
 {
 	if (mMakeVisibleControlVariable)
@@ -262,7 +298,17 @@ bool LLUICtrl::controlListener(const LLSD& newvalue, LLHandle<LLUICtrl> handle, 
 	LLUICtrl* ctrl = handle.get();
 	if (ctrl)
 	{
-		if (type == "visible")
+		if (type == "enabled")
+		{
+			ctrl->setEnabled(newvalue.asBoolean());
+			return true;
+		}
+		else if(type =="disabled")
+		{
+			ctrl->setEnabled(!newvalue.asBoolean());
+			return true;
+		}
+		else if (type == "visible")
 		{
 			ctrl->setVisible(newvalue.asBoolean());
 			return true;
@@ -667,6 +713,20 @@ void LLUICtrl::initFromXML(LLXMLNodePtr node, LLView* parent)
 	}
 	LLView::initFromXML(node, parent);
 	
+	if (node->getAttributeString("enabled_control", attrib_str))
+	{
+		LLControlVariable* control = findControl(attrib_str);
+		if (control)
+			setEnabledControlVariable(control);
+	}
+
+	if (node->getAttributeString("disabled_control", attrib_str))
+	{
+		LLControlVariable* control = findControl(attrib_str);
+		if (control)
+			setDisabledControlVariable(control);
+	}
+
 	if(node->getAttributeString("visibility_control",attrib_str) || node->getAttributeString("visiblity_control",attrib_str))
 	{
 		LLControlVariable* control = findControl(attrib_str);

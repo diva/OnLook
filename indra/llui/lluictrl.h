@@ -87,6 +87,9 @@ public:
 	virtual class LLCtrlSelectionInterface* getSelectionInterface();
 	virtual class LLCtrlListInterface* getListInterface();
 	virtual class LLCtrlScrollInterface* getScrollInterface();
+
+	void setEnabledControlVariable(LLControlVariable* control);
+	void setDisabledControlVariable(LLControlVariable* control);
 	void setMakeVisibleControlVariable(LLControlVariable* control);
 	void setMakeInvisibleControlVariable(LLControlVariable* control);
 
@@ -192,6 +195,10 @@ protected:
 	
     LLViewModelPtr  mViewModel;
 
+	LLControlVariable* mEnabledControlVariable;
+	boost::signals2::connection mEnabledControlConnection;
+	LLControlVariable* mDisabledControlVariable;
+	boost::signals2::connection mDisabledControlConnection;
 	LLControlVariable* mMakeVisibleControlVariable;
 	boost::signals2::connection mMakeVisibleControlConnection;
 	LLControlVariable* mMakeInvisibleControlVariable;
