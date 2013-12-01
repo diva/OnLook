@@ -223,13 +223,13 @@
   <key>zmm_mlfov</key>
   <map>
     <key>Comment</key>
-    <string>1=Normal, Under 1 Zoom Out, Over 1 Zoom in </string>
+    <string>Adjusted when scrolling back and forth while holding rightclick in mouselook (Zoomed in < 1.037 < Zoomed out)</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>1</real>
+    <real>0.5</real>
   </map>
 
   <key>AllowLargeSounds</key>
