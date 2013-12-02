@@ -68,11 +68,18 @@ LLKeyframeMotionParam::~LLKeyframeMotionParam()
 		 iter != mParameterizedMotions.end(); ++iter)
 	{
 		motion_list_t& motionList = iter->second;
+#if 0
+		// Singu note: this class is NOT responsible for cleaning up paramMotion.mMotion.
+		// They were obtained in LLKeyframeMotionParam::addKeyframeMotion by calling
+		// LLCharacter::createMotion which returns LLMotionController::createMotion
+		// which is responsible for cleaning up (by storing the pointers in
+		// LLMotionController::mAllMotions).
 		for (motion_list_t::iterator iter2 = motionList.begin(); iter2 != motionList.end(); ++iter2)
 		{
 			const ParameterizedMotion& paramMotion = *iter2;
 			delete paramMotion.mMotion;
 		}
+#endif
 		motionList.clear();
 	}
 	mParameterizedMotions.clear();
@@ -98,7 +105,11 @@ LLMotion::LLMotionInitStatus LLKeyframeMotionParam::onInitialize(LLCharacter *ch
 		{
 			const ParameterizedMotion& paramMotion = *iter2;
 			LLMotion* motion = paramMotion.mMotion;
-			motion->onInitialize(character);
+			if (motion->onInitialize(character) != STATUS_SUCCESS)
+			{
+				llwarns << "Skipping uninitialize motion!" << llendl;
+				continue;
+			}
 
 			if (motion->getDuration() > mEaseInDuration)
 			{
