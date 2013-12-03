@@ -146,6 +146,7 @@ public:
 
 	// is this motion active?
 	BOOL isMotionActive( const LLUUID& id );
+	bool isMotionActive(U32 bit) const { return mMotionController.isactive(bit); }
 
 	// Event handler for motion deactivation.
 	// Called when a motion has completely stopped and has been deactivated.

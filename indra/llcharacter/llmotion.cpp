@@ -37,6 +37,7 @@
 
 #include "llmotion.h"
 #include "llcriticaldamp.h"
+#include "llmotioncontroller.h"
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -172,6 +173,21 @@ void LLMotion::deactivate()
 BOOL LLMotion::canDeprecate()
 {
 	return TRUE;
+}
+
+//-----------------------------------------------------------------------------
+// AIMaskedMotion
+//-----------------------------------------------------------------------------
+
+BOOL AIMaskedMotion::onActivate()
+{
+	mController.activated(mMaskBit);
+	return TRUE;
+}
+
+void AIMaskedMotion::onDeactivate()
+{
+	mController.deactivated(mMaskBit);
 }
 
 // End

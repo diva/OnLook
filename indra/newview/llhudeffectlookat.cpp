@@ -611,8 +611,9 @@ void LLHUDEffectLookAt::update()
 	{
 		if (calcTargetPosition())
 		{
-			LLMotion* head_motion = ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->findMotion(ANIM_AGENT_HEAD_ROT);
-			if (!head_motion || head_motion->isStopped())
+			//LLMotion* head_motion = ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->findMotion(ANIM_AGENT_HEAD_ROT);
+			//if (!head_motion || head_motion->isStopped())
+			// singu: startMotion does basically the same as the above two lines... it starts it, unless it was already started.
 			{
 				((LLVOAvatar*)(LLViewerObject*)mSourceObject)->startMotion(ANIM_AGENT_HEAD_ROT);
 			}

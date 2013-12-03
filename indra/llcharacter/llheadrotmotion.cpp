@@ -76,8 +76,8 @@ const F32 EYE_BLINK_TIME_DELTA = 0.005f; // time between one eye starting a blin
 // LLHeadRotMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLHeadRotMotion::LLHeadRotMotion(const LLUUID &id) : 
-	LLMotion(id),
+LLHeadRotMotion::LLHeadRotMotion(LLUUID const& id, LLMotionController& controller) :
+	AIMaskedMotion(id, controller, ANIM_AGENT_HEAD_ROT),
 	mCharacter(NULL),
 	mTorsoJoint(NULL),
 	mHeadJoint(NULL)
@@ -172,16 +172,6 @@ LLMotion::LLMotionInitStatus LLHeadRotMotion::onInitialize(LLCharacter *characte
 	return STATUS_SUCCESS;
 }
 
-
-//-----------------------------------------------------------------------------
-// LLHeadRotMotion::onActivate()
-//-----------------------------------------------------------------------------
-BOOL LLHeadRotMotion::onActivate()
-{
-	return TRUE;
-}
-
-
 //-----------------------------------------------------------------------------
 // LLHeadRotMotion::onUpdate()
 //-----------------------------------------------------------------------------
@@ -267,18 +257,10 @@ BOOL LLHeadRotMotion::onUpdate(F32 time, U8* joint_mask)
 
 
 //-----------------------------------------------------------------------------
-// LLHeadRotMotion::onDeactivate()
-//-----------------------------------------------------------------------------
-void LLHeadRotMotion::onDeactivate()
-{
-}
-
-
-//-----------------------------------------------------------------------------
 // LLEyeMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLEyeMotion::LLEyeMotion(const LLUUID &id) : LLMotion(id)
+LLEyeMotion::LLEyeMotion(LLUUID const& id, LLMotionController& controller) : AIMaskedMotion(id, controller, ANIM_AGENT_EYE)
 {
 	mCharacter = NULL;
 	mEyeJitterTime = 0.f;
@@ -345,16 +327,6 @@ LLMotion::LLMotionInitStatus LLEyeMotion::onInitialize(LLCharacter *character)
 
 	return STATUS_SUCCESS;
 }
-
-
-//-----------------------------------------------------------------------------
-// LLEyeMotion::onActivate()
-//-----------------------------------------------------------------------------
-BOOL LLEyeMotion::onActivate()
-{
-	return TRUE;
-}
-
 
 //-----------------------------------------------------------------------------
 // LLEyeMotion::onUpdate()
@@ -536,6 +508,8 @@ void LLEyeMotion::onDeactivate()
 	{
 		joint->setRotation(LLQuaternion::DEFAULT);
 	}
+
+	AIMaskedMotion::onDeactivate();
 }
 
 // End

@@ -54,6 +54,7 @@
 class LLKeyframeDataCache;
 class LLVFS;
 class LLDataPacker;
+class LLMotionController;
 
 #define MIN_REQUIRED_PIXEL_AREA_KEYFRAME (40.f)
 #define MAX_CHAIN_LENGTH (4)
@@ -193,7 +194,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID& id);
+	static LLMotion* create(LLUUID const& id, LLMotionController& controller);
 
 public:
 	//-------------------------------------------------------------------------

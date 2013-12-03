@@ -51,11 +51,12 @@
 // This is necessary because llcharacter.h includes this file.
 //-----------------------------------------------------------------------------
 class LLCharacter;
+class LLMotionController;
 
 //-----------------------------------------------------------------------------
 // LLMotionRegistry
 //-----------------------------------------------------------------------------
-typedef LLMotion*(*LLMotionConstructor)(const LLUUID &id);
+typedef LLMotion* (*LLMotionConstructor)(LLUUID const& id, LLMotionController&);
 
 class LLMotionRegistry
 {
@@ -72,7 +73,7 @@ public:
 
 	// creates a new instance of a named motion
 	// returns NULL motion is not registered
-	LLMotion *createMotion( const LLUUID &id );
+	LLMotion* createMotion(LLUUID const& id, LLMotionController& controller);
 
 	// initialization of motion failed, don't try to create this motion again
 	void markBad( const LLUUID& id );
@@ -149,6 +150,12 @@ public:
 	//Flush is a liar.
 	void deactivateAllMotions();	
 
+	//<edit>
+	void activated(U32 bit) { mActiveMask |= bit; }
+	void deactivated(U32 bit) { mActiveMask &= ~bit; }
+	bool isactive(U32 bit) const { return (mActiveMask & bit) != 0; }
+	//</edit>
+
 	// pause and continue all motions
 	void pauseAllMotions();
 	void unpauseAllMotions();
@@ -219,7 +226,10 @@ protected:
 	motion_set_t		mLoadedMotions;
 	motion_list_t		mActiveMotions;
 	motion_set_t		mDeprecatedMotions;
-	
+
+	//<edit>
+	U32					mActiveMask;
+	//</edit>
 	LLFrameTimer		mTimer;
 	F32					mPrevTimerElapsed;
 	F32					mAnimTime;

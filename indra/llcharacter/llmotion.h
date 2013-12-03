@@ -43,6 +43,7 @@
 #include "lluuid.h"
 
 class LLCharacter;
+class LLMotionController;
 
 //-----------------------------------------------------------------------------
 // class LLMotion
@@ -201,7 +202,7 @@ class LLTestMotion : public LLMotion
 public:
 	LLTestMotion(const LLUUID &id) : LLMotion(id){}
 	~LLTestMotion() {}
-	static LLMotion *create(const LLUUID& id) { return new LLTestMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController&) { return new LLTestMotion(id); }
 	BOOL getLoop() { return FALSE; }
 	F32 getDuration() { return 0.0f; }
 	F32 getEaseInDuration() { return 0.0f; }
@@ -225,7 +226,7 @@ class LLNullMotion : public LLMotion
 public:
 	LLNullMotion(const LLUUID &id) : LLMotion(id) {}
 	~LLNullMotion() {}
-	static LLMotion *create(const LLUUID &id) { return new LLNullMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController&) { return new LLNullMotion(id); }
 
 	// motions must specify whether or not they loop
 	/*virtual*/ BOOL getLoop() { return TRUE; }
@@ -266,5 +267,42 @@ public:
 	// called when a motion is deactivated
 	/*virtual*/ void onDeactivate() {}
 };
+
+
+//-----------------------------------------------------------------------------
+// AIMaskedMotion
+//-----------------------------------------------------------------------------
+
+// These motions have a bit assigned in LLMotionController::mActiveMask
+// that is set and uset upon activation/deactivation.
+
+// This must be in the same order as ANIM_AGENT_BODY_NOISE_ID through ANIM_AGENT_WALK_ADJUST_ID in llvoavatar.cpp.
+U32 const ANIM_AGENT_BODY_NOISE		= 0x001;
+U32 const ANIM_AGENT_BREATHE_ROT	= 0x002;
+U32 const ANIM_AGENT_PHYSICS_MOTION	= 0x004;
+U32 const ANIM_AGENT_EDITING		= 0x008;
+U32 const ANIM_AGENT_EYE			= 0x010;
+U32 const ANIM_AGENT_FLY_ADJUST		= 0x020;
+U32 const ANIM_AGENT_HAND_MOTION	= 0x040;
+U32 const ANIM_AGENT_HEAD_ROT		= 0x080;
+U32 const ANIM_AGENT_PELVIS_FIX		= 0x100;
+U32 const ANIM_AGENT_TARGET			= 0x200;
+U32 const ANIM_AGENT_WALK_ADJUST	= 0x400;
+
+class AIMaskedMotion : public LLMotion
+{
+private:
+	LLMotionController& mController;
+	U32 mMaskBit;
+
+public:
+	AIMaskedMotion(LLUUID const& id, LLMotionController& controller, U32 mask_bit) : LLMotion(id), mController(controller), mMaskBit(mask_bit) { }
+
+	/*virtual*/ BOOL onActivate();
+	/*virtual*/ void onDeactivate();
+
+	U32 getMaskBit(void) const { return mMaskBit; }
+};
+
 #endif // LL_LLMOTION_H
 

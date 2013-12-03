@@ -468,7 +468,7 @@ LLKeyframeMotion::~LLKeyframeMotion()
 //-----------------------------------------------------------------------------
 // create()
 //-----------------------------------------------------------------------------
-LLMotion *LLKeyframeMotion::create(const LLUUID &id)
+LLMotion* LLKeyframeMotion::create(LLUUID const& id, LLMotionController&)
 {
 	return new LLKeyframeMotion(id);
 }

@@ -97,7 +97,7 @@ void LLMotionRegistry::markBad( const LLUUID& id )
 //-----------------------------------------------------------------------------
 // createMotion()
 //-----------------------------------------------------------------------------
-LLMotion *LLMotionRegistry::createMotion( const LLUUID &id )
+LLMotion* LLMotionRegistry::createMotion(LLUUID const& id, LLMotionController& controller)
 {
 	LLMotionConstructor constructor = get_if_there(mMotionTable, id, LLMotionConstructor(NULL));
 	LLMotion* motion = NULL;
@@ -105,11 +105,11 @@ LLMotion *LLMotionRegistry::createMotion( const LLUUID &id )
 	if ( constructor == NULL )
 	{
 		// *FIX: need to replace with a better default scheme. RN
-		motion = LLKeyframeMotion::create(id);
+		motion = LLKeyframeMotion::create(id, controller);
 	}
 	else
 	{
-		motion = constructor(id);
+		motion = constructor(id, controller);
 	}
 
 	return motion;
@@ -126,18 +126,19 @@ LLMotion *LLMotionRegistry::createMotion( const LLUUID &id )
 // Class Constructor
 //-----------------------------------------------------------------------------
 LLMotionController::LLMotionController()
-	: mTimeFactor(sCurrentTimeFactor),
+	: mIsSelf(FALSE),
+	  mTimeFactor(sCurrentTimeFactor),
 	  mCharacter(NULL),
-	  mAnimTime(0.f),
+	  mActiveMask(0),
 	  mPrevTimerElapsed(0.f),
+	  mAnimTime(0.f),
 	  mLastTime(0.0f),
 	  mHasRunOnce(FALSE),
 	  mPaused(FALSE),
 	  mPauseTime(0.f),
 	  mTimeStep(0.f),
 	  mTimeStepCount(0),
-	  mLastInterp(0.f),
-	  mIsSelf(FALSE)
+	  mLastInterp(0.f)
 {
 }
 
@@ -169,6 +170,7 @@ void LLMotionController::deleteAllMotions()
 	mLoadedMotions.clear();
 	mActiveMotions.clear();
 	//<singu>
+	mActiveMask = 0;
 	for_each(mDeprecatedMotions.begin(), mDeprecatedMotions.end(), DeletePointer());
 	mDeprecatedMotions.clear();
 	//</singu>
@@ -357,7 +359,7 @@ LLMotion* LLMotionController::createMotion( const LLUUID &id )
 	if (!motion)
 	{
 		// look up constructor and create it
-		motion = sRegistry.createMotion(id);
+		motion = sRegistry.createMotion(id, *this);
 		if (!motion)
 		{
 			return NULL;

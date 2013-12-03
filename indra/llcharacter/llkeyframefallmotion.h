@@ -59,7 +59,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLKeyframeFallMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController&) { return new LLKeyframeFallMotion(id); }
 
 public:
 	//-------------------------------------------------------------------------
