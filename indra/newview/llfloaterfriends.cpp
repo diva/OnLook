@@ -418,6 +418,7 @@ BOOL LLPanelFriends::addFriend(const LLUUID& agent_id)
 
 	std::string fullname;
 	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
+	if (!have_name) gCacheName->getFullName(agent_id, fullname);
 
 	LLSD element;
 	element["id"] = agent_id;
@@ -505,6 +506,7 @@ BOOL LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 
 	std::string fullname;
 	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
+	if (!have_name) gCacheName->getFullName(agent_id, fullname);
 
 	// Name of the status icon to use
 	std::string statusIcon;
