@@ -223,7 +223,7 @@
   <key>zmm_mlfov</key>
   <map>
     <key>Comment</key>
-    <string>Adjusted when scrolling back and forth while holding rightclick in mouselook (Zoomed in < 1.037 < Zoomed out)</string>
+    <string>Adjusted when scrolling back and forth while holding rightclick in mouselook (Zoomed in &lt; 1.037 &lt; Zoomed out)</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>

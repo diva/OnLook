@@ -426,9 +426,11 @@ BOOL LLPanelFriends::addFriend(const LLUUID& agent_id)
 	friend_column["value"] = fullname;
 	friend_column["font"] = "SANSSERIF";
 	friend_column["font-style"] = "NORMAL";	
+	/* Singu TODO: Liru will fix this up to actually work later
 	static const LLCachedControl<LLColor4> sDefaultColor(gColors, "DefaultListText");
 	static const LLCachedControl<LLColor4> sMutedColor("AscentMutedColor");
 	friend_column["color"] = LLAvatarActions::isBlocked(agent_id) ? sMutedColor : sDefaultColor;
+	*/
 
 	LLSD& online_status_column = element["columns"][LIST_ONLINE_STATUS];
 	online_status_column["column"] = "icon_online_status";
