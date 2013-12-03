@@ -136,7 +136,6 @@ LLMotion* LLCharacter::findMotion( const LLUUID &id )
 
 //-----------------------------------------------------------------------------
 // createMotion()
-// NOTE: Always assign the result to a LLPointer!
 //-----------------------------------------------------------------------------
 LLMotion* LLCharacter::createMotion( const LLUUID &id )
 {

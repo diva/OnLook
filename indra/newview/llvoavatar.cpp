@@ -3884,7 +3884,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		getOffObject();
 		//<edit>
 		//Singu note: this appears to be a safety catch:
-		// when getParent() is NULL and we're note playing ANIM_AGENT_SIT_GROUND_CONSTRAINED then we aren't sitting!
+		// when getParent() is NULL and we're not playing ANIM_AGENT_SIT_GROUND_CONSTRAINED then we aren't sitting!
 		// The previous call existed in an attempt to fix this inconsistent state by standing up from an object.
 		// However, since getParent() is NULL that function would crash!
 		// Since we never got crash reports regarding to this, that apparently never happened, except, I discovered

@@ -104,7 +104,10 @@ LLHeadRotMotion::~LLHeadRotMotion()
 LLMotion::LLMotionInitStatus LLHeadRotMotion::onInitialize(LLCharacter *character)
 {
 	if (!character)
+	{
+		llwarns << "character is NULL." << llendl;
 		return STATUS_FAILURE;
+	}
 	mCharacter = character;
 
 	mPelvisJoint = character->getJoint("mPelvis");

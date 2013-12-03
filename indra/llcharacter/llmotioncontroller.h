@@ -115,7 +115,6 @@ public:
 
 	// unregisters a motion with the controller
 	// (actually just forwards call to motion registry)
-	// returns true if successfull
 	void removeMotion( const LLUUID& id );
 
 	// start motion
@@ -205,10 +204,13 @@ protected:
 //	Life cycle of an animation:
 //
 //	Animations are instantiated and immediately put in the mAllMotions map for their entire lifetime.
+//	Singu note: that is not true, they are moved to mDeprecatedMotions (often) for the last part of their lifetime.
 //	If the animations depend on any asset data, the appropriate data is fetched from the data server,
 //	and the animation is put on the mLoadingMotions list.
 //	Once an animations is loaded, it will be initialized and put on the mLoadedMotions list.
 //	Any animation that is currently playing also sits in the mActiveMotions list.
+//	Singu note: animations are only put in mDeprecatedMotions if and while they are playing,
+//	therefore animations in mDeprecatedMotions will be (must be) active and in mActiveMotions.
 
 	typedef std::map<LLUUID, LLMotion*> motion_map_t;
 	motion_map_t	mAllMotions;

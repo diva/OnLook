@@ -375,6 +375,10 @@ BOOL LLFloaterBvhPreview::postBuild()
 					}
 				}
 
+                if (motionp && mInWorld)
+				{
+					gAgentAvatarp->removeMotion(mMotionID);
+				}
 				//setEnabled(FALSE);
 				mMotionID.setNull();
 				mAnimPreview = NULL;

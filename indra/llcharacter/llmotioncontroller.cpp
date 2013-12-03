@@ -168,7 +168,10 @@ void LLMotionController::deleteAllMotions()
 	mLoadingMotions.clear();
 	mLoadedMotions.clear();
 	mActiveMotions.clear();
-
+	//<singu>
+	for_each(mDeprecatedMotions.begin(), mDeprecatedMotions.end(), DeletePointer());
+	mDeprecatedMotions.clear();
+	//</singu>
 	for_each(mAllMotions.begin(), mAllMotions.end(), DeletePairedPointer());
 	mAllMotions.clear();
 }
@@ -178,26 +181,19 @@ void LLMotionController::deleteAllMotions()
 //-----------------------------------------------------------------------------
 void LLMotionController::purgeExcessMotions()
 {
-	if (mLoadedMotions.size() > MAX_MOTION_INSTANCES)
+	//<singu>
+	// The old code attempted to remove non-active motions from mDeprecatedMotions,
+	// but that is nonsense: there are no motions in mDeprecatedMotions that are not active.
+	if (mLoadedMotions.size() <= MAX_MOTION_INSTANCES)
 	{
-		// clean up deprecated motions
-		for (motion_set_t::iterator deprecated_motion_it = mDeprecatedMotions.begin(); 
-			 deprecated_motion_it != mDeprecatedMotions.end(); )
-		{
-			motion_set_t::iterator cur_iter = deprecated_motion_it++;
-			LLMotion* cur_motionp = *cur_iter;
-			if (!isMotionActive(cur_motionp))
-			{
-				// Motion is deprecated so we know it's not cannonical,
-				//  we can safely remove the instance
-				removeMotionInstance(cur_motionp); // modifies mDeprecatedMotions
-				mDeprecatedMotions.erase(cur_iter);
-			}
-		}
+		// Speed up, no need to create motions_to_kill.
+		return;
 	}
+	//</singu>
 
 	std::set<LLUUID> motions_to_kill;
-	if (mLoadedMotions.size() > MAX_MOTION_INSTANCES)
+
+	if (1)	// Singu: leave indentation alone...
 	{
 		// too many motions active this frame, kill all blenders
 		mPoseBlender.clearBlenders();
@@ -308,24 +304,44 @@ BOOL LLMotionController::registerMotion( const LLUUID& id, LLMotionConstructor c
 void LLMotionController::removeMotion( const LLUUID& id)
 {
 	LLMotion* motionp = findMotion(id);
-	mAllMotions.erase(id);
-	removeMotionInstance(motionp);
+	//<singu>
+	// If a motion is erased from mAllMotions, it must be deleted.
+	if (motionp)
+	{
+		mAllMotions.erase(id);
+		removeMotionInstance(motionp);
+		delete motionp;
+	}
+	//</singu>
 }
 
 // removes instance of a motion from all runtime structures, but does
 // not erase entry by ID, as this could be a duplicate instance
-// use removeMotion(id) to remove all references to a given motion by id.
+// use removeMotion(id) to remove a reference to a given motion by id
+// (that will not remove (active) deprecated motions).
 void LLMotionController::removeMotionInstance(LLMotion* motionp)
 {
 	if (motionp)
 	{
 		llassert(findMotion(motionp->getID()) != motionp);
-		if (motionp->isActive())
-			motionp->deactivate();
 		mLoadingMotions.erase(motionp);
 		mLoadedMotions.erase(motionp);
 		mActiveMotions.remove(motionp);
-		delete motionp;
+		//<singu>
+		// Deactivation moved here. Only delete motionp when it is being removed from mDeprecatedMotions.
+		if (motionp->isActive())
+		{
+			motionp->deactivate();
+			// If a motion is deactivated, it must be removed from mDeprecatedMotions if there.
+			motion_set_t::iterator found_it = mDeprecatedMotions.find(motionp);
+			if (found_it != mDeprecatedMotions.end())
+			{
+				mDeprecatedMotions.erase(found_it);
+				// If a motion is erased from mDeprecatedMotions, it must be deleted.
+				delete motionp;
+			}
+		}
+		//</singu>
 	}
 }
 
@@ -393,6 +409,7 @@ BOOL LLMotionController::startMotion(const LLUUID &id, F32 start_offset)
 	if (motion
 		&& !mPaused
 		&& motion->canDeprecate()
+		&& motion->isActive()											// singu: do not deprecate motions that are not active.
 		&& motion->getFadeWeight() > 0.01f // not LOD-ed out
 		&& (motion->isBlending() || motion->getStopTime() != 0.f))
 	{
@@ -782,11 +799,10 @@ void LLMotionController::updateLoadingMotions()
 			llinfos << "Motion " << motionp->getID() << " init failed." << llendl;
 			sRegistry.markBad(motionp->getID());
 			mLoadingMotions.erase(curiter);
-			motion_set_t::iterator found_it = mDeprecatedMotions.find(motionp);
-			if (found_it != mDeprecatedMotions.end())
-			{
-				mDeprecatedMotions.erase(found_it);
-			}
+			// Singu note: a motion in mLoadingMotions will not be in mActiveMotions
+			// and therefore not be in mDeprecatedMotions. So, we don't have to
+			// check for it's existence there.
+			llassert(mDeprecatedMotions.find(motionp) == mDeprecatedMotions.end());
 			mAllMotions.erase(motionp->getID());
 			delete motionp;
 		}
@@ -970,18 +986,16 @@ BOOL LLMotionController::activateMotionInstance(LLMotion *motion, F32 time)
 //-----------------------------------------------------------------------------
 BOOL LLMotionController::deactivateMotionInstance(LLMotion *motion)
 {
-	motion->deactivate();
-
 	motion_set_t::iterator found_it = mDeprecatedMotions.find(motion);
 	if (found_it != mDeprecatedMotions.end())
 	{
 		// deprecated motions need to be completely excised
-		removeMotionInstance(motion);	
-		mDeprecatedMotions.erase(found_it);
+		removeMotionInstance(motion);							// singu note: this deactivates motion and removes it from mDeprecatedMotions.
 	}
 	else
 	{
 		// for motions that we are keeping, simply remove from active queue
+		motion->deactivate();									// singu note: moved here from the top of the function.
 		mActiveMotions.remove(motion);
 	}
 
@@ -1049,11 +1063,26 @@ void LLMotionController::dumpMotions()
 			state_string += std::string("L");
 		if (std::find(mActiveMotions.begin(), mActiveMotions.end(), motion)!=mActiveMotions.end())
 			state_string += std::string("A");
-		if (mDeprecatedMotions.find(motion) != mDeprecatedMotions.end())
-			state_string += std::string("D");
+		llassert(mDeprecatedMotions.find(motion) == mDeprecatedMotions.end());	// singu: it's impossible that a motion is in mAllMotions and mDeprecatedMotions at the same time.
 		llinfos << gAnimLibrary.animationName(id) << " " << state_string << llendl;
-		
 	}
+	//<singu>
+	// Also dump the deprecated motions.
+	for (motion_set_t::iterator iter = mDeprecatedMotions.begin();
+		 iter != mDeprecatedMotions.end(); ++iter)
+	{
+		std::string state_string;
+		LLMotion* motion = *iter;
+		LLUUID id = motion->getID();
+		llassert(mLoadingMotions.find(motion) == mLoadingMotions.end());
+		if (mLoadedMotions.find(motion) != mLoadedMotions.end())
+			state_string += std::string("L");
+		if (std::find(mActiveMotions.begin(), mActiveMotions.end(), motion)!=mActiveMotions.end())
+			state_string += std::string("A");
+		state_string += "D";
+		llinfos << gAnimLibrary.animationName(id) << " " << state_string << llendl;
+	}
+	//</singu>
 }
 
 //-----------------------------------------------------------------------------
@@ -1061,11 +1090,11 @@ void LLMotionController::dumpMotions()
 //-----------------------------------------------------------------------------
 void LLMotionController::deactivateAllMotions()
 {
-	for (motion_map_t::iterator iter = mAllMotions.begin();
-		 iter != mAllMotions.end(); iter++)
+	// Singu note: this must run over mActiveMotions: other motions are not active,
+	// and running over mAllMotions will miss the ones in mDeprecatedMotions.
+	for (motion_list_t::iterator iter = mActiveMotions.begin(); iter != mActiveMotions.end(); ++iter)
 	{
-		LLMotion* motionp = iter->second;
-		deactivateMotionInstance(motionp);
+		deactivateMotionInstance(*iter);
 	}
 }
 
@@ -1086,8 +1115,7 @@ void LLMotionController::flushAllMotions()
 		active_motions.push_back(std::make_pair(motionp->getID(),dtime));
 		motionp->deactivate(); // don't call deactivateMotionInstance() because we are going to reactivate it
 	}
- 	mActiveMotions.clear();
-	
+
 	// delete all motion instances
 	deleteAllMotions();
 
