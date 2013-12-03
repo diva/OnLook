@@ -44,6 +44,30 @@
 
 static LLRegisterWidget<LLIconCtrl> r("icon");
 
+LLIconCtrl::Params::Params()
+:	image("image_name"),
+	color("color"),
+//	use_draw_context_alpha("use_draw_context_alpha", true),
+	scale_image("scale_image"),
+	min_width("min_width", 0),
+	min_height("min_height", 0)
+{}
+
+LLIconCtrl::LLIconCtrl(const LLIconCtrl::Params& p)
+:	LLUICtrl(p),
+	mColor(p.color()),
+	mImagep(p.image),
+//	mUseDrawContextAlpha(p.use_draw_context_alpha),
+	mPriority(0),
+	mMinWidth(p.min_width),
+	mMinHeight(p.min_height)
+{
+	if (mImagep.notNull())
+	{
+		LLUICtrl::setValue(mImagep->getName());
+	}
+	setTabStop(false);
+}
 
 LLIconCtrl::LLIconCtrl(const std::string& name, const LLRect &rect, const std::string &image_name, const S32& min_width, const S32& min_height)
 :	LLUICtrl(name, 

@@ -49,6 +49,22 @@ class LLIconCtrl
 : public LLUICtrl
 {
 public:
+	struct Params : public LLInitParam::Block<Params, LLUICtrl::Params>
+	{
+		Optional<LLUIImage*>	image;
+		Optional<LLUIColor>		color;
+//		Optional<bool>			use_draw_context_alpha;
+		Optional<S32>			min_width,
+								min_height;
+		Ignored					scale_image;
+
+		Params();
+	};
+protected:
+	LLIconCtrl(const Params&);
+	friend class LLUICtrlFactory;
+
+public:
 	LLIconCtrl(const std::string& name, const LLRect &rect, const std::string &image_name, const S32& min_width = 0, const S32& min_height = 0);
 	virtual ~LLIconCtrl();
 
@@ -75,6 +91,10 @@ protected:
 	//the output size of the icon image if set.
 	S32 mMinWidth,
 		mMinHeight;
+
+	// If set to true (default), use the draw context transparency.
+	// If false, will use transparency returned by getCurrentTransparency(). See STORM-698.
+	//bool mUseDrawContextAlpha;
 
 private:
 	LLColor4		mColor;
