@@ -1764,7 +1764,7 @@ void LLAudioData::updateLoadState()
 		if(	gAudioDecodeMgrp->addDecodeRequest(getID()) )
 		{
 			setLoadState(STATE_LOAD_DECODING);
-			LL_INFOS("AudioEngine") << "Decoding asset data for: " << getID() << LL_ENDL;
+			LL_DEBUGS("AudioEngine") << "Decoding asset data for: " << getID() << LL_ENDL;
 		}
 		else
 		{
@@ -1773,7 +1773,7 @@ void LLAudioData::updateLoadState()
 	}
 	else if(mLoadState == STATE_LOAD_REQ_FETCH && gAssetStorage && gAssetStorage->isUpstreamOK())
 	{
-		LL_INFOS("AudioEngine") << "Fetching asset data for: " << getID() << LL_ENDL;
+		LL_DEBUGS("AudioEngine") << "Fetching asset data for: " << getID() << LL_ENDL;
 		setLoadState(STATE_LOAD_FETCHING);
 
 		gAssetStorage->getAssetData(getID(), LLAssetType::AT_SOUND, LLAudioEngine::assetCallback, NULL);
