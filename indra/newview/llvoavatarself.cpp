@@ -897,9 +897,9 @@ void LLVOAvatarSelf::updateRegion(LLViewerRegion *regionp)
 //virtual
 void LLVOAvatarSelf::idleUpdateTractorBeam()
 {
-
-
-	if(gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+	// <edit>
+	static LLCachedControl<bool> disable_pointat_effect("DisablePointAtAndBeam");
+	if (disable_pointat_effect)
 	{
 		return;
 	}
