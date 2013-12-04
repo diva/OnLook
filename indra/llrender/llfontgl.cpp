@@ -84,7 +84,6 @@ F32 llfont_round_y(F32 y)
 }
 
 LLFontGL::LLFontGL()
-	: LLFontFreetype()
 {
 	clearEmbeddedChars();
 }
@@ -96,66 +95,22 @@ LLFontGL::~LLFontGL()
 
 void LLFontGL::reset()
 {
-	if (!mIsFallback)
-	{
-		// This is the head of the list - need to rebuild ourself and all fallbacks.
-		loadFace(mName,mPointSize,sVertDPI,sHorizDPI,mFontBitmapCachep->getNumComponents(),mIsFallback);
-		if (mFallbackFontp==NULL)
-		{
-			llwarns << "LLFontGL::reset(), no fallback fonts present" << llendl;
-		}
-		else
-		{
-			for (LLFontList::iterator it = mFallbackFontp->begin();
-				 it != mFallbackFontp->end();
-				 ++it)
-			{
-				(*it)->reset();
-			}
-		}
-	}
-	resetBitmapCache(); 
+	mFontFreetype->reset(sVertDPI, sHorizDPI);
 }
-
-bool findOrCreateFont(LLFontGL*& fontp, const LLFontDescriptor& desc)
-{
-	// Don't delete existing fonts, if any, here, because they've
-	// already been deleted by LLFontRegistry::clear()
-	fontp = LLFontGL::getFont(desc);
-	return (fontp != NULL);
-}
-
 
 void LLFontGL::destroyGL()
 {
-	mFontBitmapCachep->destroyGL();
+	mFontFreetype->destroyGL();
 }
 
 BOOL LLFontGL::loadFace(const std::string& filename, const F32 point_size, const F32 vert_dpi, const F32 horz_dpi, const S32 components, BOOL is_fallback)
 {
-	if (!LLFontFreetype::loadFace(filename, point_size, vert_dpi, horz_dpi, components, is_fallback))
+	if(mFontFreetype == reinterpret_cast<LLFontFreetype*>(NULL))
 	{
-		return FALSE;
-	}
-	return TRUE;
-}
-
-
-BOOL LLFontGL::addChar(const llwchar wch) const
-{
-	if (!LLFontFreetype::addChar(wch))
-	{
-		return FALSE;
+		mFontFreetype = new LLFontFreetype;
 	}
 
-	stop_glerror();
-
-	LLFontGlyphInfo *glyph_info = getGlyphInfo(wch);
-	U32 bitmap_num = glyph_info->mBitmapNum;
-	LLImageGL *image_gl = mFontBitmapCachep->getImageGL(bitmap_num);
-	LLImageRaw *image_raw = mFontBitmapCachep->getImageRaw(bitmap_num);
-	image_gl->setSubImage(image_raw, 0, 0, image_gl->getWidth(), image_gl->getHeight());
-	return TRUE;
+	return mFontFreetype->loadFace(filename, point_size, vert_dpi, horz_dpi, components, is_fallback);
 }
 
 static LLFastTimer::DeclareTimer FTM_RENDER_FONTS("Fonts");
@@ -195,7 +150,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		return wstr.length() ;
 	}
 
-	if (wstr.empty())
+	if (wstr.empty() || !max_pixels)
 	{
 		return 0;
 	} 
@@ -255,13 +210,13 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 	switch (valign)
 	{
 	case TOP:
-		cur_y -= llceil(mAscender);
+		cur_y -= llceil(mFontFreetype->getAscenderHeight());
 		break;
 	case BOTTOM:
-		cur_y += llceil(mDescender);
+		cur_y += llceil(mFontFreetype->getDescenderHeight());
 		break;
 	case VCENTER:
-		cur_y -= llceil((llceil(mAscender) - llceil(mDescender))/2.f);
+		cur_y -= llceil((llceil(mFontFreetype->getAscenderHeight()) - llceil(mFontFreetype->getDescenderHeight())) / 2.f);
 		break;
 	case BASELINE:
 		// Baseline, do nothing.
@@ -289,7 +244,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 
 	F32 start_x = (F32)llround(cur_x);
 
-	const LLFontBitmapCache* font_bitmap_cache = mFontBitmapCachep;
+	const LLFontBitmapCache* font_bitmap_cache = mFontFreetype->getFontBitmapCache();
 
 	F32 inv_width = 1.f / font_bitmap_cache->getBitmapWidth();
 	F32 inv_height = 1.f / font_bitmap_cache->getBitmapHeight();
@@ -311,10 +266,17 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		}
 	}
 
+	const LLFontGlyphInfo* next_glyph = NULL;
 
-	// Remember last-used texture to avoid unnecesssary bind calls.
-	LLImageGL *last_bound_texture = NULL;
+	const S32 GLYPH_BATCH_SIZE = 30;
+	static LL_ALIGN_16(LLVector4a vertices[GLYPH_BATCH_SIZE * 4]);
+	static LLVector2 uvs[GLYPH_BATCH_SIZE * 4];
+	static LLColor4U colors[GLYPH_BATCH_SIZE * 4];
 
+	LLColor4U text_color(color);
+
+	S32 bitmap_num = -1;
+	S32 glyph_count = 0;
 	for (i = begin_offset; i < begin_offset + length; i++)
 	{
 		llwchar wch = wstr[i];
@@ -343,19 +305,31 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 				break;
 			}
 
-			if (last_bound_texture != ext_image)
-			{
-				gGL.getTexUnit(0)->bind(ext_image);
-				last_bound_texture = ext_image;
-			}
+			gGL.getTexUnit(0)->bind(ext_image);
 
 			// snap origin to whole screen pixel
 			const F32 ext_x = (F32)llround(cur_render_x + (EXT_X_BEARING * sScaleX));
-			const F32 ext_y = (F32)llround(cur_render_y + (EXT_Y_BEARING * sScaleY + mAscender - mLineHeight));
+			const F32 ext_y = (F32)llround(cur_render_y + (EXT_Y_BEARING * sScaleY + mFontFreetype->getAscenderHeight() - mFontFreetype->getLineHeight()));
 
 			LLRectf uv_rect(0.f, 1.f, 1.f, 0.f);
 			LLRectf screen_rect(ext_x, ext_y + ext_height, ext_x + ext_width, ext_y);
-			drawGlyph(screen_rect, uv_rect, LLColor4::white, style, shadow, drop_shadow_strength);
+
+			if (glyph_count > 0)
+			{
+				gGL.begin(LLRender::QUADS);
+				{
+					gGL.vertexBatchPreTransformed(vertices, uvs, colors, glyph_count * 4);
+				}
+				gGL.end();
+				glyph_count = 0;
+			}
+			renderQuad(vertices, uvs, colors, screen_rect, uv_rect, LLColor4U::white, 0);
+			//No batching here. It will never happen.
+			gGL.begin(LLRender::QUADS);
+			{
+				gGL.vertexBatchPreTransformed(vertices, uvs, colors, 4);
+			}
+			gGL.end();
 
 			if (!label.empty())
 			{
@@ -364,12 +338,10 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 									 /*llfloor*/(ext_x / sScaleX) + ext_image->getWidth() + EXT_X_BEARING - sCurOrigin.mX, 
 									 /*llfloor*/(cur_render_y / sScaleY) - sCurOrigin.mY,
 									 color,
-									 halign, BASELINE, NORMAL, NO_SHADOW, S32_MAX, S32_MAX, NULL,
+									 halign, BASELINE, UNDERLINE, NO_SHADOW, S32_MAX, S32_MAX, NULL,
 									 TRUE );
 				gGL.popMatrix();
 			}
-
-			gGL.color4fv(color.mV);
 
 			chars_drawn++;
 			cur_x += ext_advance;
@@ -381,23 +353,36 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		}
 		else
 		{
-			if (!hasGlyph(wch))
+			const LLFontGlyphInfo* fgi = next_glyph;
+			next_glyph = NULL;
+			if(!fgi)
 			{
-				addChar(wch);
+				fgi = mFontFreetype->getGlyphInfo(wch);
 			}
-
-			const LLFontGlyphInfo* fgi= getGlyphInfo(wch);
 			if (!fgi)
 			{
 				llerrs << "Missing Glyph Info" << llendl;
 				break;
 			}
 			// Per-glyph bitmap texture.
-			LLImageGL *image_gl = mFontBitmapCachep->getImageGL(fgi->mBitmapNum);
-			if (last_bound_texture != image_gl)
+			S32 next_bitmap_num = fgi->mBitmapNum;
+			if (next_bitmap_num != bitmap_num)
 			{
-				gGL.getTexUnit(0)->bind(image_gl);
-				last_bound_texture = image_gl;
+				// Actually draw the queued glyphs before switching their texture;
+				// otherwise the queued glyphs will be taken from wrong textures.
+				if (glyph_count > 0)
+				{
+					gGL.begin(LLRender::QUADS);
+					{
+						gGL.vertexBatchPreTransformed(vertices, uvs, colors, glyph_count * 4);
+					}
+					gGL.end();
+					glyph_count = 0;
+				}
+
+				bitmap_num = next_bitmap_num;
+				LLImageGL *font_image = font_bitmap_cache->getImageGL(bitmap_num);
+				gGL.getTexUnit(0)->bind(font_image);
 			}
 
 			if ((start_x + scaled_max_pixels) < (cur_x + fgi->mXBearing + fgi->mWidth))
@@ -412,13 +397,24 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 					(fgi->mYBitmapOffset + fgi->mHeight + PAD_UVY) * inv_height,
 					(fgi->mXBitmapOffset + fgi->mWidth) * inv_width,
 				(fgi->mYBitmapOffset - PAD_UVY) * inv_height);
-		// snap glyph origin to whole screen pixel
-		LLRectf screen_rect((F32)llround(cur_render_x + (F32)fgi->mXBearing),
+			// snap glyph origin to whole screen pixel
+			LLRectf screen_rect((F32)llround(cur_render_x + (F32)fgi->mXBearing),
 				    (F32)llround(cur_render_y + (F32)fgi->mYBearing),
 				    (F32)llround(cur_render_x + (F32)fgi->mXBearing) + (F32)fgi->mWidth,
 				    (F32)llround(cur_render_y + (F32)fgi->mYBearing) - (F32)fgi->mHeight);
 			
-			drawGlyph(screen_rect, uv_rect, color, style, shadow, drop_shadow_strength);
+			if (glyph_count >= GLYPH_BATCH_SIZE)
+			{
+				gGL.begin(LLRender::QUADS);
+				{
+					gGL.vertexBatchPreTransformed(vertices, uvs, colors, glyph_count * 4);
+				}
+				gGL.end();
+
+				glyph_count = 0;
+			}
+
+			drawGlyph(glyph_count, vertices, uvs, colors, screen_rect, uv_rect, text_color, style, shadow, drop_shadow_strength);
 
 			chars_drawn++;
 			cur_x += fgi->mXAdvance;
@@ -428,11 +424,8 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 			if (next_char && (next_char < LAST_CHARACTER))
 			{
 				// Kern this puppy.
-				if (!hasGlyph(next_char))
-				{
-					addChar(next_char);
-				}
-				cur_x += getXKerning(wch, next_char);
+				next_glyph = mFontFreetype->getGlyphInfo(next_char);
+				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
 
 			// Round after kerning.
@@ -447,6 +440,16 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		}
 	}
 
+	if(glyph_count)
+	{
+		gGL.begin(LLRender::QUADS);
+		{
+			gGL.vertexBatchPreTransformed(vertices, uvs, colors, glyph_count * 4);
+		}
+		gGL.end();
+	}
+
+
 	if (right_x)
 	{
 		*right_x = (cur_x - origin.mV[VX]) / sScaleX;
@@ -454,7 +457,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 
 	if (style & UNDERLINE)
 	{
-		F32 descender = (F32)llfloor(mDescender);
+		F32 descender = (F32)llfloor(mFontFreetype->getDescenderHeight());
 
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 		gGL.begin(LLRender::LINES);
@@ -507,6 +510,22 @@ S32 LLFontGL::renderUTF8(const std::string &text, S32 begin_offset, S32 x, S32 y
 	return renderUTF8(text, begin_offset, (F32)x, (F32)y, color, halign, valign, style, shadow, S32_MAX, S32_MAX, NULL, FALSE);
 }
 
+// font metrics - override for LLFontFreetype that returns units of virtual pixels
+F32 LLFontGL::getAscenderHeight() const
+{ 
+	return mFontFreetype->getAscenderHeight() / sScaleY;
+}
+
+F32 LLFontGL::getDescenderHeight() const
+{ 
+	return mFontFreetype->getDescenderHeight() / sScaleY;
+}
+
+F32 LLFontGL::getLineHeight() const
+{ 
+	return (F32)llround(mFontFreetype->getLineHeight() / sScaleY);
+}
+
 S32 LLFontGL::getWidth(const std::string& utf8text) const
 {
 	LLWString wtext = utf8str_to_wstring(utf8text);
@@ -553,13 +572,13 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 
 	F32 cur_x = 0;
 	const S32 max_index = begin_offset + max_chars;
-	for (S32 i = begin_offset; i < max_index; i++)
+
+	const LLFontGlyphInfo* next_glyph = NULL;
+
+	F32 width_padding = 0.f;
+	for (S32 i = begin_offset; i < max_index && wchars[i] != 0; i++)
 	{
 		const llwchar wch = wchars[i];
-		if (wch == 0)
-		{
-			break; // done
-		}
 		const embedded_data_t* ext_data = use_embedded ? getEmbeddedCharData(wch) : NULL;
 		if (ext_data)
 		{
@@ -573,7 +592,23 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 		}
 		else
 		{
-			cur_x += getXAdvance(wch);
+			const LLFontGlyphInfo* fgi = next_glyph;
+			next_glyph = NULL;
+			if(!fgi)
+			{
+				fgi = mFontFreetype->getGlyphInfo(wch);
+			}
+
+			F32 advance = mFontFreetype->getXAdvance(fgi);
+
+			// for the last character we want to measure the greater of its width and xadvance values
+			// so keep track of the difference between these values for the each character we measure
+			// so we can fix things up at the end
+			width_padding = llmax(	0.f,											// always use positive padding amount
+									width_padding - advance,						// previous padding left over after advance of current character
+									(F32)(fgi->mWidth + fgi->mXBearing) - advance);	// difference between width of this character and advance to next character
+
+			cur_x += advance;
 			llwchar next_char = wchars[i+1];
 
 			if (((i + 1) < begin_offset + max_chars) 
@@ -581,12 +616,16 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 				&& (next_char < LAST_CHARACTER))
 			{
 				// Kern this puppy.
-				cur_x += getXKerning(wch, next_char);
+				next_glyph = mFontFreetype->getGlyphInfo(next_char);
+				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
+			// Round after kerning.
+			cur_x = (F32)llround(cur_x);
 		}
-		// Round after kerning.
-		cur_x = (F32)llround(cur_x);
 	}
+
+	// add in extra pixels for last character's width past its xadvance
+	cur_x += width_padding;
 
 	return cur_x / sScaleX;
 }
@@ -616,7 +655,11 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 	S32 start_of_last_word = 0;
 	BOOL in_word = FALSE;
 
-	F32 scaled_max_pixels =	(F32)llceil(max_pixels * sScaleX);
+	// avoid S32 overflow when max_pixels == S32_MAX by staying in floating point
+	F32 scaled_max_pixels =	max_pixels * sScaleX;
+	F32 width_padding = 0.f;
+	
+	LLFontGlyphInfo* next_glyph = NULL;
 
 	S32 i;
 	for (i=0; (i < max_chars); i++)
@@ -677,9 +720,22 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 				}
 			}
 
-			cur_x += getXAdvance(wch);
-			
-			if (scaled_max_pixels < cur_x)
+			LLFontGlyphInfo* fgi = next_glyph;
+			next_glyph = NULL;
+			if(!fgi)
+			{
+				fgi = mFontFreetype->getGlyphInfo(wch);
+			}
+
+			// account for glyphs that run beyond the starting point for the next glyphs
+			width_padding = llmax(	0.f,													// always use positive padding amount
+									width_padding - fgi->mXAdvance,							// previous padding left over after advance of current character
+									(F32)(fgi->mWidth + fgi->mXBearing) - fgi->mXAdvance);	// difference between width of this character and advance to next character
+
+			cur_x += fgi->mXAdvance;
+		
+			// clip if current character runs past scaled_max_pixels (using width_padding)
+			if (scaled_max_pixels < cur_x + width_padding)
 			{
 				clip = TRUE;
 				break;
@@ -688,7 +744,8 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 			if (((i+1) < max_chars) && wchars[i+1])
 			{
 				// Kern this puppy.
-				cur_x += getXKerning(wch, wchars[i+1]);
+				next_glyph = mFontFreetype->getGlyphInfo(wchars[i+1]);
+				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
 		}
 		// Round after kerning.
@@ -743,14 +800,29 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 		llwchar wch = wchars[i];
 
 		const embedded_data_t* ext_data = getEmbeddedCharData(wch);
-		F32 char_width = ext_data ? getEmbeddedCharAdvance(ext_data) : getXAdvance(wch);
+		F32 width = 0;
+		
+		if(ext_data)
+		{
+			width = getEmbeddedCharAdvance(ext_data);
+		}
+		else
+		{
+			const LLFontGlyphInfo* fgi= mFontFreetype->getGlyphInfo(wch);
 
-		if( scaled_max_pixels < (total_width + char_width) )
+			// last character uses character width, since the whole character needs to be visible
+			// other characters just use advance
+			width = (i == start) 
+				? (F32)(fgi->mWidth + fgi->mXBearing)  	// use actual width for last character
+				: fgi->mXAdvance;						// use advance for all other characters										
+		}
+
+		if( scaled_max_pixels < (total_width + width) )
 		{
 			break;
 		}
 
-		total_width += char_width;
+		total_width += width;
 		drawable_chars++;
 
 		if( max_chars >= 0 && drawable_chars >= max_chars )
@@ -761,14 +833,24 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 		if ( i > 0 )
 		{
 			// kerning
-			total_width += ext_data ? (EXT_KERNING * sScaleX) : getXKerning(wchars[i-1], wch);
+			total_width += ext_data ? (EXT_KERNING * sScaleX) : mFontFreetype->getXKerning(wchars[i-1], wch);
 		}
 
 		// Round after kerning.
-		total_width = llround(total_width);
+		total_width = (F32)llround(total_width);
 	}
 
-	return start_pos - drawable_chars;
+	if (drawable_chars == 0)
+	{
+		return start_pos; // just draw last character
+	}
+	else
+	{
+		// if only 1 character is drawable, we want to return start_pos as the first character to draw
+		// if 2 are drawable, return start_pos and character before start_pos, etc.
+		return start_pos + 1 - drawable_chars;
+	}
+	
 }
 
 
@@ -780,7 +862,6 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 	}
 	
 	F32 cur_x = 0;
-	S32 pos = 0;
 
 	target_x *= sScaleX;
 
@@ -788,94 +869,77 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 	const S32 max_index = begin_offset + llmin(S32_MAX - begin_offset, max_chars);
 
 	F32 scaled_max_pixels =	max_pixels * sScaleX;
+	
+	const LLFontGlyphInfo* next_glyph = NULL;
 
-	for (S32 i = begin_offset; (i < max_index); i++)
+	S32 pos;
+	for (pos = begin_offset; pos < max_index; pos++)
 	{
-		llwchar wch = wchars[i];
+		llwchar wch = wchars[pos];
 		if (!wch)
 		{
 			break; // done
 		}
+
 		const embedded_data_t* ext_data = use_embedded ? getEmbeddedCharData(wch) : NULL;
-		if (ext_data)
+		const LLFontGlyphInfo* glyph = next_glyph;
+		next_glyph = NULL;
+		if(!glyph && !ext_data)
 		{
-			F32 ext_advance = getEmbeddedCharAdvance(ext_data);
+			glyph = mFontFreetype->getGlyphInfo(wch);
+		}
+		
+		F32 char_width = ext_data ? getEmbeddedCharAdvance(ext_data) : mFontFreetype->getXAdvance(glyph);
 
-			if (round)
-			{
-				// Note: if the mouse is on the left half of the character, the pick is to the character's left
-				// If it's on the right half, the pick is to the right.
-				if (target_x  < cur_x + ext_advance/2)
-				{
-					break;
-				}
-			}
-			else
-			{
-				if (target_x  < cur_x + ext_advance)
-				{
-					break;
-				}
-			}
-
-			if (scaled_max_pixels < cur_x + ext_advance)
+		if (round)
+		{
+			// Note: if the mouse is on the left half of the character, the pick is to the character's left
+			// If it's on the right half, the pick is to the right.
+			if (target_x  < cur_x + char_width*0.5f)
 			{
 				break;
 			}
+		}
+		else if (target_x  < cur_x + char_width)
+		{
+			break;
+		}
 
-			pos++;
-			cur_x += ext_advance;
+		if (scaled_max_pixels < cur_x + char_width)
+		{
+			break;
+		}
 
-			if (((i + 1) < max_index)
-				&& (wchars[(i + 1)]))
+		cur_x += char_width;
+
+		if (((pos + 1) < max_index)
+			&& (wchars[(pos + 1)]))
+		{
+			
+			if(ext_data)
 			{
 				cur_x += EXT_KERNING * sScaleX;
 			}
-			// Round after kerning.
-			cur_x = (F32)llfloor(cur_x + 0.5f);
+			else
+			{
+				next_glyph = mFontFreetype->getGlyphInfo(wchars[pos + 1]);
+				cur_x += mFontFreetype->getXKerning(glyph, next_glyph);
+			}
 		}
-		else
-		{
-			F32 char_width = getXAdvance(wch);
 
-			if (round)
-			{
-				// Note: if the mouse is on the left half of the character, the pick is to the character's left
-				// If it's on the right half, the pick is to the right.
-				if (target_x  < cur_x + char_width*0.5f)
-				{
-					break;
-				}
-			}
-			else if (target_x  < cur_x + char_width)
-			{
-				break;
-			}
 
-			if (scaled_max_pixels < cur_x + char_width)
-			{
-				break;
-			}
-
-			pos++;
-			cur_x += char_width;
-
-			if (((i + 1) < max_index)
-				&& (wchars[(i + 1)]))
-			{
-				llwchar next_char = wchars[i + 1];
-				// Kern this puppy.
-				cur_x += getXKerning(wch, next_char);
-			}
-
-			// Round after kerning.
-			cur_x = (F32)llround(cur_x);
-		}
+		// Round after kerning.
+		cur_x = (F32)llround(cur_x);
+		
 	}
 
-	return pos;
+	return llmin(max_chars, pos - begin_offset);
 }
 
+const LLFontDescriptor& LLFontGL::getFontDesc() const
+{
+	return mFontDescriptor;
+}
 
 const LLFontGL::embedded_data_t* LLFontGL::getEmbeddedCharData(const llwchar wch) const
 {
@@ -1041,9 +1105,11 @@ std::string LLFontGL::getStringFromStyle(U8 style)
 	}
 	return style_string;
 }
+
+// static
 std::string LLFontGL::nameFromFont(const LLFontGL* fontp)
 {
-	return fontp->getFontDesc().getName();
+	return fontp->mFontDescriptor.getName();
 }
 
 
@@ -1269,95 +1335,95 @@ LLFontGL &LLFontGL::operator=(const LLFontGL &source)
 	return *this;
 }
 
-void LLFontGL::renderQuad(const LLRectf& screen_rect, const LLRectf& uv_rect, F32 slant_amt) const
+void LLFontGL::renderQuad(LLVector4a* vertex_out, LLVector2* uv_out, LLColor4U* colors_out, const LLRectf& screen_rect, const LLRectf& uv_rect, const LLColor4U& color, F32 slant_amt) const
 {
-	gGL.texCoord2f(uv_rect.mRight, uv_rect.mTop);
-	gGL.vertex2f(llfont_round_x(screen_rect.mRight), 
-				llfont_round_y(screen_rect.mTop));
+	S32 index = 0;
 
-	gGL.texCoord2f(uv_rect.mLeft, uv_rect.mTop);
-	gGL.vertex2f(llfont_round_x(screen_rect.mLeft), 
-				llfont_round_y(screen_rect.mTop));
+	vertex_out[index].set(screen_rect.mRight, screen_rect.mTop, 0.f);
+	uv_out[index] = LLVector2(uv_rect.mRight, uv_rect.mTop);
+	colors_out[index] = color;
+	index++;
 
-	gGL.texCoord2f(uv_rect.mLeft, uv_rect.mBottom);
-	gGL.vertex2f(llfont_round_x(screen_rect.mLeft + slant_amt), 
-				llfont_round_y(screen_rect.mBottom));
+	vertex_out[index].set(screen_rect.mLeft, screen_rect.mTop, 0.f);
+	uv_out[index] = LLVector2(uv_rect.mLeft, uv_rect.mTop);
+	colors_out[index] = color;
+	index++;
 
-	gGL.texCoord2f(uv_rect.mRight, uv_rect.mBottom);
-	gGL.vertex2f(llfont_round_x(screen_rect.mRight + slant_amt), 
-				llfont_round_y(screen_rect.mBottom));
+	vertex_out[index].set(screen_rect.mLeft, screen_rect.mBottom, 0.f);
+	uv_out[index] = LLVector2(uv_rect.mLeft, uv_rect.mBottom);
+	colors_out[index] = color;
+	index++;
+
+	vertex_out[index].set(screen_rect.mRight, screen_rect.mBottom, 0.f);
+	uv_out[index] = LLVector2(uv_rect.mRight, uv_rect.mBottom);
+	colors_out[index] = color;
 }
 
-void LLFontGL::drawGlyph(const LLRectf& screen_rect, const LLRectf& uv_rect, const LLColor4& color, U8 style, ShadowType shadow, F32 drop_shadow_strength) const
+void LLFontGL::drawGlyph(S32& glyph_count, LLVector4a* vertex_out, LLVector2* uv_out, LLColor4U* colors_out, const LLRectf& screen_rect, const LLRectf& uv_rect, const LLColor4U& color, U8 style, ShadowType shadow, F32 drop_shadow_strength) const
 {
 	F32 slant_offset;
-	slant_offset = ((style & ITALIC) ? ( -mAscender * 0.2f) : 0.f);
+	slant_offset = ((style & ITALIC) ? ( -mFontFreetype->getAscenderHeight() * 0.2f) : 0.f);
 
-	gGL.begin(LLRender::QUADS);
+	//FIXME: bold and drop shadow are mutually exclusive only for convenience
+	//Allow both when we need them.
+	if (style & BOLD)
 	{
-		//FIXME: bold and drop shadow are mutually exclusive only for convenience
-		//Allow both when we need them.
-		if (style & BOLD)
+		for (S32 pass = 0; pass < 2; pass++)
 		{
-			gGL.color4fv(color.mV);
-			for (S32 pass = 0; pass < 2; pass++)
-			{
-				LLRectf screen_rect_offset = screen_rect;
+			LLRectf screen_rect_offset = screen_rect;
 
-				screen_rect_offset.translate((F32)(pass * BOLD_OFFSET), 0.f);
-				renderQuad(screen_rect_offset, uv_rect, slant_offset);
-			}
+			screen_rect_offset.translate((F32)(pass * BOLD_OFFSET), 0.f);
+			renderQuad(&vertex_out[glyph_count * 4], &uv_out[glyph_count * 4], &colors_out[glyph_count * 4], screen_rect_offset, uv_rect, color, slant_offset);
+			glyph_count++;
 		}
-		else if (shadow == DROP_SHADOW_SOFT)
-		{
-			LLColor4 shadow_color = LLFontGL::sShadowColor;
-			shadow_color.mV[VALPHA] = color.mV[VALPHA] * drop_shadow_strength * DROP_SHADOW_SOFT_STRENGTH;
-			gGL.color4fv(shadow_color.mV);
-			for (S32 pass = 0; pass < 5; pass++)
-			{
-				LLRectf screen_rect_offset = screen_rect;
-
-				switch(pass)
-				{
-				case 0:
-					screen_rect_offset.translate(-1.f, -1.f);
-					break;
-				case 1:
-					screen_rect_offset.translate(1.f, -1.f);
-					break;
-				case 2:
-					screen_rect_offset.translate(1.f, 1.f);
-					break;
-				case 3:
-					screen_rect_offset.translate(-1.f, 1.f);
-					break;
-				case 4:
-					screen_rect_offset.translate(0, -2.f);
-					break;
-				}
-			
-				renderQuad(screen_rect_offset, uv_rect, slant_offset);
-			}
-			gGL.color4fv(color.mV);
-			renderQuad(screen_rect, uv_rect, slant_offset);
-		}
-		else if (shadow == DROP_SHADOW)
-		{
-			LLColor4 shadow_color = LLFontGL::sShadowColor;
-			shadow_color.mV[VALPHA] = color.mV[VALPHA] * drop_shadow_strength;
-			gGL.color4fv(shadow_color.mV);
-			LLRectf screen_rect_shadow = screen_rect;
-			screen_rect_shadow.translate(1.f, -1.f);
-			renderQuad(screen_rect_shadow, uv_rect, slant_offset);
-			gGL.color4fv(color.mV);
-			renderQuad(screen_rect, uv_rect, slant_offset);
-		}
-		else // normal rendering
-		{
-			gGL.color4fv(color.mV);
-			renderQuad(screen_rect, uv_rect, slant_offset);
-		}
-
 	}
-	gGL.end();
+	else if (shadow == DROP_SHADOW_SOFT)
+	{
+		LLColor4U shadow_color = LLFontGL::sShadowColor;
+		shadow_color.mV[VALPHA] = U8(color.mV[VALPHA] * drop_shadow_strength * DROP_SHADOW_SOFT_STRENGTH);
+		for (S32 pass = 0; pass < 5; pass++)
+		{
+			LLRectf screen_rect_offset = screen_rect;
+
+			switch(pass)
+			{
+			case 0:
+				screen_rect_offset.translate(-1.f, -1.f);
+				break;
+			case 1:
+				screen_rect_offset.translate(1.f, -1.f);
+				break;
+			case 2:
+				screen_rect_offset.translate(1.f, 1.f);
+				break;
+			case 3:
+				screen_rect_offset.translate(-1.f, 1.f);
+				break;
+			case 4:
+				screen_rect_offset.translate(0, -2.f);
+				break;
+			}
+		
+			renderQuad(&vertex_out[glyph_count * 4], &uv_out[glyph_count * 4], &colors_out[glyph_count * 4], screen_rect_offset, uv_rect, shadow_color, slant_offset);
+			glyph_count++;
+		}
+		renderQuad(&vertex_out[glyph_count * 4], &uv_out[glyph_count * 4], &colors_out[glyph_count * 4], screen_rect, uv_rect, color, slant_offset);
+		glyph_count++;
+	}
+	else if (shadow == DROP_SHADOW)
+	{
+		LLColor4U shadow_color = LLFontGL::sShadowColor;
+		shadow_color.mV[VALPHA] = U8(color.mV[VALPHA] * drop_shadow_strength);
+		LLRectf screen_rect_shadow = screen_rect;
+		screen_rect_shadow.translate(1.f, -1.f);
+		renderQuad(&vertex_out[glyph_count * 4], &uv_out[glyph_count * 4], &colors_out[glyph_count * 4], screen_rect_shadow, uv_rect, shadow_color, slant_offset);
+		glyph_count++;
+		renderQuad(&vertex_out[glyph_count * 4], &uv_out[glyph_count * 4], &colors_out[glyph_count * 4], screen_rect, uv_rect, color, slant_offset);
+		glyph_count++;
+	}
+	else // normal rendering
+	{
+		renderQuad(&vertex_out[glyph_count * 4], &uv_out[glyph_count * 4], &colors_out[glyph_count * 4], screen_rect, uv_rect, color, slant_offset);
+		glyph_count++;
+	}
 }

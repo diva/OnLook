@@ -42,10 +42,32 @@ class LLMutex ;
 #define LL_CHECK_MEMORY
 #endif
 
-LL_COMMON_API void ll_assert_aligned_func(uintptr_t ptr,U32 alignment);
-
+//<singu>
+// ll_assert_aligned seems to only exist to set breakpoints in case an alignment check fails.
+// However, the implementation was horrible: the test was done using a integer modulo after
+// calling a function; which is like 500 times slower then the below. That turned out to be
+// significant compared to CPU cycles used to do vector calculations in side of which this test
+// is used.
+//
+// This implementation uses a faster, inlined test, and then still calls a function when
+// that fails to set a break point there if needed.
+//
+// This uses the fact that 'alignment' is literal int (aka, '16' or '64') that is a power of two.
+// As a result, the modulo is converted by the compiler to a logical AND with alignment-1, what
+// it cannot do if you don't inline the test.
 #ifdef SHOW_ASSERT
-#define ll_assert_aligned(ptr,alignment) ll_assert_aligned_func(reinterpret_cast<uintptr_t>(ptr),((U32)alignment))
+LL_COMMON_API void singu_alignment_check_failed(void);
+
+#define ll_assert_aligned(ptr,alignment)											\
+	do																				\
+	{																				\
+	  if (LL_UNLIKELY(reinterpret_cast<intptr_t>(ptr) % alignment))					\
+	  {																				\
+		singu_alignment_check_failed();												\
+	  }																				\
+	}																				\
+	while(0)
+//</singu>
 #else
 #define ll_assert_aligned(ptr,alignment)
 #endif

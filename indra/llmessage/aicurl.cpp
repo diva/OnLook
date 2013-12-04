@@ -52,7 +52,6 @@
 #include "llsdserialize.h"
 #include "aithreadsafe.h"
 #include "llqueuedthread.h"
-#include "lltimer.h"		// ms_sleep
 #include "llproxy.h"
 #include "llhttpstatuscodes.h"
 #include "aihttpheaders.h"
@@ -766,8 +765,8 @@ DEFINE_FUNCTION_SETOPT4(curl_write_callback, CURLOPT_HEADERFUNCTION, CURLOPT_WRI
 //DEFINE_FUNCTION_SETOPT1(curl_read_callback, CURLOPT_READFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_ssl_ctx_callback, CURLOPT_SSL_CTX_FUNCTION)
 DEFINE_FUNCTION_SETOPT3(curl_conv_callback, CURLOPT_CONV_FROM_NETWORK_FUNCTION, CURLOPT_CONV_TO_NETWORK_FUNCTION, CURLOPT_CONV_FROM_UTF8_FUNCTION)
-#if 0 // Not used by the viewer.
 DEFINE_FUNCTION_SETOPT1(curl_progress_callback, CURLOPT_PROGRESSFUNCTION)
+#if 0 // Not used by the viewer.
 DEFINE_FUNCTION_SETOPT1(curl_seek_callback, CURLOPT_SEEKFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_ioctl_callback, CURLOPT_IOCTLFUNCTION)
 DEFINE_FUNCTION_SETOPT1(curl_sockopt_callback, CURLOPT_SOCKOPTFUNCTION)
@@ -902,6 +901,23 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
   setopt(CURLOPT_SSL_CTX_DATA, this);
 }
 
+//static
+int CurlEasyRequest::progressCallback(void* userdata, double dltotal, double dlnow, double ultotal, double ulnow)
+{
+  CurlEasyRequest* self = static_cast<CurlEasyRequest*>(userdata);
+  ThreadSafeBufferedCurlEasyRequest* lockobj = self->get_lockobj();
+  AICurlEasyRequest_wat lock_self(*lockobj);
+  return self->mProgressCallback(self->mProgressCallbackUserData, dltotal, dlnow, ultotal, ulnow);
+}
+
+void CurlEasyRequest::setProgressCallback(curl_progress_callback callback, void* userdata)
+{
+  mProgressCallback = callback;
+  mProgressCallbackUserData = userdata;
+  setopt(CURLOPT_PROGRESSFUNCTION, callback ? &CurlEasyRequest::progressCallback : NULL);
+  setopt(CURLOPT_PROGRESSDATA, userdata ? this : NULL);
+}
+
 #define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false, true)
 
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
@@ -928,12 +944,19 @@ static CURLcode noSSLCtxCallback(CURL* curl, void* sslctx, void* parm)
   return CURLE_ABORTED_BY_CALLBACK;
 }
 
+static int noProgressCallback(void* userdata, double, double, double, double)
+{
+  llmaybewarns << "Calling noProgressCallback(); curl session aborted." << llendl;
+  return -1;						// Cause a CURLE_ABORTED_BY_CALLBACK
+}
+
 void CurlEasyRequest::revokeCallbacks(void)
 {
   if (mHeaderCallback == &noHeaderCallback &&
 	  mWriteCallback == &noWriteCallback &&
 	  mReadCallback == &noReadCallback &&
-	  mSSLCtxCallback == &noSSLCtxCallback)
+	  mSSLCtxCallback == &noSSLCtxCallback &&
+	  mProgressCallback == &noProgressCallback)
   {
 	// Already revoked.
 	return;
@@ -942,6 +965,7 @@ void CurlEasyRequest::revokeCallbacks(void)
   mWriteCallback = &noWriteCallback;
   mReadCallback = &noReadCallback;
   mSSLCtxCallback = &noSSLCtxCallback;
+  mProgressCallback = &noProgressCallback;
   if (active() && !no_warning())
   {
 	llwarns << "Revoking callbacks on a still active CurlEasyRequest object!" << llendl;
@@ -950,6 +974,7 @@ void CurlEasyRequest::revokeCallbacks(void)
   curl_easy_setopt(getEasyHandle(), CURLOPT_WRITEHEADER, &noWriteCallback);
   curl_easy_setopt(getEasyHandle(), CURLOPT_READFUNCTION, &noReadCallback);
   curl_easy_setopt(getEasyHandle(), CURLOPT_SSL_CTX_FUNCTION, &noSSLCtxCallback);
+  curl_easy_setopt(getEasyHandle(), CURLOPT_PROGRESSFUNCTION, &noProgressCallback);
 }
 
 CurlEasyRequest::~CurlEasyRequest()
@@ -1078,6 +1103,8 @@ void CurlEasyRequest::applyDefaultOptions(void)
   setopt(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
   // Disable SSL/TLS session caching; some servers (aka id.secondlife.com) refuse connections when session ids are enabled.
   setopt(CURLOPT_SSL_SESSIONID_CACHE, 0);
+  // Call the progress callback funtion.
+  setopt(CURLOPT_NOPROGRESS, 0);
   // Set the CURL options for either SOCKS or HTTP proxy.
   applyProxySettings();
   // Cause libcurl to print all it's I/O traffic on the debug channel.
@@ -1096,6 +1123,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   DoutCurlEntering("CurlEasyRequest::finalizeRequest(\"" << url << "\", " << policy.name() << ", " << (void*)state_machine << ")");
   llassert(!mTimeoutPolicy);		// May only call finalizeRequest once!
   mResult = CURLE_FAILED_INIT;		// General error code; the final result code is stored here by MultiHandle::check_msg_queue when msg is CURLMSG_DONE.
+  mIsHttps = strncmp(url.c_str(), "https:", 6) == 0;
 #ifdef SHOW_ASSERT
   // Do a sanity check on the headers.
   int content_type_count = 0;
@@ -1140,7 +1168,13 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
 // // get less connect time, while it still (also) has to wait for this DNS lookup.
 void CurlEasyRequest::set_timeout_opts(void)
 {
-  setopt(CURLOPT_CONNECTTIMEOUT, mTimeoutPolicy->getConnectTimeout(getLowercaseHostname()));
+  U16 connect_timeout = mTimeoutPolicy->getConnectTimeout(getLowercaseHostname());
+  if (mIsHttps && connect_timeout < 30)
+  {
+	DoutCurl("Incrementing CURLOPT_CONNECTTIMEOUT of \"" << mTimeoutPolicy->name() << "\" from " << connect_timeout << " to 30 seconds.");
+	connect_timeout = 30;
+  }
+  setopt(CURLOPT_CONNECTTIMEOUT, connect_timeout);
   setopt(CURLOPT_TIMEOUT, mTimeoutPolicy->getCurlTransaction());
 }
 
@@ -1287,8 +1321,9 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 	// If the responder is still alive, then that means that BufferedCurlEasyRequest::processOutput was
 	// never called, which means that the removed_from_multi_handle event never happened.
 	// This is definitely an internal error as it can only happen when libcurl is too slow,
-	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
-	// calls BufferedCurlEasyRequest::timed_out().
+	// in which case AICurlEasyRequestStateMachine::mTimer times out, a socket goes bad, or
+	// the state machine is aborted, but those already call BufferedCurlEasyRequest::aborted()
+	// which sets mResponder to NULL.
 	llmaybeerrs << "Calling ~BufferedCurlEasyRequest() with active responder!" << llendl;
 	if (!LLApp::isRunning())
 	{
@@ -1298,30 +1333,23 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 	else
 	{
 	  // User chose to continue.
-	  timed_out();
+	  aborted(HTTP_INTERNAL_ERROR_OTHER, "BufferedCurlEasyRequest destructed with active responder");
 	}
   }
   --AICurlInterface::Stats::BufferedCurlEasyRequest_count;
 }
 
-void BufferedCurlEasyRequest::timed_out(void)
+void BufferedCurlEasyRequest::aborted(U32 http_status, std::string const& reason)
 {
-  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR_CURL_LOCKUP, "Request timeout, aborted.", sChannels, mOutput);
-  if (mResponder->needsHeaders())
+  if (mResponder)
   {
-	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
+	mResponder->finished(CURLE_OK, http_status, reason, sChannels, mOutput);
+	if (mResponder->needsHeaders())
+	{
+	  send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
+	}
+	mResponder = NULL;
   }
-  mResponder = NULL;
-}
-
-void BufferedCurlEasyRequest::bad_socket(void)
-{
-  mResponder->finished(CURLE_OK, HTTP_INTERNAL_ERROR_CURL_BADSOCKET, "File descriptor went bad! Aborted.", sChannels, mOutput);
-  if (mResponder->needsHeaders())
-  {
-	send_buffer_events_to(NULL);	// Revoke buffer events: we send them to the responder.
-  }
-  mResponder = NULL;
 }
 
 #if defined(CWDEBUG) || defined(DEBUG_CURLIO)
@@ -1410,6 +1438,7 @@ void BufferedCurlEasyRequest::prepRequest(AICurlEasyRequest_wat& curl_easy_reque
   curl_easy_request_w->setWriteCallback(&curlWriteCallback, lockobj);
   curl_easy_request_w->setReadCallback(&curlReadCallback, lockobj);
   curl_easy_request_w->setHeaderCallback(&curlHeaderCallback, lockobj);
+  curl_easy_request_w->setProgressCallback(&curlProgressCallback, lockobj);
 
   bool allow_cookies = headers.hasHeader("Cookie");
   // Allow up to sixteen redirects.

@@ -1061,6 +1061,32 @@
           </map>
         </map>
       </map>
+      <key>nvapi</key>
+      <map>
+        <key>copyright</key>
+        <string>Copyright (C) NVIDIA</string>
+        <key>description</key>
+        <string>NVAPI is the library suite to access nvidia profiles and performance options on windows</string>
+        <key>license</key>
+        <string>NVAPI</string>
+        <key>packages</key>
+        <map>
+          <key>windows</key>
+          <map>
+            <key>md5sum</key>
+            <string>99d1b70c1305257d521edfbd34587187</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/nvapi-304-windows-20121116-singu.tar.bz2</uri>
+          </map>
+          <key>windows64</key>
+          <map>
+            <key>md5sum</key>
+            <string>5578017f13783fb7279dd39537d1e0fd</string>
+            <key>url</key>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/nvapi-304-windows64-20131116-singu.tar.bz2</uri>
+          </map>
+        </map>
+      </map>
       <key>ndofdev</key>
       <map>
         <key>copyright</key>
@@ -1872,6 +1898,11 @@ Cass Everitt - cass@r3.nu
       <map>
         <key>text</key>
         <string>http://www.jclark.com/xml/copying.txt</string>
+      </map>
+      <key>NVAPI</key>
+      <map>
+        <key>url</key>
+        <string>Licenes dir</string>
       </map>
       <key>ogg-vorbis</key>
       <map>

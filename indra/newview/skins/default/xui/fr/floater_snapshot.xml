@@ -152,7 +152,7 @@
 		</flyout_button_item>
 	</flyout_button>
 	<button label="Annuler" name="discard_btn" left="133" width="72" />
-	<check_box label="Image Temporaire (Gratuit)" name="temp_check" tooltip="Comme toute image temporaire elle disparaitra à votre deconnection."/>
+	<check_box label="Image Temporaire (Gratuit)" name="temp_check" tool_tip="Comme toute image temporaire elle disparaitra à votre deconnection."/>
 	<string name="unknown">
 		inconnu
 	</string>

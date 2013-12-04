@@ -61,17 +61,13 @@ BOOL LLMemory::sEnableMemoryFailurePrevention = FALSE;
 LLPrivateMemoryPoolManager::mem_allocation_info_t LLPrivateMemoryPoolManager::sMemAllocationTracker;
 #endif
 
-void ll_assert_aligned_func(uintptr_t ptr,U32 alignment)
-{
 #ifdef SHOW_ASSERT
+void singu_alignment_check_failed(void)
+{
 	// Redundant, place to set breakpoints.
-	if (ptr%alignment!=0)
-	{
-		llwarns << "alignment check failed" << llendl;
-	}
-	llassert(ptr%alignment==0);
-#endif
+	llassert(false);
 }
+#endif
 
 //static
 void LLMemory::initClass()

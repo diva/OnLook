@@ -39,6 +39,13 @@ LLListener_OpenAL::~LLListener_OpenAL()
 {
 }
 
+void LLListener_OpenAL::init()
+{
+	// do inherited
+	LLListener::init();
+	mRolloffFactor = 1.0f;
+}
+
 void LLListener_OpenAL::translate(LLVector3 offset)
 {
 	//llinfos << "LLListener_OpenAL::translate() : " << offset << llendl;

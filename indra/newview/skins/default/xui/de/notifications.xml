@@ -1860,8 +1860,6 @@ Ein Grid mit dem gleichen Namen existiert bereits.</notification>
 
   <notification name="GridInfoNoLoginUri">Eine Login URI wird ben&#xF6;tigt um die Grid Informationen ab zu rufen.</notification>
 
-  <notification name="GridInfoError">Grid Info kann nicht vom Server abgerufen werden.</notification>
-
   <notification name="HelpRenderCompat">Bauten mit erweiterten Hohlr&#xE4;umen oder erweiterten Lochgr&#xF6;&#xDF;en werden auf anderen Viewern oft nicht korrekt gerendert. Bitte lassen Sie diese Option aktivuert, wenn Sie Ihren Bauten auch auf anderen Viewern korrekt anzeigen lassen wollen.</notification>
 
   <notification name="ExportFailed">Fehlende Berechtigung zum Exportieren vom Objekt. Exportieren abgebrochen.</notification>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="floater_about" title="Informazioni su Second Life">
+  <tab_container name="about_tab">
+    <panel label="Informazioni" name="support_panel">
+      <button label="Copia negli appunti" name="copy_btn"/>
+    </panel>
+    <panel label="Ringraziamenti" name="credits_panel"/>
+    <panel label="Licenze" name="licenses_panel"/>
+  </tab_container>
+  <string name="you_are_at">Sei a [POSITION]</string>
+</floater>
+

@@ -526,7 +526,7 @@ private:
 	LLSD mResponse;
 
 protected:
-	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK); return mResponse; }
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		decode_llsd_body(status, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
@@ -539,7 +539,7 @@ private:
 	std::string mResponse;
 
 protected:
-	/*virtual*/ std::string const& getRaw(void) const { llassert(mFinished && mCode == CURLE_OK && mStatus == HTTP_OK); return mResponse; }
+	/*virtual*/ std::string const& getRaw(void) const { llassert(mFinished && mCode == CURLE_OK); return mResponse; }
 	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		decode_raw_body(mCode, reason, channels, buffer, mResponse);
@@ -636,7 +636,7 @@ static LLSD blocking_request(
 			response["body"] = responder->getLLSD();
 		}
 	}
-	else if (result == CURLE_OK)
+	else if (result == CURLE_OK && !is_internal_http_error(http_status))
 	{
 		// We expect 404s, don't spam for them.
 		if (http_status != 404)

@@ -173,10 +173,10 @@ def _default_installable_cache():
     """In general, the installable files do not change much, so find a
     host/user specific location to cache files."""
     user = _getuser()
-    cache_dir = "/var/tmp/%s/install.cache" % user
+    cache_dir = "/var/tmp/%s/sg.install.cache" % user
     if _get_platform() == 'windows':
         cache_dir = os.path.join(tempfile.gettempdir(), \
-                                 'install.cache.%s' % user)
+                                 'sg.install.cache.%s' % user)
     return cache_dir
 
 # For status messages (e.g. "Loading...").  May come in handy if

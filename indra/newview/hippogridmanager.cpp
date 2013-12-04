@@ -16,6 +16,7 @@
 #include "lltrans.h"
 #include "llviewercontrol.h"
 #include "llweb.h"
+#include "aialert.h"
 
 // ********************************************************************
 // Global Variables
@@ -56,6 +57,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridName) :
 	mRenderCompat(true),
 	mInvLinks(false),
 	mAutoUpdate(false),
+	mLocked(false),
 	mMaxAgentGroups(-1),
 	mCurrencySymbol("OS$"),
 	mCurrencyText("OS Dollars"),
@@ -157,18 +159,34 @@ void HippoGridInfo::setGridNick(std::string gridNick)
 	}
 }
 
+void HippoGridInfo::useHttps()
+{
+	// If the Login URI starts with "http:", replace that with "https:".
+	if (mLoginUri.substr(0, 5) == "http:")
+	{
+		mLoginUri = "https:" + mLoginUri.substr(5);
+	}
+}
+
 void HippoGridInfo::setLoginUri(const std::string& loginUri)
 {
-	std::string uri = loginUri;
-	mLoginUri = sanitizeUri(uri);
-	if (utf8str_tolower(LLURI(uri).hostName()) == "login.agni.lindenlab.com")
+	mLoginUri = sanitizeUri(loginUri);
+	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.agni.lindenlab.com")
 	{
 		mIsInProductionGrid = true;
+		useHttps();
+		setPlatform(PLATFORM_SECONDLIFE);
 	}
-	if (utf8str_tolower(LLURI(uri).hostName()) == "login.avination.com" ||
-		utf8str_tolower(LLURI(uri).hostName()) == "login.avination.net")
+	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.aditi.lindenlab.com")
+	{
+		useHttps();
+		setPlatform(PLATFORM_SECONDLIFE);
+	}
+	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.com" ||
+		utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.net")
 	{
 		mIsInAvination = true;
+		useHttps();
 	}
 }
 
@@ -179,8 +197,7 @@ void HippoGridInfo::setLoginPage(const std::string& loginPage)
 
 void HippoGridInfo::setHelperUri(const std::string& helperUri)
 {
-	std::string uri = helperUri;
-	mHelperUri = sanitizeUri(uri);
+	mHelperUri = sanitizeUri(helperUri);
 }
 
 void HippoGridInfo::setWebSite(const std::string& website)
@@ -398,15 +415,13 @@ void HippoGridInfo::onXmlCharacterData(void* userData, const XML_Char* s, int le
 
 		case XML_LOGINURI:
 		{
-			std::string loginuri(s, len);
-			self->mLoginUri = sanitizeUri( loginuri );
+			self->setLoginUri(std::string(s, len));
 			break;
 		}
 
 		case XML_HELPERURI:
 		{
-			std::string helperuri(s, len);
-			self->mHelperUri = sanitizeUri( helperuri );
+			self->setHelperUri(std::string(s, len));
 			break;
 		}
 
@@ -437,24 +452,45 @@ void HippoGridInfo::onXmlCharacterData(void* userData, const XML_Char* s, int le
 	}
 }
 
-
-bool HippoGridInfo::retrieveGridInfo()
+// Throws AIAlert::ErrorCode with the http status as 'code' (HTTP_OK on XML parse error).
+void HippoGridInfo::getGridInfo()
 {
-	if (mLoginUri == "") return false;
-
-	// If last character in uri is not "/"
-	std::string uri = mLoginUri;
-	if (uri.compare(uri.length()-1, 1, "/") != 0) 
+	if (mLoginUri.empty())
 	{
-	 	uri += '/';
+		// By passing 0 we automatically get GridInfoErrorInstruction appended.
+		THROW_ALERTC(0, "GridInfoErrorNoLoginURI");
 	}
+
+	// Make sure the uri ends on a '/'.
+	std::string uri = mLoginUri;
+	if (uri.compare(uri.length() - 1, 1, "/") != 0)
+	{
+		uri += '/';
+	}
+
 	std::string reply;
 	int result = LLHTTPClient::blockingGetRaw(uri + "get_grid_info", reply);
-	if (result != 200) return false;
+	if (result != HTTP_OK)
+	{
+		char const* xml_desc;
+		switch (result)
+		{
+			case HTTP_NOT_FOUND:
+				xml_desc = "GridInfoErrorNotFound";
+				break;
+			case HTTP_METHOD_NOT_ALLOWED:
+				xml_desc = "GridInfoErrorNotAllowed";
+				break;
+			default:
+				xml_desc = "AIError";
+				break;
+		}
+		// LLHTTPClient::blockingGetRaw puts any error message in the reply.
+		THROW_ALERTC(result, xml_desc, AIArgs("[ERROR]", reply));
+	}
 
 	llinfos << "Received: " << reply << llendl;
 
-	bool success = true;
 	XML_Parser parser = XML_ParserCreate(0);
 	XML_SetUserData(parser, this);
 	XML_SetElementHandler(parser, onXmlElementStart, onXmlElementEnd);
@@ -462,14 +498,10 @@ bool HippoGridInfo::retrieveGridInfo()
 	mXmlState = XML_VOID;
 	if (!XML_Parse(parser, reply.data(), reply.size(), TRUE)) 
 	{
-		llwarns << "XML Parse Error: " << XML_ErrorString(XML_GetErrorCode(parser)) << llendl;
-		success = false;
+		THROW_ALERTC(HTTP_OK, "GridInfoParseError", AIArgs("[XML_ERROR]", XML_ErrorString(XML_GetErrorCode(parser))));
 	}
 	XML_ParserFree(parser);
-
-	return success;
 }
-
 
 std::string HippoGridInfo::getUploadFee() const
 {
@@ -558,21 +590,39 @@ const char* HippoGridInfo::getPlatformString(Platform platform)
 }
 
 // static
-std::string HippoGridInfo::sanitizeUri(std::string &uri)
+std::string HippoGridInfo::sanitizeUri(std::string const& uri_in)
 {
-	// if (uri.empty()) {
-	// 	return "";
-	// }
+	std::string uri = uri_in;
 
-	// // If last character in uri is not "/"
-	// // NOTE: This wrongly assumes that all URIs should end with "/"!
-	// if (uri.compare(uri.length()-1, 1, "/") != 0) {
-	// 	return uri + '/';
-	// }
+	// Strip any leading and trailing spaces.
+	LLStringUtil::trim(uri);
+
+	// Only use https when it was entered.
+	bool use_https = uri.substr(0, 6) == "https:";
+
+	// Strip off attempts to use some prefix that is just wrong.
+	// We accept the following:
+	// "" (nothing)
+	// "http:" or "https:", optionally followed by one or more '/'.
+	std::string::size_type pos = uri.find_first_not_of("htps");
+	if (pos != std::string::npos && pos < 6 && uri[pos] == ':')
+	{
+		do { ++pos; } while(uri[pos] == '/');
+		uri = uri.substr(pos);
+	}
+
+	// Add (back) the prefix.
+	if (use_https)
+	{
+		uri = "https://" + uri;
+	}
+	else
+	{
+		uri = "http://" + uri;
+	}
 
 	return uri;
 }
-
 
 void HippoGridInfo::initFallback()
 {
@@ -605,11 +655,6 @@ bool HippoGridInfo::getAutoUpdate()
 		return false;
 	else
 		return mAutoUpdate;
-}
-
-void HippoGridInfo::setAutoUpdate(bool b)
-{
-	mAutoUpdate = b;
 }
 
 bool HippoGridInfo::getUPCSupported()
@@ -967,7 +1012,8 @@ void HippoGridManager::parseData(LLSD &gridInfo, bool mergeIfNewer)
 			if (gridMap.has("search")) grid->setSearchUrl(gridMap["search"]);
 			if (gridMap.has("render_compat")) grid->setRenderCompat(gridMap["render_compat"]);
 			if (gridMap.has("inventory_links")) grid->setSupportsInvLinks(gridMap["inventory_links"]);
-			if (gridMap.has("auto_update")) grid->setAutoUpdate(gridMap["auto_update"]);
+			if (gridMap.has("auto_update")) grid->mAutoUpdate = gridMap["auto_update"];
+			if (gridMap.has("locked")) grid->mLocked = gridMap["locked"];
 			if (newGrid) addGrid(grid);
 		}
 	}
@@ -1004,6 +1050,7 @@ void HippoGridManager::saveFile()
 		gridInfo[i]["render_compat"] = grid->isRenderCompat();
 		gridInfo[i]["inventory_links"] = grid->supportsInvLinks();
 		gridInfo[i]["auto_update"] = grid->getAutoUpdate();
+		gridInfo[i]["locked"] = grid->getLocked();
 	}
 
 	// write client grid info file

@@ -59,7 +59,7 @@ class AIFetchInventoryFolder : public AIStateMachine {
 
   public:
 	AIFetchInventoryFolder(CWD_ONLY(bool debug = false)) :
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
 		AIStateMachine(debug),
 #endif
 		mCreate(false), mFetchContents(false), mExists(false), mCreated(false)

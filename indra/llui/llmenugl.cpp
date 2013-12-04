@@ -1963,6 +1963,8 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 		child->getAttributeString("type", type);
 		child->getAttributeString("name", item_name);
 		child->getAttributeString("label", source_label);
+
+		LLStringUtil::format(source_label, LLTrans::getDefaultArgs());
 		
 		// parse jump key out of label
 		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -2302,6 +2304,8 @@ LLView* LLMenuGL::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *fa
 
 	std::string label = name;
 	node->getAttributeString("label", label);
+
+	LLStringUtil::format(label, LLTrans::getDefaultArgs());
 
 	// parse jump key out of label
 	std::string new_menu_label;

@@ -37,7 +37,7 @@
 
 #include "llfloaterfriends.h"
 
-
+#include "llsdutil_math.h"
 #include "llagent.h"
 #include "llavataractions.h"
 #include "llavatarnamecache.h"

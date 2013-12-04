@@ -139,10 +139,7 @@ class ViewerManifest(LLManifest):
     def viewer_branding_id(self):
         return self.args['branding_id']
     def installer_prefix(self):
-        mapping={"secondlife":'SecondLife_',
-                 "snowglobe":'Snowglobe_',
-                 "singularity":'Singularity_'}
-        return mapping[self.viewer_branding_id()]
+        return self.channel_oneword() + "_"
 
     def flags_list(self):
         """ Convenience function that returns the command-line flags
@@ -305,35 +302,16 @@ class WindowsManifest(ViewerManifest):
         if not self.is_win64():
             self.path(release_lib_dir+"/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
 
-        #try:
-        #    if self.prefix(release_lib_dir+"/msvcrt", dst=""):
-        #        self.path("*.dll")
-        #        self.path("*.manifest")
-        #        self.end_prefix()
-        #except:
-        #    pass
-        
         try:
             self.path("msvc*.dll")
         except:
-            pass
-
-
-        # These need to be installed as a SxS assembly, currently a 'private' assembly.
-        # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
-        #~ if self.prefix(src=self.args['configuration'], dst=""):
-                #~ if self.args['configuration'] == 'Debug':
-            #~ self.path("msvcr80d.dll")
-            #~ self.path("msvcp80d.dll")
-            #~ self.path("Microsoft.VC80.DebugCRT.manifest")
-                #~ else:
-            #~ self.path("msvcr80.dll")
-            #~ self.path("msvcp80.dll")
-            #~ self.path("Microsoft.VC80.CRT.manifest")
-                #~ self.end_prefix()
-
-        # The config file name needs to match the exe's name.
-        #~ self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
+            try:
+                if self.prefix(release_lib_dir+"/msvcrt", dst=""):
+                    self.path("*.dll")
+                    self.path("*.manifest")
+                    self.end_prefix()
+            except:
+                pass
 
         # Vivox runtimes
         if self.prefix(src="vivox-runtime/i686-win32", dst=""):
@@ -496,8 +474,6 @@ class DarwinManifest(ViewerManifest):
         self.path(self.args['configuration'] + "/" + self.app_name() + ".app", dst="")
 
         if self.prefix(src="", dst="Contents"):  # everything goes in Contents
-            self.path(self.info_plist_name(), dst="Info.plist")
-
             # copy additional libs in <bundle>/Contents/MacOS/
             self.path("../../libraries/universal-darwin/lib/release/libndofdev.dylib", dst="Resources/libndofdev.dylib")
             self.path("../../libraries/universal-darwin/lib/release/libhunspell-1.3.0.dylib", dst="Resources/libhunspell-1.3.0.dylib")
@@ -618,10 +594,7 @@ class DarwinManifest(ViewerManifest):
                                  { 'viewer_binary' : self.dst_path_of('Contents/MacOS/'+self.app_name())})
 
     def app_name(self):
-        return "Singularity"
-
-    def info_plist_name(self):
-        return "Info-Singularity.plist"
+        return self.channel_oneword()
 
     def package_finish(self):
         channel_standin = self.app_name()
@@ -715,7 +688,11 @@ class DarwinManifest(ViewerManifest):
 
 class LinuxManifest(ViewerManifest):
     def construct(self):
+        import shutil
+        shutil.rmtree("./packaged/app_settings/shaders", ignore_errors=True);
+
         super(LinuxManifest, self).construct()
+
         self.path("licenses-linux.txt","licenses.txt")
 
         self.path("res/"+self.icon_name(),self.icon_name())
@@ -802,12 +779,11 @@ class LinuxManifest(ViewerManifest):
         try:
             # --numeric-owner hides the username of the builder for
             # security etc.
-            # I'm leaving this disabled for speed
-            #self.run_command("tar -C '%(dir)s' --numeric-owner -cjf "
-            #                 "'%(inst_path)s.tar.bz2' %(inst_name)s" % {
-            #    'dir': self.get_build_prefix(),
-            #    'inst_name': installer_name,
-            #    'inst_path':self.build_path_of(installer_name)})
+            self.run_command("tar -C '%(dir)s' --numeric-owner -cjf "
+                             "'%(inst_path)s.tar.bz2' %(inst_name)s" % {
+                'dir': self.get_build_prefix(),
+                'inst_name': installer_name,
+                'inst_path':self.build_path_of(installer_name)})
             print ''
         finally:
             self.run_command("mv '%(inst)s' '%(dst)s'" % {

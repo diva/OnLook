@@ -105,6 +105,8 @@ protected:
 
 	// If not null and not dead, we're over an object.
 	LLPointer<LLViewerObject>	mLastHoverObject;
+	LLViewerObject*				mLastTextHoverObject;		// Singu extension: the value of mLastHoverObject that corresponds to mText.
+	LLFrameTimer				mLastTextHoverObjectTimer;	// Singu extension: times how long ago the text was updated (while retrieving data).
 	LLPickInfo					mLastPickInfo;
 
 	// If not LLVector3d::ZERO, we're over land.

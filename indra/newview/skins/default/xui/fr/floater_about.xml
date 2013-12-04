@@ -1,13 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="floater_about" title="A propos de Singularity">
   <tab_container name="about_tab">
     <panel label="Info" help_topic="about_support_tab" name="support_panel">
       <button label="Copier dans le presse-papier" name="copy_btn"/>
     </panel>
-
-	<panel label="Credits" help_topic="about_credits_tab" name="credits_panel"/>
-
-	<panel label="Licenses" name="licenses_panel"/>
-  </tab_container>  
+    <panel label="Remerciements" name="credits_panel"/>
+    <panel label="Licenses" name="licenses_panel"/>
+  </tab_container>
   <string name="you_are_at">You are at [POSITION]</string>
 </floater>

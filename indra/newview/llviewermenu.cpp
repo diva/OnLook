@@ -4150,6 +4150,7 @@ void reset_view_final( BOOL proceed )
 	}
 	gAgentCamera.resetView(TRUE, TRUE);
 	gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
+	gSavedSettings.setBOOL("SinguMotionResetsCamera", true);
 
 	if(gAgentCamera.cameraCustomizeAvatar() && LLFloaterCustomize::instanceExists())
 		LLFloaterCustomize::getInstance()->close();

@@ -565,7 +565,7 @@ void debug_curl_remove_easy(CURL* handle)
 	handles.erase(iter);
 	Dout(dc::warning, "debug_curl_remove_easy(" << (void*)handle << "): removed");
   }
-  llassert(!print_debug(handle));
+  llassert(!gDebugCurlTerse || !print_debug(handle));
 }
 
 bool debug_curl_print_debug(CURL* handle)
@@ -577,34 +577,28 @@ extern "C" {
 
 void debug_curl_easy_cleanup(CURL* handle)
 {
+  Dout(dc::curltr(print_debug(handle)), "curl_easy_cleanup(" << (AICURL*)handle << ")");
   curl_easy_cleanup(handle);
-  if (print_debug(handle))
-  {
-    Dout(dc::curltr, "curl_easy_cleanup(" << (AICURL*)handle << ")");
-  }
 }
 
 CURL* debug_curl_easy_duphandle(CURL* handle)
 {
-  CURL* ret;
-  ret = curl_easy_duphandle(handle);
-  if (!print_debug(handle)) return ret;
-  Dout(dc::curltr, "curl_easy_duphandle(" << (AICURL*)handle << ") = " << (AICURL*)ret);
+  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_duphandle(" << (AICURL*)handle << ") = ");
+  CURL* ret = curl_easy_duphandle(handle);
+  Dout(dc::finish, (AICURL*)ret);
   return ret;
 }
 
 char* debug_curl_easy_escape(CURL* curl, char* url, int length)
 {
-  char* ret;
-  ret = curl_easy_escape(curl, url, length);
-  if (!print_debug(curl)) return ret;
-  Dout(dc::curltr, "curl_easy_escape(" << (AICURL*)curl << ", \"" << url << "\", " << length << ") = \"" << ret << '"');
+  Dout(dc::curltr(print_debug(curl))|continued_cf, "curl_easy_escape(" << (AICURL*)curl << ", \"" << url << "\", " << length << ") = ");
+  char* ret = curl_easy_escape(curl, url, length);
+  Dout(dc::finish, '"' << ret << '"');
   return ret;
 }
 
 CURLcode debug_curl_easy_getinfo(CURL* handle, CURLINFO info, ...)
 {
-  CURLcode ret;
   va_list ap;
   union param_type {
 	void* some_ptr;
@@ -616,27 +610,27 @@ CURLcode debug_curl_easy_getinfo(CURL* handle, CURLINFO info, ...)
   va_start(ap, info);
   param.some_ptr = va_arg(ap, void*);
   va_end(ap);
-  ret = curl_easy_getinfo(handle, info, param.some_ptr);
-  if (!print_debug(handle)) return ret;
+  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_getinfo(" << (AICURL*)handle << ", " << info << ", ");
+  CURLcode ret = curl_easy_getinfo(handle, info, param.some_ptr);
   if (info == CURLINFO_PRIVATE)
   {
-	Dout(dc::curltr, "curl_easy_getinfo(" << (AICURL*)handle << ", " << info << ", 0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
+	Dout(dc::finish, "0x" << std::hex << (size_t)param.some_ptr << std::dec << ") = " << ret);
   }
   else
   {
 	switch((info & CURLINFO_TYPEMASK))
 	{
 	  case CURLINFO_STRING:
-		Dout(dc::curltr, "curl_easy_getinfo(" << (AICURL*)handle << ", " << info << ", (char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
+		Dout(dc::finish, "(char**){ \"" << (ret == CURLE_OK ? *param.char_ptr : " <unchanged> ") << "\" }) = " << ret);
 		break;
 	  case CURLINFO_LONG:
-		Dout(dc::curltr, "curl_easy_getinfo(" << (AICURL*)handle << ", " << info << ", (long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
+		Dout(dc::finish, "(long*){ " << (ret == CURLE_OK ? *param.long_ptr : 0L) << "L }) = " << ret);
 		break;
 	  case CURLINFO_DOUBLE:
-		Dout(dc::curltr, "curl_easy_getinfo(" << (AICURL*)handle << ", " << info << ", (double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
+		Dout(dc::finish, "(double*){" << (ret == CURLE_OK ? *param.double_ptr : 0.) << "}) = " << ret);
 		break;
 	  case CURLINFO_SLIST:
-		Dout(dc::curltr, "curl_easy_getinfo(" << (AICURL*)handle << ", " << info << ", (curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
+		Dout(dc::finish, "(curl_slist**){ " << (ret == CURLE_OK ? **param.curl_slist_ptr : unchanged_slist) << " }) = " << ret);
 		break;
 	}
   }
@@ -645,36 +639,32 @@ CURLcode debug_curl_easy_getinfo(CURL* handle, CURLINFO info, ...)
 
 CURL* debug_curl_easy_init(void)
 {
-  CURL* ret;
-  ret = curl_easy_init();
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_easy_init() = " << (AICURL*)ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_easy_init() = ");
+  CURL* ret = curl_easy_init();
+  Dout(dc::finish, (AICURL*)ret);
   return ret;
 }
 
 CURLcode debug_curl_easy_pause(CURL* handle, int bitmask)
 {
-  CURLcode ret;
-  ret = curl_easy_pause(handle, bitmask);
-  if (!print_debug(handle)) return ret;
-  Dout(dc::curltr, "curl_easy_pause(" << (AICURL*)handle << ", 0x" << std::hex << bitmask << std::dec << ") = " << ret);
+  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_pause(" << (AICURL*)handle << ", 0x" << std::hex << bitmask << std::dec << ") = ");
+  CURLcode ret = curl_easy_pause(handle, bitmask);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 CURLcode debug_curl_easy_perform(CURL* handle)
 {
-  CURLcode ret;
-  ret = curl_easy_perform(handle);
-  if (!print_debug(handle)) return ret;
-  Dout(dc::curltr, "curl_easy_perform(" << (AICURL*)handle << ") = " << ret);
+  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_perform(" << (AICURL*)handle << ") = ");
+  CURLcode ret = curl_easy_perform(handle);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 void debug_curl_easy_reset(CURL* handle)
 {
+  Dout(dc::curltr(print_debug(handle)), "curl_easy_reset(" << (AICURL*)handle << ")");
   curl_easy_reset(handle);
-  if (!print_debug(handle)) return;
-  Dout(dc::curltr, "curl_easy_reset(" << (AICURL*)handle << ")");
 }
 
 CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
@@ -710,11 +700,9 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
   {
 	case CURLOPTTYPE_LONG:
 	{
+	  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", " << param.along << "L) = ");
 	  ret = curl_easy_setopt(handle, option, param.along);
-	  if (print_debug(handle))
-	  {
-		Dout(dc::curltr, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", " << param.along << "L) = " << ret);
-	  }
+	  Dout(dc::finish, ret);
 	  if (option == CURLOPT_POSTFIELDSIZE)
 	  {
 		postfieldsize = param.along;
@@ -723,9 +711,7 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	}
 	case CURLOPTTYPE_OBJECTPOINT:
 	{
-	  ret = curl_easy_setopt(handle, option, param.ptr);
-	  if (!print_debug(handle)) break;
-	  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcwd::libcw_do, dc::curltr)
+	  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcwd::libcw_do, dc::curltr(print_debug(handle))|continued_cf)
 	  LibcwDoutStream << "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", ";
 	  // For a subset of all options that take a char*, print the string passed.
 	  if (option == CURLOPT_PROXY ||			// Set HTTP proxy to use. The parameter should be a char* to a zero terminated string holding the host name or dotted IP address.
@@ -771,8 +757,10 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	  {
 		LibcwDoutStream << "(object*)0x" << std::hex << (size_t)param.ptr << std::dec << ")";
 	  }
-	  LibcwDoutStream << " = " << ret;
+	  LibcwDoutStream << " = ";
 	  LibcwDoutScopeEnd;
+	  ret = curl_easy_setopt(handle, option, param.ptr);
+	  Dout(dc::finish, ret);
 	  if (option == CURLOPT_HTTPHEADER && param.ptr)
 	  {
 		debug::Indent indent(2);
@@ -787,19 +775,15 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 	  break;
 	}
 	case CURLOPTTYPE_FUNCTIONPOINT:
+	  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = ");
 	  ret = curl_easy_setopt(handle, option, param.ptr);
-	  if (print_debug(handle))
-	  {
-	    Dout(dc::curltr, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
-	  }
+	  Dout(dc::finish, ret);
 	  break;
 	case CURLOPTTYPE_OFF_T:
 	{
+	  Dout(dc::curltr(print_debug(handle))|continued_cf, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (curl_off_t)" << param.offset << ") = ");
 	  ret = curl_easy_setopt(handle, option, param.offset);
-	  if (print_debug(handle))
-	  {
-		Dout(dc::curltr, "curl_easy_setopt(" << (AICURL*)handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
-	  }
+	  Dout(dc::finish, ret);
 	  if (option == CURLOPT_POSTFIELDSIZE_LARGE)
 	  {
 		postfieldsize = (long)param.offset;
@@ -814,103 +798,93 @@ CURLcode debug_curl_easy_setopt(CURL* handle, CURLoption option, ...)
 
 char const* debug_curl_easy_strerror(CURLcode errornum)
 {
-  char const* ret;
-  ret = curl_easy_strerror(errornum);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_easy_strerror(" << errornum << ") = \"" << ret << '"');
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_easy_strerror(" << errornum << ") = ");
+  char const* ret = curl_easy_strerror(errornum);
+  Dout(dc::finish, '"' << ret << '"');
   return ret;
 }
 
 char* debug_curl_easy_unescape(CURL* curl, char* url, int inlength, int* outlength)
 {
-  char* ret;
-  ret = curl_easy_unescape(curl, url, inlength, outlength);
-  if (!print_debug(curl)) return ret;
-  Dout(dc::curltr, "curl_easy_unescape(" << (AICURL*)curl << ", \"" << url << "\", " << inlength << ", " << ((ret && outlength) ? *outlength : 1) << ") = \"" << ret << '"');
+  Dout(dc::curltr(print_debug(curl))|continued_cf, "curl_easy_unescape(" << (AICURL*)curl << ", \"" << url << "\", " << inlength << ", ");
+  char* ret = curl_easy_unescape(curl, url, inlength, outlength);
+  Dout(dc::finish, ((ret && outlength) ? *outlength : 1) << ") = \"" << ret << '"');
   return ret;
 }
 
 void debug_curl_free(char* ptr)
 {
+  Dout(dc::curltr(!gDebugCurlTerse), "curl_free(0x" << std::hex << (size_t)ptr << std::dec << ")");
   curl_free(ptr);
-  if (gDebugCurlTerse) return;
-  Dout(dc::curltr, "curl_free(0x" << std::hex << (size_t)ptr << std::dec << ")");
 }
 
 time_t debug_curl_getdate(char const* datestring, time_t* now)
 {
-  time_t ret;
-  ret = curl_getdate(datestring, now);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_getdate(\"" << datestring << "\", " << (now == NULL ? "NULL" : "<erroneous non-NULL value for 'now'>") << ") = " << ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_getdate(\"" << datestring << "\", " << (now == NULL ? "NULL" : "<erroneous non-NULL value for 'now'>") << ") = ");
+  time_t ret = curl_getdate(datestring, now);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 void debug_curl_global_cleanup(void)
 {
-  curl_global_cleanup();
   Dout(dc::curltr, "curl_global_cleanup()");
+  curl_global_cleanup();
 }
 
 CURLcode debug_curl_global_init(long flags)
 {
-  CURLcode ret;
-  ret = curl_global_init(flags);
-  Dout(dc::curltr, "curl_global_init(0x" << std::hex << flags << std::dec << ") = " << ret);
+  Dout(dc::curltr|continued_cf, "curl_global_init(0x" << std::hex << flags << std::dec << ") = ");
+  CURLcode ret = curl_global_init(flags);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 CURLMcode debug_curl_multi_add_handle(CURLM* multi_handle, CURL* easy_handle)
 {
-  CURLMcode ret;
-  ret = curl_multi_add_handle(multi_handle, easy_handle);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_add_handle(" << (AICURLM*)multi_handle << ", " << (AICURL*)easy_handle << ") = " << ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_add_handle(" << (AICURLM*)multi_handle << ", " << (AICURL*)easy_handle << ") = ");
+  CURLMcode ret = curl_multi_add_handle(multi_handle, easy_handle);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 CURLMcode debug_curl_multi_assign(CURLM* multi_handle, curl_socket_t sockfd, void* sockptr)
 {
-  CURLMcode ret;
-  ret = curl_multi_assign(multi_handle, sockfd, sockptr);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_assign(" << (AICURLM*)multi_handle << ", " << Socket(sockfd) << ", " << sockptr << ") = " << ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_assign(" << (AICURLM*)multi_handle << ", " << Socket(sockfd) << ", " << sockptr << ") = ");
+  CURLMcode ret = curl_multi_assign(multi_handle, sockfd, sockptr);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 CURLMcode debug_curl_multi_cleanup(CURLM* multi_handle)
 {
-  CURLMcode ret;
-  ret = curl_multi_cleanup(multi_handle);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_cleanup(" << (AICURLM*)multi_handle << ") = " << ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_cleanup(" << (AICURLM*)multi_handle << ") = ");
+  CURLMcode ret = curl_multi_cleanup(multi_handle);
+  Dout(dc::finish, ret);
   return ret;
 }
 
 CURLMsg* debug_curl_multi_info_read(CURLM* multi_handle, int* msgs_in_queue)
 {
-  CURLMsg* ret;
-  ret = curl_multi_info_read(multi_handle, msgs_in_queue);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_info_read(" << (AICURLM*)multi_handle << ", {" << *msgs_in_queue << "}) = " << ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_info_read(" << (AICURLM*)multi_handle << ", ");
+  CURLMsg* ret = curl_multi_info_read(multi_handle, msgs_in_queue);
+  Dout(dc::finish, "{" << *msgs_in_queue << "}) = " << ret);
   return ret;
 }
 
 CURLM* debug_curl_multi_init(void)
 {
-  CURLM* ret;
-  ret = curl_multi_init();
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_init() = " << (AICURLM*)ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_init() = ");
+  CURLM* ret = curl_multi_init();
+  Dout(dc::finish, (AICURLM*)ret);
   return ret;
 }
 
 CURLMcode debug_curl_multi_remove_handle(CURLM* multi_handle, CURL* easy_handle)
 {
-  CURLMcode ret;
-  ret = curl_multi_remove_handle(multi_handle, easy_handle);
-  if (!print_debug(easy_handle)) return ret;
-  Dout(dc::curltr, "curl_multi_remove_handle(" << (AICURLM*)multi_handle << ", " << (AICURL*)easy_handle << ") = " << ret);
+  Dout(dc::curltr(print_debug(easy_handle))|continued_cf, "curl_multi_remove_handle(" << (AICURLM*)multi_handle << ", " << (AICURL*)easy_handle << ") = ");
+  CURLMcode ret = curl_multi_remove_handle(multi_handle, easy_handle);
+  Dout(dc::finish, ret);
   return ret;
 }
 
@@ -945,24 +919,24 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
   switch (param_type)
   {
 	case CURLOPTTYPE_LONG:
+	  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", " << param.along << "L) = ");
 	  ret = curl_multi_setopt(multi_handle, option, param.along);
-	  if (gDebugCurlTerse) break;
-	  Dout(dc::curltr, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", " << param.along << "L) = " << ret);
+	  Dout(dc::finish, ret);
 	  break;
 	case CURLOPTTYPE_OBJECTPOINT:
+	  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (object*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = ");
 	  ret = curl_multi_setopt(multi_handle, option, param.ptr);
-	  if (gDebugCurlTerse) break;
-	  Dout(dc::curltr, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (object*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
+	  Dout(dc::finish, ret);
 	  break;
 	case CURLOPTTYPE_FUNCTIONPOINT:
+	  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = ");
 	  ret = curl_multi_setopt(multi_handle, option, param.ptr);
-	  if (gDebugCurlTerse) break;
-	  Dout(dc::curltr, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (function*)0x" << std::hex << (size_t)param.ptr << std::dec << ") = " << ret);
+	  Dout(dc::finish, ret);
 	  break;
 	case CURLOPTTYPE_OFF_T:
+	  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (curl_off_t)" << param.offset << ") = ");
 	  ret = curl_multi_setopt(multi_handle, option, param.offset);
-	  if (gDebugCurlTerse) break;
-	  Dout(dc::curltr, "curl_easy_setopt(" << (AICURLM*)multi_handle << ", " << option << ", (curl_off_t)" << param.offset << ") = " << ret);
+	  Dout(dc::finish, ret);
 	  break;
 	default:	// Stop compiler complaining about no default.
 	  break;
@@ -972,54 +946,47 @@ CURLMcode debug_curl_multi_setopt(CURLM* multi_handle, CURLMoption option, ...)
 
 CURLMcode debug_curl_multi_socket_action(CURLM* multi_handle, curl_socket_t sockfd, int ev_bitmask, int* running_handles)
 {
-  CURLMcode ret;
-  ret = curl_multi_socket_action(multi_handle, sockfd, ev_bitmask, running_handles);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_socket_action(" << (AICURLM*)multi_handle << ", " << Socket(sockfd) <<
-	  ", " << EvBitmask(ev_bitmask) << ", {" << (ret == CURLM_OK ? *running_handles : 0) << "}) = " << ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_socket_action(" << (AICURLM*)multi_handle << ", " << Socket(sockfd) << ", " << EvBitmask(ev_bitmask) << ", ");
+  CURLMcode ret = curl_multi_socket_action(multi_handle, sockfd, ev_bitmask, running_handles);
+  Dout(dc::finish, "{" << (ret == CURLM_OK ? *running_handles : 0) << "}) = " << ret);
   return ret;
 }
 
 char const* debug_curl_multi_strerror(CURLMcode errornum)
 {
-  char const* ret;
-  ret = curl_multi_strerror(errornum);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_multi_strerror(" << errornum << ") = \"" << ret << '"');
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_multi_strerror(" << errornum << ") = ");
+  char const* ret = curl_multi_strerror(errornum);
+  Dout(dc::finish, '"' << ret << '"');
   return ret;
 }
 
 struct curl_slist* debug_curl_slist_append(struct curl_slist* list, char const* string)
 {
-  struct curl_slist* ret;
-  ret = curl_slist_append(list, string);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_slist_append((curl_slist)@0x" << std::hex << (size_t)list << std::dec << ", \"" << string << "\") = " << *ret);
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_slist_append((curl_slist)@0x" << std::hex << (size_t)list << std::dec << ", \"" << string << "\") = ");
+  struct curl_slist* ret = curl_slist_append(list, string);
+  Dout(dc::finish, *ret);
   return ret;
 }
 
 void debug_curl_slist_free_all(struct curl_slist* list)
 {
+  Dout(dc::curltr(!gDebugCurlTerse), "curl_slist_free_all((curl_slist)@0x" << std::hex << (size_t)list << std::dec << ")");
   curl_slist_free_all(list);
-  if (gDebugCurlTerse) return;
-  Dout(dc::curltr, "curl_slist_free_all((curl_slist)@0x" << std::hex << (size_t)list << std::dec << ")");
 }
 
 char* debug_curl_unescape(char const* url, int length)
 {
-  char* ret;
-  ret = curl_unescape(url, length);
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_unescape(\"" << url << "\", " << length << ") = \"" << ret << '"');
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_unescape(\"" << url << "\", " << length << ") = ");
+  char* ret = curl_unescape(url, length);
+  Dout(dc::finish, '"' << ret << '"');
   return ret;
 }
 
 char* debug_curl_version(void)
 {
-  char* ret;
-  ret = curl_version();
-  if (gDebugCurlTerse) return ret;
-  Dout(dc::curltr, "curl_version() = \"" << ret << '"');
+  Dout(dc::curltr(!gDebugCurlTerse)|continued_cf, "curl_version() = ");
+  char* ret = curl_version();
+  Dout(dc::finish, '"' << ret << '"');
   return ret;
 }
 

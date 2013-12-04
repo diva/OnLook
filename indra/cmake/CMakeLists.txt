@@ -81,6 +81,7 @@ set(cmake_SOURCE_FILES
     Linking.cmake
     MediaPluginBase.cmake
     NDOF.cmake
+    NVAPI.cmake
     OPENAL.cmake
     OpenGL.cmake
     OpenJPEG.cmake

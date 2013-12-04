@@ -211,7 +211,7 @@
 			<menu_item_call label="Informar Fallos de Singularity..." name="Report Singularity Bug..."/>
 			<menu_item_call label="Solicitar Nueva Característica..." name="Request New Feature..."/>			
 		</menu>
-		<menu_item_call label="Acerca de Singularity..." name="About Second Life..."/>
+		<menu_item_call label="Acerca de [APP_NAME]..." name="About Second Life..."/>
 	</menu>
 	<!-- ============================= -->
 	<menu label="Singularity" name="Singularity">
