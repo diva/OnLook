@@ -20,6 +20,7 @@ set(llcommon_SOURCE_FILES
     aialert.cpp
     aifile.cpp
     aiframetimer.cpp
+    aisyncclient.cpp
     aithreadid.cpp
     imageids.cpp
     indra_constants.cpp
@@ -112,6 +113,7 @@ set(llcommon_HEADER_FILES
     aifile.h
     aiframetimer.h
     airecursive.h
+    aisyncclient.h
     aithreadid.h
     aithreadsafe.h
     bitpack.h
