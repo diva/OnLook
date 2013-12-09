@@ -118,12 +118,7 @@ LLPanelNetwork::~LLPanelNetwork()
 
 void LLPanelNetwork::apply()
 {
-	U32 cache_size = (U32)childGetValue("cache_size").asInteger();
-	if (gSavedSettings.getU32("CacheSize") != cache_size)
-	{
-		onClickClearCache(this);
-		gSavedSettings.setU32("CacheSize", cache_size);
-	}
+	gSavedSettings.setU32("CacheSize", childGetValue("cache_size").asInteger());
 	gSavedSettings.setF32("ThrottleBandwidthKBPS", childGetValue("max_bandwidth").asReal());
 	gSavedSettings.setF32("HTTPThrottleBandwidth", childGetValue("tex_bandwidth").asReal());
 	gSavedSettings.setBOOL("ImagePipelineUseHTTP", childGetValue("http_textures"));
