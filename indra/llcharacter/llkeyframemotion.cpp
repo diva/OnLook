@@ -484,7 +484,9 @@ LLJoint* LLKeyframeMotion::getJoint(U32 index)
 		index = (S32)mJointStates.size() - 1;
 	// </edit>
 	LLJoint* joint = mJointStates[index]->getJoint();
-	llassert_always (joint);
+	if(!joint) {
+		LL_WARNS_ONCE("Animation") << "Missing joint index:"<< index << " ID:" << mID << " Name:" << mName << LL_ENDL;
+	}
 	return joint;
 }
 

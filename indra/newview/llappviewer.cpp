@@ -2972,14 +2972,17 @@ void LLAppViewer::removeMarkerFile(bool leave_logout_marker)
 		mMarkerFile.close() ;
 		LLAPRFile::remove( mMarkerFileName );
 	}
-	if (mLogoutMarkerFile != NULL && !leave_logout_marker)
+	if (mLogoutMarkerFile != NULL)
 	{
-		LLAPRFile::remove( mLogoutMarkerFileName );
-		mLogoutMarkerFile = NULL;
-	}
-	else
-	{
-		LL_WARNS("MarkerFile") << "leaving markers because this is a second instance" << LL_ENDL;
+		if(!leave_logout_marker)
+		{
+			LLAPRFile::remove( mLogoutMarkerFileName );
+			mLogoutMarkerFile = NULL;
+		}
+		else
+		{
+			LL_WARNS("MarkerFile") << "leaving markers because this is a second instance" << LL_ENDL;
+		}
 	}
 }
 
