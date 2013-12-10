@@ -6153,6 +6153,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>EnableNongestureSounds</key>
+    <map>
+      <key>Comment</key>
+      <string>Play sounds from non-gestures</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>EnableNongestureSoundsSelf</key>
+    <map>
+      <key>Comment</key>
+      <string>Play sounds from your non-gestures when EnableNongestureSounds is false. (Useless otherwise)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>EnableMouselook</key>
     <map>
       <key>Comment</key>

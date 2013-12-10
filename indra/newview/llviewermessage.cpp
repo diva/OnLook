@@ -5287,10 +5287,19 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 	}
 
 	// Don't play sounds from gestures if they are not enabled.
-	if (object_id == owner_id && !gSavedSettings.getBOOL("EnableGestureSounds"))
+	if (object_id == owner_id)
 	{
-		// Don't mute own gestures, if they're not muted.
-		if (owner_id != gAgentID || !gSavedSettings.getBOOL("EnableGestureSoundsSelf"))
+		if (!gSavedSettings.getBOOL("EnableGestureSounds"))
+		{
+			// Don't mute own gestures, if they're not muted.
+			if (owner_id != gAgentID || !gSavedSettings.getBOOL("EnableGestureSoundsSelf"))
+				return;
+		}
+	}
+	else if (!gSavedSettings.getBOOL("EnableNongestureSounds"))
+	{
+		// Don't mute own non-gestures, if they're not muted.
+		if (owner_id != gAgentID || !gSavedSettings.getBOOL("EnableNongestureSoundsSelf"))
 			return;
 	}
 
