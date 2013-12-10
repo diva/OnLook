@@ -266,7 +266,7 @@ public:
 
 	~LLMeshLODResponder()
 	{
-		if (!LLApp::isQuitting())
+		if (!LLApp::isExiting())
 		{
 			if (!mProcessed)
 			{
