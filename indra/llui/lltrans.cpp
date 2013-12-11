@@ -96,7 +96,7 @@ int const access_increment = 1000;
 
 static void log_sStringTemplates_accesses(void)
 {
-  llinfos << "LLTrans::getString/findString called " << sStringTemplates_accesses << " in total." << llendl;
+  lldebugs << "LLTrans::getString/findString called " << sStringTemplates_accesses << " in total." << llendl;
 }
 
 //static 
