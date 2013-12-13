@@ -229,5 +229,16 @@
       <key>Value</key>
       <real>1</real>
     </map>
+    <key>SHRenderSSAOResolutionScale</key>
+    <map>
+      <key>Comment</key>
+      <string>SSAO resolution scale. Valid values: 0.01-1.0</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>.5</real>
+    </map>
   </map>
 </llsd>
