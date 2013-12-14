@@ -1508,8 +1508,9 @@ LLNotificationPtr LLNotifications::add(AIAlert::Error const& error, int type, un
 // Allow LLNotifications::add, LLNotifications::cancel and LLNotifications::update
 // to be called from any thread.
 
-struct UpdateItem
+class UpdateItem
 {
+public:
   char const* sigtype;
   LLNotificationPtr pNotif;
   UpdateItem(char const* st, LLNotificationPtr const& np) : sigtype(st), pNotif(np) { }
