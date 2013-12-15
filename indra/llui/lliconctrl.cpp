@@ -40,65 +40,53 @@
 #include "llcontrol.h"
 #include "llui.h"
 #include "lluictrlfactory.h"
-
-const F32 RESOLUTION_BUMP = 1.f;
+#include "lluiimage.h"
 
 static LLRegisterWidget<LLIconCtrl> r("icon");
 
-LLIconCtrl::LLIconCtrl(const std::string& name, const LLRect &rect, const LLUUID &image_id)
-:	LLUICtrl(name, 
-			 rect, 
-			 FALSE, // mouse opaque
-			 NULL, 
-			 FOLLOWS_LEFT | FOLLOWS_TOP),
-	mColor( LLColor4::white )
+LLIconCtrl::Params::Params()
+:	image("image_name"),
+	color("color"),
+//	use_draw_context_alpha("use_draw_context_alpha", true),
+	scale_image("scale_image"),
+	min_width("min_width", 0),
+	min_height("min_height", 0)
+{}
+
+LLIconCtrl::LLIconCtrl(const LLIconCtrl::Params& p)
+:	LLUICtrl(p),
+	mColor(p.color()),
+	mImagep(p.image),
+//	mUseDrawContextAlpha(p.use_draw_context_alpha),
+	mPriority(0),
+	mMinWidth(p.min_width),
+	mMinHeight(p.min_height)
 {
-	setImage( image_id );
-	setTabStop(FALSE);
+	if (mImagep.notNull())
+	{
+		LLUICtrl::setValue(mImagep->getName());
+	}
+	setTabStop(false);
 }
 
-LLIconCtrl::LLIconCtrl(const std::string& name, const LLRect &rect, const std::string &image_name)
+LLIconCtrl::LLIconCtrl(const std::string& name, const LLRect &rect, const std::string &image_name, const S32& min_width, const S32& min_height)
 :	LLUICtrl(name, 
 			 rect, 
 			 FALSE, // mouse opaque
 			 NULL,
 			 FOLLOWS_LEFT | FOLLOWS_TOP),
 	mColor( LLColor4::white ),
-	mImageName(image_name)
+	mPriority(0),
+	mMinWidth(min_width),
+	mMinHeight(min_height)
 {
-	setImage( image_name );
+	setValue( image_name );
 	setTabStop(FALSE);
 }
-
 
 LLIconCtrl::~LLIconCtrl()
 {
 	mImagep = NULL;
-}
-
-
-void LLIconCtrl::setImage(const std::string& image_name)
-{
-	//RN: support UUIDs masquerading as strings
-	if (LLUUID::validate(image_name))
-	{
-		mImageID = LLUUID(image_name);
-
-		setImage(mImageID);
-	}
-	else
-	{
-		mImageName = image_name;
-		mImagep = LLUI::getUIImage(image_name);
-		mImageID.setNull();
-	}
-}
-
-void LLIconCtrl::setImage(const LLUUID& image_id)
-{
-	mImageName.clear();
-	mImagep = LLUI::getUIImageByID(image_id);
-	mImageID = image_id;
 }
 
 
@@ -120,23 +108,40 @@ void LLIconCtrl::setAlpha(F32 alpha)
 }
 
 // virtual
+// value might be a string or a UUID
 void LLIconCtrl::setValue(const LLSD& value )
 {
-	if (value.isUUID())
+	LLSD tvalue(value);
+	if (value.isString() && LLUUID::validate(value.asString()))
 	{
-		setImage(value.asUUID());
+		//RN: support UUIDs masquerading as strings
+		tvalue = LLSD(LLUUID(value.asString()));
+	}
+	LLUICtrl::setValue(tvalue);
+	if (tvalue.isUUID())
+	{
+		mImagep = LLUI::getUIImageByID(tvalue.asUUID(), mPriority);
 	}
 	else
 	{
-		setImage(value.asString());
+		mImagep = LLUI::getUIImage(tvalue.asString(), mPriority);
+	}
+
+	if (mImagep.notNull()
+		&& mImagep->getImage().notNull()
+		&& mMinWidth
+		&& mMinHeight)
+	{
+		mImagep->getImage()->setKnownDrawSize(llmax(mMinWidth, mImagep->getWidth()), llmax(mMinHeight, mImagep->getHeight()));
 	}
 }
 
-// virtual
-LLSD LLIconCtrl::getValue() const
+std::string LLIconCtrl::getImageName() const
 {
-	LLSD ret = getImage();
-	return ret;
+	if (getValue().isString())
+		return getValue().asString();
+	else
+		return std::string();
 }
 
 // virtual
@@ -146,10 +151,13 @@ LLXMLNodePtr LLIconCtrl::getXML(bool save_children) const
 
 	node->setName(LL_ICON_CTRL_TAG);
 
-	if (mImageName != "")
+	if (!getImageName().empty())
 	{
-		node->createChild("image_name", TRUE)->setStringValue(mImageName);
+		node->createChild("image_name", TRUE)->setStringValue(getImageName());
 	}
+
+	if (mMinWidth) node->createChild("min_width", true)->setIntValue(mMinWidth);
+	if (mMinHeight) node->createChild("min_height", true)->setIntValue(mMinHeight);
 
 	node->createChild("color", TRUE)->setFloatValue(4, mColor.mV);
 
@@ -170,7 +178,18 @@ LLView* LLIconCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 	LLColor4 color(LLColor4::white);
 	LLUICtrlFactory::getAttributeColor(node,"color", color);
 
-	LLIconCtrl* icon = new LLIconCtrl("icon", rect, image_name);
+	S32 min_width = 0, min_height = 0;
+	if (node->hasAttribute("min_width"))
+	{
+		node->getAttributeS32("min_width", min_width);
+	}
+
+	if (node->hasAttribute("min_height"))
+	{
+		node->getAttributeS32("min_height", min_height);
+	}
+
+	LLIconCtrl* icon = new LLIconCtrl("icon", rect, image_name, min_width, min_height);
 
 	icon->setColor(color);
 

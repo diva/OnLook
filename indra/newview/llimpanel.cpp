@@ -1390,7 +1390,7 @@ void LLFloaterIMPanel::sendTypingState(bool typing)
 		return;
 	// Don't want to send typing indicators to multiple people, potentially too
 	// much network traffic.  Only send in person-to-person IMs.
-	if (mSessionType == P2P_SESSION) return;
+	if (mSessionType != P2P_SESSION) return;
 
 	std::string name;
 	gAgent.buildFullname(name);

@@ -127,7 +127,7 @@ if (LINUX)
       -pthread
       )
 
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -D_FORTIFY_SOURCE=2 ")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 ")
 
   # Don't catch SIGCHLD in our base application class for the viewer
   # some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!

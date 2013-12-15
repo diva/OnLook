@@ -17,7 +17,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>PhoenixIMAnnounceStealFocus</key>
     <map>
@@ -223,13 +223,13 @@
   <key>zmm_mlfov</key>
   <map>
     <key>Comment</key>
-    <string>1=Normal, Under 1 Zoom Out, Over 1 Zoom in </string>
+    <string>Adjusted when scrolling back and forth while holding rightclick in mouselook (Zoomed in &lt; 1.037 &lt; Zoomed out)</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>F32</string>
     <key>Value</key>
-    <real>1</real>
+    <real>0.5</real>
   </map>
 
   <key>AllowLargeSounds</key>
@@ -762,6 +762,39 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>LiruMouselookHidesFloaters</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not floaters open during third person will be hidden while in mouselook</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>LiruMouselookHidesMenubar</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the main menu bar will be hidden in mouselook</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>LiruMouselookHidesNotices</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not notices will be hidden in mouselook</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
     </map>
     <key>LiruMouselookMenu</key>
     <map>
@@ -6146,6 +6179,28 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Play sounds from your gestures when EnableGestureSounds is false. (Useless otherwise)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>EnableNongestureSounds</key>
+    <map>
+      <key>Comment</key>
+      <string>Play sounds from non-gestures</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>EnableNongestureSoundsSelf</key>
+    <map>
+      <key>Comment</key>
+      <string>Play sounds from your non-gestures when EnableNongestureSounds is false. (Useless otherwise)</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

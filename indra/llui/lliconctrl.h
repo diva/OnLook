@@ -49,33 +49,55 @@ class LLIconCtrl
 : public LLUICtrl
 {
 public:
-	LLIconCtrl(const std::string& name, const LLRect &rect, const LLUUID &image_id);
-	LLIconCtrl(const std::string& name, const LLRect &rect, const std::string &image_name);
+	struct Params : public LLInitParam::Block<Params, LLUICtrl::Params>
+	{
+		Optional<LLUIImage*>	image;
+		Optional<LLUIColor>		color;
+//		Optional<bool>			use_draw_context_alpha;
+		Optional<S32>			min_width,
+								min_height;
+		Ignored					scale_image;
+
+		Params();
+	};
+protected:
+	LLIconCtrl(const Params&);
+	friend class LLUICtrlFactory;
+
+public:
+	LLIconCtrl(const std::string& name, const LLRect &rect, const std::string &image_name, const S32& min_width = 0, const S32& min_height = 0);
 	virtual ~LLIconCtrl();
 
 	// llview overrides
 	virtual void	draw();
 
-	void			setImage(const std::string& image_name);
-	void			setImage(const LLUUID& image_name);
-	const LLUUID	&getImage() const						{ return mImageID; }
-	std::string		getImageName() const						{ return mImageName; }
-
-	// Takes a UUID, wraps get/setImage
+	// lluictrl overrides
 	virtual void	setValue(const LLSD& value );
-	virtual LLSD	getValue() const;
 
 	/*virtual*/ void	setAlpha(F32 alpha);
 
+	std::string	getImageName() const;
+
 	void			setColor(const LLColor4& color) { mColor = color; }
+	void			setImage(LLPointer<LLUIImage> image) { mImagep = image; }
+	const LLPointer<LLUIImage> getImage() { return mImagep; }
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 
+protected:
+	S32 mPriority;
+
+	//the output size of the icon image if set.
+	S32 mMinWidth,
+		mMinHeight;
+
+	// If set to true (default), use the draw context transparency.
+	// If false, will use transparency returned by getCurrentTransparency(). See STORM-698.
+	//bool mUseDrawContextAlpha;
+
 private:
 	LLColor4		mColor;
-	std::string		mImageName;
-	LLUUID			mImageID;
 	LLPointer<LLUIImage>	mImagep;
 };
 

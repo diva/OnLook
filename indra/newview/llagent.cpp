@@ -52,6 +52,7 @@
 #include "llmoveview.h"
 #include "llchatbar.h"
 #include "llnotificationsutil.h"
+#include "llnotify.h" // For hiding notices(gNotifyBoxView) in mouselook
 #include "llparcel.h"
 #include "llrendersphere.h"
 #include "llsdmessage.h"
@@ -2043,6 +2044,8 @@ void LLAgent::endAnimationUpdateUI()
 		gMenuBarView->setVisible(TRUE);
 		gStatusBar->setVisibleForMouselook(true);
 
+		// Show notices
+		gNotifyBoxView->setVisible(true);
 
 		LLToolMgr::getInstance()->setCurrentToolset(gBasicToolset);
 
@@ -2053,7 +2056,7 @@ void LLAgent::endAnimationUpdateUI()
 		}
 
 		// Only pop if we have pushed...
-		if (TRUE == mViewsPushed)
+		if (mViewsPushed)
 		{
 			LLFloaterView::skip_list_t skip_list;
 			skip_list.insert(LLFloaterMap::getInstance());
@@ -2134,9 +2137,11 @@ void LLAgent::endAnimationUpdateUI()
 	if (gAgentCamera.getCameraMode() == CAMERA_MODE_MOUSELOOK)
 	{
 		// hide menus
-		gMenuBarView->setVisible(FALSE);
+		gMenuBarView->setVisible(!gSavedSettings.getBOOL("LiruMouselookHidesMenubar"));
 		gStatusBar->setVisibleForMouselook(false);
 
+		if (gSavedSettings.getBOOL("LiruMouselookHidesNotices"))
+			gNotifyBoxView->setVisible(false);
 
 		// clear out camera lag effect
 		gAgentCamera.clearCameraLag();
@@ -2146,7 +2151,7 @@ void LLAgent::endAnimationUpdateUI()
 
 		LLToolMgr::getInstance()->setCurrentToolset(gMouselookToolset);
 
-		mViewsPushed = TRUE;
+		mViewsPushed = gSavedSettings.getBOOL("LiruMouselookHidesFloaters");
 
 		if (mMouselookModeInSignal)
 		{
@@ -2155,9 +2160,12 @@ void LLAgent::endAnimationUpdateUI()
 
 		// hide all floaters except the mini map
 
-		LLFloaterView::skip_list_t skip_list;
-		skip_list.insert(LLFloaterMap::getInstance());
-		gFloaterView->pushVisibleAll(FALSE, skip_list);
+		if (mViewsPushed) // Singu Note: Only hide if the setting is true.
+		{
+			LLFloaterView::skip_list_t skip_list;
+			skip_list.insert(LLFloaterMap::getInstance());
+			gFloaterView->pushVisibleAll(FALSE, skip_list);
+		}
 
 		if( gMorphView )
 		{

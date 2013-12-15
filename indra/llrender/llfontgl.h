@@ -171,7 +171,9 @@ public:
 	// Takes a string with potentially several flags, i.e. "NORMAL|BOLD|ITALIC"
 	static U8 getStyleFromString(const std::string &style);
 	static std::string getStringFromStyle(U8 style);
+
 	static std::string nameFromFont(const LLFontGL* fontp);
+	static std::string sizeFromFont(const LLFontGL* fontp);
 
 	static std::string nameFromHAlign(LLFontGL::HAlign align);
 	static LLFontGL::HAlign hAlignFromName(const std::string& name);
@@ -201,6 +203,9 @@ public:
 	static LLFontGL* getFontSansSerifBold();
 	static LLFontGL* getFontExtChar();
 	static LLFontGL* getFont(const LLFontDescriptor& desc);
+	// Use with legacy names like "SANSSERIF_SMALL" or "OCRA"
+	static LLFontGL* getFontByName(const std::string& name);
+	static LLFontGL* getFontDefault(); // default fallback font
 
 	static std::string getFontPathLocal();
 	static std::string getFontPathSystem();

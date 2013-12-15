@@ -4275,7 +4275,7 @@ void LLModelPreview::updateStatusMessages()
 		std::string img = lod_status_image[upload_status[lod]];
 		LLIconCtrl* icon = mFMP->getChild<LLIconCtrl>(lod_icon_name[lod]);
 		icon->setVisible(true);
-		icon->setImage(img);
+		icon->setValue(img);
 
 		if (upload_status[lod] >= 2)
 		{
@@ -4286,7 +4286,7 @@ void LLModelPreview::updateStatusMessages()
 		{
 			mFMP->childSetText("lod_status_message_text", mFMP->getString(message));
 			icon = mFMP->getChild<LLIconCtrl>("lod_status_message_icon");
-			icon->setImage(img);
+			icon->setValue(img);
 		}
 
 		updateLodControls(lod);
