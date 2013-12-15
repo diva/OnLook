@@ -702,9 +702,12 @@ bool LLWorldMap::insertItem(U32 x_world, U32 y_world, std::string& name, LLUUID&
 		case MAP_ITEM_LAND_FOR_SALE:		// land for sale
 		case MAP_ITEM_LAND_FOR_SALE_ADULT:	// adult land for sale 
 		{
-			new_item.setTooltip(llformat("%d sq. m. %s%d", extra,
+			new_item.setTooltip(llformat("%d sq. m. %s%d (%.1f %s/sq. m.)", extra,
 				gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(),
-				extra2));
+				extra2,
+				(extra > 0) ? ((F32)extra2 / extra) : 0.f,
+				gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str()));
+
 			if (type == MAP_ITEM_LAND_FOR_SALE)
 			{
 				siminfo->insertLandForSale(new_item);
@@ -712,11 +715,11 @@ bool LLWorldMap::insertItem(U32 x_world, U32 y_world, std::string& name, LLUUID&
 			else if (type == MAP_ITEM_LAND_FOR_SALE_ADULT)
 			{
 				siminfo->insertLandForSaleAdult(new_item);
-				}
-				break;
 			}
-			case MAP_ITEM_CLASSIFIED: // classifieds
-			{
+			break;
+		}
+		case MAP_ITEM_CLASSIFIED: // classifieds
+		{
 			//DEPRECATED: no longer used
 			break;
 		}
