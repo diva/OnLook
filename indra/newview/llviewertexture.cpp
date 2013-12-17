@@ -1270,7 +1270,7 @@ BOOL LLViewerFetchedTexture::createTexture(S32 usename/*= 0*/)
 	mNeedsCreateTexture	= FALSE;
 	if (mRawImage.isNull())
 	{
-		llerrs << "LLViewerTexture trying to create texture with no Raw Image" << llendl;
+		llwarns << "LLViewerTexture trying to create texture with no Raw Image" << llendl;
 	}
 // 	llinfos << llformat("IMAGE Creating (%d) [%d x %d] Bytes: %d ",
 // 						mRawDiscardLevel, 
@@ -1712,7 +1712,7 @@ bool LLViewerFetchedTexture::updateFetch()
 	}
 	if (mIsMissingAsset)
 	{
-		llassert_always(!mHasFetcher);
+		llassert(!mHasFetcher);
 		return false; // skip
 	}
 	if (!mLoadedCallbackList.empty() && mRawImage.notNull())
@@ -1942,8 +1942,8 @@ bool LLViewerFetchedTexture::updateFetch()
 			mHasFetcher = FALSE;
 		}
 	}
-	
-	llassert_always(mRawImage.notNull() || (!mNeedsCreateTexture && !mIsRawImageValid));
+
+	llassert(mRawImage.notNull() || (!mNeedsCreateTexture && !mIsRawImageValid));
 	
 	return mIsFetching ? true : false;
 }

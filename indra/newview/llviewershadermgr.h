@@ -313,6 +313,8 @@ extern LLGLSLShaderArray<LLViewerShaderMgr::SHADER_DEFERRED>			gDeferredMultiLig
 extern LLGLSLShader			gDeferredSpotLightProgram;
 extern LLGLSLShader			gDeferredMultiSpotLightProgram;
 extern LLGLSLShader			gDeferredSunProgram;
+extern LLGLSLShader			gDeferredSSAOProgram;
+extern LLGLSLShader			gDeferredDownsampleDepthNearestProgram;
 extern LLGLSLShader			gDeferredBlurLightProgram;
 extern LLGLSLShader			gDeferredAvatarProgram;
 extern LLGLSLShader			gDeferredSoftenProgram;
