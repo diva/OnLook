@@ -220,7 +220,7 @@
     <integer>100</integer>
   </map>
   
-  <key>zmm_mlfov</key>
+  <key>ExodusAlternativeFOV</key>
   <map>
     <key>Comment</key>
     <string>Adjusted when scrolling back and forth while holding rightclick in mouselook (Zoomed in &lt; 1.037 &lt; Zoomed out)</string>
