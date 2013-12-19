@@ -615,6 +615,7 @@ public:
 	LLRenderTarget			mFXAABuffer;
 	LLRenderTarget			mEdgeMap;
 	LLRenderTarget			mDeferredDepth;
+	LLRenderTarget			mDeferredDownsampledDepth;
 	LLRenderTarget			mOcclusionDepth;
 	LLRenderTarget			mDeferredLight;
 	LLMultisampleBuffer		mSampleBuffer;

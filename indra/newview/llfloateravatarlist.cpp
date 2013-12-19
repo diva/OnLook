@@ -1252,26 +1252,35 @@ void LLFloaterAvatarList::setFocusAvatar(const LLUUID& id)
 	}
 }
 
+// Simple function to decrement iterators, wrapping back if needed
+template<typename T>
+T prev_iter(const T& cur, const T& begin, const T& end)
+{
+	return ((cur == begin) ? end : cur) - 1;
+}
+
 template<typename T>
 void decrement_focus_target(T begin, T end, BOOL marked_only)
 {
-	T iter = begin;
-	while(iter != end && !(*iter)->isFocused()) ++iter;
-	if(iter == end)
-		return;
-	T prev_iter = iter;
-	while(prev_iter != begin)
+	for (T iter = begin; iter != end; ++iter)
 	{
-		const LLAvatarListEntry& entry = *((--prev_iter)->get());
-		if(entry.isInList() && (entry.isMarked() || !marked_only) && gAgentCamera.lookAtObject(entry.getID(), false))
+		LLAvatarListEntry& old = *(iter->get());
+		if (!old.isFocused()) continue;
+		for (T prev = prev_iter(iter, begin, end); prev != iter; prev = prev_iter(prev, begin, end))
 		{
-			(*iter)->setFocus(FALSE);
-			(*prev_iter)->setFocus(TRUE);
-			gAgentCamera.lookAtObject((*prev_iter)->getID(), false);
-			return;
+			LLAvatarListEntry& entry = *(prev->get());
+			if (!entry.isInList()) continue;
+			if (marked_only && !entry.isMarked()) continue;
+			if (gAgentCamera.lookAtObject(entry.getID(), false))
+			{
+				old.setFocus(false);
+				entry.setFocus(true);
+				return;
+			}
 		}
+		// Nothing else to focus
+		break;
 	}
-	gAgentCamera.lookAtObject((*iter)->getID(), false);
 }
 
 void LLFloaterAvatarList::focusOnPrev(BOOL marked_only)

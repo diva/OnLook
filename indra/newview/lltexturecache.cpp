@@ -51,6 +51,8 @@ const S32 TEXTURE_CACHE_ENTRY_SIZE = FIRST_PACKET_SIZE;//1024;
 const F32 TEXTURE_CACHE_PURGE_AMOUNT = .20f; // % amount to reduce the cache by when it exceeds its limit
 const F32 TEXTURE_CACHE_LRU_SIZE = .10f; // % amount for LRU list (low overhead to regenerate)
 
+static std::queue<LLUUID> sgDelayedPurgeQueue;
+
 class LLTextureCacheWorker : public LLWorkerClass
 {
 	friend class LLTextureCache;
@@ -1541,6 +1543,20 @@ void LLTextureCache::purgeAllTextures(bool purge_directories)
 	llinfos << "The entire texture cache is cleared." << llendl;
 }
 
+void LLTextureCache::performDelayedPurge()
+{
+	LLMutexLock lock(&mHeaderMutex);
+	while(!sgDelayedPurgeQueue.empty())
+	{
+		removeFromCache(sgDelayedPurgeQueue.front());
+		sgDelayedPurgeQueue.pop();
+		if (mTexturesSizeTotal < sCacheMaxTexturesSize)
+		{
+			break;
+		}
+	}
+}
+
 void LLTextureCache::purgeTextures(bool validate)
 {
 	if (mReadOnly)
@@ -1558,6 +1574,9 @@ void LLTextureCache::purgeTextures(bool validate)
 
 	llinfos << "TEXTURE CACHE: Purging." << llendl;
 
+	std::queue<LLUUID> empty;
+	std::swap(sgDelayedPurgeQueue, empty);
+
 	// Read the entries list
 	std::vector<Entry> entries;
 	U32 num_entries = openAndReadEntries(entries);
@@ -1567,8 +1586,8 @@ void LLTextureCache::purgeTextures(bool validate)
 	}
 	
 	// Use mTexturesSizeMap to collect UUIDs of textures with bodies
-	typedef std::set<std::pair<U32,S32> > time_idx_set_t;
-	std::set<std::pair<U32,S32> > time_idx_set;
+	typedef std::vector<std::pair<U32,S32> > time_idx_set_t;
+	time_idx_set_t time_idx_set;
 	for (size_map_t::iterator iter1 = mTexturesSizeMap.begin();
 		 iter1 != mTexturesSizeMap.end(); ++iter1)
 	{
@@ -1578,7 +1597,7 @@ void LLTextureCache::purgeTextures(bool validate)
 			if (iter2 != mHeaderIDMap.end())
 			{
 				S32 idx = iter2->second;
-				time_idx_set.insert(std::make_pair(entries[idx].mTime, idx));
+				time_idx_set.push_back(std::make_pair(entries[idx].mTime, idx));
 // 				llinfos << "TIME: " << entries[idx].mTime << " TEX: " << entries[idx].mID << " IDX: " << idx << " Size: " << entries[idx].mImageSize << llendl;
 			}
 			else
@@ -1587,6 +1606,8 @@ void LLTextureCache::purgeTextures(bool validate)
 			}
 		}
 	}
+
+	std::sort(time_idx_set.begin(), time_idx_set.end());
 	
 	// Validate 1/256th of the files on startup
 	U32 validate_idx = 0;
@@ -1637,7 +1658,14 @@ void LLTextureCache::purgeTextures(bool validate)
 			purge_count++;
 	 		LL_DEBUGS("TextureCache") << "PURGING: " << filename << LL_ENDL;
 			cache_size -= entries[idx].mBodySize;
-			removeEntry(idx, entries[idx], filename) ;			
+			if(validate)
+			{
+				removeEntry(idx, entries[idx], filename);
+			}
+			else
+			{
+				sgDelayedPurgeQueue.push(entries[idx].mID);
+			}
 		}
 	}
 
@@ -1791,7 +1819,7 @@ LLTextureCache::handle_t LLTextureCache::writeToCache(const LLUUID& id, U32 prio
 		delete responder;
 		return LLWorkerThread::nullHandle();
 	}
-	if (mDoPurge)
+	if (sgDelayedPurgeQueue.empty() && mDoPurge)
 	{
 		// NOTE: This may cause an occasional hiccup,
 		//  but it really needs to be done on the control thread
@@ -1799,6 +1827,7 @@ LLTextureCache::handle_t LLTextureCache::writeToCache(const LLUUID& id, U32 prio
 		purgeTextures(false);
 		mDoPurge = FALSE;
 	}
+	performDelayedPurge();
 	LLMutexLock lock(&mWorkersMutex);
 	LLTextureCacheWorker* worker = new LLTextureCacheRemoteWorker(this, priority, id,
 																  data, datasize, 0,

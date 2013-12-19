@@ -554,7 +554,7 @@ bool LLApp::isQuitting()
 // static
 bool LLApp::isExiting()
 {
-	return isQuitting() || isError();
+	return isQuitting() || isError() || isStopped();
 }
 
 void LLApp::disableCrashlogger()

@@ -293,7 +293,7 @@ void LLMediaRemoteCtrl::enableMediaButtons()
 	mMusicIcon->setColor(music_icon_color);
 	if(!media_icon_name.empty())
 	{
-		media_icon->setImage(media_icon_name);
+		media_icon->setValue(media_icon_name);
 	}
 
 	media_play_btn->setEnabled(play_media_enabled);

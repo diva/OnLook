@@ -5,6 +5,10 @@
 	<slider_bar bottom="-26" follows="top" height="16" increment="0.25" initial_val="2" left="276" max_val="15" min_val="0" name="mouse_sensitivity" width="128"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Invert Mouse" left="148" name="invert_mouse"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Show Avatar in Mouselook" name="first_person_avatar_visible"/>
+	<text bottom_delta="-18" follows="top" height="16" name="UI Hidden in mouselook:">UI Hidden in mouselook:</text>
+	<check_box bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookHidesFloaters" name="mouselook_hides_floaters" label="Floaters"/>
+	<check_box left_delta="80" bottom_delta="0" follows="top" height="16" control_name="LiruMouselookHidesNotices" name="mouselook_hides_notices" label="Notices"/>
+	<check_box left="148" bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookHidesMenubar" name="mouselook_hides_menubar" label="Menubar"/>
 	<text bottom_delta="-30" follows="top" height="10" left="10" name=" Movement Options:">Movement Options:</text>
 	<check_box bottom_delta="-6" follows="top" height="16" label="Fly/land on holding up/down" left="148" name="automatic_fly"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Allow crouch toggle by holding shift" name="crouch_toggle" control_name="SGShiftCrouchToggle"/>
@@ -13,7 +17,8 @@
   <slider bottom_delta="-6" can_edit_text="true" decimal_digits="2" follows="top" width="128" height="16" increment=".025" initial_val="1.57" left="276" max_val="2.97" min_val=".17" name="camera_fov" value="60"/>
   <text bottom_delta="-14" follows="top" height="10" left="148" name="Camera Follow Distance:" width="128">Camera Follow Distance:</text>
 	<slider bottom_delta="-6" can_edit_text="true" control_name="CameraOffsetScale" decimal_digits="2" follows="top" height="16" increment=".025" initial_val="1" left="276" min_val=".5" max_val="3" name="camera_offset_scale" value="1" width="128"/>
-	<check_box bottom_delta="-24" follows="top" initial_value="false" label="Automatic Edit Camera Movement" left="148" name="edit_camera_movement" tool_tip="Use automatic camera positioning when entering and exiting edit mode"/>
+    <check_box bottom_delta="-20" follows="top" left="148" control_name="SinguOffsetScrollKeys" label="Scrolling with control and/or shift held adjusts camera position" name="scroll_keys"/>
+    <check_box bottom_delta="-18" follows="top" label="Automatic Edit Camera Movement" name="edit_camera_movement" tool_tip="Use automatic camera positioning when entering and exiting edit mode"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Automatic Appearance Camera Movement" left="148" name="appearance_camera_movement" tool_tip="Use automatic camera positioning while in edit mode"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Unsit Avatar on Camera Reset" left="148" name="unsit_on_camera_reset" tool_tip="Stand up automatically when you press Esc and the camera switches to third person mode"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Disable Camera Constraints" left="148" control_name="DisableCameraConstraints" name="DisableCameraConstraints" tool_tip="Prevent the camera from automatically zooming when you approach walls, objects, etc., too closely."/>

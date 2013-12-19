@@ -64,7 +64,6 @@ uniform vec4 glow;
 uniform float global_gamma;
 uniform float scene_light_strength;
 uniform mat3 env_mat;
-uniform float ssao_effect;
 
 uniform vec3 sun_dir;
 VARYING vec2 vary_fragcoord;
@@ -238,7 +237,7 @@ vec4 applyWaterFogDeferred(vec3 pos, vec4 color)
 }
 #endif
 
-void calcAtmospherics(vec3 inPositionEye, float ambFactor) {
+void calcAtmospherics(vec3 inPositionEye) {
 
 	vec3 P = inPositionEye;
 	setPositionEye(P);
@@ -304,9 +303,6 @@ void calcAtmospherics(vec3 inPositionEye, float ambFactor) {
 		vec3(blue_horizon * blue_weight * (sunlight*(1.-cloud_shadow) + tmpAmbient)
 	  + (haze_horizon * haze_weight) * (sunlight*(1.-cloud_shadow) * temp2.x
 		  + tmpAmbient)));
-
-	// decrease value for occluded areas
-	tmpAmbient = vec4(mix(ssao_effect * tmpAmbient.rgb, tmpAmbient.rgb, ambFactor), tmpAmbient.a);
 
 	//brightness of surface both sunlight and ambient
 	setSunlitColor(vec3(sunlight * .5));
@@ -408,7 +404,7 @@ void main()
 		float final_da = max(0.0,da);
           final_da = min(final_da, 1.0f);
 	      final_da = pow(final_da, 1.0/1.3);
-		calcAtmospherics(pos.xyz, 1.0);
+		calcAtmospherics(pos.xyz);
 	
 		col = atmosAmbient(vec3(0));
 		float ambient = min(abs(dot(norm.xyz, sun_dir.xyz)), 1.0);

@@ -38,7 +38,7 @@ uniform sampler2DRect lightMap;
 uniform float dist_factor;
 uniform float blur_size;
 uniform vec2 delta;
-uniform vec3 kern[4];
+//uniform vec3 kern[4];
 uniform float kern_scale;
 
 VARYING vec2 vary_fragcoord;
@@ -46,8 +46,14 @@ VARYING vec2 vary_fragcoord;
 uniform mat4 inv_proj;
 uniform vec2 screen_res;
 
-vec3 getKern(int i)
+vec2 getKern(int i)
 {
+	vec2 kern[4];
+	
+	kern[0] = vec2(0.3989422804,0.1994711402);
+	kern[1] = vec2(0.2419707245,0.1760326634);
+	kern[2] = vec2(0.0539909665,0.1209853623);
+	kern[3] = vec2(0.0044318484,0.0647587978);
 	return kern[i];
 }
 
@@ -102,33 +108,37 @@ void main()
 	// perturb sampling origin slightly in screen-space to hide edge-ghosting artifacts where smoothing radius is quite large
 	vec2 tc_v = fract(0.5 * tc.xy); // we now have floor(mod(tc,2.0))*0.5
 	float tc_mod = 2.0 * abs(tc_v.x - tc_v.y); // diff of x,y makes checkerboard
-	tc += ( (tc_mod - 0.5) * getKern(1).z * dlt * 0.5 );
+	tc += ( (tc_mod - 0.5) * dlt * 0.5 );
 
 	for (int i = 1; i < 4; i++)
 	{
-		vec2 samptc = (tc + getKern(i).z * dlt);
-	        vec3 samppos = getPosition(samptc).xyz; 
+		vec2 samptc = (tc + i * dlt);
+	    vec3 samppos = getPosition(samptc).xyz; 
 		float d = dot(norm.xyz, samppos.xyz-pos.xyz);// dist from plane
+
 		if (d*d <= pointplanedist_tolerance_pow2)
 		{
-			col += texture2DRect(lightMap, samptc)*getKern(i).xyxx;
-			defined_weight += getKern(i).xy;
+			vec4 weight = getKern(i).xyxx;
+			col += texture2DRect(lightMap, samptc)*weight;
+			defined_weight += weight.xy;
 		}
 	}
 	for (int i = 1; i < 4; i++)
 	{
-		vec2 samptc = (tc - getKern(i).z * dlt);
-	        vec3 samppos = getPosition(samptc).xyz; 
+		vec2 samptc = (tc - i * dlt);
+	    vec3 samppos = getPosition(samptc).xyz; 
 		float d = dot(norm.xyz, samppos.xyz-pos.xyz);// dist from plane
+
 		if (d*d <= pointplanedist_tolerance_pow2)
 		{
-			col += texture2DRect(lightMap, samptc)*getKern(i).xyxx;
-			defined_weight += getKern(i).xy;
+			vec4 weight = getKern(i).xyxx;
+			col += texture2DRect(lightMap, samptc)*weight;
+			defined_weight += weight.xy;
 		}
 	}
 
 	col /= defined_weight.xyxx;
-	col.y *= col.y; // delinearize SSAO effect post-blur
+	//col.y *= col.y; // delinearize SSAO effect post-blur    // Singu note: Performed pre-blur as to remove blur requirement
 	
 	frag_color = col;
 }

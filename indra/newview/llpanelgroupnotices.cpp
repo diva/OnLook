@@ -310,7 +310,7 @@ void LLPanelGroupNotices::setItem(LLPointer<LLInventoryItem> inv_item)
 										inv_item->getFlags(),
 										item_is_multi );
 
-	mCreateInventoryIcon->setImage(icon_name);
+	mCreateInventoryIcon->setValue(icon_name);
 	mCreateInventoryIcon->setVisible(TRUE);
 
 	std::stringstream ss;
@@ -541,7 +541,7 @@ void LLPanelGroupNotices::showNotice(const std::string& subject,
 		std::string icon_name = LLInventoryIcon::getIconName(mInventoryOffer->mType,
 												LLInventoryType::IT_TEXTURE);
 
-		mViewInventoryIcon->setImage(icon_name);
+		mViewInventoryIcon->setValue(icon_name);
 		mViewInventoryIcon->setVisible(TRUE);
 
 		std::stringstream ss;

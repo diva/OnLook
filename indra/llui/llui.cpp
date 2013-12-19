@@ -313,3 +313,227 @@ void LLUI::setQAMode(BOOL b)
 	LLUI::sQAMode = b;
 }
 
+namespace LLInitParam
+{
+	ParamValue<LLUIColor>::ParamValue(const LLUIColor& color)
+	:	super_t(color),
+		red("red"),
+		green("green"),
+		blue("blue"),
+		alpha("alpha"),
+		control("")
+	{
+		updateBlockFromValue(false);
+	}
+
+	void ParamValue<LLUIColor>::updateValueFromBlock()
+	{
+		if (control.isProvided() && !control().empty())
+		{
+			updateValue(LLUI::sColorsGroup->controlExists(control) ? LLUI::sColorsGroup->getColor(control) : LLUI::sConfigGroup->getColor(control)); // Singu Note: Most of our colors will be in sColorsGroup (skin), but some may be moved to settings for users.
+		}
+		else
+		{
+			updateValue(LLColor4(red, green, blue, alpha));
+		}
+	}
+
+	void ParamValue<LLUIColor>::updateBlockFromValue(bool make_block_authoritative)
+	{
+		LLColor4 color = getValue();
+		red.set(color.mV[VRED], make_block_authoritative);
+		green.set(color.mV[VGREEN], make_block_authoritative);
+		blue.set(color.mV[VBLUE], make_block_authoritative);
+		alpha.set(color.mV[VALPHA], make_block_authoritative);
+		control.set("", make_block_authoritative);
+	}
+
+	bool ParamCompare<const LLFontGL*, false>::equals(const LLFontGL* a, const LLFontGL* b)
+	{
+		return !(a->getFontDesc() < b->getFontDesc())
+			&& !(b->getFontDesc() < a->getFontDesc());
+	}
+
+	ParamValue<const LLFontGL*>::ParamValue(const LLFontGL* fontp)
+	:	super_t(fontp),
+		name("name"),
+		size("size"),
+		style("style")
+	{
+		if (!fontp)
+		{
+			updateValue(LLFontGL::getFontDefault());
+		}
+		addSynonym(name, "");
+		updateBlockFromValue(false);
+	}
+
+	void ParamValue<const LLFontGL*>::updateValueFromBlock()
+	{
+		const LLFontGL* res_fontp = LLFontGL::getFontByName(name);
+		if (res_fontp)
+		{
+			updateValue(res_fontp);
+			return;
+		}
+
+		U8 fontstyle = 0;
+		fontstyle = LLFontGL::getStyleFromString(style());
+		LLFontDescriptor desc(name(), size(), fontstyle);
+		const LLFontGL* fontp = LLFontGL::getFont(desc);
+		if (fontp)
+		{
+			updateValue(fontp);
+		}
+		else
+		{
+			updateValue(LLFontGL::getFontDefault());
+		}
+	}
+
+	void ParamValue<const LLFontGL*>::updateBlockFromValue(bool make_block_authoritative)
+	{
+		if (getValue())
+		{
+			name.set(LLFontGL::nameFromFont(getValue()), make_block_authoritative);
+			size.set(LLFontGL::sizeFromFont(getValue()), make_block_authoritative);
+			style.set(LLFontGL::getStringFromStyle(getValue()->getFontDesc().getStyle()), make_block_authoritative);
+		}
+	}
+
+	ParamValue<LLRect>::ParamValue(const LLRect& rect)
+	:	super_t(rect),
+		left("left"),
+		top("top"),
+		right("right"),
+		bottom("bottom"),
+		width("width"),
+		height("height")
+	{
+		updateBlockFromValue(false);
+	}
+
+	void ParamValue<LLRect>::updateValueFromBlock()
+	{
+		LLRect rect;
+
+		//calculate from params
+		// prefer explicit left and right
+		if (left.isProvided() && right.isProvided())
+		{
+			rect.mLeft = left;
+			rect.mRight = right;
+		}
+		// otherwise use width along with specified side, if any
+		else if (width.isProvided())
+		{
+			// only right + width provided
+			if (right.isProvided())
+			{
+				rect.mRight = right;
+				rect.mLeft = right - width;
+			}
+			else // left + width, or just width
+			{
+				rect.mLeft = left;
+				rect.mRight = left + width;
+			}
+		}
+		// just left, just right, or none
+		else
+		{
+			rect.mLeft = left;
+			rect.mRight = right;
+		}
+
+		// prefer explicit bottom and top
+		if (bottom.isProvided() && top.isProvided())
+		{
+			rect.mBottom = bottom;
+			rect.mTop = top;
+		}
+		// otherwise height along with specified side, if any
+		else if (height.isProvided())
+		{
+			// top + height provided
+			if (top.isProvided())
+			{
+				rect.mTop = top;
+				rect.mBottom = top - height;
+			}
+			// bottom + height or just height
+			else
+			{
+				rect.mBottom = bottom;
+				rect.mTop = bottom + height;
+			}
+		}
+		// just bottom, just top, or none
+		else
+		{
+			rect.mBottom = bottom;
+			rect.mTop = top;
+		}
+		updateValue(rect);
+	}
+
+	void ParamValue<LLRect>::updateBlockFromValue(bool make_block_authoritative)
+	{
+		// because of the ambiguity in specifying a rect by position and/or dimensions
+		// we use the lowest priority pairing so that any valid pairing in xui
+		// will override those calculated from the rect object
+		// in this case, that is left+width and bottom+height
+		LLRect& value = getValue();
+
+		right.set(value.mRight, false);
+		left.set(value.mLeft, make_block_authoritative);
+		width.set(value.getWidth(), make_block_authoritative);
+
+		top.set(value.mTop, false);
+		bottom.set(value.mBottom, make_block_authoritative);
+		height.set(value.getHeight(), make_block_authoritative);
+	}
+
+	ParamValue<LLCoordGL>::ParamValue(const LLCoordGL& coord)
+	:	super_t(coord),
+		x("x"),
+		y("y")
+	{
+		updateBlockFromValue(false);
+	}
+
+	void ParamValue<LLCoordGL>::updateValueFromBlock()
+	{
+		updateValue(LLCoordGL(x, y));
+	}
+
+	void ParamValue<LLCoordGL>::updateBlockFromValue(bool make_block_authoritative)
+	{
+		x.set(getValue().mX, make_block_authoritative);
+		y.set(getValue().mY, make_block_authoritative);
+	}
+
+
+	void TypeValues<LLFontGL::HAlign>::declareValues()
+	{
+		declare("left", LLFontGL::LEFT);
+		declare("right", LLFontGL::RIGHT);
+		declare("center", LLFontGL::HCENTER);
+	}
+
+	void TypeValues<LLFontGL::VAlign>::declareValues()
+	{
+		declare("top", LLFontGL::TOP);
+		declare("center", LLFontGL::VCENTER);
+		declare("baseline", LLFontGL::BASELINE);
+		declare("bottom", LLFontGL::BOTTOM);
+	}
+
+	void TypeValues<LLFontGL::ShadowType>::declareValues()
+	{
+		declare("none", LLFontGL::NO_SHADOW);
+		declare("hard", LLFontGL::DROP_SHADOW);
+		declare("soft", LLFontGL::DROP_SHADOW_SOFT);
+	}
+}
+

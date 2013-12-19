@@ -146,6 +146,7 @@ private:
 	void setDirNames(ELLPath location);
 	void readHeaderCache();
 	void clearCorruptedCache();
+	void performDelayedPurge();
 	void purgeAllTextures(bool purge_directories);
 	void purgeTextures(bool validate);
 	LLAPRFile* openHeaderEntriesFile(bool readonly, S32 offset);

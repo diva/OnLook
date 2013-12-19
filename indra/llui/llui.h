@@ -32,11 +32,17 @@
 #include "llcontrol.h"
 #include "llcoord.h"
 #include "v2math.h"
+#include "llinitparam.h"
 #include "llregistry.h"
 #include "llrender2dutils.h"
 #include "llpointer.h"
+#include "lluicolor.h"
 #include "lluiimage.h"
 #include <boost/signals2.hpp>
+
+// for initparam specialization
+#include "llfontgl.h"
+
 
 // LLUIFactory
 #include "llsd.h"
@@ -503,5 +509,100 @@ protected:
 };
 
 template <typename T> T* LLParamBlock<T>::sBlock = NULL;
+
+
+namespace LLInitParam
+{
+	template<>
+	class ParamValue<LLRect>
+	:	public CustomParamValue<LLRect>
+	{
+		typedef CustomParamValue<LLRect> super_t;
+	public:
+		Optional<S32>	left,
+						top,
+						right,
+						bottom,
+						width,
+						height;
+
+		ParamValue(const LLRect& value);
+
+		void updateValueFromBlock();
+		void updateBlockFromValue(bool make_block_authoritative);
+	};
+
+	template<>
+	class ParamValue<LLUIColor>
+	:	public CustomParamValue<LLUIColor>
+	{
+		typedef CustomParamValue<LLUIColor> super_t;
+
+	public:
+		Optional<F32>			red,
+								green,
+								blue,
+								alpha;
+		Optional<std::string>	control;
+
+		ParamValue(const LLUIColor& color);
+		void updateValueFromBlock();
+		void updateBlockFromValue(bool make_block_authoritative);
+	};
+
+	template<>
+	class ParamValue<const LLFontGL*>
+	:	public CustomParamValue<const LLFontGL* >
+	{
+		typedef CustomParamValue<const LLFontGL*> super_t;
+	public:
+		Optional<std::string>	name,
+								size,
+								style;
+
+		ParamValue(const LLFontGL* value);
+		void updateValueFromBlock();
+		void updateBlockFromValue(bool make_block_authoritative);
+	};
+
+	template<>
+	struct TypeValues<LLFontGL::HAlign> : public TypeValuesHelper<LLFontGL::HAlign>
+	{
+		static void declareValues();
+	};
+
+	template<>
+	struct TypeValues<LLFontGL::VAlign> : public TypeValuesHelper<LLFontGL::VAlign>
+	{
+		static void declareValues();
+	};
+
+	template<>
+	struct TypeValues<LLFontGL::ShadowType> : public TypeValuesHelper<LLFontGL::ShadowType>
+	{
+		static void declareValues();
+	};
+
+	template<>
+	struct ParamCompare<const LLFontGL*, false>
+	{
+		static bool equals(const LLFontGL* a, const LLFontGL* b);
+	};
+
+
+	template<>
+	class ParamValue<LLCoordGL>
+	:	public CustomParamValue<LLCoordGL>
+	{
+		typedef CustomParamValue<LLCoordGL> super_t;
+	public:
+		Optional<S32>	x,
+						y;
+
+		ParamValue(const LLCoordGL& val);
+		void updateValueFromBlock();
+		void updateBlockFromValue(bool make_block_authoritative);
+	};
+}
 
 #endif
