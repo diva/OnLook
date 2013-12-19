@@ -322,6 +322,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		mState = NORMAL;
 		mCurGrid = gridname;
 		gridInfo = new HippoGridInfo(gridname);
+		gridInfo->setLoginUri(loginuri);
 		gHippoGridManager->addGrid(gridInfo);
 		try
 		{
