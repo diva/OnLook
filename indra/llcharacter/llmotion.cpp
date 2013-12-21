@@ -49,10 +49,11 @@
 // LLMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLMotion::LLMotion( const LLUUID &id ) :
+LLMotion::LLMotion(LLUUID const& id, LLMotionController* controller) :
 	mStopped(TRUE),
 	mActive(FALSE),
 	mID(id),
+	mController(controller),
 	mActivationTimestamp(0.f),
 	mStopTimestamp(0.f),
 	mSendStopTimestamp(F32_MAX),
@@ -181,13 +182,13 @@ BOOL LLMotion::canDeprecate()
 
 BOOL AIMaskedMotion::onActivate()
 {
-	mController.activated(mMaskBit);
+	mController->activated(mMaskBit);
 	return TRUE;
 }
 
 void AIMaskedMotion::onDeactivate()
 {
-	mController.deactivated(mMaskBit);
+	mController->deactivated(mMaskBit);
 }
 
 // End

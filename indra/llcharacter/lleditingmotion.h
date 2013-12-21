@@ -53,7 +53,7 @@ class LLEditingMotion :
 {
 public:
 	// Constructor
-	LLEditingMotion(LLUUID const& id, LLMotionController& controller);
+	LLEditingMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLEditingMotion();
@@ -65,7 +65,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLEditingMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLEditingMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

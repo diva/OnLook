@@ -67,7 +67,7 @@ public:
 	};
 
 	// Constructor
-	LLMotion(const LLUUID &id);
+	LLMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLMotion();
@@ -182,6 +182,9 @@ protected:
 	//-------------------------------------------------------------------------
 	std::string		mName;			// instance name assigned by motion controller
 	LLUUID			mID;
+	//<singu>
+	LLMotionController* mController;
+	//</singu>
 	
 	F32 mActivationTimestamp;	// time when motion was activated
 	F32 mStopTimestamp;			// time when motion was told to stop
@@ -200,9 +203,9 @@ protected:
 class LLTestMotion : public LLMotion
 {
 public:
-	LLTestMotion(const LLUUID &id) : LLMotion(id){}
+	LLTestMotion(LLUUID const& id, LLMotionController* controller) : LLMotion(id, controller){}
 	~LLTestMotion() {}
-	static LLMotion* create(LLUUID const& id, LLMotionController&) { return new LLTestMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLTestMotion(id, controller); }
 	BOOL getLoop() { return FALSE; }
 	F32 getDuration() { return 0.0f; }
 	F32 getEaseInDuration() { return 0.0f; }
@@ -224,9 +227,9 @@ public:
 class LLNullMotion : public LLMotion
 {
 public:
-	LLNullMotion(const LLUUID &id) : LLMotion(id) {}
+	LLNullMotion(LLUUID const& id, LLMotionController* controller) : LLMotion(id, controller) {}
 	~LLNullMotion() {}
-	static LLMotion* create(LLUUID const& id, LLMotionController&) { return new LLNullMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLNullMotion(id, controller); }
 
 	// motions must specify whether or not they loop
 	/*virtual*/ BOOL getLoop() { return TRUE; }
@@ -292,11 +295,10 @@ U32 const ANIM_AGENT_WALK_ADJUST	= 0x400;
 class AIMaskedMotion : public LLMotion
 {
 private:
-	LLMotionController& mController;
 	U32 mMaskBit;
 
 public:
-	AIMaskedMotion(LLUUID const& id, LLMotionController& controller, U32 mask_bit) : LLMotion(id), mController(controller), mMaskBit(mask_bit) { }
+	AIMaskedMotion(LLUUID const& id, LLMotionController* controller, U32 mask_bit) : LLMotion(id, controller), mMaskBit(mask_bit) { }
 
 	/*virtual*/ BOOL onActivate();
 	/*virtual*/ void onDeactivate();

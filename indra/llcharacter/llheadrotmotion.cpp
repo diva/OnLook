@@ -76,7 +76,7 @@ const F32 EYE_BLINK_TIME_DELTA = 0.005f; // time between one eye starting a blin
 // LLHeadRotMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLHeadRotMotion::LLHeadRotMotion(LLUUID const& id, LLMotionController& controller) :
+LLHeadRotMotion::LLHeadRotMotion(LLUUID const& id, LLMotionController* controller) :
 	AIMaskedMotion(id, controller, ANIM_AGENT_HEAD_ROT),
 	mCharacter(NULL),
 	mTorsoJoint(NULL),
@@ -260,7 +260,7 @@ BOOL LLHeadRotMotion::onUpdate(F32 time, U8* joint_mask)
 // LLEyeMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLEyeMotion::LLEyeMotion(LLUUID const& id, LLMotionController& controller) : AIMaskedMotion(id, controller, ANIM_AGENT_EYE)
+LLEyeMotion::LLEyeMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_EYE)
 {
 	mCharacter = NULL;
 	mEyeJitterTime = 0.f;

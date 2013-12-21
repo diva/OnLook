@@ -61,7 +61,7 @@ const F32 HAND_MORPH_BLEND_TIME = 0.2f;
 // LLHandMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLHandMotion::LLHandMotion(LLUUID const& id, LLMotionController& controller) : AIMaskedMotion(id, controller, ANIM_AGENT_HAND_MOTION)
+LLHandMotion::LLHandMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_HAND_MOTION)
 {
 	mCharacter = NULL;
 	mLastTime = 0.f;

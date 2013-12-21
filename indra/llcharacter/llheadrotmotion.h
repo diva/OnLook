@@ -50,7 +50,7 @@ class LLHeadRotMotion :
 {
 public:
 	// Constructor
-	LLHeadRotMotion(LLUUID const& id, LLMotionController& controller);
+	LLHeadRotMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLHeadRotMotion();
@@ -62,7 +62,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLHeadRotMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLHeadRotMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -125,7 +125,7 @@ class LLEyeMotion :
 {
 public:
 	// Constructor
-	LLEyeMotion(LLUUID const& id, LLMotionController& controller);
+	LLEyeMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLEyeMotion();
@@ -137,7 +137,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLEyeMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLEyeMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

@@ -97,7 +97,7 @@ void LLMotionRegistry::markBad( const LLUUID& id )
 //-----------------------------------------------------------------------------
 // createMotion()
 //-----------------------------------------------------------------------------
-LLMotion* LLMotionRegistry::createMotion(LLUUID const& id, LLMotionController& controller)
+LLMotion* LLMotionRegistry::createMotion(LLUUID const& id, LLMotionController* controller)
 {
 	LLMotionConstructor constructor = get_if_there(mMotionTable, id, LLMotionConstructor(NULL));
 	LLMotion* motion = NULL;
@@ -359,7 +359,7 @@ LLMotion* LLMotionController::createMotion( const LLUUID &id )
 	if (!motion)
 	{
 		// look up constructor and create it
-		motion = sRegistry.createMotion(id, *this);
+		motion = sRegistry.createMotion(id, this);
 		if (!motion)
 		{
 			return NULL;

@@ -347,7 +347,7 @@ class LLBodyNoiseMotion :
 {
 public:
 	// Constructor
-	LLBodyNoiseMotion(LLUUID const& id, LLMotionController& controller)
+	LLBodyNoiseMotion(LLUUID const& id, LLMotionController* controller)
 		: AIMaskedMotion(id, controller, ANIM_AGENT_BODY_NOISE)
 	{
 		mName = "body_noise";
@@ -363,7 +363,7 @@ public:
 	//-------------------------------------------------------------------------
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLBodyNoiseMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLBodyNoiseMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -444,7 +444,7 @@ class LLBreatheMotionRot :
 {
 public:
 	// Constructor
-	LLBreatheMotionRot(LLUUID const& id, LLMotionController& controller) :
+	LLBreatheMotionRot(LLUUID const& id, LLMotionController* controller) :
 		AIMaskedMotion(id, controller, ANIM_AGENT_BREATHE_ROT),
 		mBreatheRate(1.f),
 		mCharacter(NULL)
@@ -462,7 +462,7 @@ public:
 	//-------------------------------------------------------------------------
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLBreatheMotionRot(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLBreatheMotionRot(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -546,7 +546,7 @@ class LLPelvisFixMotion :
 {
 public:
 	// Constructor
-	LLPelvisFixMotion(LLUUID const& id, LLMotionController& controller)
+	LLPelvisFixMotion(LLUUID const& id, LLMotionController* controller)
 		: AIMaskedMotion(id, controller, ANIM_AGENT_PELVIS_FIX), mCharacter(NULL)
 	{
 		mName = "pelvis_fix";
@@ -563,7 +563,7 @@ public:
 	//-------------------------------------------------------------------------
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLPelvisFixMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLPelvisFixMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

@@ -56,7 +56,7 @@ class LLMotionController;
 //-----------------------------------------------------------------------------
 // LLMotionRegistry
 //-----------------------------------------------------------------------------
-typedef LLMotion* (*LLMotionConstructor)(LLUUID const& id, LLMotionController&);
+typedef LLMotion* (*LLMotionConstructor)(LLUUID const& id, LLMotionController*);
 
 class LLMotionRegistry
 {
@@ -73,7 +73,7 @@ public:
 
 	// creates a new instance of a named motion
 	// returns NULL motion is not registered
-	LLMotion* createMotion(LLUUID const& id, LLMotionController& controller);
+	LLMotion* createMotion(LLUUID const& id, LLMotionController* controller);
 
 	// initialization of motion failed, don't try to create this motion again
 	void markBad( const LLUUID& id );

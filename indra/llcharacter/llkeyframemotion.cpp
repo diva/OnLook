@@ -444,8 +444,8 @@ void LLKeyframeMotion::JointMotion::update(LLJointState* joint_state, F32 time, 
 // LLKeyframeMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLKeyframeMotion::LLKeyframeMotion(const LLUUID &id) 
-	: LLMotion(id),
+LLKeyframeMotion::LLKeyframeMotion(const LLUUID &id, LLMotionController* controller)
+	: LLMotion(id, controller),
 		mPelvisp(NULL),
 		mLastSkeletonSerialNum(0),
 		mLastUpdateTime(0.f),
@@ -468,9 +468,9 @@ LLKeyframeMotion::~LLKeyframeMotion()
 //-----------------------------------------------------------------------------
 // create()
 //-----------------------------------------------------------------------------
-LLMotion* LLKeyframeMotion::create(LLUUID const& id, LLMotionController&)
+LLMotion* LLKeyframeMotion::create(LLUUID const& id, LLMotionController* controller)
 {
-	return new LLKeyframeMotion(id);
+	return new LLKeyframeMotion(id, controller);
 }
 
 //-----------------------------------------------------------------------------

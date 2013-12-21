@@ -52,7 +52,7 @@ class LLKeyframeWalkMotion :
 	friend class LLWalkAdjustMotion;
 public:
 	// Constructor
-	LLKeyframeWalkMotion(LLUUID const& id);
+	LLKeyframeWalkMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLKeyframeWalkMotion();
@@ -64,7 +64,7 @@ public:
 	
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController&) { return new LLKeyframeWalkMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLKeyframeWalkMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class LLWalkAdjustMotion : public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLWalkAdjustMotion(LLUUID const& id, LLMotionController& controller);
+	LLWalkAdjustMotion(LLUUID const& id, LLMotionController* controller);
 
 public:
 	//-------------------------------------------------------------------------
@@ -99,7 +99,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLWalkAdjustMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLWalkAdjustMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -140,7 +140,7 @@ class LLFlyAdjustMotion : public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLFlyAdjustMotion(LLUUID const& id, LLMotionController& controller);
+	LLFlyAdjustMotion(LLUUID const& id, LLMotionController* controller);
 
 public:
 	//-------------------------------------------------------------------------
@@ -149,7 +149,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLFlyAdjustMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLFlyAdjustMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

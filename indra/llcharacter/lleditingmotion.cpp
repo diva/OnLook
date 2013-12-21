@@ -49,7 +49,7 @@ S32 LLEditingMotion::sHandPosePriority = 3;
 // LLEditingMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLEditingMotion::LLEditingMotion(LLUUID const& id, LLMotionController& controller) : AIMaskedMotion(id, controller, ANIM_AGENT_EDITING)
+LLEditingMotion::LLEditingMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_EDITING)
 {
 	mCharacter = NULL;
 

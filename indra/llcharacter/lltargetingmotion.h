@@ -52,7 +52,7 @@ class LLTargetingMotion :
 {
 public:
 	// Constructor
-	LLTargetingMotion(LLUUID const& id, LLMotionController& controller);
+	LLTargetingMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLTargetingMotion();
@@ -64,7 +64,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLTargetingMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLTargetingMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

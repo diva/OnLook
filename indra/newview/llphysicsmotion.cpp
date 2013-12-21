@@ -314,7 +314,7 @@ void LLPhysicsMotion::getString(std::ostringstream &oss)
 	}
 } 
 
-LLPhysicsMotionController::LLPhysicsMotionController(LLUUID const& id, LLMotionController& controller) : 
+LLPhysicsMotionController::LLPhysicsMotionController(LLUUID const& id, LLMotionController* controller) :
         AIMaskedMotion(id, controller, ANIM_AGENT_PHYSICS_MOTION),
         mCharacter(NULL),
 		mIsDefault(true)

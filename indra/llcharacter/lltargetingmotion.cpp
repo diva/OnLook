@@ -52,7 +52,7 @@ const F32 TORSO_ROT_FRACTION = 0.5f;
 // LLTargetingMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLTargetingMotion::LLTargetingMotion(LLUUID const& id, LLMotionController& controller) : AIMaskedMotion(id, controller, ANIM_AGENT_TARGET)
+LLTargetingMotion::LLTargetingMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_TARGET)
 {
 	mCharacter = NULL;
 	mName = "targeting";

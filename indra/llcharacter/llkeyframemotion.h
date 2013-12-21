@@ -177,7 +177,7 @@ class LLKeyframeMotion :
 	friend class LLKeyframeDataCache;
 public:
 	// Constructor
-	LLKeyframeMotion(const LLUUID &id);
+	LLKeyframeMotion(const LLUUID &id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLKeyframeMotion();
@@ -194,7 +194,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller);
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller);
 
 public:
 	//-------------------------------------------------------------------------

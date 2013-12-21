@@ -49,7 +49,7 @@ public:
 	std::string getString();
 
 	// Constructor
-	LLPhysicsMotionController(LLUUID const& id, LLMotionController& controller);
+	LLPhysicsMotionController(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLPhysicsMotionController();
@@ -61,7 +61,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLPhysicsMotionController(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLPhysicsMotionController(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

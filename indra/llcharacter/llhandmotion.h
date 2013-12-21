@@ -68,7 +68,7 @@ public:
 	} eHandPose;
 
 	// Constructor
-	LLHandMotion(LLUUID const& id, LLMotionController& controller);
+	LLHandMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLHandMotion();
@@ -80,7 +80,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion* create(LLUUID const& id, LLMotionController& controller) { return new LLHandMotion(id, controller); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLHandMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
