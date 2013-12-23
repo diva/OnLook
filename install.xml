@@ -256,16 +256,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>8817faad001cea8f92546f30b5fcbbfa</string>
+            <string>8a1017e1935ae3c88dea7f4552573f53</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-20131007.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux-20131219.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>1d23d74f2f475945ec4d24f70a27561d</string>
+            <string>446dbefb0d3dd0bd93f30b4ef1eaa67b</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux64-20131007.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/colladadom-2.2-linux64-20131219.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

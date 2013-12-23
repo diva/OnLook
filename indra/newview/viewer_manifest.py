@@ -827,6 +827,15 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libtcmalloc_minimal.so.0")
             self.path("libtcmalloc_minimal.so.0.2.2")
 
+            # Boost
+            self.path("libboost_context-mt.so.*")
+            self.path("libboost_filesystem-mt.so.*")
+            self.path("libboost_program_options-mt.so.*")
+            self.path("libboost_regex-mt.so.*")
+            self.path("libboost_signals-mt.so.*")
+            self.path("libboost_system-mt.so.*")
+            self.path("libboost_thread-mt.so.*")
+
             if 'extra_libraries' in self.args:
                 path_list = self.args['extra_libraries'].split('|')
                 for path in path_list:
@@ -869,6 +878,15 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libjpeg.so*")
             self.path("libpng*.so*")
             self.path("libz.so*")
+
+            # Boost
+            self.path("libboost_context-mt.so.*")
+            self.path("libboost_filesystem-mt.so.*")
+            self.path("libboost_program_options-mt.so.*")
+            self.path("libboost_regex-mt.so.*")
+            self.path("libboost_signals-mt.so.*")
+            self.path("libboost_system-mt.so.*")
+            self.path("libboost_thread-mt.so.*")
 
             # OpenAL
             self.path("libopenal.so*")
