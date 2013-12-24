@@ -135,7 +135,15 @@ void LLInitialWearablesFetch::processContents()
 	LLInventoryModel::cat_array_t cat_array;
 	LLInventoryModel::item_array_t wearable_array;
 	LLFindWearables is_wearable;
-	llassert(mComplete.size() != 0);
+	// <singu temporary fix>
+	llassert(!mComplete.empty());
+	if (mComplete.empty())
+	{
+		// We can't call mComplete.front() in this case.
+		llwarns << "mComplete is empty." << llendl;
+	}
+	else
+	// </singu temporary fix>
 	gInventory.collectDescendentsIf(mComplete.front(), cat_array, wearable_array, 
 									LLInventoryModel::EXCLUDE_TRASH, is_wearable);
 
