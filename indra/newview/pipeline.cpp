@@ -3959,7 +3959,7 @@ void renderSelectedFaces(LLGLSLShader& shader, std::vector<LLFace*> &selected_fa
 		}
 
 		const LLTextureEntry* te = facep->getTextureEntry();
-		LLMaterial* mat = te ? te->getMaterialParams() : NULL;
+		LLMaterial* mat = te ? te->getMaterialParams().get() : NULL;
 
 		if(channel == LLRender::DIFFUSE_MAP)
 		{
