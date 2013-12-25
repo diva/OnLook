@@ -589,16 +589,8 @@ void LLVertexBuffer::drawArrays(U32 mode, const std::vector<LLVector3>& pos, con
 
 	if (shader)
 	{
-		S32 loc = LLVertexBuffer::TYPE_VERTEX;
-		if (loc > -1)
-		{
-			glVertexAttribPointerARB(loc, 3, GL_FLOAT, GL_FALSE, 0, pos[0].mV);
-		}
-		loc = LLVertexBuffer::TYPE_NORMAL;
-		if (loc > -1)
-		{
-			glVertexAttribPointerARB(loc, 3, GL_FLOAT, GL_FALSE, 0, norm[0].mV);
-		}
+		glVertexAttribPointerARB(TYPE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, pos[0].mV);
+		glVertexAttribPointerARB(TYPE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, norm[0].mV);
 	}
 	else
 	{
@@ -628,19 +620,19 @@ void LLVertexBuffer::drawElements(U32 mode, const LLVector4a* pos, const LLVecto
 
 	if (LLGLSLShader::sNoFixedFunction)
 	{
-		S32 loc = LLVertexBuffer::TYPE_VERTEX;
-		glVertexAttribPointerARB(loc, 3, GL_FLOAT, GL_FALSE, 16, pos);
-
+		glVertexAttribPointerARB(TYPE_VERTEX, 3, GL_FLOAT, GL_FALSE, 16, pos);
 		if (tc)
 		{
-			loc = LLVertexBuffer::TYPE_TEXCOORD0;
-			glVertexAttribPointerARB(loc, 2, GL_FLOAT, GL_FALSE, 0, tc);
+			glVertexAttribPointerARB(TYPE_TEXCOORD0, 2, GL_FLOAT, GL_FALSE, 0, tc);
 		}
 	}
 	else
 	{
-		glTexCoordPointer(2, GL_FLOAT, 0, tc);
 		glVertexPointer(3, GL_FLOAT, 16, pos);
+		if (tc)
+		{
+			glTexCoordPointer(2, GL_FLOAT, 0, tc);
+		}
 	}
 
 	glDrawElements(sGLMode[mode], num_indices, GL_UNSIGNED_SHORT, indicesp);

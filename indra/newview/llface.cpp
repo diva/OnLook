@@ -554,46 +554,24 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 					glDrawElements(GL_TRIANGLES, vol_face.mNumIndices, GL_UNSIGNED_SHORT, vol_face.mIndices);
 					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #else
-					LLGLSLShader* cur_shader = LLGLSLShader::sCurBoundShaderPtr;
+					LLGLSLShader* prev_shader = NULL;
 
 					if(LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE))
 					{
-						if(cur_shader != &gHighlightProgram)
+						if(LLGLSLShader::sCurBoundShaderPtr != &gHighlightProgram)
 						{
+							prev_shader = LLGLSLShader::sCurBoundShaderPtr;
 							gHighlightProgram.bind();
 						}
 					}
 
 					gGL.diffuseColor4fv(color.mV);
 
-					LLPointer<LLVertexBuffer> temp = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0, 0);
-
-					temp->allocateBuffer(vol_face.mNumVertices, vol_face.mNumIndices, true);
-
-					LLStrider<U16> indicesp;
-					LLStrider<LLVector4a> verticesp;
-					LLStrider<LLVector2> texcoordsp;
-					temp->getIndexStrider(indicesp);
-					temp->getVertexStrider(verticesp);
-					temp->getTexCoord0Strider(texcoordsp);
-
-					S32 vert_size = vol_face.mNumVertices*sizeof(LLVector4a);
-					S32 idx_size = (vol_face.mNumIndices*sizeof(U16)+0xF) & ~0xF;
-					S32 tc_size = (vol_face.mNumVertices*sizeof(LLVector2)+0xF) & ~0xF;
-
-					LLVector4a::memcpyNonAliased16((F32*)verticesp.get(), (F32*) vol_face.mPositions, vert_size);
-					LLVector4a::memcpyNonAliased16((F32*)indicesp.get(), (F32*) vol_face.mIndices, idx_size);
-					LLVector4a::memcpyNonAliased16((F32*)texcoordsp.get(), (F32*) vol_face.mTexCoords, tc_size);
-
-					temp->setBuffer(temp->getTypeMask());
-					temp->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
-
-					if(LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE))
+					LLVertexBuffer::drawElements(LLRender::TRIANGLES, vol_face.mPositions, vol_face.mTexCoords, vol_face.mNumIndices, vol_face.mIndices);
+					
+					if(prev_shader)
 					{
-						if(cur_shader != &gHighlightProgram)
-						{
-							cur_shader->bind();
-						}
+						prev_shader->bind();
 					}
 #endif
 				}
