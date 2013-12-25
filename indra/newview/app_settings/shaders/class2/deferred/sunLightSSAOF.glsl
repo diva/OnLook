@@ -245,7 +245,7 @@ void main()
 	}
 	
 	frag_color[0] = shadow;
-	frag_color[1] = texture2DRect(diffuseRect,vary_fragcoord*downsampled_depth_scale);
+	frag_color[1] = texture2DRect(diffuseRect,vary_fragcoord*downsampled_depth_scale).r;
 	
 	spos = vec4(shadow_pos+norm*spot_shadow_offset, 1.0);
 	

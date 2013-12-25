@@ -3312,16 +3312,12 @@ void renderPhysicsShape(LLDrawable* drawable, LLVOVolume* volume)
 		if (phys_volume->mHullPoints && phys_volume->mHullIndices)
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			llassert(!LLGLSLShader::sNoFixedFunction || LLGLSLShader::sCurBoundShader != 0);
-			LLVertexBuffer::unbind();
-			glVertexPointer(3, GL_FLOAT, 16, phys_volume->mHullPoints);
 			gGL.diffuseColor4fv(line_color.mV);
-			gGL.syncMatrices();
-			glDrawElements(GL_TRIANGLES, phys_volume->mNumHullIndices, GL_UNSIGNED_SHORT, phys_volume->mHullIndices);
-			
-			gGL.diffuseColor4fv(color.mV);
+			LLVertexBuffer::drawElements(LLRender::TRIANGLES, phys_volume->mHullPoints, NULL, phys_volume->mNumHullIndices, phys_volume->mHullIndices);
+
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			glDrawElements(GL_TRIANGLES, phys_volume->mNumHullIndices, GL_UNSIGNED_SHORT, phys_volume->mHullIndices);			
+			gGL.diffuseColor4fv(color.mV);
+			LLVertexBuffer::drawElements(LLRender::TRIANGLES, phys_volume->mHullPoints, NULL, phys_volume->mNumHullIndices, phys_volume->mHullIndices);
 		}
 		else
 		{
@@ -3713,11 +3709,8 @@ void renderRaycast(LLDrawable* drawablep)
 
 					{
 						//render face positions
-						LLVertexBuffer::unbind();
 						gGL.diffuseColor4f(0,1,1,0.5f);
-						glVertexPointer(3, GL_FLOAT, sizeof(LLVector4a), face.mPositions);
-						gGL.syncMatrices();
-						glDrawElements(GL_TRIANGLES, face.mNumIndices, GL_UNSIGNED_SHORT, face.mIndices);
+						LLVertexBuffer::drawElements(LLRender::TRIANGLES, face.mPositions, NULL, face.mNumIndices, face.mIndices);
 					}
 					
 					if (!volume->isUnique())

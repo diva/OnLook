@@ -4828,7 +4828,10 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						if (gPipeline.canUseWindLightShadersOnObjects()
 							&& LLPipeline::sRenderBump)
 						{
-							if (LLPipeline::sRenderDeferred && te->getMaterialParams().notNull()  && !te->getMaterialID().isNull())
+							// Singu Note: Don't check the materials ID, as doing such causes a mismatch between rebuildGeom and genDrawInfo. 
+							//  If we did check, then genDrawInfo would be more lenient than rebuildGeom on deciding if a face verts should have material-related attributes,
+							//  which would result in a face with a vertex buffer that fails to meet shader attribute requirements.
+							if (LLPipeline::sRenderDeferred && te->getMaterialParams().notNull() /* && !te->getMaterialID().isNull()*/)
 							{
 								LLMaterial* mat = te->getMaterialParams().get();
 								if (mat->getNormalID().notNull())
@@ -4943,7 +4946,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	//PROCESS NON-ALPHA FACES
 	U32 simple_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_NORMAL | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 	U32 alpha_mask = simple_mask | 0x80000000; //hack to give alpha verts their own VBO
-	U32 bump_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_NORMAL | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
+	U32 bump_mask = simple_mask | LLVertexBuffer::MAP_TEXCOORD1;
 	U32 fullbright_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 
 	U32 norm_mask = simple_mask | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_TANGENT;
@@ -5392,6 +5395,38 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 			buffer_usage = GL_STREAM_DRAW_ARB;
 		}
 
+		// Singu Note: Catch insufficient vbos right when they are created. Easier to debug.
+		if(gDebugGL)
+		{
+			const LLTextureEntry* te = facep->getTextureEntry();
+			if (mat && LLPipeline::sRenderDeferred && !hud_group &&
+				!no_materials &&
+				!te->getFullbright() && 
+				!(te->getColor().mV[3] < 0.999f) &&
+				!(te->getBumpmap() && (te->getBumpmap() < 18) && (mat->getNormalID().isNull())))
+			{
+				U32 shader_mask = mat->getShaderMask();
+				if(shader_mask != 1 && shader_mask != 5 && shader_mask != 9 && shader_mask != 13)
+				{
+					LLGLSLShader* shader = &(gDeferredMaterialProgram[shader_mask]);
+
+					if((mask & shader->mAttributeMask) != shader->mAttributeMask)
+					{
+						for (U32 i = 0; i < LLVertexBuffer::TYPE_MAX; ++i)
+						{
+							U32 attrib_mask = 1 << i;
+							if((shader->mAttributeMask & attrib_mask) && !(mask & attrib_mask))
+							{
+								const std::string& type_name = LLVertexBuffer::getTypeName(i);
+								llwarns << " Missing: " << type_name <<  llendl;
+							}
+						}
+						llerrs << "Face VBO missing required materials attributes." << llendl;
+					}
+				}
+			}
+		}
+
 		//create vertex buffer
 		LLVertexBuffer* buffer = NULL;
 
@@ -5532,7 +5567,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 				{
 					registerFace(group, facep, LLRenderPass::PASS_SIMPLE);
 				}
-				else if (te->getColor().mV[3] < 0.999f)
+				else if (!opaque)	//Just use opaque instead of te->getColorblahblah
 				{
 					registerFace(group, facep, LLRenderPass::PASS_ALPHA);
 				}

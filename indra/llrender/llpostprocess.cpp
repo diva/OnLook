@@ -399,7 +399,7 @@ void LLPostProcess::initialize(unsigned int width, unsigned int height)
 
 	//Setup our VBO.
 	{
-		mVBO = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1,3);
+		mVBO = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1,GL_STREAM_DRAW_ARB);
 		mVBO->allocateBuffer(4,0,TRUE);
 
 		LLStrider<LLVector3> v;
