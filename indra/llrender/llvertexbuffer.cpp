@@ -187,7 +187,7 @@ volatile U8* LLVBOPool::allocate(U32& name, U32 size, bool for_seed)
 		if (LLVertexBuffer::sDisableVBOMapping || mUsage != GL_DYNAMIC_DRAW_ARB)
 		{
 			glBufferDataARB(mType, size, 0, mUsage);
-			ret = (U8*) ll_aligned_malloc_16(size);
+			ret = (U8*) ll_aligned_malloc(size, 64);
 		}
 		else
 		{ //always use a true hint of static draw when allocating non-client-backed buffers
@@ -240,7 +240,7 @@ void LLVBOPool::release(U32 name, volatile U8* buffer, U32 size)
 	llassert(vbo_block_size(size) == size);
 
 	deleteBuffer(name);
-	ll_aligned_free_16((U8*) buffer);
+	ll_aligned_free((U8*) buffer);
 
 	if (mType == GL_ARRAY_BUFFER_ARB)
 	{
@@ -294,7 +294,7 @@ void LLVBOPool::cleanup()
 			
 			if (r.mClientData)
 			{
-				ll_aligned_free_16((void*) r.mClientData);
+				ll_aligned_free((void*) r.mClientData);
 			}
 
 			l.pop_front();
@@ -355,6 +355,13 @@ static std::string vb_type_name[] =
 	"TYPE_MAX",
 	"TYPE_INDEX",	
 };
+
+// static
+const std::string& LLVertexBuffer::getTypeName(U8 i)
+{
+	llassert_always(i < (U8)(sizeof(vb_type_name) / sizeof(std::string)));
+	return vb_type_name[i];
+}
 
 U32 LLVertexBuffer::sGLMode[LLRender::NUM_MODES] = 
 {

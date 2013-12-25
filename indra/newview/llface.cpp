@@ -527,8 +527,6 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 		{
 			gGL.multMatrix((GLfloat*)mDrawablep->getRegion()->mRenderMatrix.mMatrix);
 		}
-
-		gGL.diffuseColor4fv(color.mV);
 	
 		if (mDrawablep->isState(LLDrawable::RIGGED))
 		{
@@ -542,6 +540,9 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 					glPolygonOffset(-1.f, -1.f);
 					gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
 					const LLVolumeFace& vol_face = rigged->getVolumeFace(getTEOffset());
+
+					// Singu Note: Implementation changed to utilize a VBO, avoiding fixed functions unless required
+#if 0
 					LLVertexBuffer::unbind();
 					glVertexPointer(3, GL_FLOAT, 16, vol_face.mPositions);
 					if (vol_face.mTexCoords)
@@ -552,14 +553,59 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 					gGL.syncMatrices();
 					glDrawElements(GL_TRIANGLES, vol_face.mNumIndices, GL_UNSIGNED_SHORT, vol_face.mIndices);
 					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#else
+					LLGLSLShader* cur_shader = LLGLSLShader::sCurBoundShaderPtr;
+
+					if(LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE))
+					{
+						if(cur_shader != &gHighlightProgram)
+						{
+							gHighlightProgram.bind();
+						}
+					}
+
+					gGL.diffuseColor4fv(color.mV);
+
+					LLPointer<LLVertexBuffer> temp = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0, 0);
+
+					temp->allocateBuffer(vol_face.mNumVertices, vol_face.mNumIndices, true);
+
+					LLStrider<U16> indicesp;
+					LLStrider<LLVector4a> verticesp;
+					LLStrider<LLVector2> texcoordsp;
+					temp->getIndexStrider(indicesp);
+					temp->getVertexStrider(verticesp);
+					temp->getTexCoord0Strider(texcoordsp);
+
+					S32 vert_size = vol_face.mNumVertices*sizeof(LLVector4a);
+					S32 idx_size = (vol_face.mNumIndices*sizeof(U16)+0xF) & ~0xF;
+					S32 tc_size = (vol_face.mNumVertices*sizeof(LLVector2)+0xF) & ~0xF;
+
+					LLVector4a::memcpyNonAliased16((F32*)verticesp.get(), (F32*) vol_face.mPositions, vert_size);
+					LLVector4a::memcpyNonAliased16((F32*)indicesp.get(), (F32*) vol_face.mIndices, idx_size);
+					LLVector4a::memcpyNonAliased16((F32*)texcoordsp.get(), (F32*) vol_face.mTexCoords, tc_size);
+
+					temp->setBuffer(temp->getTypeMask());
+					temp->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
+
+					if(LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE))
+					{
+						if(cur_shader != &gHighlightProgram)
+						{
+							cur_shader->bind();
+						}
+					}
+#endif
 				}
 			}
 		}
 		else
 		{
+			gGL.diffuseColor4fv(color.mV);
 			LLGLEnable poly_offset(GL_POLYGON_OFFSET_FILL);
 			glPolygonOffset(-1.f,-1.f);
-			mVertexBuffer->setBuffer(mVertexBuffer->getTypeMask());
+			// Singu Note: Disable per-vertex color to prevent fixed-function pipeline from using it. We want glColor color, not vertex color!
+			mVertexBuffer->setBuffer(mVertexBuffer->getTypeMask() & ~(LLVertexBuffer::MAP_COLOR));
 			mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
 		}
 
