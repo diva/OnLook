@@ -126,19 +126,12 @@ void print_clients(AISyncServer const* server, AISyncServer::client_list_t const
 }
 #endif
 
-void AISyncServerMap::register_client(AISyncClient* client)
+void AISyncServerMap::register_client(AISyncClient* client, AISyncKey* new_key)
 {
-#ifdef DEBUG_SYNCOUTPUT
-  DoutEntering(dc::notice, "AISyncServerMap::register_client(" << client << ")");
-#endif
-
   // client must always be a new client that has to be stored somewhere.
   llassert(client->server() == NULL);
   // Obviously the client can't be ready for anything when it isn't registered yet.
   llassert(!client->mReadyEvents);
-
-  // First we need its sync key.
-  AISyncKey* new_key = client->createSyncKey();
 
   // Find if a server with this key already exists.
   AISyncServer* server = NULL;
@@ -183,7 +176,6 @@ void AISyncServerMap::register_client(AISyncClient* client)
 	server = new AISyncServer(new_key);
 	// Add it to mServers, before the last server that is younger then the new key.
 	server_list_t::iterator where = mServers.end();								// Insert the new server before 'where',
-#if 0	// This is probably not necessary.
 	server_list_t::iterator new_where = where;
 	while (where != mServers.begin())											// unless there exists a server before that
 	{
@@ -194,10 +186,6 @@ void AISyncServerMap::register_client(AISyncClient* client)
 	  }
 	  where = new_where;														// then insert it before that element (etc).
 	}
-#elif defined(SHOW_ASSERT)
-	server_list_t::iterator new_where = where;
-	llassert(where == mServers.begin() || new_key->getCreationTime() >= (*--new_where)->key().getCreationTime());
-#endif
 	// This method causes a single call to intrusive_ptr_add_ref and none to intrusive_ptr_release.
 	server_ptr_t server_ptr = server;
 	mServers.insert(where, server_ptr_t())->swap(server_ptr);
@@ -231,10 +219,6 @@ void AISyncServer::sanity_check(void) const
 
 void AISyncServer::add(AISyncClient* client)
 {
-#ifdef DEBUG_SYNCOUTPUT
-  DoutEntering(dc::notice, "AISyncServer::add(" << client << "), with this = " << this);
-  print_clients(this, getClients());
-#endif
 #ifdef SYNC_TESTSUITE
   sanity_check();
 #endif
@@ -263,16 +247,10 @@ void AISyncServer::add(AISyncClient* client)
 
 void AISyncServer::remove(AISyncClient* client)
 {
-#ifdef DEBUG_SYNCOUTPUT
-  DoutEntering(dc::notice, "AISyncServer::remove(" << client << "), with this = " << this);
-  print_clients(this, getClients());
-#endif
 #ifdef SYNC_TESTSUITE
   sanity_check();
 #endif
 
-  // A client may only be unregistered after it was marked not-ready for all events.
-  llassert(!client->mReadyEvents);
   client_list_t::iterator client_iter = mClients.begin();
   synceventset_t remaining_ready_events = (synceventset_t)-1;		// All clients are ready.
   synceventset_t remaining_pending_events = 0;						// At least one client is ready (waiting for the other clients thus).
@@ -292,15 +270,14 @@ void AISyncServer::remove(AISyncClient* client)
   }
   llassert(found_client != mClients.end());
   // This must be the same as client->mReadyEvents.
-  llassert(!found_client->mReadyEvents);
+  llassert(found_client->mReadyEvents == client->mReadyEvents);
   mClients.erase(found_client);
-  client->mServer.reset();
   synceventset_t old_ready_events = mReadyEvents;
   mReadyEvents = remaining_ready_events;
-  // Since client->mReadyEvents is zero, this should be the same.
-  llassert(mPendingEvents == remaining_pending_events);
   mPendingEvents = remaining_pending_events;
   trigger(old_ready_events);
+  client->mServer.reset();
+  client->deregistered();
 
 #ifdef SYNC_TESTSUITE
   sanity_check();
@@ -309,10 +286,6 @@ void AISyncServer::remove(AISyncClient* client)
 
 void AISyncServer::unregister_last_client(void)
 {
-#ifdef DEBUG_SYNCOUTPUT
-  DoutEntering(dc::notice, "AISyncServer::unregister_last_client()");
-  print_clients(this, getClients());
-#endif
 #ifdef SYNC_TESTSUITE
   sanity_check();
 #endif
@@ -331,22 +304,6 @@ void AISyncServer::unregister_last_client(void)
 #ifdef SYNC_TESTSUITE
   sanity_check();
 #endif
-}
-
-synceventset_t AISyncServer::events_with_all_clients_ready(void) const
-{
-#ifdef SYNC_TESTSUITE
-  sanity_check();
-#endif
-  return mReadyEvents;
-}
-
-synceventset_t AISyncServer::events_with_at_least_one_client_ready(void) const
-{
-#ifdef SYNC_TESTSUITE
-  sanity_check();
-#endif
-  return mPendingEvents;
 }
 
 void AISyncServer::trigger(synceventset_t old_ready_events)
@@ -368,22 +325,14 @@ void AISyncServer::trigger(synceventset_t old_ready_events)
   }
 }
 
-bool AISyncServer::ready(synceventset_t events, synceventset_t yesno, AISyncClient* client)
+void AISyncServer::ready(synceventset_t events, synceventset_t yesno, AISyncClient* client)
 {
-#ifdef DEBUG_SYNCOUTPUT
-  DoutEntering(dc::notice, "AISyncServer::ready(" << SyncEventSet(events) << ", " << SyncEventSet(yesno) << ", " << client << ")");
-  print_clients(this, getClients());
-#endif
 #ifdef SYNC_TESTSUITE
   sanity_check();
 #endif
 
   synceventset_t added_events = events & yesno;
   synceventset_t removed_events = events & ~yesno;
-  // May not add events that are already ready.
-  llassert(!(client->mReadyEvents & added_events));
-  // Cannot remove events that weren't ready.
-  llassert((client->mReadyEvents & removed_events) == removed_events);
 
   // Run over all clients to find the client and calculate the current state.
   synceventset_t remaining_ready_events = (synceventset_t)-1;		// All clients are ready.

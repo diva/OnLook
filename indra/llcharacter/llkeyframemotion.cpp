@@ -818,7 +818,44 @@ void LLKeyframeMotion::onDeactivate()
 //-----------------------------------------------------------------------------
 // setStopTime()
 //-----------------------------------------------------------------------------
-// time is in seconds since character creation
+//
+// Consider a looping animation of 20 frames, where the loop in point is at 3 frames
+// and the loop out point at 16 frames:
+//
+// The first 3 frames of the animation would be the "loop in" animation.
+// The last 4 frames of the animation would be the "loop out" animation.
+// Frames 4 through 15 would be the looping animation frames.
+//
+// If the animation would not be looping, all frames would just be played once sequentially:
+//
+// mActivationTimestamp -.
+//                       v
+//						 0  3         15 16  20
+//						 |  |           \|   |
+//						 ---------------------
+//                       <-->                    <-- mLoopInPoint (relative to mActivationTimestamp)
+//                       <-------------->        <-- mLoopOutPoint (relative to mActivationTimestamp)
+//                       <----mDuration------>
+//
+// When looping the animation would repeat frames 3 to 16 (loop) a few times, for example:
+//
+// 0  3         15 3         15 3         15 3         15 16  20
+// |  |  loop 1   \|  loop 2   \|  loop 3   \|  loop 4   \|   |
+// ------------------------------------------------------------
+//LOOP^                                             ^      LOOP
+// IN |                                      <----->|      OUT
+//  start_loop_time          loop_fraction_time-'  time
+//
+// The time at which the animation is started corresponds to frame 0 and is stored
+// in mActivationTimestamp (in seconds since character creation).
+//
+// If setStopTime() is called with a time somewhere inside loop 4,
+// then 'loop_fraction_time' is the time from the beginning of
+// loop 4 till 'time'. Thus 'time - loop_fraction_time' is the first
+// frame of loop 4, and '(time - loop_fraction_time) +
+// (mJointMotionList->mDuration - mJointMotionList->mLoopInPoint)'
+// would correspond to frame 20.
+//
 void LLKeyframeMotion::setStopTime(F32 time)
 {
 	LLMotion::setStopTime(time);
@@ -836,6 +873,8 @@ void LLKeyframeMotion::setStopTime(F32 time)
 			loop_fraction_time = fmod(time - start_loop_time, 
 				mJointMotionList->mLoopOutPoint - mJointMotionList->mLoopInPoint);
 		}
+		// This sets mStopTimestamp to the time that corresponds to the end of the animation (ie, frame 20 in the above example)
+		// minus the ease out duration, so that the animation eases out during the loop out and finishes exactly at the end.
 		mStopTimestamp = llmax(time, 
 			(time - loop_fraction_time) + (mJointMotionList->mDuration - mJointMotionList->mLoopInPoint) - getEaseOutDuration());
 	}

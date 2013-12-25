@@ -150,11 +150,11 @@ public:
 	//Flush is a liar.
 	void deactivateAllMotions();	
 
-	//<edit>
+	//<singu>
 	void activated(U32 bit) { mActiveMask |= bit; }
 	void deactivated(U32 bit) { mActiveMask &= ~bit; }
 	bool isactive(U32 bit) const { return (mActiveMask & bit) != 0; }
-	//</edit>
+	//</singu>
 
 	// pause and continue all motions
 	void pauseAllMotions();
@@ -186,7 +186,10 @@ protected:
 	// internal operations act on motion instances directly
 	// as there can be duplicate motions per id during blending overlap
 	void deleteAllMotions();
+	// singu: LLMotion needs access to activateMotionInstance.
+public:
 	BOOL activateMotionInstance(LLMotion *motion, F32 time);
+protected:
 	BOOL deactivateMotionInstance(LLMotion *motion);
 	void deprecateMotionInstance(LLMotion* motion);
 	BOOL stopMotionInstance(LLMotion *motion, BOOL stop_imemdiate);
@@ -227,9 +230,12 @@ protected:
 	motion_list_t		mActiveMotions;
 	motion_set_t		mDeprecatedMotions;
 
-	//<edit>
+	//<singu>
 	U32					mActiveMask;
-	//</edit>
+	int					mDisableSyncing;			// Set while LLMotion::onActivate (and onDeactivate) are called for this controller.
+	bool				mHidden;					// The value of the last call to hidden().
+	bool				mHaveVisibleSyncedMotions;	// Set when we are synchronized with one or more motions of a controller that is not hidden.
+	//</singu>
 	LLFrameTimer		mTimer;
 	F32					mPrevTimerElapsed;
 	F32					mAnimTime;
@@ -242,6 +248,26 @@ protected:
 	F32					mLastInterp;
 
 	U8					mJointSignature[2][LL_CHARACTER_MAX_JOINTS];
+
+	//<singu>
+public:
+	// Internal administration for AISync.
+	void disable_syncing(void) { mDisableSyncing += 100; }
+	void enable_syncing(void) { mDisableSyncing -= 100; }
+	bool syncing_disabled(void) const { return mDisableSyncing >= 100; }
+
+	// Accessors needed for synchronization.
+	F32 getAnimTime(void) const { return mAnimTime; }
+	bool isHidden(void) const { return mHidden; }
+
+	// Called often. Should return false if we still need to keep updating our motions even if we're not visible.
+	bool hidden(bool not_visible) { if (mHidden != not_visible) toggle_hidden(); return !mHaveVisibleSyncedMotions; }
+
+private:
+	void toggle_hidden(void);
+	void refresh_hidden(void);
+	void setHaveVisibleSyncedMotions(void) { mHaveVisibleSyncedMotions = true; }
+	//</singu>
 };
 
 //-----------------------------------------------------------------------------

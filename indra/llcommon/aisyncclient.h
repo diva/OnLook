@@ -117,9 +117,16 @@ class LL_COMMON_API AISyncKey
 
   public:
 	// Constructor.
-	AISyncKey(void) : mStartFrameCount(LLFrameTimer::getFrameCount())
+	AISyncKey(AISyncKey const* from_key) : mStartFrameCount(from_key ? from_key->mStartFrameCount : LLFrameTimer::getFrameCount())
 	{
-	  mFrameTimer.reset(sExpirationTime);
+	  if (from_key)
+	  {
+		mFrameTimer.copy(from_key->mFrameTimer);
+	  }
+	  else
+	  {
+		mFrameTimer.reset(sExpirationTime);
+	  }
 	}
 
 	// Destructor.
@@ -186,7 +193,7 @@ class LL_COMMON_API AISyncServer
 	// Add a new client to this server.
 	void add(AISyncClient* client);
 
-	// Add a new client to this server.
+	// Remove a client from this server.
 	void remove(AISyncClient* client);
 
 	// Return the key associated to this server (which is the key produced by the first client of the largest synckeytype_t that was added).
@@ -198,20 +205,19 @@ class LL_COMMON_API AISyncServer
 	bool never_synced(void) const { return !mSynchronized; }
 
 	// Set readiness of all events at once.
-	bool ready(synceventset_t events, synceventset_t yesno, AISyncClient* client);
+	void ready(synceventset_t events, synceventset_t yesno, AISyncClient* client);
 
 	// Unregister the (only) client because it's own its own and will never need synchronization.
 	void unregister_last_client(void);
 
 	// Return the events that all clients for.
-	synceventset_t events_with_all_clients_ready(void) const;
+	synceventset_t events_with_all_clients_ready(void) const { return mReadyEvents; }
 
 	// Return events that at least one client is ready for.
-	synceventset_t events_with_at_least_one_client_ready(void) const;
+	synceventset_t events_with_at_least_one_client_ready(void) const { return mPendingEvents; }
 
-#ifdef SHOW_ASSERT
+	// Return a list of all registered clients.
 	client_list_t const& getClients(void) const { return mClients; }
-#endif
 
   private:
 	// Call event1_ready() or event1_not_ready() on all clients if the least significant bit of mReadyEvents changed.
@@ -238,7 +244,7 @@ class LL_COMMON_API AISyncServerMap : public LLSingleton<AISyncServerMap>
   public:
 	// Find or create a server object that the client belongs to and store the client in it.
 	// If a new server is created, it is stored in mServers.
-	void register_client(AISyncClient* client);
+	void register_client(AISyncClient* client, AISyncKey* new_key);
 
   private:
     friend void intrusive_ptr_release(AISyncServer* server);
@@ -258,8 +264,8 @@ class LL_COMMON_API AISyncClient
 	synceventset_t mReadyEvents;
 	AISyncClient(void) : mReadyEvents(0) { }
 #endif
-	virtual ~AISyncClient() { }
-	virtual AISyncKey* createSyncKey(void) const = 0;
+	virtual ~AISyncClient() { llassert(!mServer); /* If this fails then you need to add unregister_client() to the top of the destructor of the derived class that implements deregistered(). */ }
+	virtual AISyncKey* createSyncKey(AISyncKey const* from_key = NULL) const = 0;
 
 	virtual void event1_ready(void) = 0;
 	virtual void event1_not_ready(void) = 0;
@@ -275,21 +281,22 @@ class LL_COMMON_API AISyncClient
 	AISyncServer* server(void) const { return mServer.get(); }
 
 	// Add this client to a server with matching sync key. Optionally the server is first created.
-	void register_client(void) { AISyncServerMap::instance().register_client(this); }
+	void register_client(void) { AISyncServerMap::instance().register_client(this, createSyncKey()); }
 
-	// Remove this client from its server.
-	void unregister_client(void) { mServer->remove(this); }
+	// Remove this client from its server, if any.
+	void unregister_client(void) { if (mServer) mServer->remove(this); }
 
 	// Call 'ready' when you are ready (or not) to get a call to start().
 	// Returns true if that call was made (immediately), otherwise it may happen later.
 
-	bool ready(synceventset_t events, synceventset_t yesno) // Set readiness of all events at once.
+	// Set readiness of all events at once.
+	void ready(synceventset_t events, synceventset_t yesno)
     {
       if (!mServer)
       {
         register_client();
       }
-      return mServer->ready(events, yesno, this);
+      mServer->ready(events, yesno, this);
     }
 };
 

@@ -231,7 +231,9 @@ void LLVOAvatar::startMotion(U32 bit, F32 time_offset)
 {
 	if (!isMotionActive(bit))
 	{
+		mMotionController.disable_syncing();		// Don't attempt to synchronize AIMaskedMotion.
 		startMotion(mask2ID(bit), time_offset);
+		mMotionController.enable_syncing();
 	}
 }
 
@@ -3810,6 +3812,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 
 	if (LLVOAvatar::sShowAnimationDebug)
 	{
+		addDebugText(llformat("at=%.1f", mMotionController.getAnimTime()));
 		for (LLMotionController::motion_list_t::iterator iter = mMotionController.getActiveMotions().begin();
 			 iter != mMotionController.getActiveMotions().end(); ++iter)
 		{
@@ -3828,6 +3831,10 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 					output = llformat("%s - %d",
 							  motionp->getName().c_str(),
 							  (U32)motionp->getPriority());
+				}
+				if (motionp->server())
+				{
+					output += llformat(" rt=%.1f r=%d s=0x%xl", motionp->getRuntime(), motionp->mReadyEvents, motionp->server());
 				}
 				addDebugText(output);
 			}
@@ -5499,6 +5506,7 @@ void LLVOAvatar::processAnimationStateChanges()
 	}
 	
 	// clear all current animations
+	BOOL const AOEnabled = gSavedSettings.getBOOL("AOEnabled");					// Singu note: put this outside the loop.
 	AnimIterator anim_it;
 	for (anim_it = mPlayingAnimations.begin(); anim_it != mPlayingAnimations.end();)
 	{
@@ -5508,9 +5516,9 @@ void LLVOAvatar::processAnimationStateChanges()
 		if (found_anim == mSignaledAnimations.end())
 		{
 
-			if (isSelf())
+			if (AOEnabled && isSelf())
 			{
-				if ((gSavedSettings.getBOOL("AOEnabled")) && LLFloaterAO::stopMotion(anim_it->first, FALSE)) // if the AO replaced this anim serverside then stop it serverside
+				if (LLFloaterAO::stopMotion(anim_it->first, FALSE)) // if the AO replaced this anim serverside then stop it serverside
 				{
 //					return TRUE; //no local stop needed
 				}
@@ -5540,7 +5548,7 @@ void LLVOAvatar::processAnimationStateChanges()
 			// </edit>
 			if (processSingleAnimationStateChange(anim_it->first, TRUE))
 			{
-				if (isSelf() && gSavedSettings.getBOOL("AOEnabled")) // AO is only for ME
+				if (AOEnabled && isSelf()) // AO is only for ME
 				{
 					LLFloaterAO::startMotion(anim_it->first, 0,FALSE); // AO overrides the anim if needed
 				}

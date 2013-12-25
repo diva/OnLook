@@ -38,6 +38,7 @@
 //-----------------------------------------------------------------------------
 #include <string>
 
+#include "aisyncclient.h"
 #include "llerror.h"
 #include "llpose.h"
 #include "lluuid.h"
@@ -46,9 +47,76 @@ class LLCharacter;
 class LLMotionController;
 
 //-----------------------------------------------------------------------------
+// class AISync* stuff
+//-----------------------------------------------------------------------------
+
+class AISyncKeyMotion : public AISyncKey
+{
+  private:
+	F32 mDuration;
+	bool mLoop;
+
+  public:
+	AISyncKeyMotion(AISyncKey const* from_key, F32 duration, bool loop) : AISyncKey(from_key), mDuration(duration), mLoop(loop) { }
+
+  // Virtual functions of AISyncKey.
+  public:
+	/*virtual*/ synckeytype_t getkeytype(void) const
+	{
+	  // Return a unique identifier for this class, where the low 8 bits represent the syncgroup.
+	  return synckeytype_motion;
+	}
+
+    /*virtual*/ bool equals(AISyncKey const& key) const
+	{
+	  switch (key.getkeytype())
+	  {
+		case synckeytype_motion:
+		{
+		  // The other key is of the same type.
+		  AISyncKeyMotion const& motion_key = static_cast<AISyncKeyMotion const&>(key);
+		  return mLoop == motion_key.mLoop && is_approx_equal(mDuration, motion_key.mDuration);
+		}
+		default:
+		  // The keys must be in the same syncgroup.
+		  break;
+	  }
+	  return false;
+	}
+};
+
+class AISyncClientMotion : public AISyncClient
+{
+  protected:
+	// Make sure that clients that are destroyed are first unregistered.
+	// This is needed, for example, when loading fails or when excess motions are being purged.
+	/*virtual*/ ~AISyncClientMotion() { unregister_client(); }
+
+	// AISyncClient events.
+	/*virtual*/ AISyncKey* createSyncKey(AISyncKey const* from_key = NULL) const;
+	/*virtual*/ void event1_ready(void) { }
+	/*virtual*/ void event1_not_ready(void) { }
+	/*virtual*/ void deregistered(void);
+
+  protected:
+	// This is called when the server sent us a message that it wants us to play this animation, but we can't because it isn't fully downloaded yet.
+	void aisync_loading(void);
+	// This is called when that motion is successfully loaded and it has to be re-registered because now the duration etc is known.
+	void aisync_loaded(void);
+
+  public:
+	// Virtual functions of AISyncClientMotion.
+	// These are defined by classes derived from LLMotion (which is derived from this class).
+	virtual BOOL getLoop() = 0;
+	virtual F32 getDuration() = 0;
+	virtual F32 getAnimTime(void) const  = 0;
+	virtual F32 getRuntime(void) const  = 0;
+};
+
+//-----------------------------------------------------------------------------
 // class LLMotion
 //-----------------------------------------------------------------------------
-class LLMotion
+class LLMotion : public AISyncClientMotion
 {
 	friend class LLMotionController;
 	
@@ -115,7 +183,22 @@ protected:
 	BOOL isActive() { return mActive; }
 public:
 	void activate(F32 time);
-	
+
+	//<singu>
+	// Returns the time that this motion has been running.
+	virtual F32 getRuntime(void) const;
+
+	// Return the current time (in seconds since creation of the controller).
+	virtual F32 getAnimTime(void) const;
+
+	// This is called when a motion is to be activated, but might need synchronization.
+	// It adjusts the start time to match that of other motions in the same synchronization group that were already started.
+	F32 syncActivationTime(F32 time);
+
+	// Accessor.
+	LLMotionController* getController(void) const { return mController; }
+	//</singu>
+
 public:
 	//-------------------------------------------------------------------------
 	// animation callbacks to be implemented by subclasses

@@ -130,6 +130,9 @@ LLMotionController::LLMotionController()
 	  mTimeFactor(sCurrentTimeFactor),
 	  mCharacter(NULL),
 	  mActiveMask(0),
+	  mDisableSyncing(0),
+	  mHidden(false),
+	  mHaveVisibleSyncedMotions(false),
 	  mPrevTimerElapsed(0.f),
 	  mAnimTime(0.f),
 	  mLastTime(0.0f),
@@ -173,6 +176,10 @@ void LLMotionController::deleteAllMotions()
 	mActiveMask = 0;
 	for_each(mDeprecatedMotions.begin(), mDeprecatedMotions.end(), DeletePointer());
 	mDeprecatedMotions.clear();
+	for (motion_map_t::iterator iter = mAllMotions.begin(); iter != mAllMotions.end(); ++iter)
+	{
+		iter->second->unregister_client();
+	}
 	//</singu>
 	for_each(mAllMotions.begin(), mAllMotions.end(), DeletePairedPointer());
 	mAllMotions.clear();
@@ -437,7 +444,19 @@ BOOL LLMotionController::startMotion(const LLUUID &id, F32 start_offset)
 	}
 
 //	llinfos << "Starting motion " << name << llendl;
-	return activateMotionInstance(motion, mAnimTime - start_offset);
+	//<singu>
+	F32 start_time = mAnimTime - start_offset;
+	if (!mDisableSyncing)
+	{
+	  start_time = motion->syncActivationTime(start_time);
+	}
+	++mDisableSyncing;
+	//</singu>
+	BOOL res = activateMotionInstance(motion, start_time);
+	//<singu>
+	--mDisableSyncing;
+	//</singu>
+	return res;
 }
 
 
@@ -793,7 +812,19 @@ void LLMotionController::updateLoadingMotions()
 			// this motion should be playing
 			if (!motionp->isStopped())
 			{
-				activateMotionInstance(motionp, mAnimTime);
+				//<singu>
+				F32 start_time = mAnimTime;
+				if (!mDisableSyncing)
+				{
+				  motionp->aisync_loaded();
+				  start_time = motionp->syncActivationTime(start_time);
+				}
+				++mDisableSyncing;
+				//</singu>
+				activateMotionInstance(motionp, start_time);
+				//<singu>
+				--mDisableSyncing;
+				//</singu>
 			}
 		}
 		else if (status == LLMotion::STATUS_FAILURE)
@@ -806,6 +837,10 @@ void LLMotionController::updateLoadingMotions()
 			// check for it's existence there.
 			llassert(mDeprecatedMotions.find(motionp) == mDeprecatedMotions.end());
 			mAllMotions.erase(motionp->getID());
+			//<singu>
+			// Make sure we're not registered anymore.
+			motionp->unregister_client();
+			//</singu>
 			delete motionp;
 		}
 	}
@@ -933,6 +968,12 @@ BOOL LLMotionController::activateMotionInstance(LLMotion *motion, F32 time)
 
 	if (mLoadingMotions.find(motion) != mLoadingMotions.end())
 	{
+		//<singu>
+		if (!syncing_disabled())
+		{
+			motion->aisync_loading();
+		}
+		//</singu>
 		// we want to start this motion, but we can't yet, so flag it as started
 		motion->setStopped(FALSE);
 		// report pending animations as activated
@@ -1094,9 +1135,9 @@ void LLMotionController::deactivateAllMotions()
 {
 	// Singu note: this must run over mActiveMotions: other motions are not active,
 	// and running over mAllMotions will miss the ones in mDeprecatedMotions.
-	for (motion_list_t::iterator iter = mActiveMotions.begin(); iter != mActiveMotions.end(); ++iter)
+	for (motion_list_t::iterator iter = mActiveMotions.begin(); iter != mActiveMotions.end();)
 	{
-		deactivateMotionInstance(*iter);
+		deactivateMotionInstance(*iter++);	// This might invalidate iter by erasing it from mActiveMotions.
 	}
 }
 
@@ -1126,12 +1167,97 @@ void LLMotionController::flushAllMotions()
 	mCharacter->removeAnimationData("Hand Pose");
 
 	// restart motions
+	//<singu>
+	// Because we called motionp->deactivate() above, instead of deactivateMotionInstance(),
+	// prevent calling AISyncClientMotion::activateInstance in startMotion below.
+	disable_syncing();
+	//</singu>
 	for (std::vector<std::pair<LLUUID,F32> >::iterator iter = active_motions.begin();
 		 iter != active_motions.end(); ++iter)
 	{
 		startMotion(iter->first, iter->second);
 	}
+	//<singu>
+	enable_syncing();
+	//</singu>
 }
+
+//<singu>
+//-----------------------------------------------------------------------------
+// toggle_hidden()
+//-----------------------------------------------------------------------------
+void LLMotionController::toggle_hidden(void)
+{
+	mHaveVisibleSyncedMotions = mHidden;		// Default is false if we just became invisible (otherwise this value isn't used).
+	mHidden = !mHidden;
+	synceventset_t const visible = mHidden ? 0 : 4;
+
+	// Run over all motions.
+	for (motion_list_t::iterator iter = mActiveMotions.begin(); iter != mActiveMotions.end(); ++iter)
+	{
+		LLMotion* motionp = *iter;
+		AISyncServer* server = motionp->server();
+		if (server && !server->never_synced() && (motionp->mReadyEvents & 2))	// Skip motions that aren't synchronized at all or that are not active.
+		{
+			bool visible_before = server->events_with_at_least_one_client_ready() & 4;
+			server->ready(4, visible, motionp);									// Mark that now we are visible or no longer visible.
+			bool visible_after = server->events_with_at_least_one_client_ready() & 4;
+			if (visible_after)													// Are there any synchronized motions (left) that ARE visible?
+			{
+				mHaveVisibleSyncedMotions = true;
+			}
+			if (visible_before != visible_after)
+			{
+				// The group as a whole now might need to change whether or not it is animated.
+				AISyncServer::client_list_t const& clients = server->getClients();
+				for (AISyncServer::client_list_t::const_iterator client = clients.begin(); client != clients.end(); ++client)
+				{
+					LLMotion* motion = dynamic_cast<LLMotion*>(client->mClientPtr);
+					if (!motion)
+					{
+						continue;
+					}
+					LLMotionController* controller = motion->getController();
+					if (controller == this)
+					{
+						continue;
+					}
+					if (visible_after)
+					{
+					  // Us becoming visible means that all synchronized avatars need to be animated again too.
+					  controller->setHaveVisibleSyncedMotions();
+					}
+					else
+					{
+					  // Us becoming hidden means that all synchronized avatars might stop animating.
+					  controller->refresh_hidden();		// It is extremely unlikely, but harmless, to call this twice on the same controller.
+					}
+				}
+			}
+		}
+	}
+}
+
+void LLMotionController::refresh_hidden(void)
+{
+	mHaveVisibleSyncedMotions = !mHidden;
+
+	// Run over all motions.
+	for (motion_list_t::iterator iter = mActiveMotions.begin(); iter != mActiveMotions.end(); ++iter)
+	{
+		LLMotion* motionp = *iter;
+		AISyncServer* server = motionp->server();
+		if (server && !server->never_synced() && (motionp->mReadyEvents & 2))	// Skip motions that aren't synchronized at all or that are not active.
+		{
+			bool visible_after = server->events_with_at_least_one_client_ready() & 4;
+			if (visible_after)													// Are there any synchronized motions (left) that ARE visible?
+			{
+				mHaveVisibleSyncedMotions = true;
+			}
+		}
+	}
+}
+//</singu>
 
 //-----------------------------------------------------------------------------
 // pause()

@@ -194,11 +194,26 @@ void LLCharacter::updateMotions(e_update_t update_type)
 {
 	if (update_type == HIDDEN_UPDATE)
 	{
+		//<singu>
+		// Keep updating avatars that have at least one motion that is synchronized with a still running motion.
+		// This call tells the other controllers that we are in principle hidden.
+		// It returns false if we need to keep updating anyway.
+		if (!mMotionController.hidden(true))
+		{
+			mMotionController.updateMotions(LLCharacter::NORMAL_UPDATE);
+			return;
+		}
+		//</singu>
 		LLFastTimer t(FTM_UPDATE_HIDDEN_ANIMATION);
 		mMotionController.updateMotionsMinimal();
 	}
 	else
 	{
+		//<singu>
+		// This call tells the other controllers that we are visible and that they need
+		// to keep updating if they are synchronized with us, even if they are hidden.
+		mMotionController.hidden(false);
+		//</singu>
 		LLFastTimer t(FTM_UPDATE_ANIMATION);
 		// unpause if the number of outstanding pause requests has dropped to the initial one
 		if (mMotionController.isPaused() && mPauseRequest->getNumRefs() == 1)
