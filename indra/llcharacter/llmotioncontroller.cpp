@@ -1197,7 +1197,7 @@ void LLMotionController::toggle_hidden(void)
 	{
 		LLMotion* motionp = *iter;
 		AISyncServer* server = motionp->server();
-		if (server && !server->never_synced() && (motionp->mReadyEvents & 2))	// Skip motions that aren't synchronized at all or that are not active.
+		if (server && !server->never_synced() && motionp->isActive())			// Skip motions that aren't synchronized at all or that are not active.
 		{
 			bool visible_before = server->events_with_at_least_one_client_ready() & 4;
 			server->ready(4, visible, motionp);									// Mark that now we are visible or no longer visible.
@@ -1247,7 +1247,7 @@ void LLMotionController::refresh_hidden(void)
 	{
 		LLMotion* motionp = *iter;
 		AISyncServer* server = motionp->server();
-		if (server && !server->never_synced() && (motionp->mReadyEvents & 2))	// Skip motions that aren't synchronized at all or that are not active.
+		if (server && !server->never_synced() && motionp->isActive())			// Skip motions that aren't synchronized at all or that are not active.
 		{
 			bool visible_after = server->events_with_at_least_one_client_ready() & 4;
 			if (visible_after)													// Are there any synchronized motions (left) that ARE visible?

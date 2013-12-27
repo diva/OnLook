@@ -151,7 +151,9 @@ F32 LLMotion::syncActivationTime(F32 time)
 
 void AISyncClientMotion::deregistered(void)
 {
+#ifdef SHOW_ASSERT
   mReadyEvents = 0;
+#endif
 }
 //</singu>
 

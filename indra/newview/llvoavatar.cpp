@@ -3834,7 +3834,11 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 				}
 				if (motionp->server())
 				{
+#ifdef SHOW_ASSERT
 					output += llformat(" rt=%.1f r=%d s=0x%xl", motionp->getRuntime(), motionp->mReadyEvents, motionp->server());
+#else
+					output += llformat(" rt=%.1f s=0x%xl", motionp->getRuntime(), motionp->server());
+#endif
 				}
 				addDebugText(output);
 			}
