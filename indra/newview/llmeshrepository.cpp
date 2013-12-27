@@ -303,7 +303,7 @@ public:
 
 	~LLMeshSkinInfoResponder()
 	{
-		llassert(mProcessed);
+		llassert(mProcessed || LLApp::isExiting());
 	}
 
 	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
@@ -331,7 +331,7 @@ public:
 
 	~LLMeshDecompositionResponder()
 	{
-		llassert(mProcessed);
+		llassert(mProcessed || LLApp::isExiting());
 	}
 
 	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
@@ -359,7 +359,7 @@ public:
 
 	~LLMeshPhysicsShapeResponder()
 	{
-		llassert(mProcessed);
+		llassert(mProcessed || LLApp::isExiting());
 	}
 
 	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
