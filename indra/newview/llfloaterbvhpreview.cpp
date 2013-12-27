@@ -754,8 +754,25 @@ void LLFloaterBvhPreview::onBtnStop()
 			avatarp = mAnimPreview->getDummyAvatar();
 		else
 			return;
+#if 0 // Singu note: See https://jira.secondlife.com/browse/SH-2590
 		resetMotion();
 		mPauseRequest = avatarp->requestPause();
+#else
+		//<singu>
+		// https://jira.secondlife.com/browse/SH-2590?focusedCommentId=286661&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-286661
+		// Written by Coaldust Numbers.
+		// Is the motion looping and have we passed the loop in point?
+		if (getChild<LLUICtrl>("loop_check")->getValue().asBoolean() &&
+			(F32)getChild<LLUICtrl>("loop_in_point")->getValue().asReal() <= (F32)getChild<LLUICtrl>("playback_slider")->getValue().asReal() * 100.f)
+		{
+			avatarp->stopMotion(mMotionID, FALSE);
+		}
+		else
+		{
+			avatarp->stopMotion(mMotionID, TRUE);
+		}
+		//</singu>
+#endif
 	}
 }
 
