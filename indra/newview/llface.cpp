@@ -527,8 +527,6 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 		{
 			gGL.multMatrix((GLfloat*)mDrawablep->getRegion()->mRenderMatrix.mMatrix);
 		}
-
-		gGL.diffuseColor4fv(color.mV);
 	
 		if (mDrawablep->isState(LLDrawable::RIGGED))
 		{
@@ -542,6 +540,9 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 					glPolygonOffset(-1.f, -1.f);
 					gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
 					const LLVolumeFace& vol_face = rigged->getVolumeFace(getTEOffset());
+
+					// Singu Note: Implementation changed to utilize a VBO, avoiding fixed functions unless required
+#if 0
 					LLVertexBuffer::unbind();
 					glVertexPointer(3, GL_FLOAT, 16, vol_face.mPositions);
 					if (vol_face.mTexCoords)
@@ -552,14 +553,37 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 					gGL.syncMatrices();
 					glDrawElements(GL_TRIANGLES, vol_face.mNumIndices, GL_UNSIGNED_SHORT, vol_face.mIndices);
 					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#else
+					LLGLSLShader* prev_shader = NULL;
+
+					if(LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE))
+					{
+						if(LLGLSLShader::sCurBoundShaderPtr != &gHighlightProgram)
+						{
+							prev_shader = LLGLSLShader::sCurBoundShaderPtr;
+							gHighlightProgram.bind();
+						}
+					}
+
+					gGL.diffuseColor4fv(color.mV);
+
+					LLVertexBuffer::drawElements(LLRender::TRIANGLES, vol_face.mPositions, vol_face.mTexCoords, vol_face.mNumIndices, vol_face.mIndices);
+					
+					if(prev_shader)
+					{
+						prev_shader->bind();
+					}
+#endif
 				}
 			}
 		}
 		else
 		{
+			gGL.diffuseColor4fv(color.mV);
 			LLGLEnable poly_offset(GL_POLYGON_OFFSET_FILL);
 			glPolygonOffset(-1.f,-1.f);
-			mVertexBuffer->setBuffer(mVertexBuffer->getTypeMask());
+			// Singu Note: Disable per-vertex color to prevent fixed-function pipeline from using it. We want glColor color, not vertex color!
+			mVertexBuffer->setBuffer(mVertexBuffer->getTypeMask() & ~(LLVertexBuffer::MAP_COLOR));
 			mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
 		}
 

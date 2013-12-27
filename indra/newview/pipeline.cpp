@@ -3936,129 +3936,99 @@ void render_hud_elements()
 	gGL.flush();
 }
 
+// Singu Note: Created to avoid redundant code.
+void renderSelectedFaces(LLGLSLShader& shader, std::vector<LLFace*> &selected_faces, LLViewerTexture* tex, LLColor4 color, LLRender::eTexIndex channel, LLRender::eTexIndex active_channel = LLRender::NUM_TEXTURE_CHANNELS)
+{
+	if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
+	{
+		shader.bind();
+	}
+
+	bool active = active_channel == LLRender::NUM_TEXTURE_CHANNELS || channel == active_channel;
+	
+	if(!active)	//Draw 'faded out' overlay for selected faces that aren't applicable to current channel being edited.
+		color.mV[3] *= .5f;
+
+	for (std::vector<LLFace*>::iterator it = selected_faces.begin(); it != selected_faces.end(); ++it)
+	{
+		LLFace *facep = *it;
+		if (!facep || facep->getDrawable()->isDead())
+		{
+			llerrs << "Bad face on selection" << llendl;
+			return;
+		}
+
+		const LLTextureEntry* te = facep->getTextureEntry();
+		LLMaterial* mat = te ? te->getMaterialParams().get() : NULL;
+
+		if(channel == LLRender::DIFFUSE_MAP)
+		{
+			if(active || !mat || 
+				(active_channel == LLRender::NORMAL_MAP && mat->getNormalID().isNull()) || 
+				(active_channel == LLRender::SPECULAR_MAP && mat->getSpecularID().isNull()))
+				facep->renderSelected(tex, color);
+		}
+		else if(channel == LLRender::NORMAL_MAP)
+		{
+			if(mat && mat->getNormalID().notNull())
+				facep->renderSelected(tex, color);
+		}
+		else if(channel == LLRender::SPECULAR_MAP)
+		{
+			if(mat && mat->getSpecularID().notNull())
+				facep->renderSelected(tex, color);
+		}
+	}
+
+	if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
+	{
+		shader.unbind();
+	}
+}
 void LLPipeline::renderHighlights()
 {
 	assertInitialized();
 
-	// Draw 3D UI elements here (before we clear the Z buffer in POOL_HUD)
-	// Render highlighted faces.
-	LLGLSPipelineAlpha gls_pipeline_alpha;
-	LLColor4 color(1.f, 1.f, 1.f, 0.5f);
-	LLGLEnable color_mat(GL_COLOR_MATERIAL);
-	disableLights();
+	if(!hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED))
+		return;	//Nothing to draw...
 
-	if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
-	{
-		gHighlightProgram.bind();
-		gGL.diffuseColor4f(1,1,1,0.5f);
-	}
-	
-	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && !mFaceSelectImagep)
+	// Setup
+	if ( !mFaceSelectImagep)
 	{
 		mFaceSelectImagep = LLViewerTextureManager::getFetchedTexture(IMG_FACE_SELECT);
 	}
 
-	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && (sRenderHighlightTextureChannel == LLRender::DIFFUSE_MAP))
-	{
-		// Make sure the selection image gets downloaded and decoded
-		mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
+	// Make sure the selection image gets downloaded and decoded
+	mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
 
-		U32 count = mSelectedFaces.size();
-		for (U32 i = 0; i < count; i++)
-		{
-			LLFace *facep = mSelectedFaces[i];
-			if (!facep || facep->getDrawable()->isDead())
-			{
-				llerrs << "Bad face on selection" << llendl;
-				return;
-			}
-			
-			facep->renderSelected(mFaceSelectImagep, color);
-		}
-	}
+	// Draw 3D UI elements here (before we clear the Z buffer in POOL_HUD)
+	// Render highlighted faces.
+	LLGLSPipelineAlpha gls_pipeline_alpha;
+	LLGLEnable color_mat(GL_COLOR_MATERIAL);
+	disableLights();
 
-	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED))
-	{
-		// Paint 'em red!
-		color.setVec(1.f, 0.f, 0.f, 0.5f);
-		
-		int count = mHighlightFaces.size();
-		for (S32 i = 0; i < count; i++)
-		{
-			LLFace* facep = mHighlightFaces[i];
-			facep->renderSelected(LLViewerTexture::sNullImagep, color);
-		}
-	}
+	// Singu Note: Logic here changed, and behavior changed as well. Always draw overlays of some nature over all selected faces.
+	//  Faces that wont undergo any change if the current active channel is edited should have a 'faded' overlay
 
-	// Contains a list of the faces of objects that are physical or
-	// have touch-handlers.
+	// Temporary. If not deferred, then texcoord1 and texcoord2 are probably absent from face vbo, which LLFace::renderSelected piggybacks.
+	//  Force to standard diffuse mode. Workaround would probably be to generate new face vbo data on the fly if required texcoord data is absent.
+	LLRender::eTexIndex active_channel = LLPipeline::sRenderDeferred ? sRenderHighlightTextureChannel : LLRender::NUM_TEXTURE_CHANNELS;
+
+	// Default diffuse mapping
+	renderSelectedFaces(gHighlightProgram, mSelectedFaces, mFaceSelectImagep, LLColor4(1.f,1.f,1.f,.5f), LLRender::DIFFUSE_MAP, active_channel);
+	
+	// Paint 'em red!
+	renderSelectedFaces(gHighlightProgram, mHighlightFaces, LLViewerTexture::sNullImagep, LLColor4(1.f,0.f,0.f,.5f), LLRender::DIFFUSE_MAP);
+
+	// Normal mapping
+	if(active_channel == LLRender::NORMAL_MAP)
+		renderSelectedFaces(gHighlightNormalProgram, mSelectedFaces, mFaceSelectImagep, LLColor4(1.f, .5f, .5f, .5f), LLRender::NORMAL_MAP);
+
+	// Specular mapping
+	if(active_channel == LLRender::SPECULAR_MAP)
+		renderSelectedFaces(gHighlightSpecularProgram, mSelectedFaces, mFaceSelectImagep, LLColor4(0.f, .3f, 1.f, .8f), LLRender::SPECULAR_MAP);
+
 	mHighlightFaces.clear();
-
-	if (LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0)
-	{
-		gHighlightProgram.unbind();
-	}
-
-
-	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && (sRenderHighlightTextureChannel == LLRender::NORMAL_MAP))
-	{
-		color.setVec(1.0f, 0.5f, 0.5f, 0.5f);
-		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
-		{
-			gHighlightNormalProgram.bind();
-			gGL.diffuseColor4f(1,1,1,0.5f);
-		}
-
-		mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
-
-		U32 count = mSelectedFaces.size();
-		for (U32 i = 0; i < count; i++)
-		{
-			LLFace *facep = mSelectedFaces[i];
-			if (!facep || facep->getDrawable()->isDead())
-			{
-				llerrs << "Bad face on selection" << llendl;
-				return;
-			}
-
-			facep->renderSelected(mFaceSelectImagep, color);
-		}
-
-		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
-		{
-			gHighlightNormalProgram.unbind();
-		}
-	}
-
-	if (hasRenderDebugFeatureMask(RENDER_DEBUG_FEATURE_SELECTED) && (sRenderHighlightTextureChannel == LLRender::SPECULAR_MAP))
-	{
-		color.setVec(0.0f, 0.3f, 1.0f, 0.8f);
-		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
-		{
-			gHighlightSpecularProgram.bind();
-			gGL.diffuseColor4f(1,1,1,0.5f);
-		}
-
-		mFaceSelectImagep->addTextureStats((F32)MAX_IMAGE_AREA);
-
-		U32 count = mSelectedFaces.size();
-		for (U32 i = 0; i < count; i++)
-		{
-			LLFace *facep = mSelectedFaces[i];
-			if (!facep || facep->getDrawable()->isDead())
-			{
-				llerrs << "Bad face on selection" << llendl;
-				return;
-			}
-
-			facep->renderSelected(mFaceSelectImagep, color);
-		}
-
-		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_INTERFACE) > 0))
-		{
-			gHighlightSpecularProgram.unbind();
-		}
-	}
 }
 
 //debug use

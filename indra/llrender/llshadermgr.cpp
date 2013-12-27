@@ -1179,7 +1179,7 @@ void LLShaderMgr::initAttribsAndUniforms()
 	mReservedUniforms.push_back("shadow_target_width");
 	mReservedUniforms.push_back("downsampled_depth_scale");
 	
-	llassert(mReservedUniforms.size() == LLShaderMgr::DEFERRED_SHADOW_TARGET_WIDTH+1);
+	llassert(mReservedUniforms.size() == LLShaderMgr::DEFERRED_DOWNSAMPLED_DEPTH_SCALE+1);
 
 	mReservedUniforms.push_back("tc_scale");
 	mReservedUniforms.push_back("rcp_screen_res");

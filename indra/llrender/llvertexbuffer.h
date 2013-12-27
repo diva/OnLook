@@ -119,6 +119,8 @@ public:
 		return *this;
 	}
 
+	static const std::string& getTypeName(U8 i);
+
 	static LLVBOPool sStreamVBOPool;
 	static LLVBOPool sDynamicVBOPool;
 	static LLVBOPool sStreamIBOPool;
