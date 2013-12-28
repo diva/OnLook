@@ -6102,19 +6102,30 @@ void LLVolumeFace::pushVertex(const LLVector4a& pos, const LLVector4a& norm, con
 		mNormals = mPositions+new_verts;
 		mTexCoords = (LLVector2*) (mNormals+new_verts);
 
-	//positions
-		LLVector4a::memcpyNonAliased16((F32*) mPositions, (F32*) old_buf, old_vsize);
-	
-	//normals
-		LLVector4a::memcpyNonAliased16((F32*) mNormals, (F32*) (old_buf+mNumVertices), old_vsize);
+		//<singu>
+		llassert(mNumVertices || (old_buf == NULL && mTangents == NULL));
+		if (mNumVertices)	// It turns out this can be zero, in which case old_buf (and mTangents) is NULL.
+		{
+		//</singu>
 
-	//tex coords
-		LLVector4a::memcpyNonAliased16((F32*) mTexCoords, (F32*) (old_buf+mNumVertices*2), old_tc_size);
+			//positions
+			LLVector4a::memcpyNonAliased16((F32*) mPositions, (F32*) old_buf, old_vsize);
 
-	//just clear tangents
-	ll_aligned_free_16(mTangents);
-	mTangents = NULL;
-		ll_aligned_free(old_buf);
+			//normals
+			LLVector4a::memcpyNonAliased16((F32*) mNormals, (F32*) (old_buf+mNumVertices), old_vsize);
+
+			//tex coords
+			LLVector4a::memcpyNonAliased16((F32*) mTexCoords, (F32*) (old_buf+mNumVertices*2), old_tc_size);
+
+			ll_aligned_free(old_buf);
+
+		//<singu>
+		}
+		//</singu>
+
+		//just clear tangents
+		ll_aligned_free_16(mTangents);
+		mTangents = NULL;
 
 		mNumAllocatedVertices = new_verts;
 
