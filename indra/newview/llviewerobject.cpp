@@ -358,6 +358,14 @@ void LLViewerObject::markDead()
 	{
 		//llinfos << "Marking self " << mLocalID << " as dead." << llendl;
 		
+		//<singu>
+		if (isSelected())
+		{
+			// This is needed in order to reset mPauseRequest in case this is an attachment.
+			LLSelectMgr::getInstance()->deselectObjectAndFamily(this);
+		}
+		//</singu>
+
 		// Root object of this hierarchy unlinks itself.
 		if (getParent())
 		{
