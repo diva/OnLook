@@ -146,6 +146,18 @@ void LLURLRequest::initialize_impl(void)
 	}
 }
 
+void LLURLRequest::force_killed(void)
+{
+	// Avoid destructing the responder, if any, because that might
+	// execute code that might crash now that the viewer is exiting.
+	if (mResponder)
+	{
+		intrusive_ptr_add_ref(mResponder.get());
+	}
+	// Call base class.
+	AIStateMachine::force_killed();
+}
+
 void LLURLRequest::addHeader(const char* header)
 {
 	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequest);

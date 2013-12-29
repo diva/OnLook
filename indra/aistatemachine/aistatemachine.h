@@ -308,6 +308,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 	virtual void abort_impl(void) { }
 	virtual void finish_impl(void) { }
 	virtual char const* state_str_impl(state_type run_state) const = 0;
+	virtual void force_killed(void);										// Called from AIEngine::flush().
 
   private:
 	void reset(void);														// Called from run() to (re)initialize a (re)start.
@@ -324,7 +325,6 @@ class AIStateMachine : public LLThreadSafeRefCount
 		mSleep = 0;
 	  return mSleep != 0;
 	}
-	void force_killed(void);												// Called from AIEngine::flush().
 
 	friend class AIEngine;						// Calls multiplex() and force_killed().
 };

@@ -118,6 +118,9 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
   protected:
 	// Handle initializing the object.
 	/*virtual*/ void initialize_impl(void);
+
+	// Called when statemachine was flushed (and killed) at viewer exit.
+	/*virtual*/ void force_killed(void);
 };
 
 #endif // LL_LLURLREQUEST_H
