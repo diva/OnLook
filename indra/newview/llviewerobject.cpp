@@ -362,7 +362,12 @@ void LLViewerObject::markDead()
 		if (isSelected())
 		{
 			// This is needed in order to reset mPauseRequest in case this is an attachment.
-			LLSelectMgr::getInstance()->deselectObjectAndFamily(this);
+			// Note that using deselectObjectAndFamily here doesn't work because if the
+			// avatar is sitting on a pose ball then deselectObjectAndFamily tries to
+			// deselect that pose ball and does NOT include the avatar and attachments
+			// in this 'family'. That seems a bug to me because it just is very unlogical,
+			// but ok-- this works too.
+			LLSelectMgr::getInstance()->deselectObjectOnly(this, FALSE);
 		}
 		//</singu>
 
