@@ -543,3 +543,17 @@ LLAnimPauseRequest LLCharacter::requestPause()
 	return mPauseRequest;
 }
 
+void LLCharacter::requestPause(std::vector<LLAnimPauseRequest>& avatar_pause_handles)
+{
+	mMotionController.pauseAllMotions();
+	avatar_pause_handles.push_back(mPauseRequest);
+}
+
+void LLCharacter::pauseAllSyncedCharacters(std::vector<LLAnimPauseRequest>& avatar_pause_handles)
+{
+	// Pause this avatar.
+	requestPause(avatar_pause_handles);
+	// Also pause all avatars with synchronized motions.
+	mMotionController.pauseAllSyncedCharacters(avatar_pause_handles);
+}
+

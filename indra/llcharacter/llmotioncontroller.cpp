@@ -1257,6 +1257,44 @@ void LLMotionController::refresh_hidden(void)
 		}
 	}
 }
+
+void LLMotionController::pauseAllSyncedCharacters(std::vector<LLAnimPauseRequest>& avatar_pause_handles)
+{
+	// Run over all motions.
+	for (motion_list_t::iterator iter = mActiveMotions.begin(); iter != mActiveMotions.end(); ++iter)
+	{
+		LLMotion* motionp = *iter;
+		AISyncServer* server = motionp->server();
+		if (server && !server->never_synced() && motionp->isActive())			// Skip motions that aren't synchronized at all or that are not active.
+		{
+			// Run over all clients of the found servers.
+			AISyncServer::client_list_t const& clients = server->getClients();
+			for (AISyncServer::client_list_t::const_iterator client = clients.begin(); client != clients.end(); ++client)
+			{
+				LLMotion* motion = dynamic_cast<LLMotion*>(client->mClientPtr);
+				if (!motion)
+				{
+					continue;
+				}
+				LLMotionController* controller = motion->getController();
+				if (controller == this)
+				{
+					continue;
+				}
+				controller->requestPause(avatar_pause_handles);
+			}
+		}
+	}
+}
+
+void LLMotionController::requestPause(std::vector<LLAnimPauseRequest>& avatar_pause_handles)
+{
+	if (mCharacter)
+	{
+		mCharacter->requestPause(avatar_pause_handles);
+	}
+}
+
 //</singu>
 
 //-----------------------------------------------------------------------------

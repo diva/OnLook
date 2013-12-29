@@ -52,6 +52,8 @@
 //-----------------------------------------------------------------------------
 class LLCharacter;
 class LLMotionController;
+class LLPauseRequestHandle;
+typedef LLPointer<LLPauseRequestHandle> LLAnimPauseRequest;
 
 //-----------------------------------------------------------------------------
 // LLMotionRegistry
@@ -160,6 +162,10 @@ public:
 	void pauseAllMotions();
 	void unpauseAllMotions();
 	BOOL isPaused() const { return mPaused; }
+	//<singu>
+	void requestPause(std::vector<LLAnimPauseRequest>& avatar_pause_handles);
+	void pauseAllSyncedCharacters(std::vector<LLAnimPauseRequest>& avatar_pause_handles);
+	//</singu>
 
 	void setTimeStep(F32 step);
 
