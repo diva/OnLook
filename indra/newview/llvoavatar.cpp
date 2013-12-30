@@ -6295,7 +6295,12 @@ const LLViewerJointAttachment *LLVOAvatar::attachObject(LLViewerObject *viewer_o
 		LLSelectMgr::getInstance()->updatePointAt();
 	}
 
-	mAttachedObjectsVector.push_back(std::make_pair(viewer_object,attachment));
+	// The object can already exist in the vector if it was attached while was already attached (causing a re-attach).
+	std::pair<LLViewerObject*, LLViewerJointAttachment*> const val(viewer_object, attachment);
+	if (std::find(mAttachedObjectsVector.begin(), mAttachedObjectsVector.end(), val) == mAttachedObjectsVector.end())
+	{
+		mAttachedObjectsVector.push_back(val);
+	}
 
 	return attachment;
 }
