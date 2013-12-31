@@ -3285,6 +3285,8 @@ bool LLAppViewer::initCache()
 	{
 		LL_WARNS("AppCache") << "Unable to set cache location" << LL_ENDL;
 		gSavedSettings.setString("CacheLocation", "");
+		// Keep NewCacheLocation equal to CacheLocation so we won't try to erase the cache the next time the viewer is run.
+		gSavedSettings.setString("NewCacheLocation", "");
 	}
 	
 	if (mPurgeCache && !read_only)
