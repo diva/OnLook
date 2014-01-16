@@ -526,9 +526,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>9513c22a343369043536514bc87e5801</string>
+            <string>63f940c765875ee0b2fc2ed68019a602</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.3.11-linux-x86_64-20120616.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/freetype-2.3.11-linux-x86_64-20131230.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
