@@ -1349,12 +1349,12 @@ void LLFontGL::renderQuad(LLVector4a* vertex_out, LLVector2* uv_out, LLColor4U* 
 	colors_out[index] = color;
 	index++;
 
-	vertex_out[index].set(screen_rect.mLeft, screen_rect.mBottom, 0.f);
+	vertex_out[index].set(screen_rect.mLeft + slant_amt, screen_rect.mBottom, 0.f);
 	uv_out[index] = LLVector2(uv_rect.mLeft, uv_rect.mBottom);
 	colors_out[index] = color;
 	index++;
 
-	vertex_out[index].set(screen_rect.mRight, screen_rect.mBottom, 0.f);
+	vertex_out[index].set(screen_rect.mRight + slant_amt, screen_rect.mBottom, 0.f);
 	uv_out[index] = LLVector2(uv_rect.mRight, uv_rect.mBottom);
 	colors_out[index] = color;
 }
