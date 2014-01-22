@@ -780,6 +780,7 @@ void	LLToolCompGun::handleSelect()
 void	LLToolCompGun::handleDeselect()
 {
 	LLToolComposite::handleDeselect();
+	LLViewerCamera::getInstance()->loadDefaultFOV(); // Singu Note: Load Default FOV in case we were zoomed in
 	setMouseCapture(FALSE);
 }
 
