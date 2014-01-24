@@ -2095,6 +2095,21 @@ Returns all objects of a particular owner in the given scope or an ERR_* flag.
 string llXorBase64(string str1, string str2)
 Returns a string that is a Base64 XOR of Base64-formatted input strings.
   </string>
+  <string name="LSLTipText_llScaleByFactor" translate="false">
+integer llScaleByFactor(float scaling_factor)
+Returns a string that is a Base64 XOR of Base64-formatted input strings.
+Uniformly resizes the linkset by the given multiplicative scale factor (e.g. 2.0 to double the scale in all dimensions)
+Returns TRUE if rescaling was successful or FALSE otherwise
+This function only succeeds in non-physical objects
+  </string>
+  <string name="LSLTipText_llGetMinScaleFactor" translate="false">
+float llGetMinScaleFactor()
+Returns the minimum multiplicative scale factor which can be used by llScaleByFactor(); i.e. such that every prim in the linkset is &gt;=1cm in scale
+  </string>
+  <string name="LSLTipText_llGetMaxScaleFactor" translate="false">
+float llGetMaxScaleFactor()
+Returns the maximum multiplicative scale factor which can be used by llScaleByFactor(); i.e. such that every prim in the linkset is &lt;=64m and the resulting linkset meets the linkability requirements
+  </string>
 <!-- GOD FUNCTIONS -->
 	<string name="LSLTipText_llGodLikeRezObject">
 llGodLikeRezObject( key inventory, vector pos )

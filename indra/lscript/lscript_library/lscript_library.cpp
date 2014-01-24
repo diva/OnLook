@@ -540,6 +540,11 @@ void LLScriptLibrary::init()
 	addFunction(0.f, 0.f, dummy_func, "llGetAnimationOverride", "s", "s");
 	addFunction(0.f, 0.f, dummy_func, "llResetAnimationOverride", NULL, "s");
 
+	// Server RC LeTigre 13.12.20.285035 new function
+	addFunction(10.f, 0.f, dummy_func, "llScaleByFactor" , "i", "f");
+	addFunction(10.f, 0.f, dummy_func, "llGetMinScaleFactor" , "f", NULL);
+	addFunction(10.f, 0.f, dummy_func, "llGetMaxScaleFactor" , "f", NULL);
+
 	// SL-LSL Functions to be added above this line
 	// ---------------------------------------------
 	// NOTE bytecode placement no longer applies, viewers do not compile scripts anymore (confirmed with LL, also noted by Phoenix/Firestorm team.)
