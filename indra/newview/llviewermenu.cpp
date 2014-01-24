@@ -4160,6 +4160,15 @@ void reset_view_final( BOOL proceed )
 
 }
 
+class LLViewResetPresetAngles : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gAgentCamera.resetPresetOffsets();
+		return true;
+	}
+};
+
 class LLViewLookAtLastChatter : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9634,6 +9643,7 @@ void initialize_menus()
 	addMenu(new LLViewJoystickFlycam(), "View.JoystickFlycam");
 	addMenu(new LLViewCommunicate(), "View.Communicate");
 	addMenu(new LLViewResetView(), "View.ResetView");
+	addMenu(new LLViewResetPresetAngles(), "View.ResetPresetAngles");
 	addMenu(new LLViewLookAtLastChatter(), "View.LookAtLastChatter");
 	addMenu(new LLViewShowHoverTips(), "View.ShowHoverTips");
 	addMenu(new LLViewHighlightTransparent(), "View.HighlightTransparent");

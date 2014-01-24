@@ -2106,6 +2106,15 @@ void LLAgentCamera::handleScrollWheel(S32 clicks)
 	}
 }
 
+//-----------------------------------------------------------------------------
+// resetPresetOffsets() - Sets the current preset back to its default state
+//-----------------------------------------------------------------------------
+void LLAgentCamera::resetPresetOffsets()
+{
+	mFocusOffsetInitial[mCameraPreset]->resetToDefault();
+	mCameraOffsetInitial[mCameraPreset]->resetToDefault();
+}
+
 
 //-----------------------------------------------------------------------------
 // getCameraMinOffGround()
