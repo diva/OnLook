@@ -209,6 +209,7 @@ public:
 
 	BOOL	focusNextItem(BOOL text_entry_only);
 	BOOL	focusPrevItem(BOOL text_entry_only);
+	virtual // Singu Note: focusFirstItem is overridden for our old chat ui to prevent focusing on topmost uictrls.
 	BOOL 	focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE );
 	BOOL	focusLastItem(BOOL prefer_text_fields = FALSE);
 
