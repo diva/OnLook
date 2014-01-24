@@ -1694,11 +1694,11 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 		{
 			if (sShaderLevel > 0)
 			{ //upload matrix palette to shader
-				static const size_t kMaxJoints = 64;
-				LLMatrix4 mat[kMaxJoints];
+				LLMatrix4 mat[64];
 
-				U32 maxJoints = llmin(skin->mJointNames.size(), kMaxJoints);
-				for (U32 i = 0; i < maxJoints; ++i)
+				U32 count = llmin((U32) skin->mJointNames.size(), (U32) 64);
+
+				for (U32 i = 0; i < count; ++i)
 				{
 					LLJoint* joint = avatar->getJoint(skin->mJointNames[i]);
 					if (joint)
@@ -1710,10 +1710,42 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				
 				stop_glerror();
 
-				LLDrawPoolAvatar::sVertexProgram->uniformMatrix4fv(LLViewerShaderMgr::AVATAR_MATRIX, 
-					maxJoints,
+				F32 mp[64*9];
+
+				F32 transp[64*3];
+
+				for (U32 i = 0; i < count; ++i)
+				{
+					F32* m = (F32*) mat[i].mMatrix;
+
+					U32 idx = i*9;
+
+					mp[idx+0] = m[0];
+					mp[idx+1] = m[1];
+					mp[idx+2] = m[2];
+
+					mp[idx+3] = m[4];
+					mp[idx+4] = m[5];
+					mp[idx+5] = m[6];
+
+					mp[idx+6] = m[8];
+					mp[idx+7] = m[9];
+					mp[idx+8] = m[10];
+
+					idx = i*3;
+
+					transp[idx+0] = m[12];
+					transp[idx+1] = m[13];
+					transp[idx+2] = m[14];
+				}
+
+				LLDrawPoolAvatar::sVertexProgram->uniformMatrix3fv(LLViewerShaderMgr::AVATAR_MATRIX, 
+					count,
 					FALSE,
-					(GLfloat*) mat[0].mMatrix);
+					(GLfloat*) mp);
+
+				LLDrawPoolAvatar::sVertexProgram->uniform3fv(LLShaderMgr::AVATAR_TRANSLATION, count, transp);
+
 				
 				stop_glerror();
 			}

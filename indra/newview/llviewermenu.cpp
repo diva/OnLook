@@ -1439,6 +1439,9 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu->addChild(new LLMenuItemCheckGL("Complexity",	&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_RENDER_COMPLEXITY));
+	sub_menu->addChild(new LLMenuItemCheckGL("Joints",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_AVATAR_JOINTS));
 
 	sub_menu = new LLMenuGL("Render Tests");
 	sub_menu->setCanTearOff(TRUE);

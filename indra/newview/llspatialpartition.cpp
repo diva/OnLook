@@ -3950,7 +3950,7 @@ public:
 			{
 				renderAgentTarget(avatar);
 			}
-			
+
 			if (gDebugGL)
 			{
 				for (U32 i = 0; i < (U32)drawable->getNumFaces(); ++i)
