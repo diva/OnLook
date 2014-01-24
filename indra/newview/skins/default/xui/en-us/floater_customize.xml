@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-562" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" follows="left|top" height="540" left="12" min_height="0"
-     min_width="0" mouse_opaque="true" name="floater customize"
+     can_resize="true" follows="left|top" height="540" left="12" min_height="540"
+     min_width="494" mouse_opaque="true" name="floater customize"
      rect_control="FloaterCustomizeAppearanceRect" title="Appearance"
      width="494">
 	<tab_container bottom="-507" height="483" left="0" mouse_opaque="false"
