@@ -6,6 +6,7 @@
       <check_box label="Activer le TP avec le double-clic" tool_tip="Activer le TP sur un objet/une personne avec le double-clic" name="double_click_teleport_check"/>
       <check_box label="R&#xE9;initialiser la cam&#xE9;ra apr&#xE8;s le TP" tool_tip="Centre la cam&#xE9;ra derri&#xE8;re vous apr&#xE8;s un TP." name="center_after_teleport_check"/>
       <check_box label="Compenser la cible du TP" tool_tip="Essaye de cibler le TP pour que vos pieds atterrissent au point vis&#xE9;" name="offset_teleport_check"/>
+      <check_box name="clear_beacon_after_tp" label="Effacer la balise rouge de destination après un TP"/>
       <check_box name="fly_after_tp" label="Toujours voler apres un TP" tool_tip="Comme ça on reste pas bloqué sur le teston des gens !!!!."/>
       <check_box name="continue_flying" label="Voleter quand on se lève" tool_tip="vous voletez quand vous faites stand, pratique pour les avi d'oiseaux, de fées etc..."/>
       <check_box label="Preview animations on the avatar - Test temporaire d'une animation" tool_tip="L'animation est jou&#xE9;e avec votre avatar avant d'&#xEA;tre t&#xE9;l&#xE9;charg&#xE9;e." name="preview_anim_in_world_check"/>
@@ -23,6 +24,7 @@
       <check_box label="Activer le rezz rapide par rapport &#xE0; une distance progressive" name="speed_rez_check" tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin"/>
       <spinner label="Intervalle distance/affichage:" name="speed_rez_interval"/>
       <text name="speed_rez_seconds">secondes</text>
+      <check_box name="use_context_menus" label="Utiliser un menu texte (panneau vertical) à la place de celui circulaire (camembert)"/>
       <check_box name="use_web_profiles" label="Utiliser le profil web par défaut" tool_tip="Affiche les profils comme une page web plutôt que comme une fenêtre style v1"/>
       <check_box name="use_web_search" label="Utiliser la Recherche web : style V2 au lieu de la traditionnelle : style V1" tool_tip="Ne fontionnera pas sur toutes les grilles"/>
     </panel>
