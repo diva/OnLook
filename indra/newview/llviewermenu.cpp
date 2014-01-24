@@ -1439,9 +1439,6 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu->addChild(new LLMenuItemCheckGL("Complexity",	&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_RENDER_COMPLEXITY));
-	sub_menu->addChild(new LLMenuItemCheckGL("Joints",	&LLPipeline::toggleRenderDebug, NULL,
-													&LLPipeline::toggleRenderDebugControl,
-													(void*)LLPipeline::RENDER_DEBUG_AVATAR_JOINTS));
 
 	sub_menu = new LLMenuGL("Render Tests");
 	sub_menu->setCanTearOff(TRUE);
@@ -1584,6 +1581,10 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 									   &LLPipeline::toggleRenderDebug, NULL,
 									   &LLPipeline::toggleRenderDebugControl,
 									   (void*)LLPipeline::RENDER_DEBUG_AVATAR_VOLUME));
+	menu->addChild(new LLMenuItemCheckGL("Show Avatar Joints",
+									   &LLPipeline::toggleRenderDebug, NULL,
+									   &LLPipeline::toggleRenderDebugControl,
+									   (void*)LLPipeline::RENDER_DEBUG_AVATAR_JOINTS));
 	menu->addChild(new LLMenuItemCheckGL("Display Agent Target",
 									   &LLPipeline::toggleRenderDebug, NULL,
 									   &LLPipeline::toggleRenderDebugControl,
