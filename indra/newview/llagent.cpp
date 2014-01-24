@@ -516,11 +516,11 @@ LLAgent::~LLAgent()
 //-----------------------------------------------------------------------------
 void LLAgent::onAppFocusGained()
 {
-	if (CAMERA_MODE_MOUSELOOK == gAgentCamera.getCameraMode())
+	/*if (CAMERA_MODE_MOUSELOOK == gAgentCamera.getCameraMode()) // Singu Note: Issue 97 requested that we don't do this.
 	{
 		gAgentCamera.changeCameraToDefault();
 		LLToolMgr::getInstance()->clearSavedTool();
-	}
+	}*/
 }
 
 
