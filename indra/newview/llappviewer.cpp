@@ -1220,7 +1220,7 @@ bool LLAppViewer::mainLoop()
 				{
 					joystick->scanJoystick();
 					gKeyboard->scanKeyboard();
-					if(isCrouch)
+					if (gAgent.isCrouching())
 					{
 						gAgent.moveUp(-1);
 					}

@@ -61,14 +61,11 @@ const F32 YAW_NUDGE_RATE = 0.05f;  // fraction of normal speed
 
 LLViewerKeyboard gViewerKeyboard;
 
-bool isCrouch = false; //Shouldn't start crouched.
-
 void agent_jump( EKeystate s )
 {
 	if( KEYSTATE_UP == s  ) return;
 	F32 time = gKeyboard->getCurKeyElapsedTime();
 	S32 frame_count = llround(gKeyboard->getCurKeyElapsedFrameCount());
-	isCrouch = false;
 	if( time < FLY_TIME 
 		|| frame_count <= FLY_FRAMES 
 		|| gAgent.upGrabbed()
@@ -86,18 +83,17 @@ void agent_toggle_down( EKeystate s )
 {
 	if(KEYSTATE_UP == s) return;
 	
-	gAgent.moveUp(-1);
 	if(KEYSTATE_DOWN == s && !gAgent.getFlying() && gSavedSettings.getBOOL("SGShiftCrouchToggle"))
 	{
-		isCrouch = !isCrouch;
+		gAgent.toggleCrouch();
 	}
+	gAgent.moveUp(-1);
 }
 
 void agent_push_down( EKeystate s )
 {
 	if( KEYSTATE_UP == s  ) return;
 	gAgent.moveUp(-1);
-	isCrouch = false;
 }
 
 static void agent_handle_doubletap_run(EKeystate s, LLAgent::EDoubleTapRunMode mode)
@@ -247,7 +243,6 @@ void agent_toggle_fly( EKeystate s )
 	if (KEYSTATE_DOWN == s )
 	{
 		gAgent.toggleFlying();
-		isCrouch = false;
 	}
 }
 
