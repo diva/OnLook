@@ -3746,7 +3746,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="Left Pec">Pectoral Izquierdo</string>
 	<string name="Right Pec">Pectoral Derecho</string>
     <string name="Neck">Cuello</string>
-    <string name="Root">Base</string>
+    <string name="Avatar Center">Base</string>
     <string name="Invalid Attachment">Punto de anexión inválido</string>
 
   <!-- Account types, see LLAvatarPropertiesProcessor -->
