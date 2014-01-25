@@ -1576,6 +1576,17 @@ const bool LLFloaterIMPanel::isModerator(const LLUUID& speaker_id)
 	return false;
 }
 
+BOOL LLFloaterIMPanel::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash )
+{
+	if (getVisible() && mInputEditor->getVisible())
+	{
+		setInputFocus(true);
+		return TRUE;
+	}
+
+	return LLUICtrl::focusFirstItem(prefer_text_fields, focus_flash);
+}
+
 void LLFloaterIMPanel::onFocusReceived()
 {
 	mNumUnreadMessages = 0;
