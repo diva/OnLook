@@ -1955,7 +1955,7 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="Left Pec">Linke Brust</string>
 	<string name="Right Pec">Rechts</string>
     <string name="Neck">Hals</string>
-    <string name="Root">Basis</string>
+    <string name="Avatar Center">Basis</string>
 	<string name="Invalid Attachment">Ungültige Stelle für Anhang</string>
 
   <!-- HUD Position -->

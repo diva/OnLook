@@ -3231,7 +3231,7 @@ The
 	<string name="Left Pec">Left Pec</string>
 	<string name="Right Pec">Right Pec</string>
   <string name="Neck">Neck</string>
-  <string name="Root">Root</string>
+  <string name="Avatar Center">Root</string>
   <string name="Invalid Attachment">Invalid Attachment Point</string>
 
   <!-- Account types, see LLAvatarPropertiesProcessor -->
