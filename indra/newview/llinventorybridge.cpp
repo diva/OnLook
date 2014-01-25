@@ -5949,6 +5949,20 @@ void LLWearableBridge::onWearOnAvatar(void* user_data)
 
 void LLWearableBridge::wearOnAvatar()
 {
+    // Note: This test is not in any other viewer and it seriously harms Singularity:
+    // On many opensim grids people start without a base outfit: they are not wearing
+    // anything (no shape, skin, eyes or hair). Even if one of those is missing, which
+    // ALSO happens due to (another) bug specific to Singularity (namely wearing a
+    // pre-multiwear wearable that is erroneously marked as 'shape' and causes the
+    // current shape to be removed), the user is eternally stuck as cloud since they
+    // are not ALLOWED to add the body parts that are missing BECAUSE they are missing?!
+    // The only way to recover from that is then to install another viewer and log in
+    // with that - go figure.
+    //
+    // Nevertheless, I won't break this test without good reason (although, again, no
+    // other viewer has it - so it can't be that serious) and therefore will only
+    // change it that users CAN wear body parts if those are missing :p (see below).
+#if 0
 	// TODO: investigate wearables may not be loaded at this point EXT-8231
 	// Don't wear anything until initial wearables are loaded, can
 	// destroy clothing items.
@@ -5957,10 +5971,20 @@ void LLWearableBridge::wearOnAvatar()
 		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 		return;
 	}
+#endif
 
 	LLViewerInventoryItem* item = getItem();
-	if(item)
+	if (item)
 	{
+        //<singu>
+        // Don't wear anything until initial wearables are loaded unless the user tries to replace
+        // a body part, which might be missing and be the REASON that areWearablesLoaded() returns false.
+        if ((item->getType() != LLAssetType::AT_BODYPART && !gAgentWearables.areWearablesLoaded()))
+        {
+          LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
+          return;
+        }
+        //</singu>
 		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, true);
 	}
 }
