@@ -239,6 +239,7 @@ extern BOOL gDebugTextEditorTips;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;
 extern AIHTTPView* gHttpView;
+extern LLMenuGL* sScrollListMenus[1];
 //
 // Globals
 //
@@ -780,6 +781,10 @@ void init_menus()
 	gLoginMenuBarView->setBackgroundColor( color );
 
 	gMenuHolder->addChild(gLoginMenuBarView);
+
+	// Singu Note: Initialize common ScrollListMenus here
+	sScrollListMenus[0] = LLUICtrlFactory::getInstance()->buildMenu("menu_avs_list.xml", gMenuHolder);
+	//sScrollListMenus[1] = LLUICtrlFactory::getInstance()->buildMenu("menu_groups_list.xml"); // Singu TODO
 
 	LLView* ins = gMenuBarView->getChildView("insert_world", true, false);
 	ins->setVisible(false);
