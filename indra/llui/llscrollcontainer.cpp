@@ -760,7 +760,7 @@ LLView* LLScrollContainer::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFa
 	node->getAttributeString("name", name);
 
 	LLRect rect;
-	createRect(node, rect, parent, LLRect());
+	U32 follows_flags = createRect(node, rect, parent, LLRect());
 	
 	BOOL opaque = FALSE;
 	node->getAttributeBOOL("opaque", opaque);
@@ -770,6 +770,10 @@ LLView* LLScrollContainer::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFa
 
 	// Create the scroll view
 	LLScrollContainer *ret = new LLScrollContainer(name, rect, (LLPanel*)NULL, opaque, color);
+
+	// Obey xml follows
+	ret->setFollows(follows_flags);
+	ret->parseFollowsFlags(node);
 
 	LLPanel* panelp = NULL;
 

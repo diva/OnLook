@@ -1581,6 +1581,10 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 									   &LLPipeline::toggleRenderDebug, NULL,
 									   &LLPipeline::toggleRenderDebugControl,
 									   (void*)LLPipeline::RENDER_DEBUG_AVATAR_VOLUME));
+	menu->addChild(new LLMenuItemCheckGL("Show Avatar Joints",
+									   &LLPipeline::toggleRenderDebug, NULL,
+									   &LLPipeline::toggleRenderDebugControl,
+									   (void*)LLPipeline::RENDER_DEBUG_AVATAR_JOINTS));
 	menu->addChild(new LLMenuItemCheckGL("Display Agent Target",
 									   &LLPipeline::toggleRenderDebug, NULL,
 									   &LLPipeline::toggleRenderDebugControl,
@@ -4156,6 +4160,15 @@ void reset_view_final( BOOL proceed )
 		LLFloaterCustomize::getInstance()->close();
 
 }
+
+class LLViewResetPresetAngles : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gAgentCamera.resetPresetOffsets();
+		return true;
+	}
+};
 
 class LLViewLookAtLastChatter : public view_listener_t
 {
@@ -9631,6 +9644,7 @@ void initialize_menus()
 	addMenu(new LLViewJoystickFlycam(), "View.JoystickFlycam");
 	addMenu(new LLViewCommunicate(), "View.Communicate");
 	addMenu(new LLViewResetView(), "View.ResetView");
+	addMenu(new LLViewResetPresetAngles(), "View.ResetPresetAngles");
 	addMenu(new LLViewLookAtLastChatter(), "View.LookAtLastChatter");
 	addMenu(new LLViewShowHoverTips(), "View.ShowHoverTips");
 	addMenu(new LLViewHighlightTransparent(), "View.HighlightTransparent");

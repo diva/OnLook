@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-562" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" follows="left|top" height="540" left="12" min_height="0"
-     min_width="0" mouse_opaque="true" name="floater customize"
+     can_resize="true" follows="left|top" height="540" left="12" min_height="540"
+     min_width="494" mouse_opaque="true" name="floater customize"
      rect_control="FloaterCustomizeAppearanceRect" title="Appearance"
      width="494">
-	<tab_container bottom="-507" height="483" left="0" mouse_opaque="false"
+	<tab_container bottom="-507" height="483" left="0" mouse_opaque="false" follows="all"
 	     name="customize tab container" tab_min_width="96" tab_position="left"
 	     width="492">
 		<panel label="Body Parts" placeholder="true" name="body_parts_placeholder" />
@@ -101,7 +101,7 @@ scratch and wear it.
 				You do not have permission to modify this wearable.
 			</text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Shape:
@@ -110,19 +110,19 @@ scratch and wear it.
 			     label="Create New Shape" label_selected="Create New Shape" left="160"
 			     mouse_opaque="true" name="Create New" scale_image="true" width="170" />
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-420" drop_shadow_visible="true" follows="right|bottom"
+			     bottom="-420" drop_shadow_visible="true" follows="left|bottom"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="14" left="2"
 			     mouse_opaque="true" name="avatar_height_label" v_pad="0" width="150">
         Height:
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-435" drop_shadow_visible="true" follows="right|bottom"
+			     bottom="-435" drop_shadow_visible="true" follows="left|bottom"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="14" left="2"
 			     mouse_opaque="true" name="avheight" v_pad="0" width="150">
        [AVHEIGHT]
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-450" drop_shadow_visible="true" follows="right|bottom"
+			     bottom="-450" drop_shadow_visible="true" follows="left|bottom"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="14" left="2"
 			     mouse_opaque="true" name="includes_shoes" v_pad="0" width="150">
        (includes shoes)
@@ -199,7 +199,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Skin:
@@ -294,7 +294,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Hair:
@@ -369,7 +369,7 @@ scratch and wear it.
 				You do not have permission to modify this wearable.
 			</text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Eyes:
@@ -453,7 +453,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -469,7 +469,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Shirt:
@@ -535,7 +535,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -551,7 +551,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Pants:
@@ -594,7 +594,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
 				Located in [PATH]
 			</text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -610,7 +610,7 @@ scratch and wear it.
 				You do not have permission to modify this wearable.
 			</text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Shoes:
@@ -676,7 +676,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
 				Located in [PATH]
 			</text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -692,7 +692,7 @@ scratch and wear it.
 				You do not have permission to modify this wearable.
 			</text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Socks:
@@ -758,7 +758,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -774,7 +774,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Jacket:
@@ -844,7 +844,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -860,7 +860,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Gloves:
@@ -927,7 +927,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -943,7 +943,7 @@ one from scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Undershirt:
@@ -1011,7 +1011,7 @@ one from scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -1027,7 +1027,7 @@ one from scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Underpants:
@@ -1094,7 +1094,7 @@ one from scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
 				Located in [PATH]
 			</text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -1110,7 +1110,7 @@ scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-                 bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+                 bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
                  font="SansSerif" h_pad="0" halign="right" height="28" right="117"
                  mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Skirt:
@@ -1176,7 +1176,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
 				Located in [PATH]
 			</text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -1192,7 +1192,7 @@ scratch and wear it.
 				You do not have permission to modify this wearable.
 			</text>
             <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-                 bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+                 bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
                  font="SansSerif" h_pad="0" halign="right" height="28" right="117"
                  mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
                 Tattoo:
@@ -1259,7 +1259,7 @@ scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
 				Located in [PATH]
 			</text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -1275,7 +1275,7 @@ one from scratch and wear it.
 				You do not have permission to modify this wearable.
 			</text>
             <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-                 bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+                 bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
                  font="SansSerif" h_pad="0" halign="right" height="28" right="117"
                  mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
                 Alpha:
@@ -1378,7 +1378,7 @@ one from scratch and wear it.
 			     mouse_opaque="true" name="path" v_pad="0" width="373">
         Located in [PATH]
       </text>
-      <tab_container name="layer_tabs" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
+      <tab_container name="layer_tabs" follows="all" left_delta="85" bottom_delta="-30" height="16" width="300" tab_min_width="55"/>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-104" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="28" left="102"
@@ -1394,7 +1394,7 @@ one from scratch and wear it.
         You do not have permission to modify this wearable.
       </text>
       <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom="-486" drop_shadow_visible="true" follows="left|top|right"
+           bottom="-486" drop_shadow_visible="true" follows="left|bottom|right"
            font="SansSerif" h_pad="0" halign="right" height="28" right="117"
            mouse_opaque="true" name="Item Action Label" v_pad="0" width="100">
         Physics:

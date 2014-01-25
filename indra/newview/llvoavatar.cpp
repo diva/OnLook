@@ -1729,10 +1729,12 @@ void LLVOAvatar::getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax)
 //-----------------------------------------------------------------------------
 void LLVOAvatar::renderCollisionVolumes()
 {
+	std::ostringstream ostr;
 	LLGLDepthTest gls_depth(GL_FALSE);
 	for (S32 i = 0; i < mNumCollisionVolumes; i++)
 	{
 		mCollisionVolumes[i].renderCollision();
+		ostr << mCollisionVolumes[i].getName() << ", ";
 	}
 
 	if (mNameText.notNull())
@@ -1741,7 +1743,98 @@ void LLVOAvatar::renderCollisionVolumes()
 	
 		mNameText->lineSegmentIntersect(unused, unused, unused, TRUE);
 	}
+
+	mDebugText.clear();
+	addDebugText(ostr.str());
 }
+
+void LLVOAvatar::renderJoints()
+{
+	std::ostringstream ostr;
+	std::ostringstream nullstr;
+
+	for (joint_map_t::iterator iter = mJointMap.begin(); iter != mJointMap.end(); ++iter)
+	{
+		LLJoint* jointp = iter->second;
+		if (!jointp)
+		{
+			nullstr << iter->first << " is NULL" << std::endl;
+			continue;
+		}
+
+		ostr << jointp->getName() << ", ";
+
+		jointp->updateWorldMatrix();
+	
+		gGL.pushMatrix();
+		gGL.multMatrix( &jointp->getXform()->getWorldMatrix().mMatrix[0][0] );
+
+		gGL.diffuseColor3f( 1.f, 0.f, 1.f );
+	
+		gGL.begin(LLRender::LINES);
+	
+		LLVector3 v[] = 
+		{
+			LLVector3(1,0,0),
+			LLVector3(-1,0,0),
+			LLVector3(0,1,0),
+			LLVector3(0,-1,0),
+
+			LLVector3(0,0,-1),
+			LLVector3(0,0,1),
+		};
+
+		//sides
+		gGL.vertex3fv(v[0].mV); 
+		gGL.vertex3fv(v[2].mV);
+
+		gGL.vertex3fv(v[0].mV); 
+		gGL.vertex3fv(v[3].mV);
+
+		gGL.vertex3fv(v[1].mV); 
+		gGL.vertex3fv(v[2].mV);
+
+		gGL.vertex3fv(v[1].mV); 
+		gGL.vertex3fv(v[3].mV);
+
+
+		//top
+		gGL.vertex3fv(v[0].mV); 
+		gGL.vertex3fv(v[4].mV);
+
+		gGL.vertex3fv(v[1].mV); 
+		gGL.vertex3fv(v[4].mV);
+
+		gGL.vertex3fv(v[2].mV); 
+		gGL.vertex3fv(v[4].mV);
+
+		gGL.vertex3fv(v[3].mV); 
+		gGL.vertex3fv(v[4].mV);
+
+
+		//bottom
+		gGL.vertex3fv(v[0].mV); 
+		gGL.vertex3fv(v[5].mV);
+
+		gGL.vertex3fv(v[1].mV); 
+		gGL.vertex3fv(v[5].mV);
+
+		gGL.vertex3fv(v[2].mV); 
+		gGL.vertex3fv(v[5].mV);
+
+		gGL.vertex3fv(v[3].mV); 
+		gGL.vertex3fv(v[5].mV);
+
+		gGL.end();
+
+		gGL.popMatrix();
+	}
+
+	mDebugText.clear();
+	addDebugText(ostr.str());
+	addDebugText(nullstr.str());
+}
+
 
 BOOL LLVOAvatar::lineSegmentIntersect(const LLVector4a& start, const LLVector4a& end,
 									  S32 face,
@@ -3621,9 +3714,6 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		return FALSE;
 	}
 
-	// clear debug text
-	mDebugText.clear();
-
 	if (gSavedSettings.getBOOL("DebugAvatarAppearanceMessage"))
 	{
 		S32 central_bake_version = -1;
@@ -4165,6 +4255,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 	{
 		setDebugText(mDebugText);
 	}
+	mDebugText.clear();
 
 	//mesh vertices need to be reskinned
 	mNeedsSkin = TRUE;

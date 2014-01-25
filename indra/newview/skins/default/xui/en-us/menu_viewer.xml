@@ -308,6 +308,9 @@
 			<on_click function="ToggleControl" userdata="SinguMotionResetsCamera"/>
 			<on_check control="SinguMotionResetsCamera"/>
 		</menu_item_check>
+		<menu_item_call label="Reset Camera Preset Angle to Default" name="Reset Camera Preset Angle">
+			<on_click function="View.ResetPresetAngles" userdata="" />
+		</menu_item_call>
 		<menu_item_call bottom="-86" enabled="false" height="19" label="Look at Last Chatter" left="0"
 		     mouse_opaque="true" name="Look at Last Chatter" shortcut="control|\"
 		     width="211">

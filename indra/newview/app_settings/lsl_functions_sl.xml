@@ -1039,5 +1039,12 @@
 <!-- 13.06.21.277682 new function -->
    <key>llXorBase64</key>
    <map/>
+<!-- Server RC LeTigre 13.12.20.285035 new function -->
+   <key>llScaleByFactor</key>
+   <map/>
+   <key>llGetMinScaleFactor</key>
+   <map/>
+   <key>llGetMaxScaleFactor</key>
+   <map/>
   </map>
 </llsd>

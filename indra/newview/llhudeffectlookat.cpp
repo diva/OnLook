@@ -619,10 +619,14 @@ void LLHUDEffectLookAt::update()
 		}
 	}
 
+	// Singu note: this displays extra information for look at targets. Due to the bug in llvoavatar.cpp
+	// it was never displayed before and is not something users exect: turning it off for now
+#if 0
 	if (show_look_at)
 	{
 		((LLVOAvatar*)(LLViewerObject*)mSourceObject)->addDebugText((*mAttentions)[mTargetType].mName);
 	}
+#endif
 }
 
 /**

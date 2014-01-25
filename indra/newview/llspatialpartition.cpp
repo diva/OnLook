@@ -3946,11 +3946,16 @@ public:
 				renderAvatarCollisionVolumes(avatar);
 			}
 
+			if (avatar && gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_AVATAR_JOINTS))
+			{
+				avatar->renderJoints();
+			}
+
 			if (avatar && gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_AGENT_TARGET))
 			{
 				renderAgentTarget(avatar);
 			}
-			
+
 			if (gDebugGL)
 			{
 				for (U32 i = 0; i < (U32)drawable->getNumFaces(); ++i)
@@ -4188,6 +4193,7 @@ void LLSpatialPartition::renderDebug()
 									  LLPipeline::RENDER_DEBUG_TEXTURE_ANIM |
 									  LLPipeline::RENDER_DEBUG_RAYCAST |
 									  LLPipeline::RENDER_DEBUG_AVATAR_VOLUME |
+									  LLPipeline::RENDER_DEBUG_AVATAR_JOINTS |
 									  LLPipeline::RENDER_DEBUG_AGENT_TARGET |
 									  //LLPipeline::RENDER_DEBUG_BUILD_QUEUE |
 									  LLPipeline::RENDER_DEBUG_SHADOW_FRUSTA |

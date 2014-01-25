@@ -113,6 +113,9 @@ private:
 	//--------------------------------------------------------------------
 public:
 	void switchCameraPreset(ECameraPreset preset);
+
+	/** Sets the current preset back to its default state */
+	void resetPresetOffsets();
 private:
 	/** Determines default camera offset depending on the current camera preset */
 	LLVector3 getCameraOffsetInitial();
