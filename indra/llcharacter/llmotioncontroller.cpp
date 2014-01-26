@@ -874,8 +874,15 @@ void LLMotionController::updateMotions(bool force_update)
 		{
 			F32 time_interval = fmodf(update_time, mTimeStep);
 
-			// always animate *ahead* of actual time
-			S32 quantum_count = llmax(0, llfloor((update_time - time_interval) / mTimeStep)) + 1;
+            //<singu>
+            // This old code is nonsense.
+            //S32 quantum_count = llmax(0, llround((update_time - time_interval) / mTimeStep)) + 1;
+            // (update_time - time_interval) / mTimeStep is an integer! We need llround to get rid of floating point errors, not llfloor.
+            // Moreover, just rounding off to the nearest integer with llround(update_time / mTimeStep) makes a lot more sense:
+            // it is the best we can do to get as close to what we should draw as possible.
+            // However, mAnimTime may only be incremented; therefore make sure of that with the llmax.
+			S32 quantum_count = llmax(llround(update_time / mTimeStep), llceil(mAnimTime / mTimeStep));
+            //</singu>
 			if (quantum_count == mTimeStepCount)
 			{
 				// we're still in same time quantum as before, so just interpolate and exit
@@ -901,7 +908,8 @@ void LLMotionController::updateMotions(bool force_update)
 		}
 		else
 		{
-			mAnimTime = update_time;
+			// Singu note: mAnimTime may never be set back in time.
+			mAnimTime = llmax(mAnimTime, update_time);
 		}
 	}
 
