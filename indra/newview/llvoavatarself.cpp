@@ -978,6 +978,7 @@ void LLVOAvatarSelf::idleUpdateTractorBeam()
 		}
 	}
 }
+
 //-----------------------------------------------------------------------------
 // restoreMeshData()
 //-----------------------------------------------------------------------------
@@ -1226,7 +1227,6 @@ const LLViewerJointAttachment *LLVOAvatarSelf::attachObject(LLViewerObject *view
 				gRlvAttachmentLocks.updateLockedHUD();
 		}
 // [/RLVa:KB]
-
 	}
 
 	return attachment;
@@ -1239,24 +1239,20 @@ BOOL LLVOAvatarSelf::detachObject(LLViewerObject *viewer_object)
 
 // [RLVa:KB] - Checked: 2010-03-05 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
 	// NOTE: RLVa event handlers should be invoked *before* LLVOAvatar::detachObject() calls LLViewerJointAttachment::removeObject()
-	
+	if (rlv_handler_t::isEnabled())
 	{
 		for (attachment_map_t::const_iterator itAttachPt = mAttachmentPoints.begin(); itAttachPt != mAttachmentPoints.end(); ++itAttachPt)
 		{
 			const LLViewerJointAttachment* pAttachPt = itAttachPt->second;
 			if (pAttachPt->isObjectAttached(viewer_object))
 			{
-				if (rlv_handler_t::isEnabled())
-				{
-					RlvAttachmentLockWatchdog::instance().onDetach(viewer_object, pAttachPt);
-					gRlvHandler.onDetach(viewer_object, pAttachPt);
-				}
-				if (mAttachmentSignal)
-				{
-					(*mAttachmentSignal)(viewer_object, pAttachPt, ACTION_DETACH);
-				}
+				RlvAttachmentLockWatchdog::instance().onDetach(viewer_object, pAttachPt);
+				gRlvHandler.onDetach(viewer_object, pAttachPt);
 			}
-			break;
+			if (mAttachmentSignal)
+			{
+				(*mAttachmentSignal)(viewer_object, pAttachPt, ACTION_DETACH);
+			}
 		}
 	}
 // [/RLVa:KB]
@@ -1524,6 +1520,7 @@ BOOL LLVOAvatarSelf::isLocalTextureDataFinal(const LLViewerTexLayerSet* layerset
 	llassert(0);
 	return FALSE;
 }
+
 
 BOOL LLVOAvatarSelf::isAllLocalTextureDataFinal() const
 {
@@ -3122,6 +3119,7 @@ bool LLVOAvatarSelf::sendAppearanceMessage(LLMessageSystem *mesgsys) const
 	return success;
 }
 
+
 //------------------------------------------------------------------------
 // needsRenderBeam()
 //------------------------------------------------------------------------
@@ -3257,14 +3255,6 @@ LLVector3 LLVOAvatarSelf::getLegacyAvatarOffset() const
 	static LLCachedControl<F32> z_off("AscentAvatarZModifier");
 	LLVector3 offset(x_off,y_off,z_off);
 
-// [RLVa:KB] Custom blah blah
-	if(rlv_handler_t::isEnabled())
-	{
-		F32 rlva_z_offs = RlvSettings::getAvatarOffsetZ();
-		if(fabs(rlva_z_offs) > F_APPROXIMATELY_ZERO)
-			offset.mV[VZ] = rlva_z_offs;
-	}
-// [/RLVa:KB]
 	if(on_pose_stand)
 		offset.mV[VZ] += 7.5f;
 

@@ -104,9 +104,6 @@ void RlvSettings::initClass()
 			gSavedPerAccountSettings.getControl(RLV_SETTING_LOGINLASTLOCATION)->setHiddenFromSettingsEditor(true);
 #endif // RLV_EXTENSION_STARTLOCATION
 
-		if (gSavedSettings.controlExists(RLV_SETTING_AVATAROFFSET_Z))
-			gSavedSettings.getControl(RLV_SETTING_AVATAROFFSET_Z)->getSignal()->connect(boost::bind(&onChangedAvatarOffset, _2));
-
 		if (gSavedSettings.controlExists(RLV_SETTING_TOPLEVELMENU))
 			gSavedSettings.getControl(RLV_SETTING_TOPLEVELMENU)->getSignal()->connect(boost::bind(&onChangedMenuLevel));
 

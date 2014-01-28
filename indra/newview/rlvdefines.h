@@ -238,9 +238,9 @@ enum ERlvParamType {
 };
 
 enum ERlvCmdRet {
-	RLV_RET_UNKNOWN     = 0x0000,	// Unknown error (should only be used internally)
+	RLV_RET_UNKNOWN		= 0x0000,	// Unknown error (should only be used internally)
 	RLV_RET_RETAINED,				// Command was retained
-	RLV_RET_SUCCESS     = 0x0100,	// Command executed succesfully
+	RLV_RET_SUCCESS		= 0x0100,	// Command executed succesfully
 	RLV_RET_SUCCESS_UNSET,			// Command executed succesfully (RLV_TYPE_REMOVE for an unrestricted behaviour)
 	RLV_RET_SUCCESS_DUPLICATE,		// Command executed succesfully (RLV_TYPE_ADD for an already restricted behaviour)
 	RLV_RET_SUCCESS_DELAYED,		// Command parsed valid but will execute at a later time
@@ -252,6 +252,7 @@ enum ERlvCmdRet {
 	RLV_RET_FAILED_DISABLED,		// Command failed (command disabled by user)
 	RLV_RET_FAILED_UNKNOWN,			// Command failed (unknown command)
 	RLV_RET_FAILED_NOSHAREDROOT,	// Command failed (missing #RLV)
+	RLV_RET_DEPRECATED				// Command has been deprecated
 };
 
 enum ERlvExceptionCheck
@@ -263,17 +264,17 @@ enum ERlvExceptionCheck
 
 enum ERlvLockMask
 {
-	RLV_LOCK_ADD    = 0x01,
-	RLV_LOCK_REMOVE = 0x02,
-	RLV_LOCK_ANY    = RLV_LOCK_ADD | RLV_LOCK_REMOVE
+	RLV_LOCK_ADD	= 0x01,
+	RLV_LOCK_REMOVE	= 0x02,
+	RLV_LOCK_ANY	= RLV_LOCK_ADD | RLV_LOCK_REMOVE
 };
 
 enum ERlvWearMask
 {
-	RLV_WEAR_LOCKED  = 0x00,		// User can not wear the item at all
-	RLV_WEAR_ADD     = 0x01,		// User can wear the item in addition to what's already worn
+	RLV_WEAR_LOCKED	 = 0x00,		// User can not wear the item at all
+	RLV_WEAR_ADD	 = 0x01,		// User can wear the item in addition to what's already worn
 	RLV_WEAR_REPLACE = 0x02,		// User can wear the item and replace what's currently worn
-	RLV_WEAR         = 0x03			// Convenience: combines RLV_WEAR_ADD and RLV_WEAR_REPLACE
+	RLV_WEAR		 = 0x03			// Convenience: combines RLV_WEAR_ADD and RLV_WEAR_REPLACE
 };
 
 enum ERlvAttachGroupType
@@ -293,7 +294,6 @@ enum ERlvAttachGroupType
 
 #define RLV_SETTING_MAIN				"RestrainedLove"
 #define RLV_SETTING_DEBUG				"RestrainedLoveDebug"
-#define RLV_SETTING_AVATAROFFSET_Z		"RestrainedLoveOffsetAvatarZ"
 #define RLV_SETTING_CANOOC				"RestrainedLoveCanOOC"
 #define RLV_SETTING_FORBIDGIVETORLV		"RestrainedLoveForbidGiveToRLV"
 #define RLV_SETTING_NOSETENV			"RestrainedLoveNoSetEnv"
