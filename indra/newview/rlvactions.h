@@ -70,6 +70,15 @@ public:
 	 */
 	static bool autoAcceptTeleportRequest(const LLUUID& idRequester);
 
+	// =================
+	// World interaction
+	// =================
+public:
+	/*
+	 * Returns true if the user can stand up (returns true if the user isn't currently sitting)
+	 */
+	static bool canStand();
+
 	// ================
 	// Helper functions
 	// ================

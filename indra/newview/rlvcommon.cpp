@@ -20,16 +20,16 @@
 #include "llavatarnamecache.h"
 #include "llinstantmessage.h"
 #include "llnotificationsutil.h"
+#include "llsdserialize.h"
 #include "lluictrlfactory.h"
-#include "sgversion.h"
 #include "llviewermenu.h"
 #include "llviewerparcelmgr.h"
 #include "llviewermenu.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
-#include "llvoavatar.h"
 #include "llworld.h"
 
+#include "rlvactions.h"
 #include "rlvcommon.h"
 #include "rlvhelper.h"
 #include "rlvhandler.h"
@@ -117,7 +117,7 @@ void RlvSettings::initClass()
 	{
 		if ( (!LLApp::isQuitting()) && (gSavedPerAccountSettings.controlExists(RLV_SETTING_LOGINLASTLOCATION)) )
 		{
-			BOOL fValue = (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) || (!gRlvHandler.canStand());
+			BOOL fValue = (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) || (!RlvActions::canStand());
 			if (gSavedPerAccountSettings.getBOOL(RLV_SETTING_LOGINLASTLOCATION) != fValue)
 			{
 				gSavedPerAccountSettings.setBOOL(RLV_SETTING_LOGINLASTLOCATION, fValue);

@@ -16,6 +16,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llimview.h"
+#include "llvoavatarself.h"
 #include "rlvactions.h"
 #include "rlvhandler.h"
 
@@ -81,6 +82,13 @@ bool RlvActions::canAcceptTpRequest(const LLUUID& idSender)
 bool RlvActions::autoAcceptTeleportRequest(const LLUUID& idRequester)
 {
 	return ((idRequester.notNull()) && (gRlvHandler.isException(RLV_BHVR_ACCEPTTPREQUEST, idRequester))) || (gRlvHandler.hasBehaviour(RLV_BHVR_ACCEPTTPREQUEST));
+}
+
+// Checked: 2010-03-07 (RLVa-1.2.0)
+bool RlvActions::canStand()
+{
+	// NOTE: return FALSE only if we're @unsit=n restricted and the avie is currently sitting on something and TRUE for everything else
+	return (!gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting()));
 }
 
 // Checked: 2013-05-10 (RLVa-1.4.9)

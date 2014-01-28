@@ -95,7 +95,8 @@
 #include "hippogridmanager.h"
 
 // [RLVa:KB]
-#include "rlvhandler.h"
+#include "rlvactions.h"
+#include "rlvcommon.h"
 // [/RLVa:KB]
 
 //
@@ -595,7 +596,7 @@ void LLStatusBar::refresh()
 	}
 
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
-	if ( (region) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we lose our connection to the grid
+	if ( (region) && (RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we lose our connection to the grid
 	{
 		location_name = llformat("%s (%s) - %s", 
 			RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
@@ -923,7 +924,7 @@ static void onClickScripts(void*)
 static void onClickBuyLand(void*)
 {
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-	if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+	if (RlvActions::isRlvEnabled() && RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC))
 	{
 		return;
 	}
