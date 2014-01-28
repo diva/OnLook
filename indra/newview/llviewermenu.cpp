@@ -522,6 +522,10 @@ void region_change();
 void parse_simulator_features();
 void custom_selected(void* user_data);
 
+
+void advanced_toggle_wireframe(void*);
+BOOL advanced_check_wireframe(void*);
+
 void reset_vertex_buffers(void *user_data)
 {
 	gPipeline.clearRebuildGroups();
@@ -1471,8 +1475,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	menu->addChild(new LLMenuItemCallGL("Selected Texture Info", handle_selected_texture_info, NULL, NULL, 'T', MASK_CONTROL|MASK_SHIFT|MASK_ALT));
 	//menu->addChild(new LLMenuItemCallGL("Dump Image List", handle_dump_image_list, NULL, NULL, 'I', MASK_CONTROL|MASK_SHIFT));
 	
-	menu->addChild(new LLMenuItemToggleGL("Wireframe", &gUseWireframe, 
-			'R', MASK_CONTROL|MASK_SHIFT));
+	menu->addChild(new LLMenuItemCheckGL("Wireframe", advanced_toggle_wireframe, NULL, advanced_check_wireframe, NULL, 'R', MASK_CONTROL|MASK_SHIFT));
 
 	LLMenuItemCheckGL* item;
 	item = new LLMenuItemCheckGL("Object-Object Occlusion", menu_toggle_control, NULL, menu_check_control, (void*)"UseOcclusion", 'O', MASK_CONTROL|MASK_SHIFT);
@@ -1729,6 +1732,46 @@ void init_server_menu(LLMenuGL* menu)
 
 	menu->createJumpKeys();
 }
+
+//////////////////////
+// TOGGLE WIREFRAME //
+//////////////////////
+
+/*
+class LLAdvancedToggleWireframe : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+*/
+	void advanced_toggle_wireframe(void*)
+	{
+// [RLVa:KB] - Checked: 2013-05-11 (RLVa-1.4.9)
+		bool fRlvBlockWireframe = gRlvAttachmentLocks.hasLockedHUD();
+		if ( (!gUseWireframe) && (fRlvBlockWireframe) )
+		{
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_WIREFRAME);
+		}
+		gUseWireframe = (!gUseWireframe) && (!fRlvBlockWireframe);
+// [/RLVa:KB]
+//		gUseWireframe = !(gUseWireframe);
+//		gWindowResized = TRUE; // Singu Note: We don't use this (yet?)
+		LLPipeline::updateRenderDeferred();
+		gPipeline.resetVertexBuffers();
+//		return true;
+	}
+/*
+};
+
+class LLAdvancedCheckWireframe : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+*/
+	BOOL advanced_check_wireframe(void*)
+	{
+		bool new_value = gUseWireframe;
+		return new_value;
+	}
+//};
+
 
 //-----------------------------------------------------------------------------
 // cleanup_menus()
