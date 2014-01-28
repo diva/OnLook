@@ -127,7 +127,7 @@ struct RlvCommandOptionGeneric : public RlvCommandOption
 		{ return (isString()) ? boost::get<std::string>(m_varOption) : LLStringUtil::null; }
 	const LLUUID&              getUUID() const
 		{ return (isUUID()) ? boost::get<LLUUID>(m_varOption) : LLUUID::null; }
-	LLWearableType::EType              getWearableType() const
+	LLWearableType::EType      getWearableType() const
 		{ return (isWearableType()) ? boost::get<LLWearableType::EType>(m_varOption) : LLWearableType::WT_INVALID; }
 
 protected:
@@ -144,8 +144,9 @@ struct RlvCommandOptionGetPath : public RlvCommandOption
 	/*virtual*/ bool  isEmpty() const	 { return m_idItems.empty(); }
 	const uuid_vec_t& getItemIDs() const { return m_idItems; }
 
-	static bool getItemIDs(const LLViewerJointAttachment* pAttachPt, uuid_vec_t& idItems, bool fClear = true);
-	static bool getItemIDs(LLWearableType::EType wtType, uuid_vec_t& idItems, bool fClear = true);
+	// NOTE: Both functions are COF-based rather than items gathered from mAttachedObjects or gAgentWearables
+	static bool getItemIDs(const LLViewerJointAttachment* pAttachPt, uuid_vec_t& idItems);
+	static bool getItemIDs(LLWearableType::EType wtType, uuid_vec_t& idItems);
 
 protected:
 	bool       m_fCallback; // TRUE if a callback is schedueled

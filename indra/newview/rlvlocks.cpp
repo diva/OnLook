@@ -250,6 +250,7 @@ bool RlvAttachmentLocks::canAttach() const
 	}
 	return false;
 }
+
 // Checked: 2010-08-07 (RLVa-1.2.0i) | Modified: RLVa-1.2.0i
 bool RlvAttachmentLocks::canDetach(const LLViewerJointAttachment* pAttachPt, bool fDetachAll /*=false*/) const
 {
@@ -1143,7 +1144,7 @@ bool RlvFolderLocks::getLockedFolders(const folderlock_source_t& lockSource, LLI
 		case ST_WEARABLETYPE:
 			{
 				RLV_ASSERT( ((ST_ATTACHMENTPOINT == lockSource.first) && (typeid(S32) == lockSource.second.type())) || 
-					((ST_WEARABLETYPE == lockSource.first) && (typeid(LLWearableType::EType) == lockSource.second.type())) );
+					        ((ST_WEARABLETYPE == lockSource.first) && (typeid(LLWearableType::EType) == lockSource.second.type())) );
 
 				uuid_vec_t idItems;
 				if (ST_ATTACHMENTPOINT == lockSource.first)
