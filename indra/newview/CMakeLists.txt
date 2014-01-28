@@ -577,7 +577,7 @@ set(viewer_SOURCE_FILES
     rlvactions.cpp
     rlvcommon.cpp
     rlvextensions.cpp
-    rlvfloaterbehaviour.cpp
+    rlvfloaters.cpp
     rlvhandler.cpp
     rlvhelper.cpp
     rlvinventory.cpp
@@ -1105,7 +1105,7 @@ set(viewer_HEADER_FILES
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h
-    rlvfloaterbehaviour.h
+    rlvfloaters.h
     rlvhandler.h
     rlvhelper.h
     rlvinventory.h

@@ -1,12 +1,12 @@
 /** 
  *
- * Copyright (c) 2009-2010, Kitty Barnett
+ * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt 
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -23,7 +23,7 @@
 #include "llvoavatarself.h"
 #include "lluictrlfactory.h"
 
-#include "rlvfloaterbehaviour.h"
+#include "rlvfloaters.h"
 #include "rlvhelper.h"
 #include "rlvhandler.h"
 #include "rlvlocks.h"
@@ -32,7 +32,8 @@
 // Helper functions
 //
 
-// Checked: 2010-03-11 (RLVa-1.1.3b) | Modified: RLVa-1.2.0g
+
+// Checked: 2010-03-11 (RLVa-1.2.0a) | Modified: RLVa-1.2.0g
 std::string rlvGetItemNameFromObjID(const LLUUID& idObj, bool fIncludeAttachPt = true)
 {
 	const LLViewerObject* pObj = gObjectList.findObject(idObj);
@@ -69,6 +70,7 @@ bool rlvGetShowException(ERlvBehaviour eBhvr)
 
 // ============================================================================
 // RlvFloaterBehaviours member functions
+//
 
 // Checked: 2010-04-18 (RLVa-1.3.1c) | Modified: RLVa-1.2.0e
 void RlvFloaterBehaviours::onOpen()
@@ -85,21 +87,9 @@ void RlvFloaterBehaviours::onClose(bool fQuitting)
 	LLFloater::onClose(fQuitting);
 }
 
-RlvFloaterBehaviours::RlvFloaterBehaviours(const LLSD& key) 
-	: LLFloater(std::string("rlvBehaviours"))
+RlvFloaterBehaviours::RlvFloaterBehaviours(const LLSD& key) : LLFloater(std::string("rlvBehaviours"))
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_rlv_behaviours.xml");
-}
-
-
-void RlvFloaterBehaviours::toggle(void*)
-{
-	RlvFloaterBehaviours::toggleInstance();
-}
-
-BOOL RlvFloaterBehaviours::visible(void*)
-{
-	return RlvFloaterBehaviours::instanceVisible();
 }
 
 // Checked: 2010-04-18 (RLVa-1.3.1c) | Modified: RLVa-1.2.0e
@@ -148,8 +138,8 @@ void RlvFloaterBehaviours::onBtnCopyToClipboard()
 		}
 	}
 
-	LLWString text = utf8str_to_wstring(strRestrictions.str());
-	gClipboard.copyFromSubstring(text,0,text.length());
+	LLWString wstrRestrictions = utf8str_to_wstring(strRestrictions.str());
+	gClipboard.copyFromSubstring(wstrRestrictions, 0, wstrRestrictions.length());
 }
 
 // Checked: 2011-05-23 (RLVa-1.3.1c) | Modified: RLVa-1.3.1c
@@ -250,7 +240,7 @@ void RlvFloaterBehaviours::refreshAll()
 // RlvFloaterLocks member functions
 //
 
-// Checked: 2010-03-11 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+// Checked: 2010-03-11 (RLVa-1.2.0)
 void RlvFloaterLocks::onOpen()
 {
 	m_ConnRlvCommand = gRlvHandler.setCommandCallback(boost::bind(&RlvFloaterLocks::onRlvCommand, this, _1, _2));
@@ -258,28 +248,24 @@ void RlvFloaterLocks::onOpen()
 	refreshAll();
 }
 
-// Checked: 2010-03-11 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+// Checked: 2010-03-11 (RLVa-1.2.0)
 void RlvFloaterLocks::onClose(bool fQuitting)
 {
 	m_ConnRlvCommand.disconnect();
 	LLFloater::onClose(fQuitting);
 }
 
-RlvFloaterLocks::RlvFloaterLocks(const LLSD& key) 
-	: LLFloater(std::string("rlvLocks"))
+RlvFloaterLocks::RlvFloaterLocks(const LLSD& key) : LLFloater("rlvLocks")
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_rlv_locks.xml");
 }
 
-
-void RlvFloaterLocks::toggle(void*)
+// Checked: 2012-07-14 (RLVa-1.4.7)
+BOOL RlvFloaterLocks::postBuild()
 {
-	RlvFloaterLocks::toggleInstance();
-}
+	getChild<LLUICtrl>("refresh_btn")->setCommitCallback(boost::bind(&RlvFloaterLocks::refreshAll, this));
 
-BOOL RlvFloaterLocks::visible(void*)
-{
-	return RlvFloaterLocks::instanceVisible();
+	return TRUE;
 }
 
 // Checked: 2010-03-11 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
@@ -303,12 +289,10 @@ void RlvFloaterLocks::onRlvCommand(const RlvCommand& rlvCmd, ERlvCmdRet eRet)
 	}
 }
 
-// Checked: 2010-03-18 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+// Checked: 2010-03-18 (RLVa-1.2.0)
 void RlvFloaterLocks::refreshAll()
 {
-	LLCtrlListInterface* pLockList = childGetListInterface("lock_list");
-	if (!pLockList)
-		return;
+	LLScrollListCtrl* pLockList = getChild<LLScrollListCtrl>("lock_list");
 	pLockList->operateOnAll(LLCtrlListInterface::OP_DELETE);
 
 	if (!isAgentAvatarValid())

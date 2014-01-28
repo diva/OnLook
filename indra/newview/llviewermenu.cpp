@@ -209,7 +209,7 @@ void init_debug_xui_menu(LLMenuGL* menu);
 void init_debug_avatar_menu(LLMenuGL* menu);
 // [RLVa:KB]
 #include "rlvhandler.h"
-#include "rlvfloaterbehaviour.h"
+#include "rlvfloaters.h"
 #include "rlvlocks.h"
 void init_debug_rlva_menu(LLMenuGL* menu);
 // [/RLVa:KB]
