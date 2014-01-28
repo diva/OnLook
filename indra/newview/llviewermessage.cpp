@@ -111,7 +111,7 @@
 #include "llviewerregion.h"
 
 // [RLVa:KB] - Checked: 2010-03-09 (RLVa-1.2.0a)
-#include "llfloateravatarinfo.h" // Checked: 2009-07-08 (RLVa-1.0.0e)
+#include "rlvactions.h"
 #include "rlvhandler.h"
 #include "rlvinventory.h"
 #include "rlvui.h"
@@ -1628,6 +1628,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		args["[NAME]"] = mFromName;
 		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferAcceptSilent", args));
 	}
+
 	break;
 	
 	case IOR_BUSY:
@@ -1688,7 +1689,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		}
 		if (busy &&	(!mFromGroup && !mFromObject))
 		{
-			busy_message(msg,mFromID);
+			send_do_not_disturb_message(msg,mFromID);
 		}
 		break;
 	}
@@ -2246,7 +2247,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		llinfos << "RegionID: " << region_id.asString() << llendl;
 	// </edit>
 
-	BOOL is_busy = gAgent.getBusy();
+	BOOL is_do_not_disturb = gAgent.getBusy();
 	BOOL is_muted = LLMuteList::getInstance()->isMuted(from_id, name, LLMute::flagTextChat)
 		// object IMs contain sender object id in session_id (STORM-1209)
 		|| dialog == IM_FROM_TASK && LLMuteList::getInstance()->isMuted(session_id);
@@ -2315,7 +2316,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			// do nothing -- don't distract newbies in
 			// Prelude with global IMs
 		}
-// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0a) | Modified: RLVa-1.4.0a
+// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0)
 		else if ( (rlv_handler_t::isEnabled()) && (offline == IM_ONLINE) && ("@version" == message) &&
 		          (!is_muted) && ((!accept_im_from_only_friend) || (is_friend)) )
 		{
@@ -2325,19 +2326,28 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			gIMMgr->processIMTypingStop(im_info);
 		}
 // [/RLVa:KB]
-//		else if (offline == IM_ONLINE && !is_linden && !is_muted && is_busy && name != SYSTEM_FROM)
-// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-		else if ( (offline == IM_ONLINE && !is_linden && !is_muted && is_busy && name != SYSTEM_FROM) && (gRlvHandler.canReceiveIM(from_id)) )
+//		else if (offline == IM_ONLINE
+//					&& is_do_not_disturb
+//					&& !is_muted // Singu Note: Never if muted
+//					&& from_id.notNull() //not a system message
+//					&& to_id.notNull()) //not global message
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0) | Modified: RLVa-1.3.0c
+		else if (offline == IM_ONLINE
+					&& is_do_not_disturb
+					&& !is_muted // Singu Note: Never if muted
+					&& from_id.notNull() //not a system message
+					&& to_id.notNull() //not global message
+					&& RlvActions::canReceiveIM(from_id))
 // [/RLVa:KB]
 		{
-			// return a standard "busy" message, but only do it to online IM
+			// return a standard "do not disturb" message, but only do it to online IM
 			// (i.e. not other auto responses and not store-and-forward IM)
 			if (!gIMMgr->hasSession(session_id) || gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat"))
 			{
 				// if the user wants to repeat responses over and over or
 				// if there is not a panel for this conversation (i.e. it is a new IM conversation
 				// initiated by the other party) then...
-				if (to_id.notNull()) busy_message(msg, from_id);
+				send_do_not_disturb_message(msg, from_id, session_id);
 			}
 
 			// now store incoming IM in chat history
@@ -2361,9 +2371,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			chat.mText = std::string("IM: ") + name + separator_string + message.substr(message_offset);
 			LLFloaterChat::addChat(chat, true, true);
 		}
-//		else if (to_id.notNull() && offline == IM_ONLINE && !is_linden && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && name != SYSTEM_FROM)
-// [RLVa:LF] - Same as above: Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-		else if (to_id.notNull() && offline == IM_ONLINE && !is_linden && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && name != SYSTEM_FROM && gRlvHandler.canReceiveIM(from_id))
+//		else if (offline == IM_ONLINE && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && from_id.notNull() && to_id.notNull())
+// [RLVa:LF] - Same as above: Checked: 2010-11-30 (RLVa-1.3.0)
+		else if (offline == IM_ONLINE && (is_autorespond || is_autorespond_nonfriends || is_autorespond_muted) && from_id.notNull() && to_id.notNull() && RlvActions::canReceiveIM(from_id) && RlvActions::canSendIM(from_id))
 // [/RLVa:LF]
 		{
 			// now store incoming IM in chat history
@@ -2475,9 +2485,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				mute_im = true;
 			}
 
-// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0)
 			// Don't block offline IMs, or IMs from Lindens
-			if ( (rlv_handler_t::isEnabled()) && (offline != IM_OFFLINE) && (!is_linden) && (!gRlvHandler.canReceiveIM(from_id)) )
+			if ( (rlv_handler_t::isEnabled()) && (offline != IM_OFFLINE) && (!RlvActions::canReceiveIM(from_id)) && (!is_linden) )
 			{
 				if (!mute_im)
 					RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM_REMOTE), session_id);
@@ -2562,7 +2572,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_TYPING_START:
 		{
 			// Don't announce that someone has started messaging, if they're muted or when in busy mode
-			if (!is_muted && (!accept_im_from_only_friend || is_friend) && !is_busy && !gIMMgr->hasSession(computed_session_id) && gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
+			if (!is_muted && (!accept_im_from_only_friend || is_friend) && !is_do_not_disturb && !gIMMgr->hasSession(computed_session_id) && gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
 			{
 				std::string pns_name;
 				if (!LLAvatarNameCache::getPNSName(from_id, pns_name)) pns_name = name;
@@ -2758,12 +2768,12 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		break;
 	case IM_GROUP_INVITATION:
 		{
-			//if (!is_linden && (is_busy || is_muted))
+			//if (is_do_not_disturb || is_muted)
 			if (is_muted) return;
-			if (is_busy)
+			if (is_do_not_disturb)
 			{
 				LLMessageSystem *msg = gMessageSystem;
-				busy_message(msg,from_id);
+				send_do_not_disturb_message(msg,from_id);
 			}
 			else
 			{
@@ -2850,7 +2860,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			info->mFromName = name;
 			info->mDesc = message;
 			info->mHost = msg->getSender();
-			//if (((is_busy && !is_owned_by_me) || is_muted))
+			//if (((is_do_not_disturb && !is_owned_by_me) || is_muted))
 			if (is_muted)
 			{
 				// Prefetch the offered item so that it can be discarded by the appropriate observer. (EXT-4331)
@@ -2862,7 +2872,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				info->forceResponse(IOR_DECLINE);
 			}
 			/* Singu Note: Handle this inside inventory_offer_handler so if the user wants to autoaccept offers, they can while busy.
-			else if (is_busy && dialog != IM_TASK_INVENTORY_OFFERED) // busy mode must not affect interaction with objects (STORM-565)
+			else if (is_do_not_disturb && dialog != IM_TASK_INVENTORY_OFFERED) // busy mode must not affect interaction with objects (STORM-565)
 			{
 				// Until throttling is implemented, busy mode should reject inventory instead of silently
 				// accepting it.  SEE SL-39554
@@ -2920,7 +2930,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	
 	case IM_SESSION_SEND:
 	{
-		if (!is_linden && is_busy)
+		if (!is_linden && is_do_not_disturb)
 		{
 			return;
 		}
@@ -2938,16 +2948,16 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			return;
 		}
 
-		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
+		if (from_id != gAgentID && (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM) || gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)))
 		{
 			switch (pIMFloater->getSessionType())
 			{
 				case LLFloaterIMPanel::GROUP_SESSION:	// Group chat
-					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(session_id)) )
+					if (!RlvActions::canReceiveIM(session_id))
 						return;
 					break;
 				case LLFloaterIMPanel::ADHOC_SESSION:	// Conference chat
-					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(from_id)) )
+					if (!RlvActions::canReceiveIM(from_id))
 						message = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
 					break;
 				default:
@@ -2996,7 +3006,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 	case IM_FROM_TASK:
 		{
-			if (is_busy && !is_owned_by_me)
+			if (is_do_not_disturb && !is_owned_by_me)
 			{
 				return;
 			}
@@ -3075,8 +3085,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			LLFloaterChat::addChat(chat, FALSE, FALSE);
 		}
 		break;
+
 	case IM_FROM_TASK_AS_ALERT:
-		if (is_busy && !is_owned_by_me)
+		if (is_do_not_disturb && !is_owned_by_me)
 		{
 			return;
 		}
@@ -3090,14 +3101,12 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_BUSY_AUTO_RESPONSE:
 		if (is_muted)
 		{
-			LL_DEBUGS("Messaging") << "Ignoring busy response from " << from_id << LL_ENDL;
+			LL_DEBUGS("Messaging") << "Ignoring do-not-disturb response from " << from_id << LL_ENDL;
 			return;
 		}
 		else
 		{
-			// TODO: after LLTrans hits release, get "busy response" into translatable file
-			buffer = llformat("%s (%s): %s", name.c_str(), "busy response", message.substr(message_offset).c_str());
-			gIMMgr->addMessage(session_id, from_id, name, buffer);
+			gIMMgr->addMessage(session_id, from_id, name, message);
 		}
 		break;
 		
@@ -3116,12 +3125,12 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{ 
 				return;
 			}
-//			else if (is_busy) 
+//			else if (is_do_not_disturb)
 // [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
-			else if ( (is_busy)  && (!fRlvSummon) )
+			else if ( (is_do_not_disturb)  && (!fRlvSummon) )
 // [/RLVa:KB]
 			{
-				busy_message(msg,from_id);
+				send_do_not_disturb_message(msg, from_id);
 			}
 			else
 			{
@@ -3184,13 +3193,13 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					if (IM_TELEPORT_REQUEST != dialog && !gRlvHandler.canTeleportViaLure(from_id))
 					{
 						RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_TPLURE_REMOTE));
-						if (is_busy)
-							busy_message(msg,from_id);
+						if (is_do_not_disturb)
+							send_do_not_disturb_message(msg, from_id);
 						return;
 					}
 
 					// Censor lure message if: 1) restricted from receiving IMs from the sender, or 2) @showloc=n restricted
-					if ( (!gRlvHandler.canReceiveIM(from_id)) || (IM_TELEPORT_REQUEST != dialog && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+					if ( (!RlvActions::canReceiveIM(from_id)) || (IM_TELEPORT_REQUEST != dialog && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
 					{
 						message = RlvStrings::getString(RLV_STRING_HIDDEN);
 					}
@@ -3215,8 +3224,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				if ( IM_TELEPORT_REQUEST != dialog && (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_ACCEPTTP)) || (fRlvSummon)) )
 				{
 					gRlvHandler.setCanCancelTp(false);
-					if (is_busy)
-						busy_message(msg,from_id);
+					if (is_do_not_disturb)
+						send_do_not_disturb_message(msg, from_id);
 					LLNotifications::instance().forceResponse(LLNotification::Params("TeleportOffered").payload(payload), 0);
 				}
 				else
@@ -3355,17 +3364,16 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			payload["online"] = (offline == IM_ONLINE);
 			payload["sender"] = msg->getSender().getIPandPort();
 
-			if (!is_muted && is_busy)
-			{
-				busy_message(msg, from_id);
-				LLNotifications::instance().forceResponse(LLNotification::Params("OfferFriendship").payload(payload), 1);
-			}
-			else if (is_muted)
+			if (is_muted)
 			{
 				LLNotifications::instance().forceResponse(LLNotification::Params("OfferFriendship").payload(payload), 1);
 			}
 			else
 			{
+				if (is_do_not_disturb)
+				{
+					send_do_not_disturb_message(msg, from_id);
+				}
 				args["[NAME]"] = name;
 				if(message.empty())
 				{
@@ -3395,12 +3403,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			args["NAME"] = name;
 			LLSD payload;
 			payload["from_id"] = from_id;
-			LLAvatarNameCache::get(from_id, boost::bind(&notification_display_name_callback,
-														 _1,
-														 _2,
-														 "FriendshipAccepted",
-														 args,
-														 payload));
+			LLAvatarNameCache::get(from_id, boost::bind(&notification_display_name_callback, _1, _2, "FriendshipAccepted", args, payload));
 		}
 		break;
 
@@ -3418,7 +3421,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	}
 }
 
-void busy_message (LLMessageSystem* msg, LLUUID from_id) 
+void send_do_not_disturb_message (LLMessageSystem* msg, const LLUUID& from_id, const LLUUID& session_id)
 {
 	if (gAgent.getBusy())
 	{
@@ -3429,7 +3432,7 @@ void busy_message (LLMessageSystem* msg, LLUUID from_id)
 		from_name = LLCacheName::cleanFullName(from_name);
 		std::string response = gSavedPerAccountSettings.getString("BusyModeResponse");
 		pack_instant_message(
-			gMessageSystem,
+			msg,
 			gAgent.getID(),
 			FALSE,
 			gAgent.getSessionID(),
@@ -3487,7 +3490,7 @@ bool callingcard_offer_callback(const LLSD& notification, const LLSD& response)
 		msg->nextBlockFast(_PREHASH_TransactionBlock);
 		msg->addUUIDFast(_PREHASH_TransactionID, notification["payload"]["transaction_id"].asUUID());
 		msg->sendReliable(LLHost(notification["payload"]["sender"].asString()));
-		busy_message(msg, notification["payload"]["source_id"].asUUID());
+		send_do_not_disturb_message(msg, notification["payload"]["source_id"].asUUID());
 		break;
 	default:
 		// close button probably, possibly timed out
@@ -3748,7 +3751,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		chat.mFromName = from_name;
 	}
 
-	BOOL is_busy = gAgent.getBusy();
+	BOOL is_do_not_disturb = gAgent.getBusy();
 
 	BOOL is_muted = FALSE;
 	BOOL is_linden = FALSE;
@@ -3866,7 +3869,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 		// record last audible utterance
 		if (is_audible
-			&& (is_linden || (!is_muted && !is_busy)))
+			&& (is_linden || (!is_muted && !is_do_not_disturb)))
 		{
 			if (chat.mChatType != CHAT_TYPE_START 
 				&& chat.mChatType != CHAT_TYPE_STOP)
@@ -4057,7 +4060,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			LLLocalSpeakerMgr::getInstance()->setSpeakerTyping(from_id, FALSE);
 			static_cast<LLVOAvatar*>(chatter)->stopTyping();
 
-			if (!is_muted /*&& !is_busy*/)
+			if (!is_muted /*&& !is_do_not_disturb*/)
 			{
 				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
 				visible_in_chat_bubble = use_chat_bubbles;
@@ -4200,7 +4203,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		}
 
 		chat.mMuted = is_muted && !is_linden;
-		bool only_history = visible_in_chat_bubble || (!is_linden && !is_owned_by_me && is_busy);
+		bool only_history = visible_in_chat_bubble || (!is_linden && !is_owned_by_me && is_do_not_disturb);
 #if 0	// Google translate doesn't work anymore
 		if (!chat.mMuted)
 		{
@@ -7590,14 +7593,14 @@ void send_lures(const LLSD& notification, const LLSD& response)
 	LLAgentUI::buildSLURL(slurl);
 	text.append("\r\n").append(slurl.getSLURLString());
 
-// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0)
+	if ( (RlvActions::hasBehaviour(RLV_BHVR_SENDIM)) || (RlvActions::hasBehaviour(RLV_BHVR_SENDIMTO)) )
 	{
 		// Filter the lure message if one of the recipients of the lure can't be sent an IM to
 		for (LLSD::array_const_iterator it = notification["payload"]["ids"].beginArray();
 				it != notification["payload"]["ids"].endArray(); ++it)
 		{
-			if (!gRlvHandler.canSendIM(it->asUUID()))
+			if (!RlvActions::canSendIM(it->asUUID()))
 			{
 				text = RlvStrings::getString(RLV_STRING_HIDDEN);
 				break;

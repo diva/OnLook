@@ -62,8 +62,9 @@
 
 #include "boost/algorithm/string.hpp"
 
-// [RLVa:KB]
-#include "rlvhandler.h"
+// [RLVa:KB] - Checked: 2013-05-10 (RLVa-1.4.9)
+#include "rlvactions.h"
+#include "rlvcommon.h"
 // [/RLVa:KB]
 
 class AIHTTPTimeoutPolicy;
@@ -1142,6 +1143,7 @@ void deliver_message(const std::string& utf8_text,
 
 bool convert_roleplay_text(std::string& text); // Returns true if text is an action
 
+// Singu Note: LLFloaterIMSession::sendMsg
 void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
@@ -1164,17 +1166,18 @@ void LLFloaterIMPanel::onSendMsg()
 			bool action = convert_roleplay_text(utf8_text);
 			if (!action && mRPMode)
 				utf8_text = "((" + utf8_text + "))";
-// [RLVa:KB] - Checked: 2011-09-17 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
-			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
+
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0)
+			if ( (RlvActions::hasBehaviour(RLV_BHVR_SENDIM)) || (RlvActions::hasBehaviour(RLV_BHVR_SENDIMTO)) )
 			{
 				bool fRlvFilter = false;
 				switch (mSessionType)
 				{
 					case P2P_SESSION:	// One-on-one IM
-						fRlvFilter = !gRlvHandler.canSendIM(mOtherParticipantUUID);
+						fRlvFilter = !RlvActions::canSendIM(mOtherParticipantUUID);
 						break;
 					case GROUP_SESSION:	// Group chat
-						fRlvFilter = !gRlvHandler.canSendIM(mSessionUUID);
+						fRlvFilter = !RlvActions::canSendIM(mSessionUUID);
 						break;
 					case ADHOC_SESSION:	// Conference chat: allow if all participants can be sent an IM
 						{
@@ -1190,7 +1193,7 @@ void LLFloaterIMPanel::onSendMsg()
 									itSpeaker != speakers.end(); ++itSpeaker)
 							{
 								const LLSpeaker* pSpeaker = *itSpeaker;
-								if ( (gAgentID != pSpeaker->mID) && (!gRlvHandler.canSendIM(pSpeaker->mID)) )
+								if ( (gAgentID != pSpeaker->mID) && (!RlvActions::canSendIM(pSpeaker->mID)) )
 								{
 									fRlvFilter = true;
 									break;
@@ -1204,7 +1207,9 @@ void LLFloaterIMPanel::onSendMsg()
 				}
 
 				if (fRlvFilter)
+				{
 					utf8_text = RlvStrings::getString(RLV_STRING_BLOCKED_SENDIM);
+				}
 			}
 // [/RLVa:KB]
 
