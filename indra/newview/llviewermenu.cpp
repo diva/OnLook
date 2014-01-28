@@ -965,15 +965,13 @@ void init_client_menu(LLMenuGL* menu)
 	menu->addChild(sub_menu);
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b | OK
-	#ifdef RLV_ADVANCED_MENU
-		sub_menu = new LLMenuGL("RLVa Embedded");
-		init_debug_rlva_menu(sub_menu);
-		menu->addChild(sub_menu);
-		// Top Level Menu as well
-		sub_menu = new LLMenuGL("RLVa Main");
-		init_debug_rlva_menu(sub_menu);
-		gMenuBarView->addChild(sub_menu);
-	#endif // RLV_ADVANCED_MENU
+	sub_menu = new LLMenuGL("RLVa Embedded");
+	init_debug_rlva_menu(sub_menu);
+	menu->addChild(sub_menu);
+	// Top Level Menu as well
+	sub_menu = new LLMenuGL("RLVa Main");
+	init_debug_rlva_menu(sub_menu);
+	gMenuBarView->addChild(sub_menu);
 // [/RLVa:KB]
 
 	sub_menu = new LLMenuGL("UI");
@@ -1100,10 +1098,8 @@ void init_client_menu(LLMenuGL* menu)
 										(void*)"ShowConsoleWindow"));
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-1.0.0e | OK
-	#ifdef RLV_ADVANCED_TOGGLE_RLVA
-		if (gSavedSettings.controlExists(RLV_SETTING_MAIN))
-			menu->addChild(new LLMenuItemCheckGL("RestrainedLove API", &rlvMenuToggleEnabled, NULL, &rlvMenuCheckEnabled, NULL));
-	#endif // RLV_ADVANCED_TOGGLE_RLVA
+	if (gSavedSettings.controlExists(RLV_SETTING_MAIN))
+		menu->addChild(new LLMenuItemCheckGL("RestrainedLove API", &rlvMenuToggleEnabled, NULL, &rlvMenuCheckEnabled, NULL));
 // [/RLVa:KB]
 
 	if(gSavedSettings.getBOOL("QAMode"))
@@ -1639,16 +1635,14 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 		menu->addChild(new LLMenuItemCheckGL("Enable Shared Wear", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_ENABLESHAREDWEAR));
 	menu->addSeparator();
 
-	#ifdef RLV_EXTENSION_HIDELOCKED
-		if ( (gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDLAYER)) && 
-			 (gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDATTACH)) )
-		{
-			menu->addChild(new LLMenuItemCheckGL("Hide Locked Layers", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDLAYER));
-			menu->addChild(new LLMenuItemCheckGL("Hide Locked Attachments", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDATTACH));
-			//sub_menu->addChild(new LLMenuItemToggleGL("Hide locked inventory", &rlv_handler_t::fHideLockedInventory));
-			menu->addSeparator();
-		}
-	#endif // RLV_EXTENSION_HIDELOCKED
+	if ( (gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDLAYER)) &&
+			(gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDATTACH)) )
+	{
+		menu->addChild(new LLMenuItemCheckGL("Hide Locked Layers", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDLAYER));
+		menu->addChild(new LLMenuItemCheckGL("Hide Locked Attachments", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDATTACH));
+		//sub_menu->addChild(new LLMenuItemToggleGL("Hide locked inventory", &rlv_handler_t::fHideLockedInventory));
+		menu->addSeparator();
+	}
 
 	if (gSavedSettings.controlExists(RLV_SETTING_FORBIDGIVETORLV))
 		menu->addChild(new LLMenuItemCheckGL("Forbid Give to #RLV", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_FORBIDGIVETORLV));
@@ -1656,11 +1650,8 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 		menu->addChild(new LLMenuItemCheckGL("Show Name Tags", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_SHOWNAMETAGS));
 	menu->addSeparator();
 
-	#ifdef RLV_EXTENSION_FLOATER_RESTRICTIONS
-		// TODO-RLVa: figure out a way to tell if floater_rlv_behaviour.xml exists
-		menu->addChild(new LLMenuItemCheckGL("Restrictions...", &RlvFloaterBehaviours::toggle, NULL, &RlvFloaterBehaviours::visible, NULL));
-		menu->addChild(new LLMenuItemCheckGL("Locks...", &RlvFloaterLocks::toggle, NULL, &RlvFloaterLocks::visible, NULL));
-	#endif // RLV_EXTENSION_FLOATER_RESTRICTIONS
+	menu->addChild(new LLMenuItemCheckGL("Restrictions...", &RlvFloaterBehaviours::toggle, NULL, &RlvFloaterBehaviours::visible, NULL));
+	menu->addChild(new LLMenuItemCheckGL("Locks...", &RlvFloaterLocks::toggle, NULL, &RlvFloaterLocks::visible, NULL));
 }
 // [/RLVa:KB]
 

@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -298,7 +298,7 @@ public:
 	// Specifies options for the folder lock
 	enum ELockPermission { PERM_ALLOW = 0x1, PERM_DENY = 0x2, PERM_MASK_ANY = 0x3 };
 	enum ELockScope	{ SCOPE_NODE, SCOPE_SUBTREE } ;
-protected:
+
 	struct folderlock_descr_t
 	{
 		LLUUID				idRlvObj;
@@ -394,13 +394,13 @@ inline LLViewerJointAttachment* RlvAttachPtLookup::getAttachPoint(S32 idxAttachP
 	return (isAgentAvatarValid()) ? get_if_there(gAgentAvatarp->mAttachmentPoints, idxAttachPt, (LLViewerJointAttachment*)NULL) : NULL;
 }
 
-// Checked: 2010-03-03 (RLVa-1.1.3a) | Modified: RLVa-0.2.0d
+// Checked: 2010-03-03 (RLVa-1.2.0a) | Modified: RLVa-0.2.0d
 inline LLViewerJointAttachment* RlvAttachPtLookup::getAttachPoint(const std::string& strText)
 {
 	return (isAgentAvatarValid()) ? get_if_there(gAgentAvatarp->mAttachmentPoints, getAttachPointIndex(strText), (LLViewerJointAttachment*)NULL) : NULL;
 }
 
-// Checked: 2010-03-03 (RLVa-1.1.3a) | Modified: RLVa-1.0.1b
+// Checked: 2010-03-03 (RLVa-1.2.0a) | Modified: RLVa-1.0.1b
 inline LLViewerJointAttachment* RlvAttachPtLookup::getAttachPoint(const LLInventoryItem* pItem)
 {
 	return (isAgentAvatarValid()) ? get_if_there(gAgentAvatarp->mAttachmentPoints, getAttachPointIndex(pItem), (LLViewerJointAttachment*)NULL) : NULL;
@@ -425,11 +425,11 @@ inline S32 RlvAttachPtLookup::getAttachPointIndex(const LLViewerObject* pObj)
 // RlvAttachmentLocks inlined member functions
 //
 
-// Checked: 2011-03-27 (RLVa-1.3.0g) | Modified: RLVa-1.3.0g
+// Checked: 2011-05-22 (RLVa-1.3.1b) | Modified: RLVa-1.3.1b
 inline ERlvWearMask RlvAttachmentLocks::canAttach(const LLInventoryItem* pItem, LLViewerJointAttachment** ppAttachPtOut /*=NULL*/) const
 {
 	// The specified item can be attached if:
-	//   - it doesn't specify an attachment point
+	//   - it doesn't specify an attachment point and there is at least one attachment point that can be attached to
 	//   - the attachment point it specifies can be attached to
 	LLViewerJointAttachment* pAttachPt = RlvAttachPtLookup::getAttachPoint(pItem);
 	if (ppAttachPtOut)
@@ -628,13 +628,12 @@ inline bool RlvFolderLocks::canRemoveFolder(const LLUUID& idFolder) const
 // Checked: 2011-03-29 (RLVa-1.3.0g) | Added: RLVa-1.3.0g
 inline bool RlvFolderLocks::canRenameFolder(const LLUUID& idFolder) const
 {
-	/* Block renaming a folder if:
+	// Block renaming a folder if:
 	//   - the folder (or one of its descendents) is explicitly locked by:
 	//		-> a "shared path" => renaming the folder would change the shared path and hence invalidate the lock
-	//		-> an attachment point \
+	//		-> an attachment point -|
 	//		-> an attachment        |--> renaming the folder to a "dot" (=invisible) folder would invalidate the lock
-	//		-> a wearable type     /
-	*/
+	//		-> a wearable type     -|
 	return !hasLockedFolderDescendent(idFolder, ST_SHAREDPATH | ST_ATTACHMENT | ST_ATTACHMENTPOINT | ST_WEARABLETYPE, PERM_MASK_ANY, RLV_LOCK_ANY, true);
 }
 

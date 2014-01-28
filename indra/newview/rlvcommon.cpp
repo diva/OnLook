@@ -18,6 +18,7 @@
 #include "llagent.h"
 #include "llagentui.h"
 #include "llavatarnamecache.h"
+#include "llinstantmessage.h"
 #include "llnotificationsutil.h"
 #include "lluictrlfactory.h"
 #include "sgversion.h"
@@ -37,44 +38,16 @@
 #include "../lscript/lscript_byteformat.h" //Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 #include <boost/algorithm/string.hpp>
 
-using namespace LLOldEvents;
-
 // ============================================================================
 // RlvNotifications
 //
 
-#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-// Checked: 2009-12-05 (RLVa-1.1.0h) | Added: RLVa-1.1.0h
-/*void RlvNotifications::notifyBehaviour(ERlvBehaviour eBhvr, ERlvParamType eType)
-{
-	const std::string& strMsg = RlvStrings::getBehaviourNotificationString(eBhvr, eType);
-	if (!strMsg.empty())
-	{
-		LLSD argsNotify;
-		argsNotify["MESSAGE"] = strMsg;
-		LLNotificationsUtil::add("SystemMessageTip", argsNotify);
-	}
-}*/
-#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
-
-// Checked: 2009-11-11 (RLVa-1.1.0a) | Added: RLVa-1.1.0a/
-/*void RlvNotifications::notifyBlockedViewXXX(const char* pstrAssetType)
-{
-	LLStringUtil::format_map_t argsMsg; std::string strMsg = RlvStrings::getString(RLV_STRING_BLOCKED_VIEWXXX);
-	argsMsg["[TYPE]"] = pstrAssetType;
-	LLStringUtil::format(strMsg, argsMsg);
-
-	LLSD argsNotify;
-	argsNotify["MESSAGE"] = strMsg;
-	LLNotificationsUtil::add("SystemMessageTip", argsNotify);
-}
-*/
 // Checked: 2009-11-13 (RLVa-1.1.0b) | Modified: RLVa-1.1.0b
 /*
 void RlvNotifications::warnGiveToRLV()
 {
 	if ( (gSavedSettings.getWarning(RLV_SETTING_FIRSTUSE_GIVETORLV)) && (RlvSettings::getForbidGiveToRLV()) )
-		LLNotifications::instance().add(RLV_SETTING_FIRSTUSE_GIVETORLV, LLSD(), LLSD(), &RlvUtil::onGiveToRLVConfirmation);
+		LLNotifications::instance().add(RLV_SETTING_FIRSTUSE_GIVETORLV, LLSD(), LLSD(), &RlvNotifications::onGiveToRLVConfirmation);
 }
 */
 
@@ -188,10 +161,6 @@ bool RlvSettings::onChangedSettingBOOL(const LLSD& sdValue, bool* pfSetting)
 
 std::vector<std::string> RlvStrings::m_Anonyms;
 std::map<std::string, std::string> RlvStrings::m_StringMap;
-#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-/*std::map<ERlvBehaviour, std::string> RlvStrings::m_BhvrAddMap;
-std::map<ERlvBehaviour, std::string> RlvStrings::m_BhvrRemMap;*/
-#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
 
 // Checked: 2010-03-09 (RLVa-1.2.0a) | Added: RLVa-1.1.0h
 void RlvStrings::initClass()
@@ -227,25 +196,6 @@ void RlvStrings::initClass()
 					m_Anonyms.push_back(pAnonymNode->getTextContents());
 				}
 			}
-			#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-			/*else if (pNode->hasName("behaviour-notifications"))
-			{
-				std::string strBhvr, strType; ERlvBehaviour eBhvr;
-				for (LLXMLNode* pNotifyNode = pNode->getFirstChild(); pNotifyNode != NULL; pNotifyNode = pNotifyNode->getNextSibling())
-				{
-					if ( (!pNotifyNode->hasName("notification")) || (!pNotifyNode->getAttributeString("type", strType)) ||
-						 (!pNotifyNode->getAttributeString("behaviour", strBhvr)) || 
-						 ((eBhvr = RlvCommand::getBehaviourFromString(strBhvr)) == RLV_BHVR_UNKNOWN) )
-					{
-						continue;
-					}
-					if ("add" == strType)
-						m_BhvrAddMap.insert(std::pair<ERlvBehaviour, std::string>(eBhvr, pNotifyNode->getTextContents()));
-					else if ("rem" == strType)
-						m_BhvrRemMap.insert(std::pair<ERlvBehaviour, std::string>(eBhvr, pNotifyNode->getTextContents()));
-				}
-			}*/
-			#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
 		}
 
 		if ( (m_StringMap.empty()) || (m_Anonyms.empty()) )
@@ -270,29 +220,11 @@ const std::string& RlvStrings::getAnonym(const std::string& strName)
 	return m_Anonyms[nHash % m_Anonyms.size()];
 }
 
-#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-// Checked: 2009-12-05 (RLVa-1.1.0h) | Added: RLVa-1.1.0h
-/*const std::string& RlvStrings::getBehaviourNotificationString(ERlvBehaviour eBhvr, ERlvParamType eType)
-{
-	if (RLV_TYPE_ADD == eType)
-	{
-		std::map<ERlvBehaviour, std::string>::const_iterator itString = m_BhvrAddMap.find(eBhvr);
-		return (itString != m_BhvrAddMap.end()) ? itString->second : LLStringUtil::null;
-	}
-	else if (RLV_TYPE_REMOVE == eType)
-	{
-		std::map<ERlvBehaviour, std::string>::const_iterator itString = m_BhvrRemMap.find(eBhvr);
-		return (itString != m_BhvrRemMap.end()) ? itString->second : LLStringUtil::null;
-	}
-	return LLStringUtil::null;
-}*/
-#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
-
 // Checked: 2009-11-11 (RLVa-1.1.0a) | Added: RLVa-1.1.0a
 const std::string& RlvStrings::getString(const std::string& strStringName)
 {
 	static const std::string strMissing = "(Missing RLVa string)";
-	string_map_t::const_iterator itString = m_StringMap.find(strStringName);
+	std::map<std::string, std::string>::const_iterator itString = m_StringMap.find(strStringName);
 	return (itString != m_StringMap.end()) ? itString->second : strMissing;
 }
 
@@ -396,27 +328,21 @@ void RlvUtil::filterNames(std::string& strUTF8Text, bool fFilterLegacy)
 		LLAvatarName avName;
 		if (LLAvatarNameCache::get(idAgents[idxAgent], &avName))
 		{
-			const std::string& strAnonym = RlvStrings::getAnonym(avName.mDisplayName);
-
-			// NOTE: if the legacy first and last name are empty we get a legacy name of " " which would replace all spaces in the string
-			std::string strLegacyName;
-			if ( (fFilterLegacy) && (!avName.mLegacyFirstName.empty()) &&
-				 ((!avName.mIsDisplayNameDefault) || (LLCacheName::getDefaultLastName() == avName.mLegacyLastName)) )
-			{
-				strLegacyName = avName.getLegacyName();
-			}
+			const std::string& strDisplayName = avName.mDisplayName;
+			const std::string& strLegacyName = avName.getLegacyName();
+			const std::string& strAnonym = RlvStrings::getAnonym(avName);
 
 			// If the display name is a subset of the legacy name we need to filter that first, otherwise it's the other way around
-			if (boost::icontains(strLegacyName, avName.mDisplayName))
+			if (boost::icontains(strLegacyName, strDisplayName))
 			{
-				if (!strLegacyName.empty())
+				if (fFilterLegacy)
 					boost::ireplace_all(strUTF8Text, strLegacyName, strAnonym);
-				boost::ireplace_all(strUTF8Text, avName.mDisplayName, strAnonym);
+				boost::ireplace_all(strUTF8Text, strDisplayName, strAnonym);
 			}
 			else
 			{
-				boost::ireplace_all(strUTF8Text, avName.mDisplayName, strAnonym);
-				if (!strLegacyName.empty())
+				boost::ireplace_all(strUTF8Text, strDisplayName, strAnonym);
+				if (fFilterLegacy)
 					boost::ireplace_all(strUTF8Text, strLegacyName, strAnonym);
 			}
 		}

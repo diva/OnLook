@@ -46,6 +46,7 @@ class LLInventoryItem;
 class LLViewerInventoryCategory;
 class LLViewerInventoryItem;
 class LLViewerJointAttachment;
+class LLViewerWearable;
 class LLWearable;
 
 //
@@ -141,8 +142,7 @@ public:
 
 protected:
 	static std::vector<std::string> m_Anonyms;
-	typedef std::map<std::string, std::string> string_map_t;
-	static string_map_t m_StringMap;
+	static std::map<std::string, std::string> m_StringMap;
 };
 
 // ============================================================================

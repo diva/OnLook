@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -1004,6 +1004,41 @@ void RlvForceWear::done()
 	RLV_ASSERT( (m_remWearables.empty()) && (m_remAttachments.empty()) && (m_remGestures.empty()) );
 	RLV_ASSERT( (m_addWearables.empty()) && (m_addAttachments.empty()) && (m_addGestures.empty()) );
 }
+
+// Checked: 2010-02-17 (RLVa-1.1.0o) | Modified: RLVa-1.1.0o
+/*
+void RlvForceWear::onWearableArrived(LLWearable* pWearable, void* pParam)
+{
+	#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
+	// If this wearable will end up replacing a currently worn one that belongs to a composite folder then we need to detach the composite
+	LLViewerInventoryCategory* pFolder = NULL;
+	if ( (RlvSettings::getEnableComposites()) && (pWearable) && (gAgent.getWearable(pWearable->getType())) )
+	{
+		// If we're just rewearing the same item we're already wearing then we're not replacing a composite folder
+		LLWearableHoldingPattern* pWearData = (LLWearableHoldingPattern*)pParam; LLUUID idItem;
+		for (LLWearableHoldingPattern::found_list_t::const_iterator itWearable = pWearData->mFoundList.begin();
+				itWearable != pWearData->mFoundList.end(); ++itWearable)
+		{
+			LLFoundData* pFound = *itWearable;
+			if (pWearable->getID() == pFound->mAssetID)
+			{
+				idItem = pFound->mItemID;
+				break;
+			}
+		}
+		if ( (idItem.notNull()) && (idItem != gAgent.getWearableItem(pWearable->getType())) && 
+			 (gRlvHandler.getCompositeInfo(gAgent.getWearableItem(pWearable->getType()), NULL, &pFolder)) )
+		{
+			RlvForceWear rlvWear;
+			rlvWear.forceFolder(pFolder, ACTION_DETACH, FLAG_DEFAULT);
+			rlvWear.done();
+		}
+	}
+	#endif // RLV_EXPERIMENTAL_COMPOSITEFOLDERS
+
+	wear_inventory_category_on_avatar_loop(pWearable, pParam);
+}
+*/
 
 // ============================================================================
 // RlvBehaviourNotifyHandler

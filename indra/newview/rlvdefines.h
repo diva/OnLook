@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -21,20 +21,10 @@
 // Extensions
 //
 
-// Comment out if you don't want the Advanced / RLVa menu (may prevent enabling some extensions or experimental features - see below)
-#define RLV_ADVANCED_MENU
-// Comment out if you provide your own way to enable/disable RLVa
-#define RLV_ADVANCED_TOGGLE_RLVA
-
-// Provides access to "advanced" features through the RLVa debug menu
-#define RLV_EXTENSION_FLOATER_RESTRICTIONS	// Enables the Advanced / RLVa / Restrictions... floater
-#define RLV_EXTENSION_HIDELOCKED			// "Hide locked layers", "Hide locked attachments" and "Hide locked inventory"
-
 // Extensions
 #define RLV_EXTENSION_CMD_GETSETDEBUG_EX	// Extends the debug variables accessible through @getdebug_xxx/@setdebug_xxx
 #define RLV_EXTENSION_CMD_FINDFOLDERS		// @findfolders:<option>=<channel> - @findfolder with multiple results
 #define RLV_EXTENSION_FORCEWEAR_GESTURES	// @attach*/detach* commands also (de)activate gestures
-#define RLV_EXTENSION_NOTIFY_BEHAVIOUR		// Provides the option to show a customizable notification whenever a behaviour gets (un)set
 #define RLV_EXTENSION_STARTLOCATION			// Reenables "Start Location" at login if not @tploc=n or @unsit=n restricted at last logoff
 #define RLV_EXPERIMENTAL					// Enables/disables experimental features en masse
 #define RLV_EXPERIMENTAL_CMDS				// Enables/disables experimental commands en masse
@@ -49,7 +39,6 @@
 	// Under development (don't include in public release)
 	#if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 //		#define RLV_EXPERIMENTAL_COMPOSITEFOLDERS
-//		#define RLV_EXPERIMENTAL_FIRSTUSE				// Enables a number of "first use" popups
 	#endif // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #endif // RLV_EXPERIMENTAL
 
@@ -112,7 +101,7 @@ const S32 RLVa_VERSION_BUILD = 0;
 #define RLV_ROOT_FOLDER					"#RLV"
 #define RLV_CMD_PREFIX					'@'
 #define RLV_PUTINV_PREFIX				"#RLV/~"
-#define RLV_SETROT_OFFSET				F_PI_BY_TWO		// @setrot is off by 90Â° with the rest of SL
+#define RLV_SETROT_OFFSET				F_PI_BY_TWO		// @setrot is off by 90° with the rest of SL
 
 #define RLV_FOLDER_FLAG_NOSTRIP			"nostrip"
 #define RLV_FOLDER_PREFIX_HIDDEN		'.'
@@ -199,17 +188,17 @@ enum ERlvBehaviour {
 	RLV_BHVR_ATTACHOVER,			// "attachover"
 	RLV_BHVR_ATTACHTHIS,			// "attachthis"
 	RLV_BHVR_ATTACHTHISOVER,		// "attachthisover"
-	RLV_BHVR_ATTACHTHISEXCEPT,		// "attachthisexcept"
+	RLV_BHVR_ATTACHTHISEXCEPT,		// "attachthis_except"
 	RLV_BHVR_DETACHTHIS,			// "detachthis"
-	RLV_BHVR_DETACHTHISEXCEPT,		// "detachthisexcept"
+	RLV_BHVR_DETACHTHISEXCEPT,		// "detachthis_except"
 	RLV_BHVR_ATTACHALL,				// "attachall"
 	RLV_BHVR_ATTACHALLOVER,			// "attachallover"
 	RLV_BHVR_DETACHALL,				// "detachall"
 	RLV_BHVR_ATTACHALLTHIS,			// "attachallthis"
-	RLV_BHVR_ATTACHALLTHISEXCEPT,	// "attachallthisexcept"
+	RLV_BHVR_ATTACHALLTHISEXCEPT,	// "attachallthis_except"
 	RLV_BHVR_ATTACHALLTHISOVER,		// "attachallthisover"
 	RLV_BHVR_DETACHALLTHIS,			// "detachallthis"
-	RLV_BHVR_DETACHALLTHISEXCEPT,	// "detachallthisexcept"
+	RLV_BHVR_DETACHALLTHISEXCEPT,	// "detachallthis_except"
 	RLV_BHVR_ADJUSTHEIGHT,			// "adjustheight"
 	RLV_BHVR_TPTO,					// "tpto"
 	RLV_BHVR_VERSION,				// "version"
