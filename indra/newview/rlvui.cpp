@@ -210,6 +210,34 @@ void RlvUIEnabler::onToggleShowInv(bool fQuitting)
 	{
 		LLInventoryView::closeAll();
 		LFFloaterInvPanel::closeAll();
+
+		// Singu Note: Hide our standalone inventory favorites floater if present
+		if (LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater("floater_inventory_favs.xml"))
+			floater->close();
+	}
+
+	//
+	// Enable/disable the "My Outfits" panel on the "My Appearance" sidebar tab
+	//
+	LLFloater* pAppearancePanel = LLUICtrlFactory::getInstance()->getBuiltFloater("floater_my_outfits.xml");
+	if (pAppearancePanel)
+	{
+		// Singu Note: No RLV_ASSERTs. This is all a lie about our standalone My Outfits floater anyway.
+		if (!fEnable) pAppearancePanel->close();
+	}
+
+	//
+	// Filter (or stop filtering) opening new inventory floaters
+	//
+	if (!fEnable)
+	{
+		gMenuHolder->childSetEnabled("My Outfits", false);
+		gMenuHolder->childSetEnabled("Favorites", false);
+	}
+	else
+	{
+		gMenuHolder->childSetEnabled("My Outfits", true);
+		gMenuHolder->childSetEnabled("Favorites", true);
 	}
 }
 
