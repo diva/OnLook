@@ -104,7 +104,7 @@ public:
 protected:
 	bool m_fValid;
 };
- 
+
 struct RlvCommandOptionGeneric : public RlvCommandOption
 {
 	explicit RlvCommandOptionGeneric(const std::string& strOption);
@@ -152,22 +152,12 @@ protected:
 	uuid_vec_t m_idItems;
 };
 
-struct RlvCommandOptionAdjustHeight : public RlvCommandOption
-{
-	RlvCommandOptionAdjustHeight(const RlvCommand& rlvCmd);
-
-	F32 m_nPelvisToFoot;
-	F32 m_nPelvisToFootDeltaMult;
-	F32 m_nPelvisToFootOffset;
-};
-
 struct RlvCommandOptionTpTo : public RlvCommandOption
 {
 	RlvCommandOptionTpTo(const RlvCommand& rlvCmd);
 
 	LLVector3d m_posGlobal;
 };
-
 
 // ============================================================================
 // RlvObject
@@ -443,6 +433,7 @@ inline bool RlvCommand::hasStrictVariant(ERlvBehaviour eBhvr)
 		case RLV_BHVR_RECVIM:
 		case RLV_BHVR_SENDIM:
 		case RLV_BHVR_TPLURE:
+		case RLV_BHVR_TPREQUEST:
 		case RLV_BHVR_SENDCHANNEL:
 			return true;
 		default:
