@@ -257,6 +257,7 @@
      left_delta="0"
      multi_select="true"
      name="estate_manager_name_list"
+     menu_num="0"
      bottom_delta="0"
      width="220" />
 
@@ -276,6 +277,7 @@
      left_delta="0"
      multi_select="true"
      name="allowed_avatar_name_list"
+     menu_num="0"
      bottom_delta="0"
      width="220" />
 
@@ -397,6 +399,7 @@
      left_delta="0"
      multi_select="true"
      name="banned_avatar_name_list"
+     menu_num="0"
      bottom_delta="0"
      width="220" />
 
