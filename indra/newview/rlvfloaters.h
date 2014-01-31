@@ -22,11 +22,19 @@
 #include "rlvdefines.h"
 #include "rlvcommon.h"
 
+template<typename T>
+struct VisibleToggle
+{
+	static void toggle(void*) { return T::toggleInstance(); }
+	static BOOL visible(void*) { return T::instanceVisible(); }
+};
+
 // ============================================================================
 // RlvFloaterLocks class declaration
 //
 
-class RlvFloaterBehaviours : public LLFloater, public LLFloaterSingleton<RlvFloaterBehaviours>
+class RlvFloaterBehaviours : public LLFloater
+, public LLFloaterSingleton<RlvFloaterBehaviours>, public VisibleToggle<RlvFloaterBehaviours>
 {
 	friend class LLUISingleton<RlvFloaterBehaviours, VisibilityPolicy<LLFloater> >;
 private:
@@ -39,9 +47,6 @@ public:
 	/*virtual*/ void onOpen();
 	/*virtual*/ void onClose(bool fQuitting);
 	/*virtual*/ BOOL postBuild();
-
-	static void toggle(void*) { return toggleInstance(); }
-	static BOOL visible(void*) { return instanceVisible(); }
 
 	/*
 	 * Member functions
@@ -64,7 +69,8 @@ protected:
 // RlvFloaterLocks class declaration
 //
 
-class RlvFloaterLocks : public LLFloater, public LLFloaterSingleton<RlvFloaterLocks>
+class RlvFloaterLocks : public LLFloater
+, public LLFloaterSingleton<RlvFloaterLocks>, public VisibleToggle<RlvFloaterLocks>
 {
 	friend class LLUISingleton<RlvFloaterLocks, VisibilityPolicy<LLFloater> >;
 private:
@@ -78,9 +84,6 @@ public:
 	/*virtual*/ void onClose(bool fQuitting);
 	/*virtual*/ BOOL postBuild();
 
-	static void toggle(void*) { return toggleInstance(); }
-	static BOOL visible(void*) { return instanceVisible(); }
-
 	/*
 	 * Member functions
 	 */
@@ -93,6 +96,36 @@ protected:
 	 */
 protected:
 	boost::signals2::connection m_ConnRlvCommand;
+};
+
+// ============================================================================
+// RlvFloaterStrings class declaration
+//
+
+class RlvFloaterStrings : public LLFloater
+, public LLFloaterSingleton<RlvFloaterStrings>, public VisibleToggle<RlvFloaterStrings>
+{
+	friend class LLUISingleton<RlvFloaterStrings, VisibilityPolicy<LLFloater> >;
+private:
+	RlvFloaterStrings(const LLSD& sdKey);
+
+	// LLFloater overrides
+public:
+	/*virtual*/ void onClose(bool fQuitting);
+	/*virtual*/ BOOL postBuild();
+
+	// Member functions
+protected:
+	void onStringRevertDefault();
+	void checkDirty(bool fRefresh);
+	void refresh();
+
+	// Member variables
+protected:
+	bool		m_fDirty;
+	std::string m_strStringCurrent;
+	LLComboBox*	m_pStringList;
+	LLSD		m_sdStringsInfo;
 };
 
 // ============================================================================

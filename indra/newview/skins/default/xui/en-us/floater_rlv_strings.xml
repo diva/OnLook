@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ can_close="true"
+ height="215"
+ layout="topleft"
+ legacy_header_height="18"
+ name="rlva_strings"
+ title="RLVa Strings"
+ width="350">
+    <combo_box
+     allow_text_entry="false"
+     follows="top|left"
+     height="22"
+     layout="topleft"
+     left="15"
+     max_chars="255"
+     name="string_list"
+     bottom="-45"
+     width="320" />
+    <text_editor
+     enabled="false"
+     height="60"
+     layout="topleft"
+     left_delta="0"
+     name="string_descr"
+     bottom_delta="-65"
+     width="320"
+     hide_scrollbar="true"
+     word_wrap="true" />
+    <text_editor
+     enabled="true"
+     height="60"
+     layout="topleft"
+     left_delta="0"
+     name="string_value"
+     bottom_delta="-65"
+     width="320"
+     hide_scrollbar="true"
+     word_wrap="true" />
+    <button
+     enabled="false"
+     height="22"
+     label="Reset to default"
+     layout="topleft"
+     left_delta="0"
+     name="default_btn"
+     bottom_delta="-27"
+     width="150" >
+      <button.commit_callback
+       function="ClickDefault" />
+    </button>
+</floater>

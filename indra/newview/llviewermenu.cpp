@@ -1656,6 +1656,7 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 
 	menu->addChild(new LLMenuItemCheckGL("Restrictions...", &RlvFloaterBehaviours::toggle, NULL, &RlvFloaterBehaviours::visible, NULL));
 	menu->addChild(new LLMenuItemCheckGL("Locks...", &RlvFloaterLocks::toggle, NULL, &RlvFloaterLocks::visible, NULL));
+	menu->addChild(new LLMenuItemCheckGL("Strings...", &RlvFloaterStrings::toggle, NULL, &RlvFloaterStrings::visible, NULL));
 }
 // [/RLVa:KB]
 

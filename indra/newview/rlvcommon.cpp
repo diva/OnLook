@@ -167,16 +167,17 @@ void RlvStrings::initClass()
 	if (!fInitialized)
 	{
 		// Load the default string values
-		std::string* itFile = &gDirUtilp->findSkinnedFilename(LLUICtrlFactory::getXUIPaths().front(), RLV_STRINGS_FILE);
-		/*
+		/* Singu TODO: findSkinnedFilenames/LLDir update
 		std::vector<std::string> files = gDirUtilp->findSkinnedFilenames(LLDir::XUI, RLV_STRINGS_FILE, LLDir::ALL_SKINS);
 		m_StringMapPath = (!files.empty()) ? files.front() : LLStringUtil::null;
 		for (auto itFile = files.cbegin(); itFile != files.cend(); ++itFile)
 		*/
-		if (!itFile->empty())
+		std::string itFile = gDirUtilp->findSkinnedFilename(LLUICtrlFactory::getXUIPaths().front(), RLV_STRINGS_FILE);
+		if (!itFile.empty())
 		{
-			loadFromFile(*itFile, false);
+			loadFromFile(itFile, false);
 		}
+		m_StringMapPath = itFile; // Singu TODO: Remove this when updating to the above LLDir impl.
 
 		// Load the custom string overrides
 		loadFromFile(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, RLV_STRINGS_FILE), true);
