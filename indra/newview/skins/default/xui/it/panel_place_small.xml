@@ -28,7 +28,7 @@
 		Area: [AREA] m². 
 	</string>
 	<string name="forsale_text">
-		In vendita per [PRICE]L$
+		In vendita per [PRICE][CURRENCY]
 	</string>
 	<string name="auction_text">
 		Asta n. [ID].

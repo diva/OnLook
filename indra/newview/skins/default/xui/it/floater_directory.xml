@@ -216,7 +216,7 @@
 				Nessun risultato.
 			</string>
 			<string name="land_help_text">
-				La terra può essere acquistata direttamente con Dollari Linden  (L$) oppure all&apos;asta sia in L$ o US$.
+				La terra può essere acquistata direttamente con Dollari Linden  ([CURRENCY]) oppure all&apos;asta sia in [CURRENCY] o [REALCURRENCY].
 Per acquistare direttamente, visita la terra e clicca sul nome del terreno nella barra del titolo.
 			</string>
 			<text name="find">
@@ -241,7 +241,7 @@ Per acquistare direttamente, visita la terra e clicca sul nome del terreno nella
 			</combo_box>
 			<check_box label="Prezzo &#8804; " name="pricecheck"/>
 			<text left="186" name="pricecheck_symbol">
-				L$
+				[CURRENCY]
 			</text>
 			<check_box label="Area &#8805; " name="areacheck" width="90"/>
 			<text left="186" name="areacheck_symbol">
@@ -253,9 +253,9 @@ Per acquistare direttamente, visita la terra e clicca sul nome del terreno nella
 			<scroll_list name="results">
 				<column label="Nome" name="name"/>
 				<column label="Tipo" name="landtype"/>
-				<column label="Prezzo L$" name="price"/>
+				<column label="Prezzo [CURRENCY]" name="price"/>
 				<column label="Area" name="area"/>
-				<column label="L$/m²" name="per_meter"/>
+				<column label="[CURRENCY]/m²" name="per_meter"/>
 			</scroll_list>
 			<button label="Succ &gt;" label_selected="Succ &gt;" name="Next &gt;"/>
 			<button label="&lt; Prec" label_selected="&lt; Prec" name="&lt; Prev"/>
