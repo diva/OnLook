@@ -388,11 +388,11 @@ void LLVOAvatarSelf::buildContextMenus()
 					LLMenuItemCallGL* item;
 // [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
 					// We need the userdata param to disable options in this pie menu later on (Left Hand / Right Hand option)
-					item = new LLMenuItemCallGL(attachment->getName(), 
+					item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 												NULL, 
 												object_selected_and_point_valid, attachment);
 // [/RLVa:KB]
-//						item = new LLMenuItemCallGL(attachment->getName(), 
+//						item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 //													NULL, 
 //													object_selected_and_point_valid);
 					item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", iter->first);
@@ -425,7 +425,7 @@ void LLVOAvatarSelf::buildContextMenus()
 				LLViewerJointAttachment* attachment = iter->second;
 				if (attachment->getGroup() == i)
 				{
-					gDetachPieMenu->addChild(new LLMenuItemCallGL(attachment->getName(),
+					gDetachPieMenu->addChild(new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 						&handle_detach_from_avatar, object_attached, attachment));
 
 					attachment_found = TRUE;
@@ -451,16 +451,16 @@ void LLVOAvatarSelf::buildContextMenus()
 			LLMenuItemCallGL* item;
 // [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
 			// We need the userdata param to disable options in this pie menu later on
-			item = new LLMenuItemCallGL(attachment->getName(), 
+			item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 										NULL, 
 										object_selected_and_point_valid, attachment);
 // [/RLVa:KB]
-//				item = new LLMenuItemCallGL(attachment->getName(), 
+//				item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 //											NULL, 
 //											object_selected_and_point_valid);
 			item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", iter->first);
 			gAttachScreenPieMenu->addChild(item);
-			gDetachScreenPieMenu->addChild(new LLMenuItemCallGL(attachment->getName(), 
+			gDetachScreenPieMenu->addChild(new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 						&handle_detach_from_avatar, object_attached, attachment));
 		}
 	}
@@ -482,13 +482,13 @@ void LLVOAvatarSelf::buildContextMenus()
 				continue;
 			}
 			// RELEASE-RLVa: random comment because we want know if LL ever changes this to not include "attachment" as userdata
-			LLMenuItemCallGL* item = new LLMenuItemCallGL(attachment->getName(), 
+			LLMenuItemCallGL* item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 														  NULL, &object_selected_and_point_valid,
 														  &attach_label, attachment);
 			item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", iter->first);
 			gAttachSubMenu->addChild(item);
 
-			gDetachSubMenu->addChild(new LLMenuItemCallGL(attachment->getName(), 
+			gDetachSubMenu->addChild(new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 				&handle_detach_from_avatar, object_attached, &detach_label, attachment));
 			
 		}
@@ -546,14 +546,14 @@ void LLVOAvatarSelf::buildContextMenus()
 			{
 // [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
 				// We need the userdata param to disable options in this pie menu later on
-				LLMenuItemCallGL* item = new LLMenuItemCallGL(attachment->getName(), 
+				LLMenuItemCallGL* item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 															  NULL, object_selected_and_point_valid, attachment);
 // [/RLVa:KB]
-//					LLMenuItemCallGL* item = new LLMenuItemCallGL(attachment->getName(), 
+//					LLMenuItemCallGL* item = new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 //																  NULL, object_selected_and_point_valid);
 				gAttachBodyPartPieMenus[group]->addChild(item);
 				item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", attach_index);
-				gDetachBodyPartPieMenus[group]->addChild(new LLMenuItemCallGL(attachment->getName(), 
+				gDetachBodyPartPieMenus[group]->addChild(new LLMenuItemCallGL(LLTrans::getString(attachment->getName()),
 																			&handle_detach_from_avatar,
 																			object_attached, attachment));
 				if (!context) cur_pie_slice++;

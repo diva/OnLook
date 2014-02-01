@@ -45,8 +45,7 @@ typedef std::map<std::string, std::string> controller_map_t;
 typedef std::map<std::string, F32> default_controller_map_t;
 
 #define MIN_REQUIRED_PIXEL_AREA_AVATAR_PHYSICS_MOTION 0.f
-#define TIME_ITERATION_STEP 0.05f
-#define MINIMUM_UPDATE_TIMESTEP 0.025f
+#define TIME_ITERATION_STEP 0.1f
 
 inline F64 llsgn(const F64 a)
 {
@@ -593,7 +592,7 @@ BOOL LLPhysicsMotion::onUpdate(F32 time)
         const F32 time_delta = time - mLastTime;
 
 	// Don't update too frequently, to avoid precision errors from small time slices.
-	if (time_delta <= MINIMUM_UPDATE_TIMESTEP)
+	if (time_delta <= .01)
 	{
 		return FALSE;
 	}
