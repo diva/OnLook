@@ -1523,6 +1523,14 @@ void LLPanelGroupMembersSubTab::update(LLGroupChange gc)
 	}
 }
 
+bool is_online_status_string(const std::string& status)
+{
+	static const std::string online(LLTrans::getString("group_member_status_online"));
+	if (status == online) return true;
+	static const std::string unknown(LLTrans::getString("group_member_status_unknown"));
+	return status == unknown;
+}
+
 void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 {
 	if (!data) return;
@@ -1538,9 +1546,8 @@ void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 
 	static const LLCachedControl<std::string> format(gSavedSettings, "ShortDateFormat");
-	static const std::string online(LLTrans::getString("group_member_status_online"));
 	item_params.columns.add().column("online").value(data->getOnlineStatus())
-			.format(format).type(data->getOnlineStatus() == online ? "text" : "date")
+			.format(format).type(is_online_status_string(data->getOnlineStatus()) ? "text" : "date")
 			.font/*.name*/("SANSSERIF_SMALL")/*.style("NORMAL")*/;
 	mMembersList->addNameItemRow(item_params);
 
