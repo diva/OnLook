@@ -990,6 +990,32 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <string/>
     </map>
+    <key>ScriptMessageAPI</key>
+    <map>
+      <key>Comment</key>
+      <string>Channel used for interaction with the Script Message API</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
+    <key>ScriptMessageAPIKey</key>
+    <map>
+      <key>Comment</key>
+      <string>Key to encode messages sent to the Script Message API</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>Enter Key Here</string>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
     <key>UseConciseIMButtons</key>
     <map>
       <key>Comment</key>

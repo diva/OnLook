@@ -38,6 +38,7 @@
 #include "llaudioengine.h" 
 #include "llavataractions.h"
 #include "llavatarnamecache.h"
+#include "llbase64.h"
 #include "../lscript/lscript_byteformat.h"	//Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 #include "lleconomy.h"
 #include "llfocusmgr.h"
@@ -1707,6 +1708,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	return false;
 }
 
+void script_msg_api(const std::string& msg);
 bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_owned_by_me)
 {
 	// First, check the master filter
@@ -1775,6 +1777,8 @@ void inventory_offer_handler(LLOfferInfo* info)
 		info->forceResponse(IOR_MUTE);
 		return;
 	}
+
+	if (!info->mFromGroup) script_msg_api(info->mFromID.asString() + ", 1");
 
 	// If the user wants to, accept all offers of any kind
 	if (gSavedSettings.getBOOL("AutoAcceptAllNewInventory"))
@@ -2354,6 +2358,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			buffer = separator_string + message.substr(message_offset);
 
 			LL_INFOS("Messaging") << "process_improved_im: session_id( " << session_id << " ), from_id( " << from_id << " )" << LL_ENDL;
+			script_msg_api(from_id.asString() + ", 0");
 			// add to IM panel, but do not bother the user
 			gIMMgr->addMessage(
 				session_id,
@@ -2381,6 +2386,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			buffer = separator_string + message.substr(message_offset);
 	
 			LL_INFOS("Messaging") << "process_improved_im: session_id( " << session_id << " ), from_id( " << from_id << " )" << LL_ENDL;
+			if (!is_muted) script_msg_api(from_id.asString() + ", 0");
 			bool send_autoresponse = !gIMMgr->hasSession(session_id) || gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat");
 
 			// add to IM panel, but do not bother the user
@@ -2492,6 +2498,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				args["[LONG_TIMESTAMP]"] = formatted_time(timestamp);
 				saved = LLTrans::getString("Saved_message", args);
 			}
+			else if (!mute_im) script_msg_api(from_id.asString() + ", 0");
 			buffer = separator_string + saved + message.substr(message_offset);
 
 			LL_INFOS("Messaging") << "process_improved_im: session_id( " << session_id << " ), from_id( " << from_id << " )" << LL_ENDL;
@@ -2590,6 +2597,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 						position,
 						false);
 
+
 				// This block is very similar to the one above, but is necessary, since a session is opened to announce incoming message..
 				// In order to prevent doubling up on the first response, We neglect to send this if Repeat for each message is on.
 				if ((is_autorespond_nonfriends || is_autorespond) && !gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat"))
@@ -2633,6 +2641,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			}
 			LLPointer<LLIMInfo> im_info = new LLIMInfo(gMessageSystem);
 			gIMMgr->processIMTypingStart(im_info);
+			script_msg_api(from_id.asString() + ", 4");
 		}
 		break;
 
@@ -2640,6 +2649,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		{
 			LLPointer<LLIMInfo> im_info = new LLIMInfo(gMessageSystem);
 			gIMMgr->processIMTypingStop(im_info);
+			script_msg_api(from_id.asString() + ", 5");
 		}
 		break;
 
@@ -3049,6 +3059,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				chat.mFromID = LLUUID::null;
 				chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			}
+			else script_msg_api(chat.mFromID.asString() + ", 6");
 
 			// IDEVO Some messages have embedded resident names
 			message = clean_name_from_task_im(message, from_group);
@@ -3280,6 +3291,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 						// <edit>
 						if (IM_LURE_USER == dialog)
 							gAgent.showLureDestination(name, region_handle, pos.mV[VX], pos.mV[VY], pos.mV[VZ]);
+						script_msg_api(from_id.asString().append(IM_LURE_USER == dialog ? ", 2" : ", 3"));
 						// </edit>
 					}
 // [/RLVa:KB]
@@ -3686,6 +3698,17 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 
 // defined in llchatbar.cpp, but not declared in any header
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
+
+void script_msg_api(const std::string& msg)
+{
+	static const LLCachedControl<S32> channel("ScriptMessageAPI");
+	if (!channel) return;
+	static const LLCachedControl<std::string> key("ScriptMessageAPIKey");
+	std::string str;
+	for (size_t i = 0, keysize = key().size(); i != msg.size(); ++i)
+		str += msg[i] ^ key()[i%keysize];
+	send_chat_from_viewer(LLBase64::encode(reinterpret_cast<const U8*>(str.c_str()), str.size()), CHAT_TYPE_WHISPER, channel);
+}
 
 class AuthHandler : public LLHTTPClient::ResponderWithCompleted
 {
@@ -6352,6 +6375,7 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 
 		// make notification loggable
 		payload["from_id"] = source_id;
+		if (!is_source_group) script_msg_api(source_id.asString() + ", 7");
 	}
 
 	// Despite using SLURLs, wait until the name is available before
