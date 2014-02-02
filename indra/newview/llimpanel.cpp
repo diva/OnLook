@@ -964,6 +964,8 @@ void LLFloaterIMPanel::addDynamics(LLComboBox* flyout)
 	//flyout->add(LLAvatarActions::isBlocked(mOtherParticipantUUID) ? getString("unmute") : getString("mute"), 9);
 }
 
+void copy_profile_uri(const LLUUID& id, bool group = false);
+
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
 	if (value.isUndefined())
@@ -978,6 +980,7 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	else if (option == 3) LLAvatarActions::teleportRequest(mOtherParticipantUUID);
 	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
 	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
+	else if (option == -1) copy_profile_uri(mOtherParticipantUUID);
 	else if (option >= 6) // Options that use dynamic items
 	{
 		// First remove them all

@@ -17,6 +17,7 @@
       <flyout_button_item label="Request Teleport" name="request_teleport_item" value="3"/>
       <flyout_button_item label="Pay" name="pay_item" value="4"/>
       <flyout_button_item label="Invite To Group" name="group_invite_item" value="5"/>
+      <flyout_button_item label="Copy SLURL" name="copy_slurl_item" value="-1"/>
     </flyout_button>
     <string name="ding on" value="Ding on new messages (On)"/>
     <string name="ding off" value="Ding on new messages (Off)"/>

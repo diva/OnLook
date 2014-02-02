@@ -9325,6 +9325,18 @@ const uuid_vec_t get_focused_list_ids_selected()
 	return uuid_vec_t();
 }
 
+const LLWString get_slurl_for(const LLUUID& id, bool group)
+{
+	std::string str("secondlife:///app/");
+	str += group ? "group/" : "agent/";
+	return utf8str_to_wstring(str + id.asString() + "/about");
+}
+
+void copy_profile_uri(const LLUUID& id, bool group)
+{
+	gViewerWindow->getWindow()->copyTextToClipboard(get_slurl_for(id, group));
+}
+
 class ListEnableAnySelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9408,6 +9420,15 @@ class ListVisibleWebProfile : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() && !(gSavedSettings.getBOOL("UseWebProfiles") || gSavedSettings.getString("WebProfileURL").empty()));
+		return true;
+	}
+};
+
+class ListCopySLURL : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		copy_profile_uri(get_focused_list_id_selected(), false);
 		return true;
 	}
 };
@@ -9939,6 +9960,7 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
+	addMenu(new ListCopySLURL(), "List.CopySLURL");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
 	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
