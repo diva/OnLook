@@ -159,32 +159,22 @@ LLLoginRefreshHandler gLoginRefreshHandler;
 //---------------------------------------------------------------------------
 // Public methods
 //---------------------------------------------------------------------------
-LLPanelLogin::LLPanelLogin(const LLRect &rect,
-						 void (*callback)(S32 option, void* user_data),
-						 void *cb_data)
-:	LLPanel(std::string("panel_login"), LLRect(0,600,800,0), FALSE),		// not bordered
-	mLogoImage(),
-	mCallback(callback),
-	mCallbackData(cb_data)
+LLPanelLogin::LLPanelLogin(const LLRect& rect)
+:	LLPanel(std::string("panel_login"), rect, FALSE),		// not bordered
+	mLogoImage(LLUI::getUIImage("startup_logo.j2c"))
 {
 	setFocusRoot(TRUE);
 
 	setBackgroundVisible(FALSE);
 	setBackgroundOpaque(TRUE);
 
-	gViewerWindow->abortShowProgress();	//Kill previous instance. It might still be alive, and if so, its probably pending
-										//deletion via the progressviews idle callback. Kill it now and unregister said idle callback.
-
 	LLPanelLogin::sInstance = this;
 
 	// add to front so we are the bottom-most child
 	gViewerWindow->getRootView()->addChildInBack(this);
 
-	// Logo
-	mLogoImage = LLUI::getUIImage("startup_logo.j2c");
-
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_login.xml");
-	
+
 	reshape(rect.getWidth(), rect.getHeight());
 
 	LLComboBox* username_combo(getChild<LLComboBox>("username_combo"));
@@ -243,12 +233,12 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 		LLPanelLogin::onUpdateStartSLURL(start_slurl); // updates grid if needed
 	}
 
-	childSetAction("connect_btn", onClickConnect, this);
 
-	setDefaultBtn("connect_btn");
 	// Also set default button for subpanels, otherwise hitting enter in text entry fields won't login
 	{
 		LLButton* connect_btn(findChild<LLButton>("connect_btn"));
+		connect_btn->setCommitCallback(boost::bind(&LLPanelLogin::onClickConnect, this));
+		setDefaultBtn(connect_btn);
 		findChild<LLPanel>("name_panel")->setDefaultBtn(connect_btn);
 		findChild<LLPanel>("password_panel")->setDefaultBtn(connect_btn);
 		findChild<LLPanel>("grids_panel")->setDefaultBtn(connect_btn);
@@ -287,6 +277,24 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	refreshLoginPage();
 
 	gHippoGridManager->setCurrentGridChangeCallback(boost::bind(&LLPanelLogin::onCurGridChange,this,_1,_2));
+
+	// Load login history
+	std::string login_hist_filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
+	mLoginHistoryData = LLSavedLogins::loadFile(login_hist_filepath);
+
+	const LLSavedLoginsList& saved_login_entries(mLoginHistoryData.getEntries());
+	for (LLSavedLoginsList::const_reverse_iterator i = saved_login_entries.rbegin();
+	     i != saved_login_entries.rend(); ++i)
+	{
+		LLSD e = i->asLLSD();
+		if (e.isMap() && gHippoGridManager->getGrid(i->getGrid()))
+			username_combo->add(getDisplayString(*i), e);
+	}
+
+	if (saved_login_entries.size() > 0)
+	{
+		setFields(*saved_login_entries.rbegin());
+	}
 }
 
 void LLPanelLogin::setSiteIsAlive( bool alive )
@@ -352,24 +360,6 @@ LLPanelLogin::~LLPanelLogin()
 	if ( gFocusMgr.getDefaultKeyboardFocus() == this )
 	{
 		gFocusMgr.setDefaultKeyboardFocus(NULL);
-	}
-}
-
-void LLPanelLogin::setLoginHistory(LLSavedLogins const& login_history)
-{
-	sInstance->mLoginHistoryData = login_history;
-
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("username_combo");
-	llassert(login_combo);
-	login_combo->clear();
-
-	LLSavedLoginsList const& saved_login_entries(login_history.getEntries());
-	for (LLSavedLoginsList::const_reverse_iterator i = saved_login_entries.rbegin();
-	     i != saved_login_entries.rend(); ++i)
-	{
-		LLSD e = i->asLLSD();
-		if (e.isMap() && gHippoGridManager->getGrid(i->getGrid()))
-			login_combo->add(getDisplayString(*i), e);
 	}
 }
 
@@ -449,12 +439,6 @@ BOOL LLPanelLogin::handleKeyHere(KEY key, MASK mask)
 	}
 #endif
 
-	if (KEY_RETURN == key && MASK_NONE == mask)
-	{
-		// let the panel handle UICtrl processing: calls onClickConnect()
-		return LLPanel::handleKeyHere(key, mask);
-	}
-
 	return LLPanel::handleKeyHere(key, mask);
 }
 
@@ -514,11 +498,10 @@ void LLPanelLogin::giveFocus()
 
 
 // static
-void LLPanelLogin::show(const LLRect &rect,
-						void (*callback)(S32 option, void* user_data),
-						void* callback_data)
+void LLPanelLogin::show()
 {
-	new LLPanelLogin(rect, callback, callback_data);
+	if (sInstance) sInstance->setVisible(true);
+	else new LLPanelLogin(gViewerWindow->getVirtualWindowRect());
 
 	if( !gFocusMgr.getKeyboardFocus() )
 	{
@@ -892,28 +875,24 @@ bool LLPanelLogin::getRememberLogin()
 //---------------------------------------------------------------------------
 
 // static
-void LLPanelLogin::onClickConnect(void *)
+void LLPanelLogin::onClickConnect()
 {
-	if (sInstance && sInstance->mCallback)
+	// JC - Make sure the fields all get committed.
+	gFocusMgr.setKeyboardFocus(NULL);
+
+	std::string first, last, password;
+	if (nameSplit(getChild<LLComboBox>("username_combo")->getTextEntry(), first, last))
 	{
-
-		// JC - Make sure the fields all get committed.
-		gFocusMgr.setKeyboardFocus(NULL);
-
-		std::string first, last, password;
-		if (nameSplit(sInstance->getChild<LLComboBox>("username_combo")->getTextEntry(), first, last))
-		{
-			// has both first and last name typed
-			sInstance->mCallback(0, sInstance->mCallbackData);
-		}
-		else
-		{
-			if (gHippoGridManager->getCurrentGrid()->getRegisterUrl().empty()) {
-				LLNotificationsUtil::add("MustHaveAccountToLogInNoLinks");
-			} else {
-				LLNotificationsUtil::add("MustHaveAccountToLogIn", LLSD(), LLSD(),
-												LLPanelLogin::newAccountAlertCallback);
-			}
+		// has both first and last name typed
+		LLStartUp::setStartupState(STATE_LOGIN_CLEANUP);
+	}
+	else
+	{
+		if (gHippoGridManager->getCurrentGrid()->getRegisterUrl().empty()) {
+			LLNotificationsUtil::add("MustHaveAccountToLogInNoLinks");
+		} else {
+			LLNotificationsUtil::add("MustHaveAccountToLogIn", LLSD(), LLSD(),
+											LLPanelLogin::newAccountAlertCallback);
 		}
 	}
 }
