@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -33,7 +33,7 @@
 
 std::map<std::string, S32> RlvAttachPtLookup::m_AttachPtLookupMap;
 
-// Checked: 2010-03-02 (RLVa-1.1.3a) | Modified: RLVa-1.2.0a
+// Checked: 2010-03-02 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
 void RlvAttachPtLookup::initLookupTable()
 {
 	static bool fInitialized = false;
@@ -64,7 +64,7 @@ void RlvAttachPtLookup::initLookupTable()
 	}
 }
 
-// Checked: 2010-03-03 (RLVa-1.1.3a) | Added: RLVa-0.2.2a
+// Checked: 2010-03-03 (RLVa-1.2.0a) | Added: RLVa-0.2.2a
 S32 RlvAttachPtLookup::getAttachPointIndex(const LLViewerJointAttachment* pAttachPt)
 {
 	if (isAgentAvatarValid())
@@ -250,6 +250,7 @@ bool RlvAttachmentLocks::canAttach() const
 	}
 	return false;
 }
+
 // Checked: 2010-08-07 (RLVa-1.2.0i) | Modified: RLVa-1.2.0i
 bool RlvAttachmentLocks::canDetach(const LLViewerJointAttachment* pAttachPt, bool fDetachAll /*=false*/) const
 {
@@ -439,7 +440,7 @@ void RlvAttachmentLocks::removeAttachmentPointLock(S32 idxAttachPt, const LLUUID
 	}
 }
 
-// Checked: 2010-08-22 (RLVa-1.1.3a) | Modified: RLVa-1.2.1a
+// Checked: 2010-08-22 (RLVa-1.2.1a) | Modified: RLVa-1.2.1a
 void RlvAttachmentLocks::updateLockedHUD()
 {
 	if (!isAgentAvatarValid())
@@ -500,7 +501,7 @@ bool RlvAttachmentLockWatchdog::RlvWearInfo::isAddLockedAttachPt(S32 idxAttachPt
 	return (attachPts.find(idxAttachPt) != attachPts.end());
 }
 
-// Checked: 2010-09-23 (RLVa-1.1.3b) | Added: RLVa-1.2.1d
+// Checked: 2010-09-23 (RLVa-1.2.1d) | Added: RLVa-1.2.1d
 void RlvAttachmentLockWatchdog::RlvWearInfo::dumpInstance() const
 {
 	const LLViewerInventoryItem* pItem = gInventory.getItem(idItem);
@@ -635,7 +636,7 @@ void RlvAttachmentLockWatchdog::detach(S32 idxAttachPt, const uuid_vec_t& idsAtt
 	}
 }
 
-// Checked: 2010-09-23 (RLVa-1.1.3a) | Modified: RLVa-1.2.1d
+// Checked: 2010-09-23 (RLVa-1.2.1d) | Modified: RLVa-1.2.1d
 void RlvAttachmentLockWatchdog::onAttach(const LLViewerObject* pAttachObj, const LLViewerJointAttachment* pAttachPt)
 {
 	S32 idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachObj);
@@ -742,7 +743,7 @@ void RlvAttachmentLockWatchdog::onAttach(const LLViewerObject* pAttachObj, const
 	RlvBehaviourNotifyHandler::onAttach(pAttachPt, fAttachAllowed);
 }
 
-// Checked: 2010-07-28 (RLVa-1.1.3a) | Modified: RLVa-1.2.0i
+// Checked: 2010-07-28 (RLVa-1.2.0i) | Modified: RLVa-1.2.0i
 void RlvAttachmentLockWatchdog::onDetach(const LLViewerObject* pAttachObj, const LLViewerJointAttachment* pAttachPt)
 {
 	S32 idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachPt);
@@ -852,7 +853,7 @@ BOOL RlvAttachmentLockWatchdog::onTimer()
 	return ( (m_PendingAttach.empty()) && (m_PendingDetach.empty()) && (m_PendingWear.empty()) );
 }
 
-// Checked: 2010-07-28 (RLVa-1.1.3a) | Modified: RLVa-1.2.0i
+// Checked: 2010-07-28 (RLVa-1.2.0i) | Modified: RLVa-1.2.0i
 void RlvAttachmentLockWatchdog::onWearAttachment(const LLUUID& idItem, ERlvWearMask eWearAction)
 {
 	// We only need to keep track of user wears if there's actually anything locked
@@ -931,7 +932,7 @@ void RlvWearableLocks::addWearableTypeLock(LLWearableType::EType eType, const LL
 		m_WearableTypeAdd.insert(std::pair<LLWearableType::EType, LLUUID>(eType, idRlvObj));
 }
 
-// Checked: 2010-03-19 (RLVa-1.1.3b) | Added: RLVa-1.2.0a
+// Checked: 2010-03-19 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
 bool RlvWearableLocks::canRemove(LLWearableType::EType eType) const
 {
 	// NOTE: we return TRUE if the wearable type has at least one wearable that can be removed by the user
@@ -1143,7 +1144,7 @@ bool RlvFolderLocks::getLockedFolders(const folderlock_source_t& lockSource, LLI
 		case ST_WEARABLETYPE:
 			{
 				RLV_ASSERT( ((ST_ATTACHMENTPOINT == lockSource.first) && (typeid(S32) == lockSource.second.type())) || 
-					((ST_WEARABLETYPE == lockSource.first) && (typeid(LLWearableType::EType) == lockSource.second.type())) );
+					        ((ST_WEARABLETYPE == lockSource.first) && (typeid(LLWearableType::EType) == lockSource.second.type())) );
 
 				uuid_vec_t idItems;
 				if (ST_ATTACHMENTPOINT == lockSource.first)
@@ -1162,7 +1163,7 @@ bool RlvFolderLocks::getLockedFolders(const folderlock_source_t& lockSource, LLI
 	return cntFolders != lockFolders.count();
 }
 
-// Checked: 2011-03-27 (RLVa-1.3.0g) | Added: RLVa-1.3.0g
+// Checked: 2011-11-26 (RLVa-1.5.4a) | Modified: RLVa-1.5.4a
 bool RlvFolderLocks::getLockedItems(const LLUUID& idFolder, LLInventoryModel::item_array_t& lockItems) const
 {
 	S32 cntItems = lockItems.count();

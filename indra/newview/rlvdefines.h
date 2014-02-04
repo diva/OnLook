@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -21,20 +21,10 @@
 // Extensions
 //
 
-// Comment out if you don't want the Advanced / RLVa menu (may prevent enabling some extensions or experimental features - see below)
-#define RLV_ADVANCED_MENU
-// Comment out if you provide your own way to enable/disable RLVa
-#define RLV_ADVANCED_TOGGLE_RLVA
-
-// Provides access to "advanced" features through the RLVa debug menu
-#define RLV_EXTENSION_FLOATER_RESTRICTIONS	// Enables the Advanced / RLVa / Restrictions... floater
-#define RLV_EXTENSION_HIDELOCKED			// "Hide locked layers", "Hide locked attachments" and "Hide locked inventory"
-
 // Extensions
 #define RLV_EXTENSION_CMD_GETSETDEBUG_EX	// Extends the debug variables accessible through @getdebug_xxx/@setdebug_xxx
 #define RLV_EXTENSION_CMD_FINDFOLDERS		// @findfolders:<option>=<channel> - @findfolder with multiple results
 #define RLV_EXTENSION_FORCEWEAR_GESTURES	// @attach*/detach* commands also (de)activate gestures
-#define RLV_EXTENSION_NOTIFY_BEHAVIOUR		// Provides the option to show a customizable notification whenever a behaviour gets (un)set
 #define RLV_EXTENSION_STARTLOCATION			// Reenables "Start Location" at login if not @tploc=n or @unsit=n restricted at last logoff
 #define RLV_EXPERIMENTAL					// Enables/disables experimental features en masse
 #define RLV_EXPERIMENTAL_CMDS				// Enables/disables experimental commands en masse
@@ -49,7 +39,6 @@
 	// Under development (don't include in public release)
 	#if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 //		#define RLV_EXPERIMENTAL_COMPOSITEFOLDERS
-//		#define RLV_EXPERIMENTAL_FIRSTUSE				// Enables a number of "first use" popups
 	#endif // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #endif // RLV_EXPERIMENTAL
 
@@ -75,7 +64,7 @@ const S32 RLV_VERSION_BUILD = 0;
 // Implementation version
 const S32 RLVa_VERSION_MAJOR = 1;
 const S32 RLVa_VERSION_MINOR = 4;
-const S32 RLVa_VERSION_PATCH = 8;
+const S32 RLVa_VERSION_PATCH = 9;
 const S32 RLVa_VERSION_BUILD = 0;
 
 // Uncomment before a final release
@@ -112,7 +101,8 @@ const S32 RLVa_VERSION_BUILD = 0;
 #define RLV_ROOT_FOLDER					"#RLV"
 #define RLV_CMD_PREFIX					'@'
 #define RLV_PUTINV_PREFIX				"#RLV/~"
-#define RLV_SETROT_OFFSET				F_PI_BY_TWO		// @setrot is off by 90Â° with the rest of SL
+#define RLV_SETROT_OFFSET				F_PI_BY_TWO		// @setrot is off by 90° with the rest of SL
+#define RLV_STRINGS_FILE				"rlva_strings.xml"
 
 #define RLV_FOLDER_FLAG_NOSTRIP			"nostrip"
 #define RLV_FOLDER_PREFIX_HIDDEN		'.'
@@ -166,11 +156,13 @@ enum ERlvBehaviour {
 	RLV_BHVR_TPLM,					// "tplm"
 	RLV_BHVR_TPLOC,					// "tploc"
 	RLV_BHVR_TPLURE,				// "tplure"
+	RLV_BHVR_TPREQUEST,				// "tprequest"
 	RLV_BHVR_VIEWNOTE,				// "viewnote"
 	RLV_BHVR_VIEWSCRIPT,			// "viewscript"
 	RLV_BHVR_VIEWTEXTURE,			// "viewtexture"
 	RLV_BHVR_ACCEPTPERMISSION,		// "acceptpermission"
 	RLV_BHVR_ACCEPTTP,				// "accepttp"
+	RLV_BHVR_ACCEPTTPREQUEST,		// "accepttprequest"
 	RLV_BHVR_ALLOWIDLE,				// "allowidle"
 	RLV_BHVR_EDIT,					// "edit"
 	RLV_BHVR_EDITOBJ,				// "editobj"
@@ -199,17 +191,17 @@ enum ERlvBehaviour {
 	RLV_BHVR_ATTACHOVER,			// "attachover"
 	RLV_BHVR_ATTACHTHIS,			// "attachthis"
 	RLV_BHVR_ATTACHTHISOVER,		// "attachthisover"
-	RLV_BHVR_ATTACHTHISEXCEPT,		// "attachthisexcept"
+	RLV_BHVR_ATTACHTHISEXCEPT,		// "attachthis_except"
 	RLV_BHVR_DETACHTHIS,			// "detachthis"
-	RLV_BHVR_DETACHTHISEXCEPT,		// "detachthisexcept"
+	RLV_BHVR_DETACHTHISEXCEPT,		// "detachthis_except"
 	RLV_BHVR_ATTACHALL,				// "attachall"
 	RLV_BHVR_ATTACHALLOVER,			// "attachallover"
 	RLV_BHVR_DETACHALL,				// "detachall"
 	RLV_BHVR_ATTACHALLTHIS,			// "attachallthis"
-	RLV_BHVR_ATTACHALLTHISEXCEPT,	// "attachallthisexcept"
+	RLV_BHVR_ATTACHALLTHISEXCEPT,	// "attachallthis_except"
 	RLV_BHVR_ATTACHALLTHISOVER,		// "attachallthisover"
 	RLV_BHVR_DETACHALLTHIS,			// "detachallthis"
-	RLV_BHVR_DETACHALLTHISEXCEPT,	// "detachallthisexcept"
+	RLV_BHVR_DETACHALLTHISEXCEPT,	// "detachallthis_except"
 	RLV_BHVR_ADJUSTHEIGHT,			// "adjustheight"
 	RLV_BHVR_TPTO,					// "tpto"
 	RLV_BHVR_VERSION,				// "version"
@@ -249,9 +241,9 @@ enum ERlvParamType {
 };
 
 enum ERlvCmdRet {
-	RLV_RET_UNKNOWN     = 0x0000,	// Unknown error (should only be used internally)
+	RLV_RET_UNKNOWN		= 0x0000,	// Unknown error (should only be used internally)
 	RLV_RET_RETAINED,				// Command was retained
-	RLV_RET_SUCCESS     = 0x0100,	// Command executed succesfully
+	RLV_RET_SUCCESS		= 0x0100,	// Command executed succesfully
 	RLV_RET_SUCCESS_UNSET,			// Command executed succesfully (RLV_TYPE_REMOVE for an unrestricted behaviour)
 	RLV_RET_SUCCESS_DUPLICATE,		// Command executed succesfully (RLV_TYPE_ADD for an already restricted behaviour)
 	RLV_RET_SUCCESS_DELAYED,		// Command parsed valid but will execute at a later time
@@ -263,6 +255,7 @@ enum ERlvCmdRet {
 	RLV_RET_FAILED_DISABLED,		// Command failed (command disabled by user)
 	RLV_RET_FAILED_UNKNOWN,			// Command failed (unknown command)
 	RLV_RET_FAILED_NOSHAREDROOT,	// Command failed (missing #RLV)
+	RLV_RET_DEPRECATED				// Command has been deprecated
 };
 
 enum ERlvExceptionCheck
@@ -274,17 +267,17 @@ enum ERlvExceptionCheck
 
 enum ERlvLockMask
 {
-	RLV_LOCK_ADD    = 0x01,
-	RLV_LOCK_REMOVE = 0x02,
-	RLV_LOCK_ANY    = RLV_LOCK_ADD | RLV_LOCK_REMOVE
+	RLV_LOCK_ADD	= 0x01,
+	RLV_LOCK_REMOVE	= 0x02,
+	RLV_LOCK_ANY	= RLV_LOCK_ADD | RLV_LOCK_REMOVE
 };
 
 enum ERlvWearMask
 {
-	RLV_WEAR_LOCKED  = 0x00,		// User can not wear the item at all
-	RLV_WEAR_ADD     = 0x01,		// User can wear the item in addition to what's already worn
+	RLV_WEAR_LOCKED	 = 0x00,		// User can not wear the item at all
+	RLV_WEAR_ADD	 = 0x01,		// User can wear the item in addition to what's already worn
 	RLV_WEAR_REPLACE = 0x02,		// User can wear the item and replace what's currently worn
-	RLV_WEAR         = 0x03			// Convenience: combines RLV_WEAR_ADD and RLV_WEAR_REPLACE
+	RLV_WEAR		 = 0x03			// Convenience: combines RLV_WEAR_ADD and RLV_WEAR_REPLACE
 };
 
 enum ERlvAttachGroupType
@@ -304,7 +297,6 @@ enum ERlvAttachGroupType
 
 #define RLV_SETTING_MAIN				"RestrainedLove"
 #define RLV_SETTING_DEBUG				"RestrainedLoveDebug"
-#define RLV_SETTING_AVATAROFFSET_Z		"RestrainedLoveOffsetAvatarZ"
 #define RLV_SETTING_CANOOC				"RestrainedLoveCanOOC"
 #define RLV_SETTING_FORBIDGIVETORLV		"RestrainedLoveForbidGiveToRLV"
 #define RLV_SETTING_NOSETENV			"RestrainedLoveNoSetEnv"
@@ -346,8 +338,9 @@ enum ERlvAttachGroupType
 #define RLV_STRING_BLOCKED_STARTCONF		"blocked_startconf"
 #define RLV_STRING_BLOCKED_STARTIM			"blocked_startim"
 #define RLV_STRING_BLOCKED_TELEPORT			"blocked_teleport"
-#define RLV_STRING_BLOCKED_TPLURE_REMOTE	"blocked_tplure_remote"
+#define RLV_STRING_BLOCKED_TPLUREREQ_REMOTE	"blocked_tplurerequest_remote"
 #define RLV_STRING_BLOCKED_VIEWXXX			"blocked_viewxxx"
+#define RLV_STRING_BLOCKED_WIREFRAME		"blocked_wireframe"
 
 // ============================================================================
 

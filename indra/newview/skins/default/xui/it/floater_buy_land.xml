@@ -57,8 +57,8 @@
 		Prezzo:
 	</text>
 	<text name="info_price">
-		1500 L$
-(1.1 L$/m²)
+		1500 [CURRENCY]
+(1.1 [CURRENCY]/m²)
 venduta con gli oggetti
 	</text>
 	<text name="info_action">
@@ -92,22 +92,22 @@ venduta con gli oggetti
 		Possiedi 1309 m² di terra. Questa porzione è 512 m² di terra.
 	</text>
 	<text name="purchase_action">
-		Paga il residente Joe 4000 L$ per la terra
+		Paga il residente Joe 4000 [CURRENCY] per la terra
 	</text>
 	<text name="currency_reason">
-		Possiedi 2.100 L$.
+		Possiedi 2.100 [CURRENCY].
 	</text>
 	<text name="currency_action" width="106">
-		Compra ulteriori L$
+		Compra ulteriori [CURRENCY]
 	</text>
 	<line_editor name="currency_amt" left="174" width="80">
 		1000
 	</line_editor>
 	<text name="currency_est">
-		per circa [AMOUNT2] US$
+		per circa [AMOUNT2] [REALCURRENCY]
 	</text>
 	<text name="currency_balance">
-		Possiedi 2.100 L$.
+		Possiedi 2.100 [CURRENCY].
 	</text>
 	<check_box label="Rimuovi [AMOUNT] metri quadri di contribuzione dal gruppo." name="remove_contribution"/>
 	<button label="Compra" name="buy_btn"/>
@@ -189,10 +189,10 @@ Prova a selezionare un&apos;area più piccola.
 		Possiedi [BUYER] di metri quadri di terra.
 	</string>
 	<string name="pay_to_for_land">
-		Paga [AMOUNT] L$ a [SELLER] per questa terra
+		Paga [AMOUNT] [CURRENCY] a [SELLER] per questa terra
 	</string>
 	<string name="buy_for_US">
-		Comprare [AMOUNT] L$ per circa [AMOUNT2] US$,
+		Comprare [AMOUNT] [CURRENCY] per circa [AMOUNT2] [REALCURRENCY],
 	</string>
 	<string name="parcel_meters">
 		Questo terreno è di [AMOUNT] metri quadri.
@@ -214,8 +214,8 @@ supporta [AMOUNT2] oggetti
 		Oggetti non inclusi
 	</string>
 	<string name="info_price_string">
-		[PRICE] L$ 
-([PRICE_PER_SQM] L$/m²)
+		[PRICE] [CURRENCY] 
+([PRICE_PER_SQM] [CURRENCY]/m²)
 [SOLD_WITH_OBJECTS]
 	</string>
 	<string name="insufficient_land_credits">
@@ -224,21 +224,21 @@ sufficienti a coprire l&apos;area del terreno prima che l&apos;acquisto
 sia completato.
 	</string>
 	<string name="have_enough_lindens">
-		Hai [AMOUNT] L$, che sono sufficienti per comprare questa terra.
+		Hai [AMOUNT] [CURRENCY], che sono sufficienti per comprare questa terra.
 	</string>
 	<string name="not_enough_lindens">
-		Hai solo [AMOUNT] L$, ed hai bisogno di altri [AMOUNT2] L$.
+		Hai solo [AMOUNT] [CURRENCY], ed hai bisogno di altri [AMOUNT2] [CURRENCY].
 	</string>
 	<string name="balance_left">
-		Dopo l&apos;acquisto, ti rimarranno [AMOUNT] L$.
+		Dopo l&apos;acquisto, ti rimarranno [AMOUNT] [CURRENCY].
 	</string>
 	<string name="balance_needed">
-		Hai bisogno di acquistare almeno [AMOUNT] L$ per comprare questo terreno.
+		Hai bisogno di acquistare almeno [AMOUNT] [CURRENCY] per comprare questo terreno.
 	</string>
 	<string name="no_parcel_selected">
 		(nessun terreno selezionato)
 	</string>
 	<string name="buy_currency">
-		Compra [LINDENS] L$ per appross. [USD] US$
+		Compra [LINDENS] [CURRENCY] per appross. [USD] [REALCURRENCY]
 	</string>
 </floater>

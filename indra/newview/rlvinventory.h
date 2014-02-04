@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -234,8 +234,19 @@ class RlvIsLinkType : public LLInventoryCollectFunctor
 {
 public:
 	RlvIsLinkType() {}
-	virtual ~RlvIsLinkType() {}
+	/*virtual*/ ~RlvIsLinkType() {}
 	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem) { return (pItem) && (pItem->getIsLinkType()); }
+};
+
+// If the attachment item is linked in COF but isn't worn (or just detached) the function will return inconsistent information
+class RlvFindAttachmentsOnPoint : public LLInventoryCollectFunctor
+{
+public:
+	RlvFindAttachmentsOnPoint(const LLViewerJointAttachment* pAttachPt) : m_pAttachPt(pAttachPt) {}
+	/*virtual*/ ~RlvFindAttachmentsOnPoint() {}
+	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem);
+protected:
+	const LLViewerJointAttachment* m_pAttachPt;
 };
 
 // ============================================================================

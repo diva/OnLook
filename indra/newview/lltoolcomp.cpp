@@ -780,7 +780,11 @@ void	LLToolCompGun::handleSelect()
 void	LLToolCompGun::handleDeselect()
 {
 	LLToolComposite::handleDeselect();
-	LLViewerCamera::getInstance()->loadDefaultFOV(); // Singu Note: Load Default FOV in case we were zoomed in
+	if (mRightMouseButton || mTimerFOV.getStarted()) // Singu Note: Load Default FOV if we were zoomed in
+	{
+		LLViewerCamera::getInstance()->loadDefaultFOV();
+		mRightMouseButton = false;
+	}
 	setMouseCapture(FALSE);
 }
 

@@ -574,9 +574,10 @@ set(viewer_SOURCE_FILES
     noise.cpp
     pipeline.cpp
     qtoolalign.cpp
+    rlvactions.cpp
     rlvcommon.cpp
     rlvextensions.cpp
-    rlvfloaterbehaviour.cpp
+    rlvfloaters.cpp
     rlvhandler.cpp
     rlvhelper.cpp
     rlvinventory.cpp
@@ -1100,10 +1101,11 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     qtoolalign.h
+    rlvactions.h
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h
-    rlvfloaterbehaviour.h
+    rlvfloaters.h
     rlvhandler.h
     rlvhelper.h
     rlvinventory.h

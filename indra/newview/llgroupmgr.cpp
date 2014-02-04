@@ -2049,7 +2049,7 @@ void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
 	for ( ; member_iter_start != member_iter_end; ++member_iter_start)
 	{
 		// Reset defaults
-		online_status = "unknown";
+		online_status = LLTrans::getString("group_member_status_unknown");
 		title = titles[0].asString();
 		contribution = 0;
 		member_powers = default_powers;

@@ -169,7 +169,7 @@ This parcel is 512 sq.m. of land.
 	<pad height="0" width="8" />
 	<text bottom_delta="3" follows="top|right" height="16" left="260" name="currency_est"
 	     width="178">
-		for approx. US$ [AMOUNT2]
+		for approx. [REALCURRENCY] [AMOUNT2]
 	</text>
 	<text follows="top|left" height="16" left="72" name="currency_balance" right="400">
 		You have L$ 2,100.
@@ -261,7 +261,7 @@ Try selecting a smaller area.
 		Pay [CURRENCY] [AMOUNT] to [SELLER] for this land
 	</string>
 	<string name="buy_for_US">
-		Buy [CURRENCY] [AMOUNT] for approx. US$ [AMOUNT2],
+		Buy [CURRENCY] [AMOUNT] for approx. [REALCURRENCY] [AMOUNT2],
 	</string>
 	<string name="parcel_meters">
 		This parcel is [AMOUNT] sq.m.
@@ -306,6 +306,6 @@ supports [AMOUNT2] objects
 		(no parcel selected)
 	</string>
 	<string name="buy_currency">
-		Buy [CURRENCY] [LINDENS] for approx. US$ [USD]
+		Buy [CURRENCY] [LINDENS] for approx. [REALCURRENCY] [USD]
 	</string>
 </floater>

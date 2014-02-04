@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -25,8 +25,6 @@
 
 #include "rlvdefines.h"
 #include "rlvcommon.h"
-
-class LLViewerWearable;
 
 // ============================================================================
 // RlvCommand
@@ -106,7 +104,7 @@ public:
 protected:
 	bool m_fValid;
 };
- 
+
 struct RlvCommandOptionGeneric : public RlvCommandOption
 {
 	explicit RlvCommandOptionGeneric(const std::string& strOption);
@@ -129,7 +127,7 @@ struct RlvCommandOptionGeneric : public RlvCommandOption
 		{ return (isString()) ? boost::get<std::string>(m_varOption) : LLStringUtil::null; }
 	const LLUUID&              getUUID() const
 		{ return (isUUID()) ? boost::get<LLUUID>(m_varOption) : LLUUID::null; }
-	LLWearableType::EType              getWearableType() const
+	LLWearableType::EType      getWearableType() const
 		{ return (isWearableType()) ? boost::get<LLWearableType::EType>(m_varOption) : LLWearableType::WT_INVALID; }
 
 protected:
@@ -146,21 +144,13 @@ struct RlvCommandOptionGetPath : public RlvCommandOption
 	/*virtual*/ bool  isEmpty() const	 { return m_idItems.empty(); }
 	const uuid_vec_t& getItemIDs() const { return m_idItems; }
 
-	static bool getItemIDs(const LLViewerJointAttachment* pAttachPt, uuid_vec_t& idItems, bool fClear = true);
-	static bool getItemIDs(LLWearableType::EType wtType, uuid_vec_t& idItems, bool fClear = true);
+	// NOTE: Both functions are COF-based rather than items gathered from mAttachedObjects or gAgentWearables
+	static bool getItemIDs(const LLViewerJointAttachment* pAttachPt, uuid_vec_t& idItems);
+	static bool getItemIDs(LLWearableType::EType wtType, uuid_vec_t& idItems);
 
 protected:
 	bool       m_fCallback; // TRUE if a callback is schedueled
 	uuid_vec_t m_idItems;
-};
-
-struct RlvCommandOptionAdjustHeight : public RlvCommandOption
-{
-	RlvCommandOptionAdjustHeight(const RlvCommand& rlvCmd);
-
-	F32 m_nPelvisToFoot;
-	F32 m_nPelvisToFootDeltaMult;
-	F32 m_nPelvisToFootOffset;
 };
 
 struct RlvCommandOptionTpTo : public RlvCommandOption
@@ -169,7 +159,6 @@ struct RlvCommandOptionTpTo : public RlvCommandOption
 
 	LLVector3d m_posGlobal;
 };
-
 
 // ============================================================================
 // RlvObject
@@ -445,6 +434,7 @@ inline bool RlvCommand::hasStrictVariant(ERlvBehaviour eBhvr)
 		case RLV_BHVR_RECVIM:
 		case RLV_BHVR_SENDIM:
 		case RLV_BHVR_TPLURE:
+		case RLV_BHVR_TPREQUEST:
 		case RLV_BHVR_SENDCHANNEL:
 			return true;
 		default:

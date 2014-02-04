@@ -72,7 +72,7 @@ execute the Ability.
 			     label="Search" left_delta="105" name="search_button" width="60" />
 			<name_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-121"
 			     column_padding="0" draw_border="true" draw_heading="true"
-			     heading_font="SansSerifSmall" menu_file="menu_avs_list.xml"
+			     heading_font="SansSerifSmall" menu_num="0"
 			     heading_height="14" height="120" left="4" multi_select="true"
 			     name="member_list" width="396">
 				<column label="Member Name" name="name" width="136" />
@@ -222,7 +222,7 @@ things in this group. There&apos;s a broad variety of Abilities.
 		</text>
 		<name_list bottom_delta="-105" draw_border="true" draw_stripes="false" enabled="false"
 		     height="105" left="0" multi_select="true" name="role_assigned_members"
-		     width="145" menu_file="menu_avs_list.xml"/>
+		     width="145" menu_num="0"/>
 		<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
 		     initial_value="false" label="Members are visible" left="0"
 		     mouse_opaque="true" name="role_visible_in_list" radio_style="false"
@@ -263,6 +263,6 @@ things in this group. There&apos;s a broad variety of Abilities.
 		<name_list background_opaque="true" background_visible="true" bg_alpha_color="blue"
 		     bg_opaque_color="grey" bottom_delta="0" draw_border="true"
 		     height="125" left="150" multi_select="true" name="action_members"
-		     width="254" menu_file="menu_avs_list.xml"/>
+		     width="254" menu_num="0"/>
 	</panel>
 </panel>

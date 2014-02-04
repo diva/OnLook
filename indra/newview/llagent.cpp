@@ -103,10 +103,11 @@
 
 #include "lluictrlfactory.h" //For LLUICtrlFactory::getLayeredXMLNode
 
-// [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
+// [RLVa:KB] - Checked: 2011-11-04 (RLVa-1.4.4a)
+#include "rlvactions.h"
 #include "rlvhandler.h"
-#include "rlvinventory.h"
-#include "llattachmentsmgr.h"
+#include "rlvhelper.h"
+#include "rlvui.h"
 // [/RLVa:KB]
 
 #include "NACLantispam.h" // for NaCl Antispam Registry
@@ -420,6 +421,7 @@ LLAgent::LLAgent() :
 
 	mNextFidgetTime(0.f),
 	mCurrentFidget(0),
+	mCrouch(false),
 	mFirstLogin(FALSE),
 	mGenderChosen(FALSE),
 	mAppearanceSerialNum(0),
@@ -639,13 +641,14 @@ void LLAgent::moveUp(S32 direction)
 	if (direction > 0)
 	{
 		setControlFlags(AGENT_CONTROL_UP_POS | AGENT_CONTROL_FAST_UP);
+		mCrouch = false;
 	}
 	else if (direction < 0)
 	{
 		setControlFlags(AGENT_CONTROL_UP_NEG | AGENT_CONTROL_FAST_UP);
 	}
 
-	if (!isCrouch) camera_reset_on_motion();
+	if (!mCrouch) camera_reset_on_motion();
 }
 
 //-----------------------------------------------------------------------------
@@ -685,6 +688,11 @@ void LLAgent::movePitch(F32 mag)
 	{
 		setControlFlags(AGENT_CONTROL_PITCH_NEG);
 	}
+}
+
+bool LLAgent::isCrouching() const
+{
+	return mCrouch && !getFlying(); // Never crouch when flying
 }
 
 
@@ -770,6 +778,7 @@ void LLAgent::setFlying(BOOL fly)
 		{
 			LLViewerStats::getInstance()->incStat(LLViewerStats::ST_FLY_COUNT);
 		}
+		mCrouch = false;
 		setControlFlags(AGENT_CONTROL_FLY);
 	}
 	else
@@ -818,17 +827,20 @@ void LLAgent::standUp()
 //	setControlFlags(AGENT_CONTROL_STAND_UP);
 // [RLVa:KB] - Checked: 2010-03-07 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
 	// RELEASE-RLVa: [SL-2.0.0] Check this function's callers since usually they require explicit blocking
-	if ( (!rlv_handler_t::isEnabled()) || (gRlvHandler.canStand()) )
+	if ( (!rlv_handler_t::isEnabled()) || (RlvActions::canStand()) )
 	{
 		setControlFlags(AGENT_CONTROL_STAND_UP);
 	}
 // [/RLVa:KB]
 }
 
+
 void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
 {
 	llinfos << "called" << llendl;
 
+
+	// Old-style appearance entering a server-bake region.
 	if (isAgentAvatarValid() &&
 		!gAgentAvatarp->isUsingServerBakes() &&
 		(mRegionp->getCentralBakeVersion()>0))
@@ -970,7 +982,6 @@ const LLHost& LLAgent::getRegionHost() const
 		return LLHost::invalid;
 	}
 }
-
 
 //-----------------------------------------------------------------------------
 // inPrelude()
@@ -1148,7 +1159,7 @@ void LLAgent::sitDown()
 //	setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 // [RLVa:KB] - Checked: 2010-08-28 (RLVa-1.2.1a) | Added: RLVa-1.2.1a
 	// RELEASE-RLVa: [SL-2.0.0] Check this function's callers since usually they require explicit blocking
-	if ( (!rlv_handler_t::isEnabled()) || ((gRlvHandler.canStand()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SIT))) )
+	if ( (!rlv_handler_t::isEnabled()) || ((RlvActions::canStand()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SIT))) )
 	{
 		setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 	}
@@ -4330,7 +4341,7 @@ void LLAgent::teleportViaLocationLookAt(const LLVector3d& pos_global)
 // [RLVa:KB] - Checked: 2010-10-07 (RLVa-1.2.1f) | Added: RLVa-1.2.1f
 	// RELEASE-RLVa: [SL-2.2.0] Make sure this isn't used for anything except double-click teleporting
 	if ( (rlv_handler_t::isEnabled()) && (!RlvUtil::isForceTp()) && 
-		 ((gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) || (!gRlvHandler.canStand())) )
+		 ((gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) || (!RlvActions::canStand())) )
 	{
 		RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_TELEPORT);
 		return;

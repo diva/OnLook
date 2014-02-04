@@ -552,6 +552,8 @@ void LLPanelObject::getState( )
 	mBtnCopySize->setEnabled( enable_scale );
 	mBtnPasteSize->setEnabled( enable_scale );
 	mBtnPasteSizeClip->setEnabled( enable_scale );
+	mCtrlPosX->setMaxValue(objectp->getRegion()->getWidth());
+	mCtrlPosY->setMaxValue(objectp->getRegion()->getWidth()); // Singu TODO: VarRegions, getLength()
 	mCtrlPosZ->setMaxValue(gHippoLimits->getMaxHeight());
 	mCtrlScaleX->setMaxValue(gHippoLimits->getMaxPrimScale());
 	mCtrlScaleY->setMaxValue(gHippoLimits->getMaxPrimScale());

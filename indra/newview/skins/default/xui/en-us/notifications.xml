@@ -9693,6 +9693,14 @@ Cannot create large prims that intersect other players.  Please re-try when othe
 
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->
+<!-- Singu Note: RLVa notifications come first here -->
+  <notification
+   icon="alertmodal.tga"
+   name="RLVChangeStrings"
+   type="alertmodal">
+Changes won't take effect until after you restart [APP_NAME].
+  </notification>
+
 <!-- Singu TODO: Migrate our special notifications to here -->
   <notification
    icon="notifytip.tga"

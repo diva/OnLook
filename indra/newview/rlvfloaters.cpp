@@ -1,12 +1,12 @@
 /** 
  *
- * Copyright (c) 2009-2010, Kitty Barnett
+ * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt 
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -15,15 +15,22 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+
+#include "llappearancemgr.h"
 #include "llavatarnamecache.h"
 #include "llclipboard.h"
+#include "llcombobox.h"
+#include "llinventoryfunctions.h"
+#include "llnotificationsutil.h"
 #include "llscrolllistctrl.h"
+#include "llsdserialize.h"
+#include "lltexteditor.h"
 #include "llviewerjointattachment.h"
 #include "llviewerobjectlist.h"
 #include "llvoavatarself.h"
 #include "lluictrlfactory.h"
 
-#include "rlvfloaterbehaviour.h"
+#include "rlvfloaters.h"
 #include "rlvhelper.h"
 #include "rlvhandler.h"
 #include "rlvlocks.h"
@@ -32,7 +39,36 @@
 // Helper functions
 //
 
-// Checked: 2010-03-11 (RLVa-1.1.3b) | Modified: RLVa-1.2.0g
+// Checked: 2012-07-14 (RLVa-1.4.7)
+std::string rlvGetItemName(const LLViewerInventoryItem* pItem)
+{
+	if ( (pItem) && ((LLAssetType::AT_BODYPART == pItem->getType()) || (LLAssetType::AT_CLOTHING == pItem->getType())) )
+		return llformat("%s (%s)", pItem->getName().c_str(), LLWearableType::getTypeName(pItem->getWearableType()).c_str());
+	else if ( (pItem) && (LLAssetType::AT_OBJECT == pItem->getType()) && (isAgentAvatarValid()) )
+		return llformat("%s (%s)", pItem->getName().c_str(), gAgentAvatarp->getAttachedPointName(pItem->getUUID()).c_str());
+	return (pItem) ? pItem->getName() : LLStringUtil::null;
+}
+
+// Checked: 2012-07-14 (RLVa-1.4.7)
+std::string rlvGetItemType(const LLViewerInventoryItem* pItem)
+{
+	if (pItem)
+	{
+		switch (pItem->getType())
+		{
+			case LLAssetType::AT_BODYPART:
+			case LLAssetType::AT_CLOTHING:
+				return "Wearable";
+			case LLAssetType::AT_OBJECT:
+				return "Attachment";
+			default:
+				break;
+		}
+	}
+	return "Unknown";
+}
+
+// Checked: 2010-03-11 (RLVa-1.2.0a) | Modified: RLVa-1.2.0g
 std::string rlvGetItemNameFromObjID(const LLUUID& idObj, bool fIncludeAttachPt = true)
 {
 	const LLViewerObject* pObj = gObjectList.findObject(idObj);
@@ -60,15 +96,100 @@ bool rlvGetShowException(ERlvBehaviour eBhvr)
 		case RLV_BHVR_RECVIM:
 		case RLV_BHVR_STARTIM:
 		case RLV_BHVR_TPLURE:
+		case RLV_BHVR_TPREQUEST:
 		case RLV_BHVR_ACCEPTTP:
+		case RLV_BHVR_ACCEPTTPREQUEST:
 			return true;
 		default:
 			return false;
 	}
 }
 
+// Checked: 2012-07-29 (RLVa-1.4.7)
+std::string rlvLockMaskToString(ERlvLockMask eLockType)
+{
+	switch (eLockType)
+	{
+		case RLV_LOCK_ADD:
+			return "add";
+		case RLV_LOCK_REMOVE:
+			return "rem";
+		default:
+			return "unknown";
+	}
+}
+
+// Checked: 2012-07-29 (RLVa-1.4.7)
+std::string rlvFolderLockPermissionToString(RlvFolderLocks::ELockPermission eLockPermission)
+{
+	switch (eLockPermission)
+	{
+		case RlvFolderLocks::PERM_ALLOW:
+			return "allow";
+		case RlvFolderLocks::PERM_DENY:
+			return "deny";
+		default:
+			return "unknown";
+	}
+}
+
+// Checked: 2012-07-29 (RLVa-1.4.7)
+std::string rlvFolderLockScopeToString(RlvFolderLocks::ELockScope eLockScope)
+{
+	switch (eLockScope)
+	{
+		case RlvFolderLocks::SCOPE_NODE:
+			return "node";
+		case RlvFolderLocks::SCOPE_SUBTREE:
+			return "subtree";
+		default:
+			return "unknown";
+	}
+}
+
+// Checked: 2012-07-29 (RLVa-1.4.7)
+std::string rlvFolderLockSourceToTarget(RlvFolderLocks::folderlock_source_t lockSource)
+{
+	switch (lockSource.first)
+	{
+		case RlvFolderLocks::ST_ATTACHMENT:
+			{
+				std::string strAttachName = rlvGetItemNameFromObjID(boost::get<LLUUID>(lockSource.second));
+				return llformat("Attachment (%s)", strAttachName.c_str());
+			}
+		case RlvFolderLocks::ST_ATTACHMENTPOINT:
+			{
+				const LLViewerJointAttachment* pAttachPt = RlvAttachPtLookup::getAttachPoint(boost::get<S32>(lockSource.second));
+				return llformat("Attachment point (%s)", (pAttachPt) ? pAttachPt->getName().c_str() : "Unknown");
+			}
+		case RlvFolderLocks::ST_FOLDER:
+			{
+				return "Folder: <todo>";
+			}
+		case RlvFolderLocks::ST_ROOTFOLDER:
+			{
+				return "Root folder";
+			}
+		case RlvFolderLocks::ST_SHAREDPATH:
+			{
+				const std::string& strPath = boost::get<std::string>(lockSource.second);
+				return llformat("Shared path (#RLV%s%s)", (!strPath.empty()) ? "/" : "", strPath.c_str());
+			}
+		case RlvFolderLocks::ST_WEARABLETYPE:
+			{
+				const std::string& strTypeName = LLWearableType::getTypeName(boost::get<LLWearableType::EType>(lockSource.second));
+				return llformat("Wearable type (%s)", strTypeName.c_str());
+			}
+		default:
+			{
+				return "(Unknown)";
+			}
+	}
+}
+
 // ============================================================================
 // RlvFloaterBehaviours member functions
+//
 
 // Checked: 2010-04-18 (RLVa-1.3.1c) | Modified: RLVa-1.2.0e
 void RlvFloaterBehaviours::onOpen()
@@ -85,21 +206,9 @@ void RlvFloaterBehaviours::onClose(bool fQuitting)
 	LLFloater::onClose(fQuitting);
 }
 
-RlvFloaterBehaviours::RlvFloaterBehaviours(const LLSD& key) 
-	: LLFloater(std::string("rlvBehaviours"))
+RlvFloaterBehaviours::RlvFloaterBehaviours(const LLSD& key) : LLFloater(std::string("rlvBehaviours"))
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_rlv_behaviours.xml");
-}
-
-
-void RlvFloaterBehaviours::toggle(void*)
-{
-	RlvFloaterBehaviours::toggleInstance();
-}
-
-BOOL RlvFloaterBehaviours::visible(void*)
-{
-	return RlvFloaterBehaviours::instanceVisible();
 }
 
 // Checked: 2010-04-18 (RLVa-1.3.1c) | Modified: RLVa-1.2.0e
@@ -148,8 +257,8 @@ void RlvFloaterBehaviours::onBtnCopyToClipboard()
 		}
 	}
 
-	LLWString text = utf8str_to_wstring(strRestrictions.str());
-	gClipboard.copyFromSubstring(text,0,text.length());
+	LLWString wstrRestrictions = utf8str_to_wstring(strRestrictions.str());
+	gClipboard.copyFromSubstring(wstrRestrictions, 0, wstrRestrictions.length());
 }
 
 // Checked: 2011-05-23 (RLVa-1.3.1c) | Modified: RLVa-1.3.1c
@@ -250,7 +359,7 @@ void RlvFloaterBehaviours::refreshAll()
 // RlvFloaterLocks member functions
 //
 
-// Checked: 2010-03-11 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+// Checked: 2010-03-11 (RLVa-1.2.0)
 void RlvFloaterLocks::onOpen()
 {
 	m_ConnRlvCommand = gRlvHandler.setCommandCallback(boost::bind(&RlvFloaterLocks::onRlvCommand, this, _1, _2));
@@ -258,28 +367,24 @@ void RlvFloaterLocks::onOpen()
 	refreshAll();
 }
 
-// Checked: 2010-03-11 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+// Checked: 2010-03-11 (RLVa-1.2.0)
 void RlvFloaterLocks::onClose(bool fQuitting)
 {
 	m_ConnRlvCommand.disconnect();
 	LLFloater::onClose(fQuitting);
 }
 
-RlvFloaterLocks::RlvFloaterLocks(const LLSD& key) 
-	: LLFloater(std::string("rlvLocks"))
+RlvFloaterLocks::RlvFloaterLocks(const LLSD& key) : LLFloater("rlvLocks")
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_rlv_locks.xml");
 }
 
-
-void RlvFloaterLocks::toggle(void*)
+// Checked: 2012-07-14 (RLVa-1.4.7)
+BOOL RlvFloaterLocks::postBuild()
 {
-	RlvFloaterLocks::toggleInstance();
-}
+	getChild<LLUICtrl>("refresh_btn")->setCommitCallback(boost::bind(&RlvFloaterLocks::refreshAll, this));
 
-BOOL RlvFloaterLocks::visible(void*)
-{
-	return RlvFloaterLocks::instanceVisible();
+	return TRUE;
 }
 
 // Checked: 2010-03-11 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
@@ -303,12 +408,10 @@ void RlvFloaterLocks::onRlvCommand(const RlvCommand& rlvCmd, ERlvCmdRet eRet)
 	}
 }
 
-// Checked: 2010-03-18 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+// Checked: 2010-03-18 (RLVa-1.2.0)
 void RlvFloaterLocks::refreshAll()
 {
-	LLCtrlListInterface* pLockList = childGetListInterface("lock_list");
-	if (!pLockList)
-		return;
+	LLScrollListCtrl* pLockList = getChild<LLScrollListCtrl>("lock_list");
 	pLockList->operateOnAll(LLCtrlListInterface::OP_DELETE);
 
 	if (!isAgentAvatarValid())
@@ -397,6 +500,187 @@ void RlvFloaterLocks::refreshAll()
 
 		pLockList->addElement(sdRow, ADD_BOTTOM);
 	}
+
+	//
+	// List "nostrip" (soft) locks
+	//
+	sdColumns[1]["value"] = "nostrip";
+	sdColumns[3]["value"] = "(Agent)";
+
+	LLInventoryModel::cat_array_t folders; LLInventoryModel::item_array_t items;
+	LLFindWearablesEx f(true, true);
+	gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(), folders, items, FALSE, f);
+
+	for (LLInventoryModel::item_array_t::const_iterator itItem = items.begin(); itItem != items.end(); ++itItem)
+	{
+		const LLViewerInventoryItem* pItem = *itItem;
+		if (!RlvForceWear::instance().isStrippable(pItem->getUUID()))
+		{
+			sdColumns[0]["value"] = rlvGetItemType(pItem);
+			sdColumns[2]["value"] = rlvGetItemName(pItem);
+
+			pLockList->addElement(sdRow, ADD_BOTTOM);
+		}
+	}
+
+	//
+	// List folder locks
+	//
+	{
+		// Folder lock descriptors
+		const RlvFolderLocks::folderlock_list_t& folderLocks = RlvFolderLocks::instance().getFolderLocks();
+		for (RlvFolderLocks::folderlock_list_t::const_iterator itFolderLock = folderLocks.begin(); 
+				itFolderLock != folderLocks.end(); ++itFolderLock)
+		{
+			const RlvFolderLocks::folderlock_descr_t* pLockDescr = *itFolderLock;
+			if (pLockDescr)
+			{
+				sdColumns[0]["value"] = "Folder Descriptor";
+				sdColumns[1]["value"] =
+					rlvLockMaskToString(pLockDescr->eLockType) + "/" +
+					rlvFolderLockPermissionToString(pLockDescr->eLockPermission) + "/" +
+					rlvFolderLockScopeToString(pLockDescr->eLockScope);
+				sdColumns[2]["value"] = rlvFolderLockSourceToTarget(pLockDescr->lockSource);
+				sdColumns[3]["value"] = rlvGetItemNameFromObjID(pLockDescr->idRlvObj);
+
+				pLockList->addElement(sdRow, ADD_BOTTOM);
+			}
+		}
+	}
+
+	{
+		// Folder locked attachments and wearables
+		uuid_vec_t idItems;
+		const uuid_vec_t& folderLockAttachmentsIds = RlvFolderLocks::instance().getAttachmentLookups();
+		idItems.insert(idItems.end(), folderLockAttachmentsIds.begin(), folderLockAttachmentsIds.end());
+		const uuid_vec_t& folderLockWearabels = RlvFolderLocks::instance().getWearableLookups();
+		idItems.insert(idItems.end(), folderLockWearabels.begin(), folderLockWearabels.end());
+
+		for (uuid_vec_t::const_iterator itItemId = idItems.begin(); itItemId != idItems.end(); ++itItemId)
+		{
+			const LLViewerInventoryItem* pItem = gInventory.getItem(*itItemId);
+			if (pItem)
+			{
+				sdColumns[0]["value"] = rlvGetItemType(pItem);
+				sdColumns[1]["value"] = rlvLockMaskToString(RLV_LOCK_REMOVE);
+				sdColumns[2]["value"] = rlvGetItemName(pItem);
+				sdColumns[3]["value"] = "<Folder Lock>";
+
+				pLockList->addElement(sdRow, ADD_BOTTOM);
+			}
+		}
+	}
+}
+
+// ============================================================================
+// RlvFloaterStrings member functions
+//
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+RlvFloaterStrings::RlvFloaterStrings(const LLSD& sdKey)
+	: LLFloater(sdKey)
+	, m_fDirty(false)
+	, m_pStringList(NULL)
+{
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_rlv_strings.xml");
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+BOOL RlvFloaterStrings::postBuild()
+{
+	// Set up the UI controls
+	m_pStringList = findChild<LLComboBox>("string_list");
+	m_pStringList->setCommitCallback(boost::bind(&RlvFloaterStrings::checkDirty, this, true));
+
+	LLUICtrl* pDefaultBtn = findChild<LLUICtrl>("default_btn");
+	pDefaultBtn->setCommitCallback(boost::bind(&RlvFloaterStrings::onStringRevertDefault, this));
+
+	// Read all string metadata from the default strings file
+	llifstream fileStream(RlvStrings::getStringMapPath(), std::ios::binary); LLSD sdFileData;
+	if ( (fileStream.is_open()) && (LLSDSerialize::fromXMLDocument(sdFileData, fileStream)) )
+	{
+		m_sdStringsInfo = sdFileData["strings"];
+		fileStream.close();
+	}
+
+	// Populate the combo box
+	for (LLSD::map_const_iterator itString = m_sdStringsInfo.beginMap(); itString != m_sdStringsInfo.endMap(); ++itString)
+	{
+		const LLSD& sdStringInfo = itString->second;
+		if ( (!sdStringInfo.has("customizable")) || (!sdStringInfo["customizable"].asBoolean()) )
+			continue;
+		m_pStringList->add( (sdStringInfo.has("label")) ? sdStringInfo["label"].asString() : itString->first, itString->first);
+	}
+
+	refresh();
+
+	return TRUE;
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvFloaterStrings::onClose(bool fQuitting)
+{
+	checkDirty(false);
+	if (m_fDirty)
+	{
+		// Save the custom string overrides
+		RlvStrings::saveToFile(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, RLV_STRINGS_FILE));
+
+		if (!fQuitting) // Singu Note: We're done if fQuitting, don't notify
+		// Remind the user their changes require a relog to take effect
+		LLNotificationsUtil::add("RLVChangeStrings");
+	}
+
+	if (fQuitting) destroy();
+	else setVisible(false); // Hide when closing.
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvFloaterStrings::onStringRevertDefault()
+{
+	if (!m_strStringCurrent.empty())
+	{
+		RlvStrings::setCustomString(m_strStringCurrent, LLStringUtil::null);
+		m_fDirty = true;
+	}
+	refresh();
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvFloaterStrings::checkDirty(bool fRefresh)
+{
+	LLTextEditor* pStringValue = findChild<LLTextEditor>("string_value");
+	if (!pStringValue->isPristine())
+	{
+		RlvStrings::setCustomString(m_strStringCurrent, pStringValue->getText());
+		m_fDirty = true;
+	}
+
+	if (fRefresh)
+	{
+		refresh();
+	}
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvFloaterStrings::refresh()
+{
+	m_strStringCurrent = (-1 != m_pStringList->getCurrentIndex()) ? m_pStringList->getSelectedValue().asString() : LLStringUtil::null;
+
+	LLTextEditor* pStringDescr = findChild<LLTextEditor>("string_descr");
+	pStringDescr->clear();
+	LLTextEditor* pStringValue = findChild<LLTextEditor>("string_value");
+	pStringValue->setEnabled(!m_strStringCurrent.empty());
+	pStringValue->clear();
+	if (!m_strStringCurrent.empty())
+	{
+		if (m_sdStringsInfo[m_strStringCurrent].has("description"))
+			pStringDescr->setText(m_sdStringsInfo[m_strStringCurrent]["description"].asString());
+		pStringValue->setText(RlvStrings::getString(m_strStringCurrent));
+		pStringValue->makePristine();
+	}
+
+	findChild<LLUICtrl>("default_btn")->setEnabled(!m_strStringCurrent.empty());
 }
 
 // ============================================================================

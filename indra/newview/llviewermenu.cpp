@@ -207,9 +207,10 @@ void init_debug_rendering_menu(LLMenuGL* menu);
 void init_debug_ui_menu(LLMenuGL* menu);
 void init_debug_xui_menu(LLMenuGL* menu);
 void init_debug_avatar_menu(LLMenuGL* menu);
-// [RLVa:KB]
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
+#include "rlvactions.h"
 #include "rlvhandler.h"
-#include "rlvfloaterbehaviour.h"
+#include "rlvfloaters.h"
 #include "rlvlocks.h"
 void init_debug_rlva_menu(LLMenuGL* menu);
 // [/RLVa:KB]
@@ -239,6 +240,7 @@ extern BOOL gDebugTextEditorTips;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;
 extern AIHTTPView* gHttpView;
+extern LLMenuGL* sScrollListMenus[1];
 //
 // Globals
 //
@@ -520,6 +522,10 @@ void region_change();
 void parse_simulator_features();
 void custom_selected(void* user_data);
 
+
+void advanced_toggle_wireframe(void*);
+BOOL advanced_check_wireframe(void*);
+
 void reset_vertex_buffers(void *user_data)
 {
 	gPipeline.clearRebuildGroups();
@@ -781,6 +787,10 @@ void init_menus()
 
 	gMenuHolder->addChild(gLoginMenuBarView);
 
+	// Singu Note: Initialize common ScrollListMenus here
+	sScrollListMenus[0] = LLUICtrlFactory::getInstance()->buildMenu("menu_avs_list.xml", gMenuHolder);
+	//sScrollListMenus[1] = LLUICtrlFactory::getInstance()->buildMenu("menu_groups_list.xml"); // Singu TODO
+
 	LLView* ins = gMenuBarView->getChildView("insert_world", true, false);
 	ins->setVisible(false);
 	ins = gMenuBarView->getChildView("insert_agent", true, false);
@@ -960,15 +970,13 @@ void init_client_menu(LLMenuGL* menu)
 	menu->addChild(sub_menu);
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b | OK
-	#ifdef RLV_ADVANCED_MENU
-		sub_menu = new LLMenuGL("RLVa Embedded");
-		init_debug_rlva_menu(sub_menu);
-		menu->addChild(sub_menu);
-		// Top Level Menu as well
-		sub_menu = new LLMenuGL("RLVa Main");
-		init_debug_rlva_menu(sub_menu);
-		gMenuBarView->addChild(sub_menu);
-	#endif // RLV_ADVANCED_MENU
+	sub_menu = new LLMenuGL("RLVa Embedded");
+	init_debug_rlva_menu(sub_menu);
+	menu->addChild(sub_menu);
+	// Top Level Menu as well
+	sub_menu = new LLMenuGL("RLVa Main");
+	init_debug_rlva_menu(sub_menu);
+	gMenuBarView->addChild(sub_menu);
 // [/RLVa:KB]
 
 	sub_menu = new LLMenuGL("UI");
@@ -1095,10 +1103,8 @@ void init_client_menu(LLMenuGL* menu)
 										(void*)"ShowConsoleWindow"));
 
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-1.0.0e | OK
-	#ifdef RLV_ADVANCED_TOGGLE_RLVA
-		if (gSavedSettings.controlExists(RLV_SETTING_MAIN))
-			menu->addChild(new LLMenuItemCheckGL("RestrainedLove API", &rlvMenuToggleEnabled, NULL, &rlvMenuCheckEnabled, NULL));
-	#endif // RLV_ADVANCED_TOGGLE_RLVA
+	if (gSavedSettings.controlExists(RLV_SETTING_MAIN))
+		menu->addChild(new LLMenuItemCheckGL("RestrainedLove API", &rlvMenuToggleEnabled, NULL, &rlvMenuCheckEnabled, NULL));
 // [/RLVa:KB]
 
 	if(gSavedSettings.getBOOL("QAMode"))
@@ -1469,8 +1475,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	menu->addChild(new LLMenuItemCallGL("Selected Texture Info", handle_selected_texture_info, NULL, NULL, 'T', MASK_CONTROL|MASK_SHIFT|MASK_ALT));
 	//menu->addChild(new LLMenuItemCallGL("Dump Image List", handle_dump_image_list, NULL, NULL, 'I', MASK_CONTROL|MASK_SHIFT));
 	
-	menu->addChild(new LLMenuItemToggleGL("Wireframe", &gUseWireframe, 
-			'R', MASK_CONTROL|MASK_SHIFT));
+	menu->addChild(new LLMenuItemCheckGL("Wireframe", advanced_toggle_wireframe, NULL, advanced_check_wireframe, NULL, 'R', MASK_CONTROL|MASK_SHIFT));
 
 	LLMenuItemCheckGL* item;
 	item = new LLMenuItemCheckGL("Object-Object Occlusion", menu_toggle_control, NULL, menu_check_control, (void*)"UseOcclusion", 'O', MASK_CONTROL|MASK_SHIFT);
@@ -1634,16 +1639,14 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 		menu->addChild(new LLMenuItemCheckGL("Enable Shared Wear", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_ENABLESHAREDWEAR));
 	menu->addSeparator();
 
-	#ifdef RLV_EXTENSION_HIDELOCKED
-		if ( (gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDLAYER)) && 
-			 (gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDATTACH)) )
-		{
-			menu->addChild(new LLMenuItemCheckGL("Hide Locked Layers", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDLAYER));
-			menu->addChild(new LLMenuItemCheckGL("Hide Locked Attachments", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDATTACH));
-			//sub_menu->addChild(new LLMenuItemToggleGL("Hide locked inventory", &rlv_handler_t::fHideLockedInventory));
-			menu->addSeparator();
-		}
-	#endif // RLV_EXTENSION_HIDELOCKED
+	if ( (gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDLAYER)) &&
+			(gSavedSettings.controlExists(RLV_SETTING_HIDELOCKEDATTACH)) )
+	{
+		menu->addChild(new LLMenuItemCheckGL("Hide Locked Layers", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDLAYER));
+		menu->addChild(new LLMenuItemCheckGL("Hide Locked Attachments", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_HIDELOCKEDATTACH));
+		//sub_menu->addChild(new LLMenuItemToggleGL("Hide locked inventory", &rlv_handler_t::fHideLockedInventory));
+		menu->addSeparator();
+	}
 
 	if (gSavedSettings.controlExists(RLV_SETTING_FORBIDGIVETORLV))
 		menu->addChild(new LLMenuItemCheckGL("Forbid Give to #RLV", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_FORBIDGIVETORLV));
@@ -1651,11 +1654,9 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 		menu->addChild(new LLMenuItemCheckGL("Show Name Tags", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_SHOWNAMETAGS));
 	menu->addSeparator();
 
-	#ifdef RLV_EXTENSION_FLOATER_RESTRICTIONS
-		// TODO-RLVa: figure out a way to tell if floater_rlv_behaviour.xml exists
-		menu->addChild(new LLMenuItemCheckGL("Restrictions...", &RlvFloaterBehaviours::toggle, NULL, &RlvFloaterBehaviours::visible, NULL));
-		menu->addChild(new LLMenuItemCheckGL("Locks...", &RlvFloaterLocks::toggle, NULL, &RlvFloaterLocks::visible, NULL));
-	#endif // RLV_EXTENSION_FLOATER_RESTRICTIONS
+	menu->addChild(new LLMenuItemCheckGL("Restrictions...", &RlvFloaterBehaviours::toggle, NULL, &RlvFloaterBehaviours::visible, NULL));
+	menu->addChild(new LLMenuItemCheckGL("Locks...", &RlvFloaterLocks::toggle, NULL, &RlvFloaterLocks::visible, NULL));
+	menu->addChild(new LLMenuItemCheckGL("Strings...", &RlvFloaterStrings::toggle, NULL, &RlvFloaterStrings::visible, NULL));
 }
 // [/RLVa:KB]
 
@@ -1732,6 +1733,46 @@ void init_server_menu(LLMenuGL* menu)
 
 	menu->createJumpKeys();
 }
+
+//////////////////////
+// TOGGLE WIREFRAME //
+//////////////////////
+
+/*
+class LLAdvancedToggleWireframe : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+*/
+	void advanced_toggle_wireframe(void*)
+	{
+// [RLVa:KB] - Checked: 2013-05-11 (RLVa-1.4.9)
+		bool fRlvBlockWireframe = gRlvAttachmentLocks.hasLockedHUD();
+		if ( (!gUseWireframe) && (fRlvBlockWireframe) )
+		{
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_WIREFRAME);
+		}
+		gUseWireframe = (!gUseWireframe) && (!fRlvBlockWireframe);
+// [/RLVa:KB]
+//		gUseWireframe = !(gUseWireframe);
+//		gWindowResized = TRUE; // Singu Note: We don't use this (yet?)
+		LLPipeline::updateRenderDeferred();
+		gPipeline.resetVertexBuffers();
+//		return true;
+	}
+/*
+};
+
+class LLAdvancedCheckWireframe : public view_listener_t
+{
+	bool handleEvent(const LLSD& userdata)
+*/
+	BOOL advanced_check_wireframe(void*)
+	{
+		bool new_value = gUseWireframe;
+		return new_value;
+	}
+//};
+
 
 //-----------------------------------------------------------------------------
 // cleanup_menus()
@@ -3978,7 +4019,7 @@ class LLLandSit : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f
-		if ( (rlv_handler_t::isEnabled()) && ((!gRlvHandler.canStand()) || (gRlvHandler.hasBehaviour(RLV_BHVR_SIT))) )
+		if ( (rlv_handler_t::isEnabled()) && ((!RlvActions::canStand()) || (gRlvHandler.hasBehaviour(RLV_BHVR_SIT))) )
 			return true;
 // [/RLVa:KB]
 
@@ -4674,7 +4715,7 @@ void handle_take_copy()
 	if (LLSelectMgr::getInstance()->getSelection()->isEmpty()) return;
 
 // [RLVa:KB] - Checked: 2010-03-07 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a
-	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand()) )
+	if ( (rlv_handler_t::isEnabled()) && (!RlvActions::canStand()) )
 	{
 		// Allow only if the avie isn't sitting on any of the selected objects
 		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
@@ -6283,7 +6324,7 @@ bool enable_object_stand_up()
 	// 'Object Stand Up' menu item is enabled when agent is sitting on selection
 //	return sitting_on_selection();
 // [RLVa:KB] - Checked: 2010-07-24 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
-	return sitting_on_selection() && ( (!rlv_handler_t::isEnabled()) || (gRlvHandler.canStand()) );
+	return sitting_on_selection() && ( (!rlv_handler_t::isEnabled()) || (RlvActions::canStand()) );
 // [/RLVa:KB]
 }
 
@@ -9284,6 +9325,18 @@ const uuid_vec_t get_focused_list_ids_selected()
 	return uuid_vec_t();
 }
 
+const LLWString get_slurl_for(const LLUUID& id, bool group)
+{
+	std::string str("secondlife:///app/");
+	str += group ? "group/" : "agent/";
+	return utf8str_to_wstring(str + id.asString() + "/about");
+}
+
+void copy_profile_uri(const LLUUID& id, bool group)
+{
+	gViewerWindow->getWindow()->copyTextToClipboard(get_slurl_for(id, group));
+}
+
 class ListEnableAnySelected : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9367,6 +9420,15 @@ class ListVisibleWebProfile : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() && !(gSavedSettings.getBOOL("UseWebProfiles") || gSavedSettings.getString("WebProfileURL").empty()));
+		return true;
+	}
+};
+
+class ListCopySLURL : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		copy_profile_uri(get_focused_list_id_selected(), false);
 		return true;
 	}
 };
@@ -9898,6 +9960,7 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
+	addMenu(new ListCopySLURL(), "List.CopySLURL");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
 	addMenu(new ListOfferTeleport(), "List.OfferTeleport");
