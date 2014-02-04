@@ -83,7 +83,7 @@ LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_
 		return gSavedSettings.getColor4("UserChatColor");
 
 	static const LLCachedControl<bool> color_linden_chat("ColorLindenChat");
-	if (color_linden_chat && LLMuteList::getInstance()->isLinden(name))
+	if (color_linden_chat && LLMuteList::getInstance()->isLinden(id))
 		return gSavedSettings.getColor4("AscentLindenColor");
 
 	// [RLVa:LF] Chat colors would identify names, don't use them in local chat if restricted
