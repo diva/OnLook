@@ -97,20 +97,25 @@ contenuto di tipo:
 		<combo_item name="English">
 			English
 		</combo_item>
-		<combo_item name="Danish">
-			Dansk (Danese) - Beta
-		</combo_item>
+		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
 		<combo_item name="Deutsch(German)">
-			Deutsch (Tedesco) - Beta
+			Deutsch (Tedesco)
 		</combo_item>
 		<combo_item name="Spanish">
-			Español (Spagnolo) - Beta
+			Español (Spagnolo)
 		</combo_item>
 		<combo_item name="French">
-			Français (Francese) - Beta
+			Français (Francese)
 		</combo_item>
 		<combo_item name="Italian">
-			Italiano - Beta
+			Italiano
+		</combo_item>
+		<combo_item name="Portugese">
+			Portugués (Portoghese)
+		</combo_item>
+		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
+		<combo_item name="Danish">
+			Dansk (Danese) - Beta
 		</combo_item>
 		<combo_item name="Hungarian">
 			Magyar (Ungherese) - Beta
@@ -120,9 +125,6 @@ contenuto di tipo:
 		</combo_item>
 		<combo_item name="Polish">
 			Polski (Polacco) - Beta
-		</combo_item>
-		<combo_item name="Portugese">
-			Portugués (Portoghese) - Beta
 		</combo_item>
 		<combo_item name="Russian">
 			Русский (Russo) - Beta

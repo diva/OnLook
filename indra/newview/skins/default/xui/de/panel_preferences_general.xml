@@ -47,13 +47,13 @@ Alterseinstufung zugreifen:</text>
 		<combo_item name="System Default Language">Systemstandard</combo_item>
 		<combo_item name="English">English (Englisch)</combo_item>		
 		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
-		<combo_item name="Spanish">Español (Spanisch) - Beta</combo_item>
-		<combo_item name="French">Français (Französisch) - Beta</combo_item>
+		<combo_item name="Deutsch(German)">Deutsch</combo_item>
+		<combo_item name="Spanish">Español (Spanisch)</combo_item>
+		<combo_item name="French">Français (Französisch)</combo_item>
+		<combo_item name="Italian">Italiano (Italienisch)</combo_item>
 		<combo_item name="Portugese">Portugués(Portuguese)</combo_item>
 		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
 		<combo_item name="Danish">Danks (Dänisch) - Beta</combo_item>
-		<combo_item name="Deutsch(German)">Deutsch - Beta</combo_item>
-		<combo_item name="Italian">Italiano (Italienisch) - Beta</combo_item>
 		<combo_item name="Hungarian">Magyar (Ungarisch) - Beta</combo_item>
 		<combo_item name="Dutch">Nederlands (Niederländisch) - Beta</combo_item>
 		<combo_item name="Polish">Polski (Polnisch) - Beta</combo_item>
