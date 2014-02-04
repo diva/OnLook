@@ -2,8 +2,8 @@
 <floater name="Inventory" title="Inventario">
 	<search_editor label="Scrivi qui per cercare" name="inventory search editor"/>
 	<tab_container name="inventory filter tabs">
-		<inventory_panel label="Tutti gli elementi" name="All Items"/>
-		<inventory_panel label="Elementi recenti" name="Recent Items"/>
+		<inventory_panel label="Tutti" name="All Items"/>
+		<inventory_panel label="Recenti" name="Recent Items"/>
 	</tab_container>
 	<menu_bar name="Inventory Menu">
 		<menu label="File" name="File">

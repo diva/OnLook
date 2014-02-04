@@ -68,21 +68,17 @@
 			</text>
 			<text_editor name="about" width="361"/>
 			<text name="Give item:">
-				Regala oggetto:
+				Regala:
 			</text>
-			<view_border name="drop_target_rect" width="449" />
-			<view_border name="drop_target_rect_vis" width="361" />
-			<text name="Give inventory" tool_tip="Trascina e lascia uno o più oggetti dell&apos;inventario qui, per regalarli a questa persona." width="361">
-				Rilascia un oggetto dell&apos;inventario qui.
-			</text>
+			<drop_target name="drop_target_rect" width="361" label="Rilascia un oggetto dell&apos;inventario qui." tool_tip="Trascina e lascia uno o più oggetti dell&apos;inventario qui, per regalarli a questa persona."/>
 			<check_box label="Mostra nella ricerca" name="allow_publish" tool_tip="Pubblica informazioni descrizioni o immagini aggiuntive del profilo nella ricerca."/>
 			<button label="?" label_selected="?" name="?"/>
-			<button label="Trova sulla mappa" label_selected="Trova sulla mappa" name="Find on Map"/>
-			<button label="Offri teletrasporto..." label_selected="Offri teletrasporto..." name="Offer Teleport..." left_delta="117"/>
-			<button label="Aggiungi come amico..." label_selected="Aggiungi come amico..." name="Add Friend..." left_delta="157" width="140"/>
-			<button label="Paga..." label_selected="Paga..." name="Pay..."/>
-			<button label="Instant Message..." label_selected="Instant Message..." name="Instant Message..." tool_tip="Instant Message (IM)" left_delta="117"/>
-			<button label="Ignora" label_selected="Ignora" name="Mute" left_delta="157" width="140"/>
+			<button label="Trova sulla mappa" label_selected="Trova sulla mappa" name="Find on Map" left="60"/>
+			<button label="Offri teletrasporto..." label_selected="Offri teletrasporto..." name="Offer Teleport..."/>
+			<button label="Aggiungi come amico..." label_selected="Aggiungi come amico..." name="Add Friend..." width="140"/>
+			<button label="Paga..." label_selected="Paga..." name="Pay..." left="60"/>
+			<button label="Instant Message..." label_selected="Instant Message..." name="Instant Message..." tool_tip="Instant Message (IM)"/>
+			<button label="Ignora" label_selected="Ignora" name="Mute"/>
 		</panel>
 		<panel label="Web" name="WebProfile" width="458">
 		  <line_editor name="url_edit" width="440" />
@@ -95,7 +91,7 @@
 				</flyout_button_item>
 			</flyout_button>
 			<button label="?" label_selected="?" name="web_profile_help"/>
-			<check_box label="Carica automaticamente tutte le pagine web dei profili" name="auto_load" tool_tip="Carica automaticamente tutte le pagine web dei profili senza chiedere preventivamente."/>
+			<check_box label="Carica automaticamente tutte le pagine web dei profili" name="auto_load" tool_tip="Carica automaticamente tutte le pagine web dei profili senza chiedere preventivamente." left_delta="60"/>
 			<web_browser name="profile_html" width="440" />
 		</panel>
 		<panel label="Interessi" name="Interests" width="458">
@@ -157,7 +153,7 @@
 			<text name="Info:">
 				Info:
 			</text>
-			<text name="(250 chars)" halign="left" left="7">
+			<text name="(250 chars)">
 				(250
 caratteri)
 			</text>

@@ -39,9 +39,8 @@
 	<layout_stack name="panels">
 		<layout_panel name="im_contents_panel">
 			<button label="Informazioni sul gruppo" name="group_info_btn" width="150"/>
-			<button label="History" name="history_btn" left="155"/>
-			<button label="Unisciti alla chiamata" left="215" name="start_call_btn" width="160"/>
-			<check_box label="Specify Viewer Type" left="375" name="prefixViewerToggle" width="80" />
+			<button label="History" name="history_btn" left_delta="150"/>
+			<button label="Unisciti alla chiamata" name="start_call_btn" width="160"/>
 			<button label="Termina la chiamata" name="end_call_btn" width="160"/>
 			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Clicca qui per vedere/nascondere l&apos;elenco dei partecipanti attivi in questa sessione IM."/>
 			<button label="Invia" name="send_btn"/>

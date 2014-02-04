@@ -14,11 +14,7 @@
 	<check_box label="Inserisci gli IM nella console della chat" name="include_im_in_chat_console"/>
 	<check_box label="Mostra l&apos;orario negli IM" name="show_timestamps_check"/>
 	<check_box label="Mostrami le notifiche degli amici online" name="friends_online_notify_checkbox"/>
-	<text name="text_box3">
-		Risposta agli IM quando
-sono in &apos;Occupato&apos;:
-	</text>
-	<text name="text_box4" width="136">
+	<text name="text_box4">
 		Opzioni salvataggio chat:
 	</text>
 	<check_box label="Salva una copia degli IM sul mio computer" name="log_instant_messages"/>
@@ -28,6 +24,6 @@ sono in &apos;Occupato&apos;:
 	<check_box label="Mostra l&apos;orario nei registri della chat locale" name="log_chat_timestamp"/>
 	<check_box label="Mostra gli IM entranti nel registro della chat locale" name="log_chat_IM"/>
 	<check_box label="Includi la data nell&apos;orario" name="log_date_timestamp"/>
-	<button label="Cambia percorso" label_selected="Cambia percorso" name="log_path_button" width="130"/>
-	<line_editor left="288" name="log_path_string" right="-20"/>
+	<button label="Cambia percorso" label_selected="Cambia percorso" name="log_path_button" left="30" width="130"/>
+	<line_editor name="log_path_string"/>
 </panel>
