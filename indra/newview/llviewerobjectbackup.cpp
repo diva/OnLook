@@ -855,9 +855,9 @@ void LLObjectBackup::importObject_continued(AIFilePicker* filepicker)
 
 			if (prim_llsd.has("sculpt"))
 			{
-				LLSculptParams* sculpt = new LLSculptParams();
-				sculpt->fromLLSD(prim_llsd["sculpt"]);
-				LLUUID orig = sculpt->getSculptTexture();
+				LLSculptParams sculpt;
+				sculpt.fromLLSD(prim_llsd["sculpt"]);
+				LLUUID orig = sculpt.getSculptTexture();
 				bool alreadyseen = false;
 				for (iter = mTexturesList.begin(); iter != mTexturesList.end(); iter++)
 				{
@@ -913,10 +913,10 @@ LLVector3 LLObjectBackup::offsetAgent(LLVector3 offset)
 void LLObjectBackup::rezAgentOffset(LLVector3 offset)
 {
 	// This will break for a sitting agent
-	LLToolPlacer* mPlacer = new LLToolPlacer();
-	mPlacer->setObjectType(LL_PCODE_CUBE);	
+	LLToolPlacer mPlacer;
+	mPlacer.setObjectType(LL_PCODE_CUBE);
 	//LLVector3 pos = offsetAgent(offset);
-	mPlacer->placeObject((S32)offset.mV[0], (S32)offset.mV[1], MASK_NONE);
+	mPlacer.placeObject((S32)offset.mV[0], (S32)offset.mV[1], MASK_NONE);
 }
 
 void LLObjectBackup::importFirstObject()
@@ -1004,32 +1004,32 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 
 	if (prim_llsd.has("sculpt"))
 	{
-		LLSculptParams* sculpt = new LLSculptParams();
-		sculpt->fromLLSD(prim_llsd["sculpt"]);
+		LLSculptParams sculpt;
+		sculpt.fromLLSD(prim_llsd["sculpt"]);
 
 		// TODO: check if map is valid and only set texture if map is valid and changes
 
-		if (mAssetMap[sculpt->getSculptTexture()].notNull())
+		if (mAssetMap[sculpt.getSculptTexture()].notNull())
 		{
-			LLUUID replacment = mAssetMap[sculpt->getSculptTexture()];
-			sculpt->setSculptTexture(replacment);
+			LLUUID replacment = mAssetMap[sculpt.getSculptTexture()];
+			sculpt.setSculptTexture(replacment);
 		}
 
-		object->setParameterEntry(LLNetworkData::PARAMS_SCULPT,(LLNetworkData&)(*sculpt), true);
+		object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt, true);
 	}
 		
 	if (prim_llsd.has("light"))
 	{
-		LLLightParams* light = new LLLightParams();
-		light->fromLLSD(prim_llsd["light"]);
-		object->setParameterEntry(LLNetworkData::PARAMS_LIGHT,(LLNetworkData&)(*light), true);
+		LLLightParams light;
+		light.fromLLSD(prim_llsd["light"]);
+		object->setParameterEntry(LLNetworkData::PARAMS_LIGHT, light, true);
 	}
 
 	if (prim_llsd.has("flexible"))
 	{
-		LLFlexibleObjectData* flex = new LLFlexibleObjectData();
-		flex->fromLLSD(prim_llsd["flexible"]);
-		object->setParameterEntry(LLNetworkData::PARAMS_FLEXIBLE,(LLNetworkData&)(*flex), true);
+		LLFlexibleObjectData flex;
+		flex.fromLLSD(prim_llsd["flexible"]);
+		object->setParameterEntry(LLNetworkData::PARAMS_FLEXIBLE, flex, true);
 	}
 
 	// Textures
