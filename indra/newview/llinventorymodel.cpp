@@ -405,6 +405,66 @@ void LLInventoryModel::unlockDirectDescendentArrays(const LLUUID& cat_id)
 	mItemLock[cat_id] = false;
 }
 
+void LLInventoryModel::consolidateForType(const LLUUID& main_id, LLFolderType::EType type)
+{
+	// Make a list of folders that are not "main_id" and are of "type"
+	std::vector<LLUUID> folder_ids;
+	for (cat_map_t::iterator cit = mCategoryMap.begin(); cit != mCategoryMap.end(); ++cit)
+	{
+		LLViewerInventoryCategory* cat = cit->second;
+		if ((cat->getPreferredType() == type) && (cat->getUUID() != main_id))
+		{
+			folder_ids.push_back(cat->getUUID());
+		}
+	}
+
+	// Iterate through those folders
+	for (std::vector<LLUUID>::iterator folder_ids_it = folder_ids.begin(); folder_ids_it != folder_ids.end(); ++folder_ids_it)
+	{
+		LLUUID folder_id = (*folder_ids_it);
+
+		// Get the content of this folder
+		cat_array_t* cats;
+		item_array_t* items;
+		getDirectDescendentsOf(folder_id, cats, items);
+
+		// Move all items to the main folder
+		// Note : we get the list of UUIDs and iterate on them instead of iterating directly on item_array_t
+		// elements. This is because moving elements modify the maps and, consequently, invalidate iterators on them.
+		// This "gather and iterate" method is verbose but resilient.
+		std::vector<LLUUID> list_uuids;
+		for (item_array_t::const_iterator it = items->begin(); it != items->end(); ++it)
+		{
+			list_uuids.push_back((*it)->getUUID());
+		}
+		for (std::vector<LLUUID>::const_iterator it = list_uuids.begin(); it != list_uuids.end(); ++it)
+		{
+			LLViewerInventoryItem* item = getItem(*it);
+			changeItemParent(item, main_id, TRUE);
+		}
+
+		// Move all folders to the main folder
+		list_uuids.clear();
+		for (cat_array_t::const_iterator it = cats->begin(); it != cats->end(); ++it)
+		{
+			list_uuids.push_back((*it)->getUUID());
+		}
+		for (std::vector<LLUUID>::const_iterator it = list_uuids.begin(); it != list_uuids.end(); ++it)
+		{
+			LLViewerInventoryCategory* cat = getCategory(*it);
+			changeCategoryParent(cat, main_id, TRUE);
+		}
+
+		// Purge the emptied folder
+		// Note: we'd like to use purgeObject() but it doesn't cleanly eliminate the folder
+		// which leads to issues further down the road when the folder is found again
+		//purgeObject(folder_id);
+		// We remove the folder and empty the trash instead which seems to work
+		removeCategory(folder_id);
+		gInventory.emptyFolderType("", LLFolderType::FT_TRASH);
+	}
+}
+
 // findCategoryUUIDForType() returns the uuid of the category that
 // specifies 'type' as what it defaults to containing. The category is
 // not necessarily only for that type. *NOTE: This will create a new

@@ -164,6 +164,17 @@ BOOL LLFloaterOutbox::postBuild()
 	return TRUE;
 }
 
+void LLFloaterOutbox::cleanOutbox()
+{
+	// Note: we cannot delete the mOutboxInventoryPanel as that point
+	// as this is called through callback observers of the panel itself.
+	// Doing so would crash rapidly.
+
+	// Invalidate the outbox data
+	mOutboxId.setNull();
+	mOutboxItemCount = 0;
+}
+
 void LLFloaterOutbox::onClose(bool app_quitting)
 {
 /*
@@ -226,13 +237,25 @@ void LLFloaterOutbox::setupOutbox()
 	}
 
 	// We are a merchant. Get the outbox, create it if needs be.
-	mOutboxId = gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, true, false);
-	if (mOutboxId.isNull())
+	LLUUID outbox_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, true);
+	if (outbox_id.isNull())
 	{
-		// We should never get there unles inventory fails badly
+		// We should never get there unless inventory fails badly
 		llerrs << "Inventory problem: failure to create the outbox for a merchant!" << llendl;
 		return;
 	}
+
+	// Consolidate Merchant Outbox
+	// We shouldn't have to do that but with a client/server system relying on a "well known folder" convention, things get messy and conventions get broken down eventually
+	gInventory.consolidateForType(outbox_id, LLFolderType::FT_OUTBOX);
+
+	if (outbox_id == mOutboxId)
+	{
+
+		llwarns << "Inventory warning: Merchant outbox already set" << llendl;
+		return;
+	}
+	mOutboxId = outbox_id;
 
 	// No longer need to observe new category creation
 	if (mCategoryAddedObserver && gInventory.containsObserver(mCategoryAddedObserver))
@@ -243,13 +266,15 @@ void LLFloaterOutbox::setupOutbox()
 	}
 	llassert(!mCategoryAddedObserver);
 
-	// Create observer for outbox modifications
-	if (mCategoriesObserver == NULL)
+	// Create observer for outbox modifications : clear the old one and create a new one
+	if (mCategoriesObserver && gInventory.containsObserver(mCategoriesObserver))
 	{
-		mCategoriesObserver = new LLInventoryCategoriesObserver();
-		gInventory.addObserver(mCategoriesObserver);
-		mCategoriesObserver->addCategory(mOutboxId, boost::bind(&LLFloaterOutbox::onOutboxChanged, this));
+		gInventory.removeObserver(mCategoriesObserver);
+		delete mCategoriesObserver;
 	}
+	mCategoriesObserver = new LLInventoryCategoriesObserver();
+	gInventory.addObserver(mCategoriesObserver);
+	mCategoriesObserver->addCategory(mOutboxId, boost::bind(&LLFloaterOutbox::onOutboxChanged, this));
 	llassert(mCategoriesObserver);
 
 	// Set up the outbox inventory view
@@ -273,13 +298,15 @@ void LLFloaterOutbox::initializeMarketPlace()
 	//
 	// Initialize the marketplace import API
 	//
-
 	LLMarketplaceInventoryImporter& importer = LLMarketplaceInventoryImporter::instance();
 
-	importer.setInitializationErrorCallback(boost::bind(&LLFloaterOutbox::initializationReportError, this, _1, _2));
-	importer.setStatusChangedCallback(boost::bind(&LLFloaterOutbox::importStatusChanged, this, _1));
-	importer.setStatusReportCallback(boost::bind(&LLFloaterOutbox::importReportResults, this, _1, _2));
-	importer.initialize();
+	if (!importer.isInitialized())
+	{
+		importer.setInitializationErrorCallback(boost::bind(&LLFloaterOutbox::initializationReportError, this, _1, _2));
+		importer.setStatusChangedCallback(boost::bind(&LLFloaterOutbox::importStatusChanged, this, _1));
+		importer.setStatusReportCallback(boost::bind(&LLFloaterOutbox::importReportResults, this, _1, _2));
+		importer.initialize();
+	}
 }
 
 void LLFloaterOutbox::setStatusString(const std::string& statusString)
@@ -305,6 +332,11 @@ void LLFloaterOutbox::updateFolderCount()
 		}
 
 		mOutboxItemCount = item_count;
+	}
+	else
+	{
+		// If there's no outbox, the number of items in it should be set to 0 for consistency
+		mOutboxItemCount = 0;
 	}
 
 	if (!mImportBusy)
@@ -375,6 +407,11 @@ void LLFloaterOutbox::updateView()
 
 		if (mOutboxId.notNull())
 		{
+			// Does the outbox needs recreation?
+			if ((mOutboxInventoryPanel.get() == NULL) || !gInventory.getCategory(mOutboxId))
+			{
+				setupOutbox();
+			}
 			// "Outbox is empty!" message strings
 			outbox_text = LLTrans::getString("InventoryOutboxNoItems");
 			subs_link = "[MARKETPLACE_DASHBOARD_URL]";
@@ -441,7 +478,8 @@ BOOL LLFloaterOutbox::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 {
 	if ((mOutboxInventoryPanel.get() == NULL) ||
 		//(mWindowShade && mWindowShade->isShown()) ||
-		LLMarketplaceInventoryImporter::getInstance()->isImportInProgress())
+		LLMarketplaceInventoryImporter::getInstance()->isImportInProgress() ||
+		mOutboxId.isNull())
 	{
 		return FALSE;
 	}
@@ -511,16 +549,16 @@ void LLFloaterOutbox::onImportButtonClicked()
 
 void LLFloaterOutbox::onOutboxChanged()
 {
-	llassert(!mOutboxId.isNull());
-
-	if (mOutboxInventoryPanel)
+	LLViewerInventoryCategory* category = gInventory.getCategory(mOutboxId);
+	if (mOutboxId.notNull() && category)
 	{
-		mOutboxInventoryPanel->requestSort();
+		fetchOutboxContents();
+		updateView();
 	}
-
-	fetchOutboxContents();
-
-	updateView();
+	else
+	{
+		cleanOutbox();
+	}
 }
 
 void LLFloaterOutbox::importReportResults(U32 status, const LLSD& content)
