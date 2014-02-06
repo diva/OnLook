@@ -176,7 +176,7 @@ void LLCloseAllFoldersFunctor::doItem(LLFolderViewItem* item)
 
 // Default constructor
 LLFolderView::LLFolderView( const std::string& name,
-						   const LLRect& rect, const LLUUID& source_id, LLPanel *parent_view, LLFolderViewEventListener* listener ) :
+						   const LLRect& rect, const LLUUID& source_id, LLPanel* parent_panel, LLFolderViewEventListener* listener ) :
 #if LL_WINDOWS
 #pragma warning( push )
 #pragma warning( disable : 4355 ) // warning C4355: 'this' : used in base member initializer list
@@ -208,12 +208,13 @@ LLFolderView::LLFolderView( const std::string& name,
 	mSignalSelectCallback(0),
 	mMinWidth(0),
 	mDragAndDropThisFrame(FALSE),
-	mParentPanel(parent_view),
 	mUseEllipses(FALSE),
 	mDraggingOverItem(NULL),
 	mStatusTextBox(NULL),
 	mSearchType(1)
 {
+	LLPanel* panel = parent_panel;
+	mParentPanel = panel->getHandle();
 	mRoot = this;
 
 	mShowLoadStatus = TRUE;
@@ -256,7 +257,7 @@ LLFolderView::LLFolderView( const std::string& name,
 	mStatusTextBox->setVPad(STATUS_TEXT_VPAD);
 	mStatusTextBox->setFollows(FOLLOWS_LEFT|FOLLOWS_TOP);
 	// make the popup menu available
-	LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu("menu_inventory.xml", parent_view);
+	LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu("menu_inventory.xml", parent_panel);
 	if (!menu)
 	{
 		menu = new LLMenuGL(LLStringUtil::null);
@@ -645,7 +646,7 @@ BOOL LLFolderView::setSelection(LLFolderViewItem* selection, BOOL openitem,
 
 	if( selection && take_keyboard_focus)
 	{
-		mParentPanel->setFocus(TRUE);
+		mParentPanel.get()->setFocus(TRUE);
 	}
 
 	// clear selection down here because change of keyboard focus can potentially
@@ -1110,11 +1111,11 @@ void LLFolderView::removeSelectedItems( void )
 					// change selection on successful delete
 					if (new_selection)
 					{
-						setSelectionFromRoot(new_selection, new_selection->isOpen(), mParentPanel->hasFocus());
+						setSelectionFromRoot(new_selection, new_selection->isOpen(), mParentPanel.get()->hasFocus());
 					}
 					else
 					{
-						setSelectionFromRoot(NULL, mParentPanel->hasFocus());
+						setSelectionFromRoot(NULL, mParentPanel.get()->hasFocus());
 					}
 				}
 			}
@@ -1140,11 +1141,11 @@ void LLFolderView::removeSelectedItems( void )
 			}
 			if (new_selection)
 			{
-				setSelectionFromRoot(new_selection, new_selection->isOpen(), mParentPanel->hasFocus());
+				setSelectionFromRoot(new_selection, new_selection->isOpen(), mParentPanel.get()->hasFocus());
 			}
 			else
 			{
-				setSelectionFromRoot(NULL, mParentPanel->hasFocus());
+				setSelectionFromRoot(NULL, mParentPanel.get()->hasFocus());
 			}
 
 			for(S32 i = 0; i < count; ++i)
@@ -1715,7 +1716,7 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 		break;
 	}
 
-	if (!handled && mParentPanel->hasFocus())
+	if (!handled && mParentPanel.get()->hasFocus())
 	{
 		if (key == KEY_BACKSPACE)
 		{
@@ -1747,7 +1748,7 @@ BOOL LLFolderView::handleUnicodeCharHere(llwchar uni_char)
 	}
 
 	BOOL handled = FALSE;
-	if (mParentPanel->hasFocus())
+	if (mParentPanel.get()->hasFocus())
 	{
 		// SL-51858: Key presses are not being passed to the Popup menu.
 		// A proper fix is non-trivial so instead just close the menu.
@@ -1804,7 +1805,7 @@ BOOL LLFolderView::handleMouseDown( S32 x, S32 y, MASK mask )
 	mKeyboardSelection = FALSE;
 	mSearchString.clear();
 
-	mParentPanel->setFocus(TRUE);
+	mParentPanel.get()->setFocus(TRUE);
 
 	LLEditMenuHandler::gEditMenuHandler = this;
 
@@ -1887,7 +1888,7 @@ BOOL LLFolderView::handleRightMouseDown( S32 x, S32 y, MASK mask )
 {
 	// all user operations move keyboard focus to inventory
 	// this way, we know when to stop auto-updating a search
-	mParentPanel->setFocus(TRUE);
+	mParentPanel.get()->setFocus(TRUE);
 
 	BOOL handled = childrenHandleRightMouseDown(x, y, mask) != NULL;
 	S32 count = mSelectedItems.size();
@@ -2157,7 +2158,7 @@ void LLFolderView::doIdle()
 {
 	// If this is associated with the user's inventory, don't do anything
 	// until that inventory is loaded up.
-	const LLInventoryPanel *inventory_panel = dynamic_cast<LLInventoryPanel*>(mParentPanel);
+	const LLInventoryPanel *inventory_panel = dynamic_cast<LLInventoryPanel*>(mParentPanel.get());
 	if (inventory_panel && !inventory_panel->getIsViewsInitialized())
 	{
 		return;

@@ -409,12 +409,11 @@ void LLInventoryModel::unlockDirectDescendentArrays(const LLUUID& cat_id)
 // specifies 'type' as what it defaults to containing. The category is
 // not necessarily only for that type. *NOTE: This will create a new
 // inventory category on the fly if one does not exist.
-const LLUUID LLInventoryModel::findCategoryUUIDForType(LLFolderType::EType preferred_type, 
-													   bool create_folder, 
+const LLUUID LLInventoryModel::findCategoryUUIDForType(LLFolderType::EType preferred_type,
+													   bool create_folder,
 													   bool find_in_library)
 {
 	LLUUID rv = LLUUID::null;
-	
 	const LLUUID &root_id = (find_in_library) ? gInventory.getLibraryRootFolderID() : gInventory.getRootFolderID();
 	if(LLFolderType::FT_ROOT_INVENTORY == preferred_type)
 	{
@@ -429,7 +428,7 @@ const LLUUID LLInventoryModel::findCategoryUUIDForType(LLFolderType::EType prefe
 			S32 count = cats->count();
 			for(S32 i = 0; i < count; ++i)
 			{
-				if(cats->get(i)->getPreferredType() == preferred_type)
+				if (cats->get(i)->getPreferredType() == preferred_type)
 				{
 					rv = cats->get(i)->getUUID();
 					break;
@@ -611,7 +610,7 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 	return id;
 }
 
-// Starting with the object specified, add it's descendents to the
+// Starting with the object specified, add its descendents to the
 // array provided, but do not add the inventory object specified by
 // id. There is no guaranteed order. Neither array will be erased
 // before adding objects to it. Do not store a copy of the pointers
@@ -1038,7 +1037,7 @@ void LLInventoryModel::updateCategory(const LLViewerInventoryCategory* cat)
 		new_cat->copyViewerCategory(cat);
 		addCategory(new_cat);
 
-		// make sure this category is correctly referenced by it's parent.
+		// make sure this category is correctly referenced by its parent.
 		cat_array_t* cat_array;
 		cat_array = getUnlockedCatArray(cat->getParentUUID());
 		if(cat_array)
@@ -1247,12 +1246,6 @@ void LLInventoryModel::updateLinkedObjectsFromPurge(const LLUUID &baseobj_id)
 // folders, items, etc in a fairly efficient manner.
 void LLInventoryModel::purgeDescendentsOf(const LLUUID& id)
 {
-	EHasChildren children = categoryHasChildren(id);
-	if(children == CHILDREN_NO)
-	{
-		llinfos << "Not purging descendents of " << id << llendl;
-		return;
-	}
 	LLPointer<LLViewerInventoryCategory> cat = getCategory(id);
 	if (cat.notNull())
 	{
@@ -1263,7 +1256,7 @@ void LLInventoryModel::purgeDescendentsOf(const LLUUID& id)
 			<< " iterate and purge non hidden items" << llendl;
 			cat_array_t* categories;
 			item_array_t* items;
-			// Get the list of direct descendants in tha categoy passed as argument
+			// Get the list of direct descendants in that category passed as argument
 			getDirectDescendentsOf(id, categories, items);
 			std::vector<LLUUID> list_uuids;
 			// Make a unique list with all the UUIDs of the direct descendants (items and categories are not treated differently)

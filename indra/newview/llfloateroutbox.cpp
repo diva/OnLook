@@ -111,7 +111,6 @@ LLFloaterOutbox::LLFloaterOutbox(const LLSD& key)
 	, mInventoryText(NULL)
 	, mInventoryTitle(NULL)
 	, mOutboxId(LLUUID::null)
-	, mOutboxInventoryPanel(NULL)
 	, mOutboxItemCount(0)
 	, mOutboxTopLevelDropZone(NULL)
 //	, mWindowShade(NULL)
@@ -149,11 +148,10 @@ BOOL LLFloaterOutbox::postBuild()
 	mImportButton = getChild<LLButton>("outbox_import_btn");
 	mImportButton->setCommitCallback(boost::bind(&LLFloaterOutbox::onImportButtonClicked, this));
 
-	//
 	// Set up the outbox inventory view
-	//
-	mOutboxInventoryPanel = getChild<LLInventoryPanel>("panel_outbox_inventory");
-	llassert(mOutboxInventoryPanel);
+	LLInventoryPanel* inventory_panel = getChild<LLInventoryPanel>("panel_outbox_inventory");
+	mOutboxInventoryPanel = inventory_panel->getInventoryPanelHandle();
+	llassert(mOutboxInventoryPanel.get() != NULL);
 
 	mOutboxTopLevelDropZone = getChild<LLPanel>("outbox_generic_drag_target");
 
@@ -256,14 +254,15 @@ void LLFloaterOutbox::setupOutbox()
 
 	// Set up the outbox inventory view
 	// Singu Note: we handle this in postBuild, grabbing the panel from the built xml.
+	LLInventoryPanel* inventory_panel = mOutboxInventoryPanel.get();
 
 	// Reshape the inventory to the proper size
 	LLRect inventory_placeholder_rect = mInventoryPlaceholder->getRect();
-	mOutboxInventoryPanel->setShape(inventory_placeholder_rect);
+	inventory_panel->setShape(inventory_placeholder_rect);
 
 	// Set the sort order newest to oldest
-	mOutboxInventoryPanel->setSortOrder(LLInventoryFilter::SO_FOLDERS_BY_NAME);
-	mOutboxInventoryPanel->getFilter()->markDefault();
+	inventory_panel->setSortOrder(LLInventoryFilter::SO_FOLDERS_BY_NAME);
+	inventory_panel->getFilter()->markDefault();
 
 	// Get the content of the outbox
 	fetchOutboxContents();
@@ -292,18 +291,21 @@ void LLFloaterOutbox::setStatusString(const std::string& statusString)
 
 void LLFloaterOutbox::updateFolderCount()
 {
-	S32 item_count = 0;
-
-	if (mOutboxId.notNull())
+	if (mOutboxInventoryPanel.get() && mOutboxId.notNull())
 	{
-		LLInventoryModel::cat_array_t * cats;
-		LLInventoryModel::item_array_t * items;
-		gInventory.getDirectDescendentsOf(mOutboxId, cats, items);
+		S32 item_count = 0;
 
-		item_count = cats->count() + items->count();
+		if (mOutboxId.notNull())
+		{
+			LLInventoryModel::cat_array_t * cats;
+			LLInventoryModel::item_array_t * items;
+			gInventory.getDirectDescendentsOf(mOutboxId, cats, items);
+
+			item_count = cats->count() + items->count();
+		}
+
+		mOutboxItemCount = item_count;
 	}
-
-	mOutboxItemCount = item_count;
 
 	if (!mImportBusy)
 	{
@@ -313,7 +315,7 @@ void LLFloaterOutbox::updateFolderCount()
 
 void LLFloaterOutbox::updateFolderCountStatus()
 {
-	if (mOutboxInventoryPanel)
+	if (mOutboxInventoryPanel.get() && mOutboxId.notNull())
 	{
 		switch (mOutboxItemCount)
 		{
@@ -339,18 +341,19 @@ void LLFloaterOutbox::updateView()
 {
 	//updateView() is called twice the first time.
 	updateFolderCount();
+	LLInventoryPanel* panel = mOutboxInventoryPanel.get();
 
 	if (mOutboxItemCount > 0)
 	{
-		mOutboxInventoryPanel->setVisible(TRUE);
+		panel->setVisible(TRUE);
 		mInventoryPlaceholder->setVisible(FALSE);
 		mOutboxTopLevelDropZone->setVisible(TRUE);
 	}
 	else
 	{
-		if (mOutboxInventoryPanel)
+		if (panel)
 		{
-			mOutboxInventoryPanel->setVisible(FALSE);
+			panel->setVisible(FALSE);
 		}
 
 		// Show the drop zone if there is an outbox folder
@@ -436,7 +439,7 @@ BOOL LLFloaterOutbox::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 										EAcceptance* accept,
 										std::string& tooltip_msg)
 {
-	if ((mOutboxInventoryPanel == NULL) ||
+	if ((mOutboxInventoryPanel.get() == NULL) ||
 		//(mWindowShade && mWindowShade->isShown()) ||
 		LLMarketplaceInventoryImporter::getInstance()->isImportInProgress())
 	{
@@ -449,15 +452,16 @@ BOOL LLFloaterOutbox::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 	// Determine if the mouse is inside the inventory panel itself or just within the floater
 	bool pointInInventoryPanel = false;
 	bool pointInInventoryPanelChild = false;
-	LLFolderView * root_folder = mOutboxInventoryPanel->getRootFolder();
-	if (mOutboxInventoryPanel->getVisible())
+	LLInventoryPanel* panel = mOutboxInventoryPanel.get();
+	LLFolderView * root_folder = panel->getRootFolder();
+	if (panel->getVisible())
 	{
 		S32 inv_x, inv_y;
-		localPointToOtherView(x, y, &inv_x, &inv_y, mOutboxInventoryPanel);
+		localPointToOtherView(x, y, &inv_x, &inv_y, panel);
 
-		pointInInventoryPanel = mOutboxInventoryPanel->getRect().pointInRect(inv_x, inv_y);
+		pointInInventoryPanel = panel->getRect().pointInRect(inv_x, inv_y);
 
-		LLView * inventory_panel_child_at_point = mOutboxInventoryPanel->childFromPoint(inv_x, inv_y, true);
+		LLView * inventory_panel_child_at_point = panel->childFromPoint(inv_x, inv_y, true);
 		pointInInventoryPanelChild = (inventory_panel_child_at_point != root_folder);
 	}
 
@@ -497,7 +501,10 @@ void LLFloaterOutbox::onMouseLeave(S32 x, S32 y, MASK mask)
 */
 void LLFloaterOutbox::onImportButtonClicked()
 {
-	mOutboxInventoryPanel->clearSelection();
+	if (mOutboxInventoryPanel.get())
+	{
+		mOutboxInventoryPanel.get()->clearSelection();
+	}
 
 	mImportBusy = LLMarketplaceInventoryImporter::instance().triggerImport();
 }
