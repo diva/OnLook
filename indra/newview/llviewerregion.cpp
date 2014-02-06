@@ -1281,7 +1281,7 @@ void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
 	std::stringstream str;
 	
 	LLSDSerialize::toPrettyXML(sim_features, str);
-	llinfos << str.str() << llendl;
+	LL_DEBUGS("SimFeatures") << "\n" << str.str() << LL_ENDL;
 	mSimulatorFeatures = sim_features;
 
 	mFeaturesReceived = true;
