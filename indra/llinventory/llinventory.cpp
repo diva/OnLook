@@ -1169,7 +1169,7 @@ bool LLInventoryItem::fromLLSD(const LLSD& sd)
 		// Because WT_UNKNOWN now has locally a special meaning, make sure we don't receive it from the server.
 		if (wt == WT_UNKNOWN)
 		{
-			llwarns << "Received inventory item with wearable type WT_UNKNOWN from server! You should upgrade your viewer." << llendl;
+			lldebugs << "Received inventory item with wearable type WT_UNKNOWN from server!" << llendl;
 			// Change this new wearable type to WT_COUNT, as if when we had not inserted WT_UNKNOWN locally.
 			mFlags += 1;
 			wt = WT_COUNT;
