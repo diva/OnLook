@@ -651,6 +651,22 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruCrosshairColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color of crosshairs in mouselook</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
     <key>LiruGridInTitle</key>
     <map>
       <key>Comment</key>
