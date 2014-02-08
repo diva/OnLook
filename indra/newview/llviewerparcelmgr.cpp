@@ -2,31 +2,25 @@
  * @file llviewerparcelmgr.cpp
  * @brief Viewer-side representation of owned land
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -130,6 +124,10 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	mRenderSelection(TRUE),
 	mCollisionBanned(0),
 	mCollisionTimer(),
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	mCollisionRegionHandle(0),
+	mCollisionUpdateSignal(NULL),
+// [/SL:KB]
 	mMediaParcelId(0),
 	mMediaRegionId(0),
 	mHighlightSegments(NULL),
@@ -151,6 +149,11 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 // </FS:CR> Aurora Sim
 	mHighlightSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
 	resetSegments(mHighlightSegments);
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	mCollisionBitmap = new U8[getCollisionBitmapSize()];
+	memset(mCollisionBitmap, 0, getCollisionBitmapSize());
+// [/SL:KB]
 
 	mCollisionSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
 	resetSegments(mCollisionSegments);
@@ -207,6 +210,11 @@ LLViewerParcelMgr::~LLViewerParcelMgr()
 
 	delete[] mHighlightSegments;
 	mHighlightSegments = NULL;
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	delete[] mCollisionBitmap;
+	mCollisionBitmap = NULL;
+// [/SL:KB]
 
 	delete[] mCollisionSegments;
 	mCollisionSegments = NULL;
@@ -1741,18 +1749,31 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 
 		}
 
-		S32 bitmap_size =	parcel_mgr.mParcelsPerEdge
-							* parcel_mgr.mParcelsPerEdge
-							/ 8;
-		U8* bitmap = new U8[ bitmap_size ];
-		msg->getBinaryDataFast(_PREHASH_ParcelData, _PREHASH_Bitmap, bitmap, bitmap_size);
+//		S32 bitmap_size =	parcel_mgr.mParcelsPerEdge
+//							* parcel_mgr.mParcelsPerEdge
+//							/ 8;
+//		U8* bitmap = new U8[ bitmap_size ];
+//		msg->getBinaryDataFast(_PREHASH_ParcelData, _PREHASH_Bitmap, bitmap, bitmap_size);
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+		msg->getBinaryDataFast(_PREHASH_ParcelData, _PREHASH_Bitmap, parcel_mgr.mCollisionBitmap, parcel_mgr.getCollisionBitmapSize());
+// [/SL:KB]
 
 		parcel_mgr.resetSegments(parcel_mgr.mCollisionSegments);
-		parcel_mgr.writeSegmentsFromBitmap( bitmap, parcel_mgr.mCollisionSegments );
+//		parcel_mgr.writeSegmentsFromBitmap( bitmap, parcel_mgr.mCollisionSegments );
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+		parcel_mgr.writeSegmentsFromBitmap(parcel_mgr.mCollisionBitmap, parcel_mgr.mCollisionSegments);
+// [/SL:KB]
 
-		delete[] bitmap;
-		bitmap = NULL;
+//		delete[] bitmap;
+//		bitmap = NULL;
 
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+		LLViewerRegion* pRegion = LLWorld::getInstance()->getRegion(msg->getSender());
+		parcel_mgr.mCollisionRegionHandle = (pRegion) ? pRegion->getHandle() : 0;
+
+		if (parcel_mgr.mCollisionUpdateSignal)
+			(*parcel_mgr.mCollisionUpdateSignal)(pRegion);
+// [/SL:KB]
 	}
 	else if (sequence_id == HOVERED_PARCEL_SEQ_ID)
 	{
@@ -1770,7 +1791,10 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 	}
 	else
 	{
-		// look for music.
+		// Check for video
+		LLViewerParcelMedia::update(parcel);
+
+		// Then check for music
 		if (gAudiop)
 		{
 			if (parcel)
@@ -1818,9 +1842,6 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 				gAudiop->stopInternetStream();
 			}
 		}//if gAudiop
-
-		// now check for video
-		LLViewerParcelMedia::update( parcel );
 	};
 }
 
@@ -1828,9 +1849,6 @@ void optionally_start_music(LLParcel* parcel)
 {
 	if (gSavedSettings.getBOOL("AudioStreamingMusic"))
 	{
-		
-	
-	
 		// Make the user click the start button on the overlay bar. JC
 		//		llinfos << "Starting parcel music " << parcel->getMusicURL() << llendl;
 
@@ -2571,3 +2589,12 @@ void LLViewerParcelMgr::onTeleportFailed()
 {
 	mTeleportFailedSignal();
 }
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+boost::signals2::connection LLViewerParcelMgr::setCollisionUpdateCallback(const collision_update_signal_t::slot_type & cb)
+{
+	if (!mCollisionUpdateSignal)
+		mCollisionUpdateSignal = new collision_update_signal_t();
+	return mCollisionUpdateSignal->connect(cb);
+}
+// [/SL:KB]

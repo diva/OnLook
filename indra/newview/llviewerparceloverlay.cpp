@@ -2,31 +2,25 @@
  * @file llviewerparceloverlay.cpp
  * @brief LLViewerParcelOverlay class implementation
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -54,7 +48,12 @@
 #include "llglheaders.h"
 #include "pipeline.h"
 
+
 const U8  OVERLAY_IMG_COMPONENTS = 4;
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+LLViewerParcelOverlay::update_signal_t* LLViewerParcelOverlay::mUpdateSignal = NULL;
+// [/SL:KB]
 
 LLViewerParcelOverlay::LLViewerParcelOverlay(LLViewerRegion* region, F32 region_width_meters)
 :	mRegion( region ),
@@ -858,6 +857,10 @@ void LLViewerParcelOverlay::idleUpdate(bool force_update)
 		{
 			updateOverlayTexture();
 			updatePropertyLines();
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+			if (mUpdateSignal)
+				(*mUpdateSignal)(mRegion);
+// [/SL:KB]
 			mTimeSinceLastUpdate.reset();
 		}
 	}
@@ -929,6 +932,7 @@ S32 LLViewerParcelOverlay::renderPropertyLines	()
 	S32 drawn = 0;
 	F32* vertexp;
 	U8* colorp;
+	bool render_hidden = LLSelectMgr::sRenderHiddenSelections && gFloaterTools && gFloaterTools->getVisible();
 
 	const F32 PROPERTY_LINE_CLIP_DIST_SQUARED = 256.f * 256.f;
 
@@ -970,7 +974,7 @@ S32 LLViewerParcelOverlay::renderPropertyLines	()
 
 		gGL.end();
 
-		if (LLSelectMgr::sRenderHiddenSelections && gFloaterTools && gFloaterTools->getVisible())
+		if (render_hidden)
 		{
 			LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_GREATER);
 			
@@ -1005,3 +1009,12 @@ S32 LLViewerParcelOverlay::renderPropertyLines	()
 
 	return drawn;
 }
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+boost::signals2::connection LLViewerParcelOverlay::setUpdateCallback(const update_signal_t::slot_type & cb)
+{
+	if (!mUpdateSignal)
+		mUpdateSignal = new update_signal_t();
+	return mUpdateSignal->connect(cb);
+}
+// [/SL:KB]
