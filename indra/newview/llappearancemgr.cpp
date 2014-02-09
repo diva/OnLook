@@ -3732,6 +3732,9 @@ public:
 		*/
 		LLAppearanceMgr::instance().changeOutfit(true, mFolderID, false);
 	}
+
+	void setFailed() { mFailed = true; } // Singu Note: Lies and hacks
+
 private:
 	class LLCreateBase : public LLInventoryCallback
 	{
@@ -3920,12 +3923,18 @@ LLUUID LLAppearanceMgr::makeNewOutfitLegacy(const std::string& new_folder_name, 
 
 	LLPointer<LLCreateLegacyOutfit> cb = new LLCreateLegacyOutfit(folder_id,boost::bind(&scroll_to_folder,folder_id),boost::bind(&show_created_outfit,folder_id,true));
 	uuid_vec_t obj_ids; // Collect the uuids of copyable objects, in order to keep any changes made in the copies
+	bool use_all_links(gSavedSettings.getBOOL("LiruLegacyOutfitAllLinks"));
 
 	for (LLInventoryModel::item_array_t::const_iterator iter = items.begin();
 		 iter != items.end();
 		 ++iter)
 	{
 		LLViewerInventoryItem* item = (*iter);
+		if (use_all_links)
+		{
+			cb->makeLink(item, item->LLInventoryItem::getDescription());
+			continue;
+		}
 		LLViewerInventoryItem* base_item = item->getLinkedItem() ? item->getLinkedItem() : item;
 		bool is_copy = base_item->getPermissions().allowCopyBy(gAgent.getID());
 		bool is_obj = base_item->getInventoryType() == LLInventoryType::IT_OBJECT;
@@ -3944,9 +3953,11 @@ LLUUID LLAppearanceMgr::makeNewOutfitLegacy(const std::string& new_folder_name, 
 			cb->makeCopy(item,is_multi && use_links);
 		}
 	}
-	if (gSavedSettings.getBOOL("LiruLegacyOutfitStoreObjChanges")) // As a last resort, someone may create a legacy outfit to undo attachment changes
+	if (!use_all_links && gSavedSettings.getBOOL("LiruLegacyOutfitStoreObjChanges")) // As a last resort, someone may create a legacy outfit to undo attachment changes
 		LLAppearanceMgr::instance().removeItemsFromAvatar(obj_ids); // The avatar will have to go without these for now
 	cb->dispatch();
+
+	if (use_all_links) cb->setFailed(); // Cause an early return to avoid rewearing
 
 	return folder_id;
 }
