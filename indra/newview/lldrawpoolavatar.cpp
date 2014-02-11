@@ -1575,6 +1575,10 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 		for (U32 j = 0; j < count; ++j)
 		{
 			LLJoint* joint = avatar->getJoint(skin->mJointNames[j]);
+			if(!joint)
+			{
+				joint = avatar->getJoint("mRoot");
+			}
 			if (joint)
 			{
 				mat[j] = skin->mInvBindMatrix[j];
@@ -1703,6 +1707,10 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				for (U32 i = 0; i < count; ++i)
 				{
 					LLJoint* joint = avatar->getJoint(skin->mJointNames[i]);
+					if(!joint)
+					{
+						joint = avatar->getJoint("mRoot");
+					}
 					if (joint)
 					{
 						mat[i] = skin->mInvBindMatrix[i];
