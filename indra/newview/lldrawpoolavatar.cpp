@@ -1599,7 +1599,7 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 			{
 				F32 w = weight[j][k];
 
-				idx[k] = llclamp((S32) floorf(w), 0, 63);
+				idx[k] = llclamp((S32) floorf(w), 0, S32(count-1));
 				wght[k] = w - floorf(w);
 				scale += wght[k];
 			}
@@ -1747,7 +1747,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 					(GLfloat*) mp);
 
 				LLDrawPoolAvatar::sVertexProgram->uniform3fv(LLShaderMgr::AVATAR_TRANSLATION, count, transp);
-
+				LLDrawPoolAvatar::sVertexProgram->uniform1f(LLShaderMgr::AVATAR_MAX_WEIGHT, F32(count-1));
 				
 				stop_glerror();
 			}

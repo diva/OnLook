@@ -1225,6 +1225,7 @@ void LLShaderMgr::initAttribsAndUniforms()
 
 	mReservedUniforms.push_back("matrixPalette");
 	mReservedUniforms.push_back("translationPalette");
+	mReservedUniforms.push_back("maxWeight");
 	
 	mReservedUniforms.push_back("screenTex");
 	mReservedUniforms.push_back("screenDepth");
