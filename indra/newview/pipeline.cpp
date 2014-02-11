@@ -4706,6 +4706,8 @@ void LLPipeline::renderDebug()
 	if(!mRenderDebugMask)
 		return;
 
+	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_LEQUAL);
+
 	// Debug stuff.
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)

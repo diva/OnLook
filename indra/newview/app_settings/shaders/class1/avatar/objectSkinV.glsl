@@ -26,6 +26,7 @@ ATTRIBUTE vec4 weight4;
 
 uniform mat3 matrixPalette[52];
 uniform vec3 translationPalette[52];
+uniform float maxWeight;
 
 mat4 getObjectSkinnedTransform()
 {
@@ -34,7 +35,7 @@ mat4 getObjectSkinnedTransform()
 	vec4 w = fract(weight4);
 	vec4 index = floor(weight4);
 	
-		 index = min(index, vec4(51.0));
+		 index = min(index, vec4(maxWeight));
 		 index = max(index, vec4( 0.0));
 
 	float scale = 1.0/(w.x+w.y+w.z+w.w);

@@ -457,11 +457,11 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 
 						if (light_enabled)	// Turn off lighting if it hasn't already been so.
 						{
-							gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
+							gPipeline.enableLightsDynamic();
 						}
 						else	// Turn on lighting if it isn't already.
 						{
-							gPipeline.enableLightsDynamic();
+							gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 						}
 					}
 				}
