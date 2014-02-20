@@ -5646,8 +5646,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 					while (i != end_faces)
 					{
 						facep = *i;
-						if ( !
-							(facep) || (geom_count + facep->getGeomCount() > max_vertices) || pool != facep->getPoolType() )
+						if ( !can_batch_texture(facep) || !(facep) || (geom_count + facep->getGeomCount() > max_vertices) || pool != facep->getPoolType() )
 						{ //cut batches on geom count too big
 							break;
 						}
