@@ -1297,15 +1297,33 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 	if (rebuild_color)	// FALSE if tep == NULL
 	{ //decide if shiny goes in alpha channel of color
+
+		static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
 		if (tep && 
-			getPoolType() != LLDrawPool::POOL_ALPHA)  // <--- alpha channel MUST contain transparency, not shiny
+			((!alt_batching && getPoolType() != LLDrawPool::POOL_ALPHA) ||
+			(alt_batching && getPoolType() != LLDrawPool::POOL_ALPHA &&
+			getPoolType() != LLDrawPool::POOL_ALPHA_MASK &&
+			getPoolType() != LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK &&					// <--- alpha channel MUST contain transparency, not shiny
+			(getPoolType() != LLDrawPool::POOL_SIMPLE || LLPipeline::sRenderDeferred))))	// Impostor pass for simple uses alpha masking. Need to be opaque.
 		{
 			LLMaterial* mat = tep->getMaterialParams().get();
 						
-			bool shiny_in_alpha = false;
+			bool shiny_in_alpha = alt_batching ? true : false;
 			
+			if(alt_batching)
+			{
 			if (LLPipeline::sRenderDeferred)
 			{ //store shiny in alpha if we don't have a specular map
+				if  (getPoolType() == LLDrawPool::POOL_MATERIALS && mat->getSpecularID().notNull())
+				{
+					shiny_in_alpha = false;
+				}
+			}
+			}
+			else
+			{
+			if (LLPipeline::sRenderDeferred)
+			{
 				if  (!mat || mat->getSpecularID().isNull())
 				{
 					shiny_in_alpha = true;
@@ -1317,6 +1335,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				{
 					shiny_in_alpha = true;
 				}
+			}
 			}
 
 			if (shiny_in_alpha)
