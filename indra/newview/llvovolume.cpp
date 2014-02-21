@@ -5402,15 +5402,15 @@ struct CompareBatchBreakerModified
 		{
 			return lhs->isState(LLFace::FULLBRIGHT) < rhs->isState(LLFace::FULLBRIGHT);
 		}
-		else if(batch_shiny && lte->getShiny() != rte->getShiny())
+		else if(batch_shiny && !lte->getShiny() != !rte->getShiny())
 		{
-			return lte->getShiny() < rte->getShiny();
+			return !lte->getShiny() < !rte->getShiny();
 		}
-		else if(lhs->getPoolType() == LLDrawPool::POOL_MATERIALS)
+		else if(lhs->getPoolType() == LLDrawPool::POOL_MATERIALS && lte->getMaterialParams().get() != rte->getMaterialParams().get())
 		{
 			return lte->getMaterialParams().get() < rte->getMaterialParams().get();
 		}
-		else if(lhs->getPoolType() == LLDrawPool::POOL_BUMP)
+		else if(lhs->getPoolType() == LLDrawPool::POOL_BUMP && lte->getBumpmap() != rte->getBumpmap())
 		{
 			return lte->getBumpmap() < rte->getBumpmap();
 		}
@@ -5634,7 +5634,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 			{
 				facep->setTextureIndex(0);
 
-				if(can_batch_texture(facep) && texture_index_channels > 1)
+				if(can_batch_texture(facep))
 				{
 					static const U8 MAX_TEXTURE_COUNT = 32;
 					static LLViewerTexture* texture_list[MAX_TEXTURE_COUNT];
