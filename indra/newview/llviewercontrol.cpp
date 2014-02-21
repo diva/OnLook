@@ -679,6 +679,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderAutoMaskAlphaNonDeferred")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("SHUseRMSEAutoMask")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("SHAutoMaskMaxRMSE")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
+	gSavedSettings.getControl("SHAltBatching")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("RenderObjectBump")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("RenderMaxVBOSize")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	//See LL jira VWR-3258 comment section. Implemented by LL in 2.1 -Shyotl
