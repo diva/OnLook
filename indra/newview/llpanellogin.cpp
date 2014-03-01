@@ -62,7 +62,6 @@
 #include "llui.h"
 #include "lluiconstants.h"
 #include "llurlhistory.h" // OGPX : regionuri text box has a history of region uris (if FN/LN are loaded at startup)
-#include "llviewerbuild.h"
 #include "llviewertexturelist.h"
 #include "llviewermenu.h"			// for handle_preferences()
 #include "llviewernetwork.h"
@@ -254,7 +253,7 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 		gVersionMajor,
 		gVersionMinor,
 		gVersionPatch,
-		LL_VIEWER_BUILD );
+		gVersionBuild );
 	LLTextBox* channel_text = getChild<LLTextBox>("channel_text");
 	channel_text->setTextArg("[CHANNEL]", channel); // though not displayed
 	channel_text->setTextArg("[VERSION]", version);

@@ -59,7 +59,6 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
-    llindraconfigfile.cpp
     llinitparam.cpp
     llinstancetracker.cpp
     llliveappconfig.cpp
@@ -183,7 +182,6 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
-    llindraconfigfile.h
     llinitparam.h
     llinstancetracker.h
     llkeythrottle.h

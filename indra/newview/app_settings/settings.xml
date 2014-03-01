@@ -11101,22 +11101,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>PermissionsManagerRect</key>
-    <map>
-      <key>Comment</key>
-      <string>Rectangle for permissions manager window</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Rect</string>
-      <key>Value</key>
-      <array>
-        <integer>0</integer>
-        <integer>85</integer>
-        <integer>300</integer>
-        <integer>0</integer>
-      </array>
-    </map>
     <key>PickerContextOpacity</key>
     <map>
       <key>Comment</key>
