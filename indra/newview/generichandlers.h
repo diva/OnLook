@@ -22,6 +22,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef SG_GENERICHANDLERS_H
+#define SG_GENERICHANDLERS_H
+
 class GenericHandlers
 {
 public:
@@ -29,3 +32,5 @@ public:
 };
 
 extern GenericHandlers *gGenericHandlers;
+
+#endif // SG_GENERIC_HANDLERS

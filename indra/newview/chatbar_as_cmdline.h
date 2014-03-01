@@ -29,8 +29,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "llviewerprecompiledheaders.h"
+#ifndef MS_CHATBARCMDLINE_H
+#define MS_CHATBARCMDLINE_H
 
 #include "llchatbar.h"
 
 bool cmd_line_chat(std::string revised_text, EChatType type);
+
+#endif
