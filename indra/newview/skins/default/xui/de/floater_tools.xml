@@ -38,7 +38,7 @@
 	<check_box label="Drehen (Strg)" name="radio rotate"/>
 	<check_box label="Dehnen (Strg-Umschalt)" name="radio stretch"/>
 	<check_box label="Textur auswählen" name="radio select face"/>
-	<check_box label="Ausrichten (Strg-A)" name="radio align"/>
+	<check_box label="Ausrichten" name="radio align"/>
 	<check_box label="Verknüpfte Teile bearbeiten" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">Lineal:</text>
 	<combo_box name="combobox grid mode">

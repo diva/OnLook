@@ -389,6 +389,9 @@ public:
 	virtual BOOL canDoDelete() const;
 	virtual void doDelete();
 
+	virtual void selectAll();
+	virtual BOOL canSelectAll() const;
+
 	virtual void deselect();
 	virtual BOOL canDeselect() const;
 
