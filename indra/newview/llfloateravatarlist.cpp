@@ -1547,6 +1547,11 @@ LLUUID LLFloaterAvatarList::getSelectedID()
 	return LLUUID::null;
 }
 
+uuid_vec_t LLFloaterAvatarList::getSelectedIDs()
+{
+	return mAvatarList->getSelectedIDs();
+}
+
 //static 
 void LLFloaterAvatarList::callbackFreeze(const LLSD& notification, const LLSD& response)
 {

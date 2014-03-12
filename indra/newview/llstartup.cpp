@@ -291,8 +291,7 @@ boost::scoped_ptr<LLViewerStats::PhaseMap> LLStartUp::sPhases(new LLViewerStats:
 // local function declaration
 //
 
-void login_show(LLSavedLogins const& saved_logins);
-void login_callback(S32 option, void* userdata);
+void login_show();
 void show_first_run_dialog();
 bool first_run_dialog_callback(const LLSD& notification, const LLSD& response);
 void set_startup_status(const F32 frac, const std::string& string, const std::string& msg);
@@ -882,24 +881,17 @@ bool idle_startup()
 			gViewerWindow->setShowProgress(FALSE);
 			display_startup();
 			
-			// Load login history
-			std::string login_hist_filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
-			LLSavedLogins login_history = LLSavedLogins::loadFile(login_hist_filepath);
-			display_startup();
-			
 			// Show the login dialog.
-			login_show(login_history);
+			login_show();
 			display_startup();
-			if (login_history.size() > 0)
-			{
-				LLPanelLogin::setFields(*login_history.getEntries().rbegin());
-			}
-			else
+			static bool sSetFields(LLPanelLogin::getLoginHistory().size() > 0);  // If there were no entries to be loaded, use what's available
+			if (!sSetFields)
 			{
 				LLPanelLogin::setFields(firstname, lastname, password);
+				sSetFields = true; // Never reset the fields again!
+				display_startup();
+				LLPanelLogin::giveFocus();
 			}
-			display_startup();
-			LLPanelLogin::giveFocus();
 
 			gSavedSettings.setBOOL("FirstRunThisInstall", FALSE);
 
@@ -1416,6 +1408,7 @@ bool idle_startup()
 				// Yay, login!
 				successful_login = true;
 				Debug(if (gCurlIo) dc::curlio.off());		// Login succeeded: restore dc::curlio to original state.
+				LLPanelLogin::close(); // Singu Note: Actually destroy the login panel here, otherwise user interaction gets lost upon failed login.
 			}
 			else if(login_response == "indeterminate")
 			{
@@ -2712,57 +2705,15 @@ bool idle_startup()
 // local function definition
 //
 
-void login_show(LLSavedLogins const& saved_logins)
+void login_show()
 {
 	LL_INFOS("AppInit") << "Initializing Login Screen" << LL_ENDL;
 
 
 	// This creates the LLPanelLogin instance.
-	LLPanelLogin::show(	gViewerWindow->getVirtualWindowRect(),
-						login_callback, NULL );
-
-	// Now that the LLPanelLogin instance is created,
-	// store the login history there.
-	LLPanelLogin::setLoginHistory(saved_logins);
+	LLPanelLogin::show();
 
 	// UI textures have been previously loaded in doPreloadImages()
-}
-
-// Callback for when login screen is closed.  Option 0 = connect, option 1 = quit.
-void login_callback(S32 option, void *userdata)
-{
-	const S32 CONNECT_OPTION = 0;
-	const S32 QUIT_OPTION = 1;
-
-	if (CONNECT_OPTION == option)
-	{
-		LLStartUp::setStartupState( STATE_LOGIN_CLEANUP );
-		return;
-	}
-	else if (QUIT_OPTION == option)
-	{
-		// Make sure we don't save the password if the user is trying to clear it.
-		std::string first, last, password;
-		LLPanelLogin::getFields(&first, &last, &password);
-		if (!gSavedSettings.getBOOL("RememberPassword"))
-		{
-			// turn off the setting and write out to disk
-			gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile") , TRUE );
-		}
-
-		// Next iteration through main loop should shut down the app cleanly.
-		LLAppViewer::instance()->userQuit();
-		
-		if (LLAppViewer::instance()->quitRequested())
-		{
-			LLPanelLogin::close();
-		}
-		return;
-	}
-	else
-	{
-		LL_WARNS("AppInit") << "Unknown login button clicked" << LL_ENDL;
-	}
 }
 
 

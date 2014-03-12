@@ -295,14 +295,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 		}
 	}
 
-	if (mVertexShaderLevel > 0)
-	{
-		renderAlpha(getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX | LLVertexBuffer::MAP_TANGENT | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_TEXCOORD2, pass);
-	}
-	else
-	{
-		renderAlpha(getVertexDataMask(), pass);
-	}
+	renderAlpha(getVertexDataMask(), pass);	//getVertexDataMask base mask if fixed-function.
 
 	gGL.setColorMask(true, false);
 
@@ -408,11 +401,11 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 			{
 				LLDrawInfo& params = **k;
 
-				if ((params.mVertexBuffer->getTypeMask() & mask) != mask)
+				/*if ((params.mVertexBuffer->getTypeMask() & mask) != mask)
 				{ //FIXME!
 					llwarns << "Missing required components, skipping render batch." << llendl;
 					continue;
-				}
+				}*/
 
 				// Fix for bug - NORSPEC-271
 				// If the face is more than 90% transparent, then don't update the Depth buffer for Dof
@@ -457,11 +450,11 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 
 						if (light_enabled)	// Turn off lighting if it hasn't already been so.
 						{
-							gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
+							gPipeline.enableLightsDynamic();
 						}
 						else	// Turn on lighting if it isn't already.
 						{
-							gPipeline.enableLightsDynamic();
+							gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 						}
 					}
 				}
@@ -512,7 +505,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 							current_shader->bindTexture(LLShaderMgr::SPECULAR_MAP, params.mSpecularMap);
 						}
 					}
-					else if(deferred_render && current_shader == simple_shader)
+					/*else if(deferred_render && current_shader == simple_shader)
 					{
 						current_shader->uniform4f(LLShaderMgr::SPECULAR_COLOR, 1.0f, 1.0f, 1.0f, 1.0f);						
 						current_shader->uniform1f(LLShaderMgr::ENVIRONMENT_INTENSITY, 0.0f);			
@@ -520,7 +513,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 						current_shader->bindTexture(LLShaderMgr::BUMP_MAP, LLViewerFetchedTexture::sFlatNormalImagep);						
 						LLViewerFetchedTexture::sWhiteImagep->addTextureStats(params.mVSize);
 						current_shader->bindTexture(LLShaderMgr::SPECULAR_MAP, LLViewerFetchedTexture::sWhiteImagep);
-					}
+					}*/
 
 					if (params.mTextureList.size() > 1)
 					{
@@ -567,12 +560,13 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 				static LLFastTimer::DeclareTimer FTM_RENDER_ALPHA_PUSH("Alpha Push Verts");
 				{
 					LLFastTimer t(FTM_RENDER_ALPHA_PUSH);
-    gGL.blendFunc((LLRender::eBlendFactor) params.mBlendFuncSrc, (LLRender::eBlendFactor) params.mBlendFuncDst, mAlphaSFactor, mAlphaDFactor);
-				// Singu Note: Only remove tan/texcoord1/texcoord2 if actually using the fullbright shader. Material faces ignore fullbright bit.
-				params.mVertexBuffer->setBuffer(mask & ~((current_shader == fullbright_shader) ? (LLVertexBuffer::MAP_TANGENT | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_TEXCOORD2) : 0));
+
+					gGL.blendFunc((LLRender::eBlendFactor) params.mBlendFuncSrc, (LLRender::eBlendFactor) params.mBlendFuncDst, mAlphaSFactor, mAlphaDFactor);
+					// Singu Note: If using shaders, pull the attribute mask from it, else used passed base mask.
+					params.mVertexBuffer->setBuffer(current_shader ? current_shader->mAttributeMask : mask);
                 
-				params.mVertexBuffer->drawRange(params.mDrawMode, params.mStart, params.mEnd, params.mCount, params.mOffset);
-				gPipeline.addTrianglesDrawn(params.mCount, params.mDrawMode);
+					params.mVertexBuffer->drawRange(params.mDrawMode, params.mStart, params.mEnd, params.mCount, params.mOffset);
+					gPipeline.addTrianglesDrawn(params.mCount, params.mDrawMode);
 				}
 				
 				// If this alpha mesh has glow, then draw it a second time to add the destination-alpha (=glow).  Interleaving these state-changing calls could be expensive, but glow must be drawn Z-sorted with alpha.
@@ -588,7 +582,8 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 					emissive_shader->bind();
 					
 					// glow doesn't use vertex colors from the mesh data
-					params.mVertexBuffer->setBuffer((mask & ~LLVertexBuffer::MAP_COLOR) | LLVertexBuffer::MAP_EMISSIVE);
+					// Singu Note: Pull attribs from shader, since we always have one here.
+					params.mVertexBuffer->setBuffer(emissive_shader->mAttributeMask);
 					
 					// do the actual drawing, again
 					params.mVertexBuffer->drawRange(params.mDrawMode, params.mStart, params.mEnd, params.mCount, params.mOffset);

@@ -135,13 +135,6 @@ void LLProgressView::revealIntroPanel()
 	gIdleCallbacks.addFunction(onIdle, this);
 }
 
-void LLProgressView::abortShowProgress()
-{
-	mFadeFromLoginTimer.stop();
-	LLPanelLogin::close();
-	gIdleCallbacks.deleteFunction(onIdle, this);
-}
-
 void LLProgressView::setStartupComplete()
 {
 	mStartupComplete = true;
@@ -334,7 +327,7 @@ void LLProgressView::onIdle(void* user_data)
 		self->mFadeFromLoginTimer.getElapsedTimeF32() > FADE_TO_WORLD_TIME)
 	{
 		self->mFadeFromLoginTimer.stop();
-		LLPanelLogin::close();
+		LLPanelLogin::hide();
 
 		// Nothing to do anymore.
 		gIdleCallbacks.deleteFunction(onIdle, user_data);

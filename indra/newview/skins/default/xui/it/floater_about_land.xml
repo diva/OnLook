@@ -42,7 +42,7 @@
 				Non in vendita.
 			</text>
 			<text name="For Sale: Price L$[PRICE]." left="119">
-				Prezzo: [PRICE]L$ ([PRICE_PER_SQM]L$/m²).
+				Prezzo: [PRICE][CURRENCY] ([PRICE_PER_SQM][CURRENCY]/m²).
 			</text>
 			<text name="SalePending" left="119" width="321"/>
 			<button bottom="-242" label="Vendi la terra..." label_selected="Vendi la terra..." name="Sell Land..."/>
@@ -292,7 +292,7 @@ o suddivisa.
 			</text>
 			<check_box label="Sicuro (senza danno)" name="check safe" tool_tip="Se spuntato, imposta il terreno su &apos;sicuro&apos;, disabilitando i danni da combattimento. Se non spuntato, viene abilitato il combattimento a morte."/>
 			<check_box label="Nessuna spinta" name="PushRestrictCheck" tool_tip="Previeni i colpi. Selezionare questa opzione può essere utile per prevenire comportamenti dannosi sul tuo terreno."/>
-			<check_box label="Mostra il luogo nella ricerca (30 L$/week) sotto" name="ShowDirectoryCheck" tool_tip="Lascia che questa terra sia vista dagli altri nei risultati di ricerca"/>
+			<check_box label="Mostra il luogo nella ricerca (30 [CURRENCY]/week) sotto" name="ShowDirectoryCheck" tool_tip="Lascia che questa terra sia vista dagli altri nei risultati di ricerca"/>
 			<string name="search_enabled_tooltip">
 				Fai in modo che la gente trovi questo terreno nei risultati della ricerca.
 			</string>
@@ -506,7 +506,7 @@ Media:
 					Gruppo
 				</combo_item>
 			</combo_box>
-			<spinner label="Prezzo in L$:" name="PriceSpin"/>
+			<spinner label="Prezzo in [CURRENCY]:" name="PriceSpin"/>
 			<spinner label="Ore di accesso:" name="HoursSpin"/>
 			<text label="Permetti sempre" name="AllowedText">
 				Residenti permessi

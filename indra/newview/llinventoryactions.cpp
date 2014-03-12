@@ -49,6 +49,10 @@
 #include "lltrans.h"
 #include "llvoavatarself.h"
 #include "llnotifications.h"
+// [RLVa:KB] - Checked: 2013-05-08 (RLVa-1.4.9)
+#include "rlvactions.h"
+#include "rlvcommon.h"
+// [/RLVa:KB]
 
 extern LLUUID gAgentID;
 
@@ -455,6 +459,10 @@ class LLBeginIMSession : public inventory_panel_listener_t
 		LLDynamicArray<LLUUID> members;
 		EInstantMessage type = IM_SESSION_CONFERENCE_START;
 
+// [RLVa:KB] - Checked: 2013-05-08 (RLVa-1.4.9)
+		bool fRlvCanStartIM = true;
+// [/RLVa:KB]
+
 		for (std::set<LLUUID>::const_iterator iter = selected_items.begin(); iter != selected_items.end(); iter++)
 		{
 
@@ -493,6 +501,9 @@ class LLBeginIMSession : public inventory_panel_listener_t
 							id = item_array.get(i)->getCreatorUUID();
 							if(at.isBuddyOnline(id))
 							{
+// [RLVa:KB] - Checked: 2013-05-08 (RLVa-1.4.9)
+								fRlvCanStartIM &= RlvActions::canStartIM(id);
+// [RLVa:KB]
 								members.put(id);
 							}
 						}
@@ -515,6 +526,9 @@ class LLBeginIMSession : public inventory_panel_listener_t
 
 							if(at.isBuddyOnline(id))
 							{
+// [RLVa:KB] - Checked: 2013-05-08 (RLVa-1.4.9)
+								fRlvCanStartIM &= RlvActions::canStartIM(id);
+// [RLVa:KB]
 								members.put(id);
 							}
 						}
@@ -525,6 +539,15 @@ class LLBeginIMSession : public inventory_panel_listener_t
 
 		// the session_id is randomly generated UUID which will be replaced later
 		// with a server side generated number
+
+// [RLVa:KB] - Checked: 2013-05-08 (RLVa-1.4.9)
+		if (!fRlvCanStartIM)
+		{
+			make_ui_sound("UISndIvalidOp");
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF);
+			return true;
+		}
+// [/RLVa:KB]
 
 		if (name.empty())
 		{

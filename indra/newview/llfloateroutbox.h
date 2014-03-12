@@ -72,6 +72,7 @@ public:
 
 protected:
 	void setupOutbox();
+	void cleanOutbox();
 	void fetchOutboxContents();
 
 	void importReportResults(U32 status, const LLSD& content);
@@ -106,7 +107,7 @@ private:
 	LLTextBox *		mInventoryTitle;
 
 	LLUUID				mOutboxId;
-	LLInventoryPanel *	mOutboxInventoryPanel;
+	LLHandle<LLInventoryPanel>	mOutboxInventoryPanel;
 	U32					mOutboxItemCount;
 	LLPanel *			mOutboxTopLevelDropZone;
 

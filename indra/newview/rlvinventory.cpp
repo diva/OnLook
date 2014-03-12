@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -784,6 +784,22 @@ bool RlvWearableItemCollector::operator()(LLInventoryCategory* pFolder, LLInvent
 {
 	// NOTE: this is used for more than was originally intended so only modify if you're sure it won't break something obscure
 	return (pFolder) ? onCollectFolder(pFolder) : ( (pItem) ? onCollectItem(pItem) : false );
+}
+
+// ============================================================================
+// General purpose inventory helper classes
+//
+
+// Checked: 2013-10-12 (RLVa-1.4.9)
+bool RlvFindAttachmentsOnPoint::operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem)
+{
+#ifndef RLV_DEPRECATE_ATTACHPTNAMING
+	// First check if the item is attached to the attachment point; fall back to the item name otherwise
+	return (pItem) && (LLAssetType::AT_OBJECT == pItem->getType()) &&
+		( ((m_pAttachPt) && (m_pAttachPt->getAttachedObject(pItem->getLinkedUUID()))) || (RlvAttachPtLookup::getAttachPoint(pItem) == m_pAttachPt) );
+#else
+	return (pItem) && (LLAssetType::AT_OBJECT == pItem->getType()) && (m_pAttachPt) && (m_pAttachPt->getAttachedObject(pItem->getLinkedUUID()));
+#endif // RLV_DEPRECATE_LEGACY_ATTACHPT
 }
 
 // ============================================================================

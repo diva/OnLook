@@ -244,7 +244,7 @@ public:
 
 	BOOL getDebugFilters() { return mDebugFilters; }
 
-	LLPanel* getParentPanel() { return mParentPanel; }
+	LLPanel* getParentPanel() { return mParentPanel.get(); }
 	// DEBUG only
 	void dumpSelectionInformation();
 
@@ -252,6 +252,9 @@ public:
 	
 	bool useLabelSuffix() { return mUseLabelSuffix; }
 	void updateMenu();
+
+	// Note: We may eventually have to move that method up the hierarchy to LLFolderViewItem.
+	LLHandle<LLFolderView>	getHandle() const { return getDerivedHandle<LLFolderView>(); }
 
 private:
 	void updateMenuOptions(LLMenuGL* menu);
@@ -317,7 +320,7 @@ protected:
 	
 	LLUUID							mSelectThisID; // if non null, select this item
 	
-	LLPanel*						mParentPanel;
+	LLHandle<LLPanel>				mParentPanel;
 
 	/**
 	 * Is used to determine if we need to cut text In LLFolderViewItem to avoid horizontal scroll.

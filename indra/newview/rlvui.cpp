@@ -47,6 +47,8 @@
 #include "llfloaterchat.h"
 #include "llfloateravatarlist.h"
 #include "llfloaterworldmap.h"
+#include "llmenugl.h"
+#include "lluictrlfactory.h"
 #include "llviewerregion.h"
 
 #include "rlvui.h"
@@ -80,6 +82,7 @@ RlvUIEnabler::RlvUIEnabler()
 
 	// onToggleXXX
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_EDIT, boost::bind(&RlvUIEnabler::onToggleEdit, this)));
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SENDIM, boost::bind(&RlvUIEnabler::onToggleSendIM, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SETDEBUG, boost::bind(&RlvUIEnabler::onToggleSetDebug, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SETENV, boost::bind(&RlvUIEnabler::onToggleSetEnv, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWINV, boost::bind(&RlvUIEnabler::onToggleShowInv, this, _1)));
@@ -130,7 +133,7 @@ void RlvUIEnabler::onToggleEdit()
 		// Turn off "View / Highlight Transparent"
 		LLDrawPoolAlpha::sShowDebugAlpha = FALSE;
 
-		// Close the Beacons floater if it's open
+		// Hide the Beacons floater if it's currently visible
 		if (LLFloaterBeacons::instanceVisible())
 			LLFloaterBeacons::toggleInstance();
 
@@ -154,6 +157,15 @@ void RlvUIEnabler::onToggleMovement()
 		gAgent.clearAlwaysRun();
 	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_TEMPRUN)) && (gAgent.getTempRun()) )
 		gAgent.clearTempRun();
+}
+
+// Checked: 2013-05-11 (RLVa-1.4.9)
+void RlvUIEnabler::onToggleSendIM()
+{
+	/* Singu Note: Don't hide settings just because they won't be used, that's just wrong.
+	bool fEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM);
+	gSavedPerAccountSettings.getControl("BusyModeResponse")->setHiddenFromSettingsEditor(!fEnable);
+	*/
 }
 
 // Checked: 2011-05-28 (RLVa-1.4.0a) | Added: RLVa-1.4.0a
@@ -210,6 +222,34 @@ void RlvUIEnabler::onToggleShowInv(bool fQuitting)
 	{
 		LLInventoryView::closeAll();
 		LFFloaterInvPanel::closeAll();
+
+		// Singu Note: Hide our standalone inventory favorites floater if present
+		if (LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater("floater_inventory_favs.xml"))
+			floater->close();
+	}
+
+	//
+	// Enable/disable the "My Outfits" panel on the "My Appearance" sidebar tab
+	//
+	LLFloater* pAppearancePanel = LLUICtrlFactory::getInstance()->getBuiltFloater("floater_my_outfits.xml");
+	if (pAppearancePanel)
+	{
+		// Singu Note: No RLV_ASSERTs. This is all a lie about our standalone My Outfits floater anyway.
+		if (!fEnable) pAppearancePanel->close();
+	}
+
+	//
+	// Filter (or stop filtering) opening new inventory floaters
+	//
+	if (!fEnable)
+	{
+		LLMenuGL::sMenuContainer->childSetEnabled("My Outfits", false);
+		LLMenuGL::sMenuContainer->childSetEnabled("Favorites", false);
+	}
+	else
+	{
+		LLMenuGL::sMenuContainer->childSetEnabled("My Outfits", true);
+		LLMenuGL::sMenuContainer->childSetEnabled("Favorites", true);
 	}
 }
 
@@ -223,13 +263,14 @@ void RlvUIEnabler::onToggleShowLoc()
 
 	if (!fEnable)
 	{
-				// Close the "About Land" floater if it's currently visible
+		// Hide the "About Land" floater if it's currently visible
 		if (LLFloaterLand::instanceVisible())
-						LLFloaterLand::hideInstance();
+			LLFloaterLand::hideInstance();
 
-		// Close the "Estate Tools" floater is it's currently visible
+		// Hide the "Region / Estate" floater if it's currently visible
 		if (LLFloaterRegionInfo::instanceVisible())
-				LLFloaterRegionInfo::hideInstance();
+			LLFloaterRegionInfo::hideInstance();
+		// Hide the "God Tools" floater if it's currently visible
 		LLFloaterGodTools::hide();
 	}
 }
@@ -237,7 +278,6 @@ void RlvUIEnabler::onToggleShowLoc()
 // Checked: 2010-02-28 (RLVa-1.4.0a) | Added: RLVa-1.2.0a
 void RlvUIEnabler::onToggleShowMinimap()
 {
-
 	bool fEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP);
 
 	// Start or stop filtering showing the mini-map floater
@@ -253,12 +293,10 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 
 	bool fEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
 
-	// Close the "Active Speakers" panel if it's currently visible
-
-						
 	// Force the use of the "display name" cache so we can filter both display and legacy names (or return back to the user's preference)
 	if (!fEnable)
 	{
+		// Close the "Active Speakers" panel if it's currently visible
 		LLFloaterChat::getInstance()->childSetVisible("active_speakers_panel", false);
 		// Close the "Avatar List/Radar" floater if it's currently visible
 		if ( LLFloaterAvatarList::instanceExists() && LLFloaterAvatarList::getInstance()->getVisible() )
@@ -286,7 +324,8 @@ void RlvUIEnabler::onToggleShowWorldMap()
 // Checked: 2010-08-22 (RLVa-1.2.1a) | Added: RLVa-1.2.1a
 void RlvUIEnabler::onToggleTp()
 {
-/*	// Disable the navigation bar "Home" button if both @tplm=n *and* @tploc=n restricted
+/* Singu TODO: LLNavigationBar
+	// Disable the navigation bar "Home" button if both @tplm=n *and* @tploc=n restricted
 	LLButton* pNavBarHomeBtn = LLNavigationBar::getInstance()->findChild<LLButton>("home_btn");
 	RLV_ASSERT(pNavBarHomeBtn);
 	if (pNavBarHomeBtn)
@@ -297,7 +336,7 @@ void RlvUIEnabler::onToggleTp()
 // Checked: 2010-03-01 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
 void RlvUIEnabler::onToggleUnsit()
 {
-/*
+/* Singu TODO?
 	bool fEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT);
 
 	LLPanelStandStopFlying* pPanelStand = LLPanelStandStopFlying::getInstance();
@@ -315,15 +354,17 @@ void RlvUIEnabler::onToggleUnsit()
 // Checked: 2010-03-01 (RLVa-1.2.0b) | Added: RLVa-1.2.0a
 void RlvUIEnabler::onToggleViewXXX()
 {
+/* Singu TODO?
 	// If any of the three are still active then we keep filtering
-	/*bool fHasViewXXX = (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWNOTE)) ||
+	bool fHasViewXXX = (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWNOTE)) ||
 		(gRlvHandler.hasBehaviour(RLV_BHVR_VIEWSCRIPT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE));
 
 	// Start or stop filtering opening the preview floaters
 	if ( (fHasViewXXX) && (!m_ConnFloaterViewXXX.connected()) )
 		m_ConnFloaterViewXXX = LLFloaterReg::setValidateCallback(boost::bind(&RlvUIEnabler::filterFloaterViewXXX, this, _1, _2));
 	else if ( (!fHasViewXXX) && (m_ConnFloaterViewXXX.connected()) )
-		m_ConnFloaterViewXXX.disconnect();*/
+		m_ConnFloaterViewXXX.disconnect();
+*/
 }
 
 // Checked: 2010-04-01 (RLVa-1.2.0c) | Added: RLVa-1.2.0c
@@ -342,7 +383,6 @@ void RlvUIEnabler::onUpdateLoginLastLocation(bool fQuitting)
 
 	if (!m_ConnFloaterGeneric.connected())
 		m_ConnFloaterGeneric = LLFloaterReg::setValidateCallback(boost::bind(&RlvUIEnabler::filterFloaterGeneric, this, _1, _2));
-
 }
 
 // Checked: 2010-02-28 (RLVa-1.4.0a) | Added: RLVa-1.2.0a
@@ -408,7 +448,8 @@ bool RlvUIEnabler::filterFloaterViewXXX(const std::string& strName, const LLSD&)
 		return false;
 	}
 	return true;
-}*/
+}
+*/
 
 // ============================================================================
 

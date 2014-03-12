@@ -3,10 +3,10 @@
  * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -660,24 +660,16 @@ bool RlvHandler::canSit(LLViewerObject* pObj, const LLVector3& posOffset /*= LLV
 	//   - not prevented from sitting
 	//   - not prevented from standing up or not currently sitting
 	//   - not standtp restricted or not currently sitting (if the user is sitting and tried to sit elsewhere the tp would just kick in)
-	//   - [regular sit] not @sittp=n or @fartouch=n restricted or if they clicked on a point within 1.5m of the avie's current position
-	//   - [force sit] not @sittp=n restricted by a *different* object than the one that issued the command or the object is within 1.5m
+	//   - not a regular sit (i.e. due to @sit:<uuid>=force)
+	//   - not @sittp=n or @fartouch=n restricted or if they clicked on a point within 1.5m of the avie's current position
 	return
 		( (pObj) && (LL_PCODE_VOLUME == pObj->getPCode()) ) &&
 		(!hasBehaviour(RLV_BHVR_SIT)) && 
 		( ((!hasBehaviour(RLV_BHVR_UNSIT)) && (!hasBehaviour(RLV_BHVR_STANDTP))) || 
 		  ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting())) ) &&
-		( ((NULL == getCurrentCommand() || (RLV_BHVR_SIT != getCurrentCommand()->getBehaviourType()))
-			? ((!hasBehaviour(RLV_BHVR_SITTP)) && (!hasBehaviour(RLV_BHVR_FARTOUCH)))	// [regular sit]
-			: (!hasBehaviourExcept(RLV_BHVR_SITTP, getCurrentObject()))) ||				// [force sit]
+		( ( (NULL != getCurrentCommand()) && (RLV_BHVR_SIT == getCurrentCommand()->getBehaviourType()) ) ||
+		  ( (!hasBehaviour(RLV_BHVR_SITTP)) && (!hasBehaviour(RLV_BHVR_FARTOUCH)) ) ||
 		  (dist_vec_squared(gAgent.getPositionGlobal(), pObj->getPositionGlobal() + LLVector3d(posOffset)) < 1.5f * 1.5f) );
-}
-
-// Checked: 2010-03-07 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
-bool RlvHandler::canStand() const
-{
-	// NOTE: return FALSE only if we're @unsit=n restricted and the avie is currently sitting on something and TRUE for everything else
-	return (!hasBehaviour(RLV_BHVR_UNSIT)) || ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting()));
 }
 
 // Checked: 2010-04-11 (RLVa-1.3.0h) | Modified: RLVa-1.3.0h
@@ -934,7 +926,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 				case LLAssetType::AT_BODYPART:
 				case LLAssetType::AT_CLOTHING:
 					{
-						LLViewerWearable* pWearable = gAgent.getWearableFromWearableItem(pItem->getUUID());
+						LLWearable* pWearable = gAgent.getWearableFromWearableItem(pItem->getUUID());
 						if ( (pWearable) && (!isRemovable(pWearable->getType())) )
 							return false;	// If one wearable in the folder is non-removeable then the entire folder should be
 					}
@@ -1052,12 +1044,18 @@ BOOL RlvHandler::setEnabled(BOOL fEnable)
 			LLAppViewer::instance()->setOnLoginCompletedCallback(boost::bind(&RlvHandler::onLoginComplete, &gRlvHandler));
 		else
 			gRlvHandler.onLoginComplete();
-			
+
 		// Set up RlvUIEnabler
 		RlvUIEnabler::getInstance();
+
+		/* Singu Note: Off!
+		// Reset to show assertions if the viewer version changed
+		if (gSavedSettings.getString("LastRunVersion") != gLastRunVersion)
+			gSavedSettings.setBOOL("RLVaShowAssertionFailures", TRUE);
+		*/
 	}
 
-	return m_fEnabled;		// Return enabled/disabled state
+	return m_fEnabled;
 }
 
 BOOL RlvHandler::canDisable()
@@ -1323,7 +1321,9 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 		case RLV_BHVR_RECVIM:				// @recvim[:<uuid>]=n|y				- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h
 		case RLV_BHVR_STARTIM:				// @startim[:<uuid>]=n|y			- Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
 		case RLV_BHVR_TPLURE:				// @tplure[:<uuid>]=n|y				- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h
-		case RLV_BHVR_ACCEPTTP:				// @accepttp[:<uuid>]=n|y			- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h
+		case RLV_BHVR_TPREQUEST:			// @tprequest[:<uuid>]=n|y			- Checked: 2013-11-08 (RLVa-1.4.9)
+		case RLV_BHVR_ACCEPTTP:				// @accepttp[:<uuid>]=n|y			- Checked: 2009-12-05 (RLVa-1.1.0)
+		case RLV_BHVR_ACCEPTTPREQUEST:		// @accepttprequest[:<uuid>]=n|y    - Checked: 2013-11-08 (RLVa-1.4.9)
 		case RLV_BHVR_TOUCHATTACH:			// @touchattach[:<uuid>=n|y			- Checked: 2010-01-01 (RLVa-1.1.0l) | Added: RLVa-1.1.0l
 #ifdef RLV_EXTENSION_CMD_TOUCHXXX
 		case RLV_BHVR_TOUCHHUD:				// @touchhud[:<uuid>=n|y			- Checked: 2010-01-01 (RLVa-1.1.0l) | Added: RLVa-1.1.0l
@@ -1601,20 +1601,8 @@ ERlvCmdRet RlvHandler::processForceCommand(const RlvCommand& rlvCmd) const
 		case RLV_BHVR_SIT:			// @sit:<option>=force
 			eRet = onForceSit(rlvCmd);
 			break;
-		case RLV_BHVR_ADJUSTHEIGHT:	// @adjustheight:<options>=force		- Checked: 2011-03-28 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
-			{
-				RlvCommandOptionAdjustHeight rlvCmdOption(rlvCmd);
-				VERIFY_OPTION(rlvCmdOption.isValid());
-				if (isAgentAvatarValid())
-				{
-					F32 nValue = (rlvCmdOption.m_nPelvisToFoot - gAgentAvatarp->getPelvisToFoot()) * rlvCmdOption.m_nPelvisToFootDeltaMult;
-					nValue += rlvCmdOption.m_nPelvisToFootOffset;
-					if (!gAgentAvatarp->isUsingServerBakes())
-						gSavedSettings.setF32(RLV_SETTING_AVATAROFFSET_Z, llclamp<F32>(nValue, -1.0f, 1.0f));
-					else
-						eRet = RLV_RET_FAILED_DISABLED;
-				}
-			}
+		case RLV_BHVR_ADJUSTHEIGHT:	// @adjustheight:<options>=force
+			eRet = RLV_RET_DEPRECATED;
 			break;
 		case RLV_BHVR_TPTO:			// @tpto:<option>=force					- Checked: 2011-03-28 (RLVa-1.3.0f) | Modified: RLVa-1.3.0f
 			{

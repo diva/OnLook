@@ -4063,8 +4063,12 @@ LLVolumeBridge::LLVolumeBridge(LLDrawable* drawablep)
 	mSlopRatio = 0.25f;
 }
 
-bool can_batch_texture(LLFace* facep)
+bool can_batch_texture(const LLFace* facep)
 {
+	static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+
+	if(!alt_batching)
+	{
 	if (facep->getTextureEntry()->getBumpmap())
 	{ //bump maps aren't worked into texture batching yet
 		return false;
@@ -4084,6 +4088,30 @@ bool can_batch_texture(LLFace* facep)
 	{ //texture animation breaks batches
 		return false;
 	}
+	}
+	else
+	{
+
+	if (facep->getPoolType() == LLDrawPool::POOL_BUMP && (facep->getTextureEntry()->getBumpmap() > 0 && facep->getTextureEntry()->getBumpmap() < 18))
+	{ //bump maps aren't worked into texture batching yet
+		return false;
+	}
+
+	if (LLPipeline::sRenderDeferred && (facep->getPoolType() == LLDrawPool::POOL_ALPHA || facep->getPoolType() == LLDrawPool::POOL_MATERIALS) && facep->getTextureEntry()->getMaterialParams().notNull())
+	{ //materials don't work with texture batching yet
+		return false;
+	}
+
+	if (facep->getPoolType() != LLDrawPool::POOL_ALPHA && facep->getTexture() && facep->getTexture()->getPrimaryFormat() == GL_ALPHA)
+	{ //can't batch invisiprims
+		return false;
+	}
+
+	if (facep->isState(LLFace::TEXTURE_ANIM) && facep->getVirtualSize() > MIN_TEX_ANIM_SIZE)
+	{ //texture animation breaks batches
+		return false;
+	}
+	}
 	
 	return true;
 }
@@ -4093,10 +4121,10 @@ static LLFastTimer::DeclareTimer FTM_REGISTER_FACE("Register Face");
 void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep, U32 type)
 {
 	LLFastTimer t(FTM_REGISTER_FACE);
-	if (type == LLRenderPass::PASS_ALPHA && facep->getTextureEntry()->getMaterialParams().notNull() && !facep->getVertexBuffer()->hasDataType(LLVertexBuffer::TYPE_TANGENT))
-	{
-		LL_WARNS("RenderMaterials") << "Oh no! No binormals for this alpha blended face!" << LL_ENDL;
-	}
+	//if (type == LLRenderPass::PASS_ALPHA && facep->getTextureEntry()->getMaterialParams().notNull() && !facep->getVertexBuffer()->hasDataType(LLVertexBuffer::TYPE_TANGENT))
+	//{
+	//	LL_WARNS("RenderMaterials") << "Oh no! No binormals for this alpha blended face!" << LL_ENDL;
+	//}
 
 //	if (facep->getViewerObject()->isSelected() && gHideSelectedObjects)
 // [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
@@ -4115,11 +4143,21 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 
 	S32 idx = draw_vec.size()-1;
 
-	BOOL fullbright = (type == LLRenderPass::PASS_FULLBRIGHT) ||
+	static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+	BOOL fullbright;
+	if(!alt_batching)
+	{
+	fullbright = (type == LLRenderPass::PASS_FULLBRIGHT) ||
 		(type == LLRenderPass::PASS_INVISIBLE) ||
 		(type == LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK) ||
 		(type == LLRenderPass::PASS_ALPHA && facep->isState(LLFace::FULLBRIGHT)) ||
 		(facep->getTextureEntry()->getFullbright());
+	}
+	else
+	{
+	fullbright = facep->isState(LLFace::FULLBRIGHT);
+	}
+	
 	
 	if (!fullbright && type != LLRenderPass::PASS_GLOW && !facep->getVertexBuffer()->hasDataType(LLVertexBuffer::TYPE_NORMAL))
 	{
@@ -4152,15 +4190,20 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 
 	//drawable->getVObj()->setDebugText(llformat("%d", drawable->isState(LLDrawable::ANIMATED_CHILD)));
 
-	U8 bump = (type == LLRenderPass::PASS_BUMP || type == LLRenderPass::PASS_POST_BUMP) ? facep->getTextureEntry()->getBumpmap() : 0;
+	LLMaterial* mat = facep->getTextureEntry()->getMaterialParams().get(); 
+
+	bool cmp_bump = (type == LLRenderPass::PASS_BUMP) || (type == LLRenderPass::PASS_POST_BUMP);
+	bool cmp_shiny = !alt_batching ? !!mat : ((type == LLRenderPass::PASS_SHINY) || (type == LLRenderPass::PASS_FULLBRIGHT_SHINY) || (type == LLRenderPass::PASS_INVISI_SHINY));
+	bool cmp_mat = !alt_batching || LLPipeline::sRenderDeferred && ((facep->getPoolType() == LLDrawPool::POOL_MATERIALS) || (facep->getPoolType() == LLDrawPool::POOL_ALPHA));
+
+	U8 bump = facep->getTextureEntry()->getBumpmap();
 	U8 shiny = facep->getTextureEntry()->getShiny();
 
 	LLViewerTexture* tex = facep->getTexture();
 
 	U8 index = facep->getTextureIndex();
 	
-	LLMaterial* mat = facep->getTextureEntry()->getMaterialParams().get(); 
-	LLMaterialID mat_id = facep->getTextureEntry()->getMaterialID();
+	//LLMaterial* mat = facep->getTextureEntry()->getMaterialParams().get(); 
 
 	bool batchable = false;
 
@@ -4178,10 +4221,9 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		}
 	}
 
-
 	if (index < 255 && idx >= 0)
 	{
-		if (mat || draw_vec[idx]->mMaterial)
+		if (cmp_mat && (mat || draw_vec[idx]->mMaterial))
 		{ //can't batch textures when materials are present (yet)
 			batchable = false;
 		}
@@ -4202,7 +4244,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 			batchable = true;
 		}
 	}
-	
+
 	if (idx >= 0 && 
 		draw_vec[idx]->mVertexBuffer == facep->getVertexBuffer() &&
 		draw_vec[idx]->mEnd == facep->getGeomIndex()-1 &&
@@ -4211,14 +4253,15 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		draw_vec[idx]->mEnd - draw_vec[idx]->mStart + facep->getGeomCount() <= (U32) gGLManager.mGLMaxVertexRange &&
 		draw_vec[idx]->mCount + facep->getIndicesCount() <= (U32) gGLManager.mGLMaxIndexRange &&
 #endif
-		draw_vec[idx]->mMaterial == mat &&
-		draw_vec[idx]->mMaterialID == mat_id &&
+		(!cmp_mat || draw_vec[idx]->mMaterial == mat) &&
+		//draw_vec[idx]->mMaterialID == mat_id &&
 		draw_vec[idx]->mFullbright == fullbright &&
-		draw_vec[idx]->mBump  == bump  &&
-		(!mat || (draw_vec[idx]->mShiny == shiny)) && // need to break batches when a material is shared, but legacy settings are different
+		(!cmp_bump || draw_vec[idx]->mBump == bump)  &&
+		(!cmp_shiny || !!draw_vec[idx]->mShiny == !!shiny) &&
+		//(!mat || (draw_vec[idx]->mShiny == shiny)) && // need to break batches when a material is shared, but legacy settings are different
 		draw_vec[idx]->mTextureMatrix == tex_mat &&
 		draw_vec[idx]->mModelMatrix == model_mat &&
-		draw_vec[idx]->mShaderMask == shader_mask)
+		(!cmp_mat || draw_vec[idx]->mShaderMask == shader_mask))
 	{
 		draw_vec[idx]->mCount += facep->getIndicesCount();
 		draw_vec[idx]->mEnd += facep->getGeomCount();
@@ -4265,9 +4308,9 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		draw_info->mMaterial = mat;
 		draw_info->mShaderMask = shader_mask;
 
-		if (mat)
+		if (cmp_mat && mat)
 		{
-				draw_info->mMaterialID = mat_id;
+				//draw_info->mMaterialID = mat_id;
 
 				// We have a material.  Update our draw info accordingly.
 				
@@ -4288,7 +4331,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 				draw_info->mNormalMap = facep->getViewerObject()->getTENormalMap(facep->getTEOffset());
 				
 		}
-		else 
+		else
 		{
 			if (type == LLRenderPass::PASS_GRASS)
 			{
@@ -4312,6 +4355,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 			draw_info->mTextureList.resize(index+1);
 			draw_info->mTextureList[index] = tex;
 		}
+
 		draw_info->validate();
 	}
 }
@@ -4491,7 +4535,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						vobj->isMesh() && 
 						gMeshRepo.getSkinInfo(vobj->getVolume()->getParams().getSculptID(), vobj);
 
-			bool bake_sunlight = LLPipeline::sBakeSunlight && drawablep->isStatic();
+			//bool bake_sunlight = LLPipeline::sBakeSunlight && drawablep->isStatic();
 
 			bool is_rigged = false;
 
@@ -4760,18 +4804,66 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						}
 					}
 
+					static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+
+					bool force_fullbright = group->isHUDGroup();
 					BOOL force_simple = (facep->getPixelArea() < FORCE_SIMPLE_RENDER_AREA);
 					U32 type = gPipeline.getPoolTypeFromTE(te, tex);
+
+					if(!alt_batching)
+					{
 					if (type != LLDrawPool::POOL_ALPHA && force_simple)
 					{
 						type = LLDrawPool::POOL_SIMPLE;
 					}
+					}
+					else
+					{
+					if (force_fullbright || te->getFullbright())
+						facep->setState(LLFace::FULLBRIGHT);
+
+					if ( type == LLDrawPool::POOL_ALPHA )
+					{
+						if(facep->canRenderAsMask())
+						{
+							if (facep->isState(LLFace::FULLBRIGHT))
+							{
+								type = LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
+							}
+							else
+							{
+								type = LLDrawPool::POOL_ALPHA_MASK;
+							}
+						}
+					}
+					else if (force_fullbright)
+					{
+						if(type == LLDrawPool::POOL_ALPHA_MASK)
+							type = LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
+						else
+							type = LLDrawPool::POOL_FULLBRIGHT;
+					}
+					else if(force_simple && type != LLDrawPool::POOL_FULLBRIGHT && type != LLDrawPool::POOL_ALPHA_MASK && type != LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK)
+					{
+						type = LLDrawPool::POOL_SIMPLE;
+					}
+					}
+
 					facep->setPoolType(type);
 
+					if(!alt_batching)
+					{
 					if (vobj->isHUDAttachment())
 					{
 						facep->setState(LLFace::FULLBRIGHT);
 					}
+					}
+					/*LLColor4 clr = facep->getFaceColor();
+					LLColor4U clru = LLColor4U(llround(clr.mV[0] * 255.f), llround(clr.mV[0] * 255.f), llround(clr.mV[0] * 255.f), llround(clr.mV[0] * 255.f));
+					if(clru.mV[0] == 164 && clru.mV[1] == 106 && clr.mV[2] == 65)
+					{
+						llinfos << "Facepool = " << type << " alpha = " << clr.mV[3] << llendl;
+					}*/
 
 					if (vobj->mTextureAnimp && vobj->mTexAnimMode)
 					{
@@ -4797,8 +4889,10 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						}
 					}
 
-					if (type == LLDrawPool::POOL_ALPHA)
+					if(!alt_batching)
 					{
+					if (type == LLDrawPool::POOL_ALPHA)
+ 					{
 						if (facep->canRenderAsMask())
 						{ //can be treated as alpha mask
 							if (simple_count < MAX_FACE_COUNT)
@@ -4824,7 +4918,6 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						{
 							facep->mLastUpdateTime = gFrameTimeSeconds;
 						}
-
 						if (gPipeline.canUseWindLightShadersOnObjects()
 							&& LLPipeline::sRenderBump)
 						{
@@ -4832,7 +4925,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 							//  If we did check, then genDrawInfo would be more lenient than rebuildGeom on deciding if a face verts should have material-related attributes,
 							//  which would result in a face with a vertex buffer that fails to meet shader attribute requirements.
 							if (LLPipeline::sRenderDeferred && te->getMaterialParams().notNull() /* && !te->getMaterialID().isNull()*/)
-							{
+ 							{
 								LLMaterial* mat = te->getMaterialParams().get();
 								if (mat->getNormalID().notNull())
 								{
@@ -4864,7 +4957,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 									{
 										simple_faces[simple_count++] = facep;
 									}
-								}									
+								}
 							}
 							else if (te->getBumpmap())
 							{ //needs normal + tangent
@@ -4899,7 +4992,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 								}
 							}
 							else if ((te->getShiny() && LLPipeline::sRenderBump) ||
-								!(te->getFullbright() || bake_sunlight))
+								!(te->getFullbright()))
 							{ //needs normal
 								if (simple_count < MAX_FACE_COUNT)
 								{
@@ -4915,6 +5008,132 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 								}
 							}
 						}
+					}
+					}
+					else
+					{
+					LLFace*** cur_type = NULL;
+					U32* cur_count = NULL;
+
+					if (type == LLDrawPool::POOL_ALPHA)
+					{
+						cur_type = &alpha_faces;
+						cur_count = &alpha_count;
+
+						if (te->getColor().mV[3] > 0.f)
+						{ //only treat as alpha in the pipeline if < 100% transparent
+							drawablep->setState(LLDrawable::HAS_ALPHA);
+						}
+
+						LLMaterial* mat = te->getMaterialParams().get();
+						if(mat && LLPipeline::sRenderDeferred)
+						{
+							if (mat->getNormalID().notNull())
+							{
+								if (mat->getSpecularID().notNull())
+								{ //has normal and specular maps (needs texcoord1, texcoord2, and tangent)
+									cur_type = &normspec_faces;
+									cur_count = &normspec_count;
+								}
+								else
+								{ //has normal map (needs texcoord1 and tangent)
+									cur_type = &norm_faces;
+									cur_count = &norm_count;
+								}
+							}
+							else if (mat->getSpecularID().notNull())
+							{ //has specular map but no normal map, needs texcoord2
+								cur_type = &spec_faces;
+								cur_count = &spec_count;
+							}
+						}
+					}
+					else if(type == LLDrawPool::POOL_ALPHA_MASK)
+					{
+						cur_type = &simple_faces;
+						cur_count = &simple_count;
+					}
+					else if(type == LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK)
+					{
+						cur_type = &fullbright_faces;
+						cur_count = &fullbright_count;
+					}
+					else
+					{
+						if (drawablep->isState(LLDrawable::REBUILD_VOLUME))
+						{
+							facep->mLastUpdateTime = gFrameTimeSeconds;
+						}
+						
+						if (type == LLDrawPool::POOL_BUMP)
+						{ //needs normal + tangent
+							if(te->getBumpmap() > 0 && te->getBumpmap() < 18)
+							{
+								cur_type = &bump_faces;
+								cur_count = &bump_count;
+							}
+							else if(te->getShiny())
+							{
+								cur_type = &simple_faces;
+								cur_count = &simple_count;
+							}
+						}
+						else if (type == LLDrawPool::POOL_SIMPLE)
+						{ //needs normal + tangent
+							cur_type = &simple_faces;
+							cur_count = &simple_count;
+						}
+						else if (type == LLDrawPool::POOL_FULLBRIGHT)
+						{ //doesn't need normal...
+							if(LLPipeline::sRenderBump && te->getShiny())	//unless it's shiny..
+							{
+								cur_type = &simple_faces;
+								cur_count = &simple_count;
+							}
+							else
+							{
+								cur_type = &fullbright_faces;
+								cur_count = &fullbright_count;
+							}
+ 						}
+						/*Singu Note: Don't check the materials ID, as doing such causes a mismatch between rebuildGeom and genDrawInfo. 
+						If we did check, then genDrawInfo would be more lenient than rebuildGeom on deciding if a face verts should have material-related attributes,
+						which would result in a face with a vertex buffer that fails to meet shader attribute requirements.*/
+						else if(type == LLDrawPool::POOL_MATERIALS)
+						{
+							LLMaterial* mat = te->getMaterialParams().get();
+							if (mat->getNormalID().notNull())
+							{
+								if (mat->getSpecularID().notNull())
+								{ //has normal and specular maps (needs texcoord1, texcoord2, and tangent)
+									cur_type = &normspec_faces;
+									cur_count = &normspec_count;
+								}
+								else
+								{ //has normal map (needs texcoord1 and tangent)
+									cur_type = &norm_faces;
+									cur_count = &norm_count;
+								}
+							}
+							else if (mat->getSpecularID().notNull())
+							{ //has specular map but no normal map, needs texcoord2
+								cur_type = &spec_faces;
+								cur_count = &spec_count;
+							}
+							else
+							{ //has neither specular map nor normal map, only needs texcoord0
+								cur_type = &simple_faces;
+								cur_count = &simple_count;
+							}
+						}
+						else 
+						{
+							llerrs << "Unknown pool type: " << type << llendl;
+						}
+					}
+					llassert_always(cur_type);
+					if(*cur_count < MAX_FACE_COUNT)
+						(*cur_type)[(*cur_count)++] = facep;
 					}
 				}
 				else
@@ -4946,7 +5165,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	//PROCESS NON-ALPHA FACES
 	U32 simple_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_NORMAL | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 	U32 alpha_mask = simple_mask | 0x80000000; //hack to give alpha verts their own VBO
-	U32 bump_mask = simple_mask | LLVertexBuffer::MAP_TEXCOORD1;
+	U32 bump_mask = simple_mask | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_TANGENT;
 	U32 fullbright_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 
 	U32 norm_mask = simple_mask | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_TANGENT;
@@ -4964,23 +5183,21 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		spec_mask = spec_mask | LLVertexBuffer::MAP_EMISSIVE;
 	}
 
-	BOOL batch_textures = LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_OBJECT) > 1;
+	BOOL batch_textures = gPipeline.getUseVertexShaders();
 
-	if (batch_textures)
-	{
-		bump_mask = bump_mask | LLVertexBuffer::MAP_TANGENT;
-		simple_mask = simple_mask | LLVertexBuffer::MAP_TEXTURE_INDEX;
-		alpha_mask = alpha_mask | LLVertexBuffer::MAP_TEXTURE_INDEX | LLVertexBuffer::MAP_TANGENT | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_TEXCOORD2;
-		fullbright_mask = fullbright_mask | LLVertexBuffer::MAP_TEXTURE_INDEX;
-	}
+	U32 additional_flags = 0x0;
+	if(batch_textures)
+		additional_flags |= LLVertexBuffer::MAP_TEXTURE_INDEX;
+	if(emissive)
+		additional_flags |= LLVertexBuffer::MAP_EMISSIVE;
 
-	genDrawInfo(group, simple_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, simple_faces, simple_count, FALSE, batch_textures, FALSE);
-	genDrawInfo(group, fullbright_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, fullbright_faces, fullbright_count, FALSE, batch_textures);
-	genDrawInfo(group, alpha_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, alpha_faces, alpha_count, TRUE, batch_textures);
-	genDrawInfo(group, bump_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, bump_faces, bump_count, FALSE, FALSE);
-	genDrawInfo(group, norm_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, norm_faces, norm_count, FALSE, FALSE);
-	genDrawInfo(group, spec_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, spec_faces, spec_count, FALSE, FALSE);
-	genDrawInfo(group, normspec_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, normspec_faces, normspec_count, FALSE, FALSE);
+	genDrawInfo(group, simple_mask | additional_flags, simple_faces, simple_count, FALSE, batch_textures);
+	genDrawInfo(group, fullbright_mask | additional_flags, fullbright_faces, fullbright_count, FALSE, batch_textures);
+	genDrawInfo(group, alpha_mask | additional_flags, alpha_faces, alpha_count, TRUE, batch_textures);
+	genDrawInfo(group, bump_mask | additional_flags, bump_faces, bump_count, FALSE);
+	genDrawInfo(group, norm_mask | additional_flags, norm_faces, norm_count, FALSE);
+	genDrawInfo(group, spec_mask | additional_flags, spec_faces, spec_count, FALSE);
+	genDrawInfo(group, normspec_mask | additional_flags, normspec_faces, normspec_count, FALSE);
 
 	if (!LLPipeline::sDelayVBUpdate)
 	{
@@ -5132,28 +5349,75 @@ struct CompareBatchBreakerModified
 {
 	bool operator()(const LLFace* const& lhs, const LLFace* const& rhs)
 	{
+		static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+		if(!alt_batching)
+		{
+		const LLTextureEntry* lte = lhs->getTextureEntry();
+ 		const LLTextureEntry* rte = rhs->getTextureEntry();
+ 
+		if (lte->getBumpmap() != rte->getBumpmap())
+ 		{
+			return lte->getBumpmap() < rte->getBumpmap();
+ 		}
+		else if (lte->getFullbright() != rte->getFullbright())
+ 		{
+			return lte->getFullbright() < rte->getFullbright();
+ 		}
+		else if (LLPipeline::sRenderDeferred && lte->getMaterialParams() != rte->getMaterialParams())
+ 		{
+			return lte->getMaterialParams() < rte->getMaterialParams();
+ 		}
+		else if (LLPipeline::sRenderDeferred && (lte->getMaterialParams() == rte->getMaterialParams()) && (lte->getShiny() != rte->getShiny()))
+
+ 		{
+ 			return lte->getShiny() < rte->getShiny();
+ 		}
+
+ 		else
+ 		{
+ 			return lhs->getTexture() < rhs->getTexture();
+ 		}
+		}
+		else
+		{
+
 		const LLTextureEntry* lte = lhs->getTextureEntry();
 		const LLTextureEntry* rte = rhs->getTextureEntry();
 
-		if (lte->getBumpmap() != rte->getBumpmap())
+		bool batch_left = can_batch_texture(lhs);
+		bool batch_right = can_batch_texture(rhs);
+
+		if (lhs->getPoolType() != rhs->getPoolType())
+		{
+			return lhs->getPoolType() < rhs->getPoolType();
+		}
+		else if(batch_left != batch_right)	//Move non-batchable faces together.
+		{
+			return !(batch_left < batch_right);
+		}
+
+		bool batch_shiny = (!LLPipeline::sRenderDeferred || lhs->isState(LLFace::FULLBRIGHT)) && lhs->getPoolType() == LLDrawPool::POOL_BUMP;
+
+		if (lhs->isState(LLFace::FULLBRIGHT) != rhs->isState(LLFace::FULLBRIGHT))
+		{
+			return lhs->isState(LLFace::FULLBRIGHT) < rhs->isState(LLFace::FULLBRIGHT);
+		}
+		else if(batch_shiny && !lte->getShiny() != !rte->getShiny())
+		{
+			return !lte->getShiny() < !rte->getShiny();
+		}
+		else if(lhs->getPoolType() == LLDrawPool::POOL_MATERIALS && lte->getMaterialParams().get() != rte->getMaterialParams().get())
+		{
+			return lte->getMaterialParams().get() < rte->getMaterialParams().get();
+		}
+		else if(lhs->getPoolType() == LLDrawPool::POOL_BUMP && lte->getBumpmap() != rte->getBumpmap())
 		{
 			return lte->getBumpmap() < rte->getBumpmap();
-		}
-		else if (lte->getFullbright() != rte->getFullbright())
-		{
-			return lte->getFullbright() < rte->getFullbright();
-		}
-		else if (LLPipeline::sRenderDeferred && lte->getMaterialParams() != rte->getMaterialParams())
-		{
-			return lte->getMaterialParams() < rte->getMaterialParams();
-		}
-		else if (LLPipeline::sRenderDeferred && (lte->getMaterialParams() == rte->getMaterialParams()) && (lte->getShiny() != rte->getShiny()))
-		{
-			return lte->getShiny() < rte->getShiny();
 		}
 		else
 		{
 			return lhs->getTexture() < rhs->getTexture();
+		}
 		}
 	}
 };
@@ -5168,7 +5432,7 @@ static LLFastTimer::DeclareTimer FTM_GEN_DRAW_INFO_RESIZE_VB("Resize VB");
 
 
 
-void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFace** faces, U32 face_count, BOOL distance_sort, BOOL batch_textures, BOOL no_materials)
+void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFace** faces, U32 face_count, BOOL distance_sort, BOOL batch_textures)
 {
 	LLFastTimer t(FTM_REBUILD_VOLUME_GEN_DRAW_INFO);
 
@@ -5203,40 +5467,19 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 			std::sort(faces, faces+face_count, LLFace::CompareDistanceGreater());
 		}
 	}
-				
+
 	bool hud_group = group->isHUDGroup() ;
 	LLFace** face_iter = faces;
 	LLFace** end_faces = faces+face_count;
 	
 	LLSpatialGroup::buffer_map_t buffer_map;
 
-	LLViewerTexture* last_tex = NULL;
-	S32 buffer_index = 0;
-
-	if (distance_sort)
-	{
-		buffer_index = -1;
-	}
-
-	S32 texture_index_channels = 1;
-	
-	if (gGLManager.mGLSLVersionMajor > 1 || gGLManager.mGLSLVersionMinor >= 30)
-	{
-		static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-		if(!no_texture_indexing)
-		texture_index_channels = LLGLSLShader::sIndexedTextureChannels-1; //always reserve one for shiny for now just for simplicity;
-	}
+	S32 texture_index_channels = llmax(LLGLSLShader::sIndexedTextureChannels-1,1); //always reserve one for shiny for now just for simplicity
 
 	if (LLPipeline::sRenderDeferred && distance_sort)
 	{
 		texture_index_channels = gDeferredAlphaProgram.mFeatures.mIndexedTextureChannels;
 	}
-
-	static const LLCachedControl<U32> max_texture_index("RenderMaxTextureIndex",1);
-	texture_index_channels = llmin(texture_index_channels, (S32) max_texture_index.get());
-	
-	//NEVER use more than 16 texture index channels (workaround for prevalent driver bug)
-	texture_index_channels = llmin(texture_index_channels, 16);
 
 	bool flexi = false;
 
@@ -5247,22 +5490,13 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 		LLViewerTexture* tex = facep->getTexture();
 		LLMaterialPtr mat = facep->getTextureEntry()->getMaterialParams();
 
-		if (distance_sort)
+		//bool bake_sunlight = LLPipeline::sBakeSunlight && facep->getDrawable()->isStatic();
+
+		static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+		if (!alt_batching && distance_sort)
 		{
 			tex = NULL;
 		}
-
-		if (last_tex == tex)
-		{
-			buffer_index++;
-		}
-		else
-		{
-			last_tex = tex;
-			buffer_index = 0;
-		}
-
-		bool bake_sunlight = LLPipeline::sBakeSunlight && facep->getDrawable()->isStatic(); 
 
 		U32 index_count = facep->getIndicesCount();
 		U32 geom_count = facep->getGeomCount();
@@ -5272,7 +5506,9 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 		//sum up vertices needed for this render batch
 		LLFace** i = face_iter;
 		++i;
-		
+
+		if(!alt_batching)
+		{
 		const U32 MAX_TEXTURE_COUNT = 32;
 		static LLViewerTexture* texture_list[MAX_TEXTURE_COUNT];
 		
@@ -5389,6 +5625,95 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 				}
 			}
 
+		}
+		else
+		{
+			LLFastTimer t(FTM_GEN_DRAW_INFO_FACE_SIZE);
+
+			if (batch_textures)
+			{
+				facep->setTextureIndex(0);
+
+				if(can_batch_texture(facep))
+				{
+					static const U8 MAX_TEXTURE_COUNT = 32;
+					static LLViewerTexture* texture_list[MAX_TEXTURE_COUNT];
+					U8 texture_count = 1;
+					U8 cur_tex = 0;
+					texture_list[0] = tex;
+					U8 pool = facep->getPoolType();
+
+					while (i != end_faces)
+					{
+						facep = *i;
+						if ( !can_batch_texture(facep) || !(facep) || (geom_count + facep->getGeomCount() > max_vertices) || pool != facep->getPoolType() )
+						{ //cut batches on geom count too big
+							break;
+						}
+						else
+						{
+							if(facep->getTexture() != tex)
+							{
+								bool reused = false;
+								if(distance_sort)	//Alpha faces aren't sorted by batch criteria, but rather distance WRT camera.
+								{
+									for(U8 j = 0; j < texture_count; ++j)
+									{
+										if(texture_list[j] == facep->getTexture())
+										{
+											tex = facep->getTexture();
+											cur_tex = j;
+											reused = true;
+											break;
+										}
+									}
+								}
+								if(!reused)
+								{
+									if(++texture_count > llmin((U8)texture_index_channels,MAX_TEXTURE_COUNT))
+										break;
+									cur_tex = texture_count - 1;
+									tex = facep->getTexture();
+									texture_list[cur_tex] = tex;
+								}
+							}
+							facep->setTextureIndex(cur_tex);
+							flexi = flexi || facep->getViewerObject()->getVolume()->isUnique();
+							index_count += facep->getIndicesCount();
+							geom_count += facep->getGeomCount();
+						}
+						++i;
+					}
+				}
+			}
+			else
+			{
+				//face has no texture index
+				facep->mDrawInfo = NULL;
+				facep->setTextureIndex(255);
+
+				while (i != end_faces &&
+					(LLPipeline::sTextureBindTest ||
+						(distance_sort ||
+							((*i)->getTexture() == tex &&
+							((*i)->getTextureEntry()->getMaterialParams() == mat)))))
+				{
+					facep = *i;
+
+					if (geom_count + facep->getGeomCount() > max_vertices)
+					{ //cut batches on geom count too big
+						break;
+					}
+					//face has no texture index
+					facep->mDrawInfo = NULL;
+					facep->setTextureIndex(255);
+					flexi = flexi || facep->getViewerObject()->getVolume()->isUnique();
+					index_count += facep->getIndicesCount();
+					geom_count += facep->getGeomCount();
+					++i;
+				}
+			}
+		}
 
 		if (flexi && buffer_usage && buffer_usage != GL_STREAM_DRAW_ARB)
 		{
@@ -5398,14 +5723,19 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 		// Singu Note: Catch insufficient vbos right when they are created. Easier to debug.
 		if(gDebugGL)
 		{
-			const LLTextureEntry* te = facep->getTextureEntry();
-			if (mat && LLPipeline::sRenderDeferred && !hud_group &&
-				!no_materials &&
-				!te->getFullbright() && 
-				!(te->getColor().mV[3] < 0.999f) &&
-				!(te->getBumpmap() && (te->getBumpmap() < 18) && (mat->getNormalID().isNull())))
+			if (LLPipeline::sRenderDeferred &&
+				(*face_iter)->getTextureEntry()->getMaterialParams().get() &&
+				((*face_iter)->getPoolType() == LLDrawPool::POOL_ALPHA ||
+				(*face_iter)->getPoolType() == LLDrawPool::POOL_MATERIALS ))
 			{
-				U32 shader_mask = mat->getShaderMask();
+				LLMaterial* mat = (*face_iter)->getTextureEntry()->getMaterialParams().get();
+
+				U32 shader_mask;
+				if((*face_iter)->getPoolType() == LLDrawPool::POOL_ALPHA)
+					shader_mask = mat->getShaderMask(LLMaterial::DIFFUSE_ALPHA_MODE_BLEND);
+				else
+					shader_mask = mat->getShaderMask();
+
 				if(shader_mask != 1 && shader_mask != 5 && shader_mask != 9 && shader_mask != 13)
 				{
 					LLGLSLShader* shader = &(gDeferredMaterialProgram[shader_mask]);
@@ -5493,8 +5823,12 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 			index_offset += facep->getGeomCount();
 			indices_index += facep->getIndicesCount();
 
+			static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+
 			//append face to appropriate render batch
 
+			if(!alt_batching)
+			{
 			BOOL force_simple = facep->getPixelArea() < FORCE_SIMPLE_RENDER_AREA;
 			BOOL fullbright = facep->isState(LLFace::FULLBRIGHT);
 			if ((mask & LLVertexBuffer::MAP_NORMAL) == 0)
@@ -5563,10 +5897,10 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 						}
 					}
 				}
-				else if (no_materials)
+				/*else if (no_materials)
 				{
 					registerFace(group, facep, LLRenderPass::PASS_SIMPLE);
-				}
+				}*/
 				else if (!opaque)	//Just use opaque instead of te->getColorblahblah
 				{
 					registerFace(group, facep, LLRenderPass::PASS_ALPHA);
@@ -5708,7 +6042,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 				{ //invisiprim
 					registerFace(group, facep, LLRenderPass::PASS_INVISIBLE);
 				}
-				else if (fullbright || bake_sunlight)
+				else if (fullbright)
 				{ //fullbright
 					if (mat && mat->getDiffuseAlphaMode() == LLMaterial::DIFFUSE_ALPHA_MODE_MASK)
 					{
@@ -5764,10 +6098,125 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 					registerFace(group, facep, LLRenderPass::PASS_BUMP);
 				}
 			}
-
 			if (!is_alpha && LLPipeline::sRenderGlow && te->getGlow() > 0.f)
 			{
 				registerFace(group, facep, LLRenderPass::PASS_GLOW);
+			}
+			}
+			else
+			{
+			const LLTextureEntry* te = facep->getTextureEntry();
+			tex = facep->getTexture();
+
+			bool is_alpha =			facep->getPoolType() == LLDrawPool::POOL_ALPHA;
+			bool is_shiny_shader =	facep->getPoolType() == LLDrawPool::POOL_BUMP && gPipeline.canUseVertexShaders() && te->getShiny();
+			bool is_shiny_fixed =	facep->getPoolType() == LLDrawPool::POOL_BUMP && !gPipeline.canUseVertexShaders() && te->getShiny();
+			bool is_fullbright =	facep->isState(LLFace::FULLBRIGHT);
+
+			if (facep->getPoolType() == LLDrawPool::POOL_MATERIALS)
+			{
+				U32 pass[] =
+				{
+					LLRenderPass::PASS_MATERIAL,
+					LLRenderPass::PASS_ALPHA, //LLRenderPass::PASS_MATERIAL_ALPHA,
+					LLRenderPass::PASS_MATERIAL_ALPHA_MASK,
+					LLRenderPass::PASS_MATERIAL_ALPHA_EMISSIVE,
+					LLRenderPass::PASS_SPECMAP,
+					LLRenderPass::PASS_ALPHA, //LLRenderPass::PASS_SPECMAP_BLEND,
+					LLRenderPass::PASS_SPECMAP_MASK,
+					LLRenderPass::PASS_SPECMAP_EMISSIVE,
+					LLRenderPass::PASS_NORMMAP,
+					LLRenderPass::PASS_ALPHA, //LLRenderPass::PASS_NORMMAP_BLEND,
+					LLRenderPass::PASS_NORMMAP_MASK,
+					LLRenderPass::PASS_NORMMAP_EMISSIVE,
+					LLRenderPass::PASS_NORMSPEC,
+					LLRenderPass::PASS_ALPHA, //LLRenderPass::PASS_NORMSPEC_BLEND,
+					LLRenderPass::PASS_NORMSPEC_MASK,
+					LLRenderPass::PASS_NORMSPEC_EMISSIVE,
+				};
+
+				U32 mask = mat->getShaderMask();
+
+				llassert(mask < sizeof(pass)/sizeof(U32));
+
+				mask = llmin(mask, (U32)(sizeof(pass)/sizeof(U32)-1));
+
+				registerFace(group, facep, pass[mask]);
+			}
+			else if (facep->getPoolType() == LLDrawPool::POOL_ALPHA)
+			{
+				// can we safely treat this as an alpha mask?
+				if (facep->getFaceColor().mV[3] <= 0.f)
+				{ //100% transparent, don't render unless we're highlighting transparent
+					registerFace(group, facep, LLRenderPass::PASS_ALPHA_INVISIBLE);
+				}
+				else
+				{
+					registerFace(group, facep, LLRenderPass::PASS_ALPHA);
+				}
+			}
+			else if (facep->getPoolType() == LLDrawPool::POOL_ALPHA_MASK)
+			{
+				registerFace(group, facep, LLRenderPass::PASS_ALPHA_MASK);
+			}
+			else if (facep->getPoolType() == LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK)
+			{
+				registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK);
+			}
+			else
+			{
+				if (tex->getPrimaryFormat() == GL_ALPHA)
+				{
+					if(is_shiny_shader && facep->getPoolType() == LLDrawPool::POOL_BUMP)
+					{
+						registerFace(group, facep, LLRenderPass::PASS_INVISI_SHINY);
+					}
+					registerFace(group, facep, LLRenderPass::PASS_INVISIBLE);
+				}
+				else if (facep->getPoolType() == LLDrawPool::POOL_SIMPLE)
+				{
+					registerFace(group, facep, LLRenderPass::PASS_SIMPLE);
+				}
+				else if (facep->getPoolType() == LLDrawPool::POOL_FULLBRIGHT)
+				{
+					registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT);
+				}
+				else if (facep->getPoolType() == LLDrawPool::POOL_BUMP)
+				{
+					llassert_always(mask & LLVertexBuffer::MAP_NORMAL);
+
+					bool is_bump = te->getBumpmap() > 0 && te->getBumpmap() < 18;
+
+					if(is_bump)
+					{
+						llassert_always(mask & LLVertexBuffer::MAP_TANGENT);
+					}
+					if(is_shiny_shader || is_shiny_fixed)
+					{
+						llassert_always(mask & LLVertexBuffer::MAP_NORMAL);
+					}
+
+					if (is_fullbright)
+					{
+						registerFace(group, facep, is_shiny_shader ? LLRenderPass::PASS_FULLBRIGHT_SHINY : LLRenderPass::PASS_FULLBRIGHT);
+						if(is_bump)
+							registerFace(group, facep, LLPipeline::sRenderDeferred ? LLRenderPass::PASS_POST_BUMP : LLRenderPass::PASS_BUMP);
+					}
+					else
+					{
+						registerFace(group, facep, (LLPipeline::sRenderDeferred || !is_shiny_shader) ? LLRenderPass::PASS_SIMPLE : LLRenderPass::PASS_SHINY);
+						if(is_bump)
+							registerFace(group, facep, LLRenderPass::PASS_BUMP);
+					}
+
+					if(is_shiny_fixed)
+						registerFace(group, facep, LLRenderPass::PASS_SHINY);
+				}
+			}
+			if (!is_alpha && LLPipeline::sRenderGlow && te->getGlow() > 0.f)
+			{
+				registerFace(group, facep, LLRenderPass::PASS_GLOW);
+			}
 			}
 						
 			++face_iter;

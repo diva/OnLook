@@ -83,7 +83,7 @@ void LLOutboxInventoryPanel::buildFolderView(/*const LLInventoryPanel::Params& p
 																	NULL,
 																	root_id);
 
-	mFolderRoot = createFolderView(new_listener, true/*params.use_label_suffix()*/);
+	mFolderRoot = createFolderView(new_listener, true/*params.use_label_suffix()*/)->getHandle();
 }
 
 LLFolderViewFolder * LLOutboxInventoryPanel::createFolderViewFolder(LLInvFVBridge * bridge)
@@ -93,7 +93,7 @@ LLFolderViewFolder * LLOutboxInventoryPanel::createFolderViewFolder(LLInvFVBridg
 		bridge->getIcon(),
 		bridge->getOpenIcon(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
-		mFolderRoot,
+		mFolderRoot.get(),
 		bridge);
 }
 
@@ -105,7 +105,7 @@ LLFolderViewItem * LLOutboxInventoryPanel::createFolderViewItem(LLInvFVBridge * 
 		bridge->getOpenIcon(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		bridge->getCreationDate(),
-		mFolderRoot,
+		mFolderRoot.get(),
 		bridge);
 }
 

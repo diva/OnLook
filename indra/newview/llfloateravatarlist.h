@@ -215,6 +215,7 @@ public:
 	static void toggle(void*);
 
 	static void showInstance();
+	static bool instanceVisible() { return instanceExists() && instance().getVisible(); }
 
 	// Decides which user-chosen columns to show and hide.
 	void assessColumns();
@@ -241,6 +242,7 @@ public:
 	std::string getSelectedNames(const std::string& separator = ", ");
 	std::string getSelectedName();
 	LLUUID getSelectedID();
+	uuid_vec_t getSelectedIDs();
 
 	static void lookAtAvatar(LLUUID &uuid);
 

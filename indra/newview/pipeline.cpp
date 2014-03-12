@@ -1526,24 +1526,28 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 	{
 		alpha = alpha || (imagep->getComponents() == 4 && imagep->getType() != LLViewerTexture::MEDIA_TEXTURE) || (imagep->getComponents() == 2);
 	}
-	
+
 	if (alpha && mat)
 	{
 		switch (mat->getDiffuseAlphaMode())
 		{
-			case 1:
+			case LLMaterial::DIFFUSE_ALPHA_MODE_BLEND:
 				alpha = true; // Material's alpha mode is set to blend.  Toss it into the alpha draw pool.
 				break;
-			case 0: //alpha mode set to none, never go to alpha pool
-			case 3: //alpha mode set to emissive, never go to alpha pool
+			case LLMaterial::DIFFUSE_ALPHA_MODE_NONE: //alpha mode set to none, never go to alpha pool
+			case LLMaterial::DIFFUSE_ALPHA_MODE_EMISSIVE: //alpha mode set to emissive, never go to alpha pool
 				alpha = color_alpha;
 				break;
 			default: //alpha mode set to "mask", go to alpha pool if fullbright
-				alpha = color_alpha; // Material's alpha mode is set to none, mask, or emissive.  Toss it into the opaque material draw pool.
+				alpha = color_alpha; // Material's alpha mode is set to mask, or default.  Toss it into the opaque material draw pool.
 				break;
 		}
 	}
 	
+	static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+
+	if(!alt_batching)
+	{
 	if (alpha)
 	{
 		return LLDrawPool::POOL_ALPHA;
@@ -1559,6 +1563,49 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 	else
 	{
 		return LLDrawPool::POOL_SIMPLE;
+	}
+	}
+	else
+	{
+	if (alpha)
+	{
+		return LLDrawPool::POOL_ALPHA;
+	}
+	else if ((!LLPipeline::sRenderDeferred || !mat || mat->getNormalID().isNull()) && LLPipeline::sRenderBump && te->getBumpmap() && te->getBumpmap() < 18)
+	{
+		return LLDrawPool::POOL_BUMP;	//Bump goes into bump pool unless using deferred and there's a normal map that takes precedence.
+	}
+	else if (mat && mat->getDiffuseAlphaMode() == LLMaterial::DIFFUSE_ALPHA_MODE_MASK)
+	{
+		if(te->getFullbright())
+		{
+			return LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
+		}
+		else
+		{
+			return LLPipeline::sRenderDeferred ? LLDrawPool::POOL_MATERIALS : LLDrawPool::POOL_ALPHA_MASK;
+		}
+	}
+	else if(LLPipeline::sRenderDeferred && mat)
+	{
+		if(te->getFullbright() && mat->getEnvironmentIntensity())
+		{
+			return LLDrawPool::POOL_FULLBRIGHT;
+		}
+		return LLDrawPool::POOL_MATERIALS;
+	}
+	else if(te->getFullbright())
+	{
+		return (LLPipeline::sRenderBump && te->getShiny()) ? LLDrawPool::POOL_BUMP : LLDrawPool::POOL_FULLBRIGHT;
+	}
+	else if (!LLPipeline::sRenderDeferred && LLPipeline::sRenderBump && te->getShiny())
+	{
+		return LLDrawPool::POOL_BUMP;	//Shiny goes into bump pool when not using deferred rendering.
+	}
+	else
+	{
+		return LLDrawPool::POOL_SIMPLE;
+	}
 	}
 }
 
@@ -4705,6 +4752,8 @@ void LLPipeline::renderDebug()
 
 	if(!mRenderDebugMask)
 		return;
+
+	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_LEQUAL);
 
 	// Debug stuff.
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 

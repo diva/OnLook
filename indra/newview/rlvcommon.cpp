@@ -18,17 +18,18 @@
 #include "llagent.h"
 #include "llagentui.h"
 #include "llavatarnamecache.h"
+#include "llinstantmessage.h"
 #include "llnotificationsutil.h"
+#include "llsdserialize.h"
 #include "lluictrlfactory.h"
-#include "sgversion.h"
 #include "llviewermenu.h"
 #include "llviewerparcelmgr.h"
 #include "llviewermenu.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
-#include "llvoavatar.h"
 #include "llworld.h"
 
+#include "rlvactions.h"
 #include "rlvcommon.h"
 #include "rlvhelper.h"
 #include "rlvhandler.h"
@@ -37,44 +38,16 @@
 #include "../lscript/lscript_byteformat.h" //Need LSCRIPTRunTimePermissionBits and SCRIPT_PERMISSION_*
 #include <boost/algorithm/string.hpp>
 
-using namespace LLOldEvents;
-
 // ============================================================================
 // RlvNotifications
 //
 
-#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-// Checked: 2009-12-05 (RLVa-1.1.0h) | Added: RLVa-1.1.0h
-/*void RlvNotifications::notifyBehaviour(ERlvBehaviour eBhvr, ERlvParamType eType)
-{
-	const std::string& strMsg = RlvStrings::getBehaviourNotificationString(eBhvr, eType);
-	if (!strMsg.empty())
-	{
-		LLSD argsNotify;
-		argsNotify["MESSAGE"] = strMsg;
-		LLNotificationsUtil::add("SystemMessageTip", argsNotify);
-	}
-}*/
-#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
-
-// Checked: 2009-11-11 (RLVa-1.1.0a) | Added: RLVa-1.1.0a/
-/*void RlvNotifications::notifyBlockedViewXXX(const char* pstrAssetType)
-{
-	LLStringUtil::format_map_t argsMsg; std::string strMsg = RlvStrings::getString(RLV_STRING_BLOCKED_VIEWXXX);
-	argsMsg["[TYPE]"] = pstrAssetType;
-	LLStringUtil::format(strMsg, argsMsg);
-
-	LLSD argsNotify;
-	argsNotify["MESSAGE"] = strMsg;
-	LLNotificationsUtil::add("SystemMessageTip", argsNotify);
-}
-*/
 // Checked: 2009-11-13 (RLVa-1.1.0b) | Modified: RLVa-1.1.0b
 /*
 void RlvNotifications::warnGiveToRLV()
 {
 	if ( (gSavedSettings.getWarning(RLV_SETTING_FIRSTUSE_GIVETORLV)) && (RlvSettings::getForbidGiveToRLV()) )
-		LLNotifications::instance().add(RLV_SETTING_FIRSTUSE_GIVETORLV, LLSD(), LLSD(), &RlvUtil::onGiveToRLVConfirmation);
+		LLNotifications::instance().add(RLV_SETTING_FIRSTUSE_GIVETORLV, LLSD(), LLSD(), &RlvNotifications::onGiveToRLVConfirmation);
 }
 */
 
@@ -131,9 +104,6 @@ void RlvSettings::initClass()
 			gSavedPerAccountSettings.getControl(RLV_SETTING_LOGINLASTLOCATION)->setHiddenFromSettingsEditor(true);
 #endif // RLV_EXTENSION_STARTLOCATION
 
-		if (gSavedSettings.controlExists(RLV_SETTING_AVATAROFFSET_Z))
-			gSavedSettings.getControl(RLV_SETTING_AVATAROFFSET_Z)->getSignal()->connect(boost::bind(&onChangedAvatarOffset, _2));
-
 		if (gSavedSettings.controlExists(RLV_SETTING_TOPLEVELMENU))
 			gSavedSettings.getControl(RLV_SETTING_TOPLEVELMENU)->getSignal()->connect(boost::bind(&onChangedMenuLevel));
 
@@ -147,7 +117,7 @@ void RlvSettings::initClass()
 	{
 		if ( (!LLApp::isQuitting()) && (gSavedPerAccountSettings.controlExists(RLV_SETTING_LOGINLASTLOCATION)) )
 		{
-			BOOL fValue = (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) || (!gRlvHandler.canStand());
+			BOOL fValue = (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) || (!RlvActions::canStand());
 			if (gSavedPerAccountSettings.getBOOL(RLV_SETTING_LOGINLASTLOCATION) != fValue)
 			{
 				gSavedPerAccountSettings.setBOOL(RLV_SETTING_LOGINLASTLOCATION, fValue);
@@ -187,67 +157,32 @@ bool RlvSettings::onChangedSettingBOOL(const LLSD& sdValue, bool* pfSetting)
 //
 
 std::vector<std::string> RlvStrings::m_Anonyms;
-std::map<std::string, std::string> RlvStrings::m_StringMap;
-#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-/*std::map<ERlvBehaviour, std::string> RlvStrings::m_BhvrAddMap;
-std::map<ERlvBehaviour, std::string> RlvStrings::m_BhvrRemMap;*/
-#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
+RlvStrings::string_map_t RlvStrings::m_StringMap;
+std::string RlvStrings::m_StringMapPath;
 
-// Checked: 2010-03-09 (RLVa-1.2.0a) | Added: RLVa-1.1.0h
+// Checked: 2011-11-08 (RLVa-1.5.0)
 void RlvStrings::initClass()
 {
 	static bool fInitialized = false;
 	if (!fInitialized)
 	{
-		LLXMLNodePtr xmlRoot;
-		if ( (!LLUICtrlFactory::getLayeredXMLNode("rlva_strings.xml", xmlRoot)) || (xmlRoot.isNull()) || (!xmlRoot->hasName("rlva_strings")) )
+		// Load the default string values
+		/* Singu TODO: findSkinnedFilenames/LLDir update
+		std::vector<std::string> files = gDirUtilp->findSkinnedFilenames(LLDir::XUI, RLV_STRINGS_FILE, LLDir::ALL_SKINS);
+		m_StringMapPath = (!files.empty()) ? files.front() : LLStringUtil::null;
+		for (auto itFile = files.cbegin(); itFile != files.cend(); ++itFile)
+		*/
+		std::string itFile = gDirUtilp->findSkinnedFilename(LLUICtrlFactory::getXUIPaths().front(), RLV_STRINGS_FILE);
+		if (!itFile.empty())
 		{
-			RLV_ERRS << "Problem reading RLVa string XML file" << RLV_ENDL;
-			return;
+			loadFromFile(itFile, false);
 		}
+		m_StringMapPath = itFile; // Singu TODO: Remove this when updating to the above LLDir impl.
 
-		for (LLXMLNode* pNode = xmlRoot->getFirstChild(); pNode != NULL; pNode = pNode->getNextSibling())
-		{
-			if (pNode->hasName("strings"))
-			{
-				std::string strName;
-				for (LLXMLNode* pStringNode = pNode->getFirstChild(); pStringNode != NULL; pStringNode = pStringNode->getNextSibling())
-				{
-					if ( (!pStringNode->hasName("string")) || (!pStringNode->getAttributeString("name", strName)) )
-						continue;
-					m_StringMap[strName] = pStringNode->getTextContents();
-				}
-			}
-			else if (pNode->hasName("anonyms"))
-			{
-				for (LLXMLNode* pAnonymNode = pNode->getFirstChild(); pAnonymNode != NULL; pAnonymNode = pAnonymNode->getNextSibling())
-				{
-					if (!pAnonymNode->hasName("anonym"))
-						continue;
-					m_Anonyms.push_back(pAnonymNode->getTextContents());
-				}
-			}
-			#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-			/*else if (pNode->hasName("behaviour-notifications"))
-			{
-				std::string strBhvr, strType; ERlvBehaviour eBhvr;
-				for (LLXMLNode* pNotifyNode = pNode->getFirstChild(); pNotifyNode != NULL; pNotifyNode = pNotifyNode->getNextSibling())
-				{
-					if ( (!pNotifyNode->hasName("notification")) || (!pNotifyNode->getAttributeString("type", strType)) ||
-						 (!pNotifyNode->getAttributeString("behaviour", strBhvr)) || 
-						 ((eBhvr = RlvCommand::getBehaviourFromString(strBhvr)) == RLV_BHVR_UNKNOWN) )
-					{
-						continue;
-					}
-					if ("add" == strType)
-						m_BhvrAddMap.insert(std::pair<ERlvBehaviour, std::string>(eBhvr, pNotifyNode->getTextContents()));
-					else if ("rem" == strType)
-						m_BhvrRemMap.insert(std::pair<ERlvBehaviour, std::string>(eBhvr, pNotifyNode->getTextContents()));
-				}
-			}*/
-			#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
-		}
+		// Load the custom string overrides
+		loadFromFile(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, RLV_STRINGS_FILE), true);
 
+		// Sanity check
 		if ( (m_StringMap.empty()) || (m_Anonyms.empty()) )
 		{
 			RLV_ERRS << "Problem parsing RLVa string XML file" << RLV_ENDL;
@@ -256,6 +191,68 @@ void RlvStrings::initClass()
 
 		fInitialized = true;
 	}
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvStrings::loadFromFile(const std::string& strFilePath, bool fUserOverride)
+{
+	llifstream fileStream(strFilePath, std::ios::binary); LLSD sdFileData;
+	if ( (!fileStream.is_open()) || (!LLSDSerialize::fromXMLDocument(sdFileData, fileStream)) )
+		return;
+	fileStream.close();
+
+	if (sdFileData.has("strings"))
+	{
+		const LLSD& sdStrings = sdFileData["strings"];
+		for (LLSD::map_const_iterator itString = sdStrings.beginMap(); itString != sdStrings.endMap(); ++itString)
+		{
+			if ( (!itString->second.has("value")) || ((fUserOverride) && (!hasString(itString->first))) )
+				continue;
+
+			std::list<std::string>& listValues = m_StringMap[itString->first];
+			if (!fUserOverride)
+			{
+				if (listValues.size() > 0)
+					listValues.pop_front();
+				listValues.push_front(itString->second["value"].asString());
+			}
+			else
+			{
+				while (listValues.size() > 1)
+					listValues.pop_back();
+				listValues.push_back(itString->second["value"].asString());
+			}
+		}
+	}
+	if (sdFileData.has("anonyms"))
+	{
+		const LLSD& sdAnonyms = sdFileData["anonyms"];
+		for (LLSD::array_const_iterator itAnonym = sdAnonyms.beginArray(); itAnonym != sdAnonyms.endArray(); ++itAnonym)
+		{
+			m_Anonyms.push_back((*itAnonym).asString());
+		}
+	}
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvStrings::saveToFile(const std::string& strFilePath)
+{
+	LLSD sdFileData;
+
+	LLSD& sdStrings = sdFileData["strings"];
+	for (string_map_t::const_iterator itString = m_StringMap.begin(); itString != m_StringMap.end(); ++itString)
+	{
+		const std::list<std::string>& listValues = itString->second;
+		if (listValues.size() > 1)
+			sdStrings[itString->first]["value"] = listValues.back();
+	}
+
+	llofstream fileStream(strFilePath);
+	if (!fileStream.good())
+		return;
+
+	LLSDSerialize::toPrettyXML(sdFileData, fileStream);
+	fileStream.close();
 }
 
 // Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
@@ -270,30 +267,12 @@ const std::string& RlvStrings::getAnonym(const std::string& strName)
 	return m_Anonyms[nHash % m_Anonyms.size()];
 }
 
-#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-// Checked: 2009-12-05 (RLVa-1.1.0h) | Added: RLVa-1.1.0h
-/*const std::string& RlvStrings::getBehaviourNotificationString(ERlvBehaviour eBhvr, ERlvParamType eType)
-{
-	if (RLV_TYPE_ADD == eType)
-	{
-		std::map<ERlvBehaviour, std::string>::const_iterator itString = m_BhvrAddMap.find(eBhvr);
-		return (itString != m_BhvrAddMap.end()) ? itString->second : LLStringUtil::null;
-	}
-	else if (RLV_TYPE_REMOVE == eType)
-	{
-		std::map<ERlvBehaviour, std::string>::const_iterator itString = m_BhvrRemMap.find(eBhvr);
-		return (itString != m_BhvrRemMap.end()) ? itString->second : LLStringUtil::null;
-	}
-	return LLStringUtil::null;
-}*/
-#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
-
-// Checked: 2009-11-11 (RLVa-1.1.0a) | Added: RLVa-1.1.0a
+// Checked: 2011-11-08 (RLVa-1.5.0)
 const std::string& RlvStrings::getString(const std::string& strStringName)
 {
 	static const std::string strMissing = "(Missing RLVa string)";
 	string_map_t::const_iterator itString = m_StringMap.find(strStringName);
-	return (itString != m_StringMap.end()) ? itString->second : strMissing;
+	return (itString != m_StringMap.end()) ? itString->second.back() : strMissing;
 }
 
 // Checked: 2009-11-25 (RLVa-1.1.0f) | Added: RLVa-1.1.0f
@@ -322,6 +301,8 @@ const char* RlvStrings::getStringFromReturnCode(ERlvCmdRet eRet)
 			return "unknown command";
 		case RLV_RET_FAILED_NOSHAREDROOT:
 			return "missing #RLV";
+		case RLV_RET_DEPRECATED:
+			return "deprecated";
 		// The following are identified by the chat verb
 		case RLV_RET_RETAINED:
 		case RLV_RET_SUCCESS:
@@ -354,15 +335,29 @@ std::string RlvStrings::getVersionAbout()
 }
 
 // Checked: 2010-03-27 (RLVa-1.4.0a) | Modified: RLVa-1.1.0a
-std::string RlvStrings::getVersionNum() 
+std::string RlvStrings::getVersionNum()
 {
 	return llformat("%d%02d%02d%02d", RLV_VERSION_MAJOR, RLV_VERSION_MINOR, RLV_VERSION_PATCH, RLV_VERSION_BUILD);
 }
 
-// Checked: 2010-05-26 (RLVa-1.2.0h) | Added: RLVa-1.2.0g
-bool RlvStrings::hasString(const std::string& strStringName)
+// Checked: 2011-11-08 (RLVa-1.5.0)
+bool RlvStrings::hasString(const std::string& strStringName, bool fCheckCustom)
 {
-	return m_StringMap.find(strStringName) != m_StringMap.end();
+	string_map_t::const_iterator itString = m_StringMap.find(strStringName);
+	return (itString != m_StringMap.end()) && ((!fCheckCustom) || (itString->second.size() > 0));
+}
+
+// Checked: 2011-11-08 (RLVa-1.5.0)
+void RlvStrings::setCustomString(const std::string& strStringName, const std::string& strStringValue)
+{
+	if (!hasString(strStringName))
+		return;
+
+	std::list<std::string>& listValues = m_StringMap[strStringName];
+	while (listValues.size() > 1)
+		listValues.pop_back();
+	if (!strStringValue.empty())
+		listValues.push_back(strStringValue);
 }
 
 // ============================================================================
@@ -396,27 +391,21 @@ void RlvUtil::filterNames(std::string& strUTF8Text, bool fFilterLegacy)
 		LLAvatarName avName;
 		if (LLAvatarNameCache::get(idAgents[idxAgent], &avName))
 		{
-			const std::string& strAnonym = RlvStrings::getAnonym(avName.mDisplayName);
-
-			// NOTE: if the legacy first and last name are empty we get a legacy name of " " which would replace all spaces in the string
-			std::string strLegacyName;
-			if ( (fFilterLegacy) && (!avName.mLegacyFirstName.empty()) &&
-				 ((!avName.mIsDisplayNameDefault) || (LLCacheName::getDefaultLastName() == avName.mLegacyLastName)) )
-			{
-				strLegacyName = avName.getLegacyName();
-			}
+			const std::string& strDisplayName = avName.mDisplayName;
+			const std::string& strLegacyName = avName.getLegacyName();
+			const std::string& strAnonym = RlvStrings::getAnonym(avName);
 
 			// If the display name is a subset of the legacy name we need to filter that first, otherwise it's the other way around
-			if (boost::icontains(strLegacyName, avName.mDisplayName))
+			if (boost::icontains(strLegacyName, strDisplayName))
 			{
-				if (!strLegacyName.empty())
+				if (fFilterLegacy)
 					boost::ireplace_all(strUTF8Text, strLegacyName, strAnonym);
-				boost::ireplace_all(strUTF8Text, avName.mDisplayName, strAnonym);
+				boost::ireplace_all(strUTF8Text, strDisplayName, strAnonym);
 			}
 			else
 			{
-				boost::ireplace_all(strUTF8Text, avName.mDisplayName, strAnonym);
-				if (!strLegacyName.empty())
+				boost::ireplace_all(strUTF8Text, strDisplayName, strAnonym);
+				if (fFilterLegacy)
 					boost::ireplace_all(strUTF8Text, strLegacyName, strAnonym);
 			}
 		}

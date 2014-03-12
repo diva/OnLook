@@ -33,21 +33,31 @@
 #ifndef LL_LLNETMAP_H
 #define LL_LLNETMAP_H
 
+#include "llmath.h"
 #include "llpanel.h"
 #include "llmemberlistener.h"
 #include "v3math.h"
 #include "v3dmath.h"
 #include "v4color.h"
-#include "llimage.h"
+#include "llpointer.h"
+#include "llcoord.h"
+
 
 class LLTextBox;
+class LLImageRaw;
 class LLViewerTexture;
+class LLFloaterMap;
+class LLMenuGL;
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+class LLViewerRegion;
+class LLAvatarName;
+// [/SL:KB]
 
-typedef enum e_minimap_center
+enum EMiniMapCenter
 {
 	MAP_CENTER_NONE = 0,
 	MAP_CENTER_CAMERA = 1
-} EMiniMapCenter;
+};
 
 class LLNetMap : public LLPanel
 {
@@ -55,76 +65,92 @@ public:
 	LLNetMap(const std::string& name);
 	virtual ~LLNetMap();
 
-	virtual void	draw();
-	virtual void	reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	virtual BOOL	handleMouseDown( S32 x, S32 y, MASK mask );
-	virtual BOOL	handleMouseUp( S32 x, S32 y, MASK mask );
-	virtual BOOL	handleHover( S32 x, S32 y, MASK mask );
-	virtual BOOL	handleDoubleClick( S32 x, S32 y, MASK mask );
-	virtual BOOL	handleRightMouseDown( S32 x, S32 y, MASK mask );
-	virtual BOOL	handleScrollWheel(S32 x, S32 y, S32 clicks);
-	virtual BOOL	handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rect_screen );
+	static const F32 MAP_SCALE_MIN;
+	static const F32 MAP_SCALE_MID;
+	static const F32 MAP_SCALE_MAX;
 
-	void			renderScaledPointGlobal( const LLVector3d& pos, const LLColor4U &color, F32 radius );
+	/*virtual*/ void	draw();
+	/*virtual*/ BOOL	handleScrollWheel(S32 x, S32 y, S32 clicks);
+	/*virtual*/ BOOL	handleMouseDown( S32 x, S32 y, MASK mask );
+	/*virtual*/ BOOL	handleMouseUp( S32 x, S32 y, MASK mask );
+	/*virtual*/ BOOL	handleHover( S32 x, S32 y, MASK mask );
+	/*virtual*/ BOOL	handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rect_screen );
+	/*virtual*/ void	reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
+
+	/*virtual*/ BOOL 	postBuild();
+	/*virtual*/ BOOL	handleRightMouseDown( S32 x, S32 y, MASK mask );
+	/*virtual*/ BOOL	handleDoubleClick( S32 x, S32 y, MASK mask );
 
 	static void mm_setcolor(LLUUID key,LLColor4 col); //moymod
 
-private:
 
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	void			refreshParcelOverlay() { mUpdateParcelImage = true; }
+// [/SL:KB]
 	void			setScale( F32 scale );
+	void			renderScaledPointGlobal( const LLVector3d& pos, const LLColor4U &color, F32 radius );
 
-	// Not used at present
-	void			translatePan( F32 delta_x, F32 delta_y );
-	void			setPan( F32 x, F32 y )			{ mTargetPanX = x; mTargetPanY = y; }
-
+private:
+	const LLVector3d& getObjectImageCenterGlobal()	{ return mObjectImageCenterGlobal; }
 	void renderPoint(const LLVector3 &pos, const LLColor4U &color, 
 					 S32 diameter, S32 relative_height = 0);
-	LLVector3		globalPosToView(const LLVector3d& global_pos, BOOL rotated);
-	LLVector3d		viewPosToGlobal(S32 x,S32 y, BOOL rotated);
+
+	LLVector3		globalPosToView(const LLVector3d& global_pos);
+	LLVector3d		viewPosToGlobal(S32 x,S32 y);
 
 	void			drawRing(const F32 radius, LLVector3 pos_map, const LLColor4& color);
 
 	void			drawTracking( const LLVector3d& pos_global,
-							BOOL rotated,
 							const LLColor4& color,
 							BOOL draw_arrow = TRUE);
 
 	void			setDirectionPos( LLTextBox* text_box, F32 rotation );
 	void			updateMinorDirections();
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	bool			createImage(LLPointer<LLImageRaw>& rawimagep) const;
 	void			createObjectImage();
+	void			createParcelImage();
 
-	LLHandle<LLView>	mPopupMenuHandle;
+	void			renderPropertyLinesForRegion(const LLViewerRegion* pRegion, const LLColor4U& clrOverlay);
+// [/SL:KB]
+//	void			createObjectImage();
+
+	static bool		outsideSlop(S32 x, S32 y, S32 start_x, S32 start_y, S32 slop);
+
+private:
+//	bool			mUpdateNow;
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	bool			mUpdateObjectImage;
+protected:
+	friend class OverlayToggle;
+	bool			mUpdateParcelImage;
+private:
+// [/SL:KB]
 
 	F32				mScale;					// Size of a region in pixels
 	F32				mPixelsPerMeter;		// world meters to map pixels
 	F32				mObjectMapTPM;			// texels per meter on map
 	F32				mObjectMapPixels;		// Width of object map in pixels
 	F32				mDotRadius;				// Size of avatar markers
-	F32				mTargetPanX;
-	F32				mTargetPanY;
-	F32				mCurPanX;
-	F32				mCurPanY;
 
-	BOOL			mPanning;			// map has been dragged
-	S32				mMouseDownPanX;		// value at start of drag
-	S32				mMouseDownPanY;		// value at start of drag
-	S32				mMouseDownX;
-	S32				mMouseDownY;
+	bool			mPanning;			// map is being dragged
+	LLVector2		mTargetPan;
+	LLVector2		mCurPan;
+	LLVector2		mStartPan;		// pan offset at start of drag
+	LLCoordGL		mMouseDown;			// pointer position at start of drag
 
-	BOOL			mUpdateNow;
 	LLVector3d		mObjectImageCenterGlobal;
 	LLPointer<LLImageRaw> mObjectRawImagep;
 	LLPointer<LLViewerTexture>	mObjectImagep;
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	LLVector3d		mParcelImageCenterGlobal;
+	LLPointer<LLImageRaw> mParcelRawImagep;
+	LLPointer<LLViewerTexture>	mParcelImagep;
+// [/SL:KB]
 
-private:
 	LLUUID			mClosestAgentToCursor;
 	LLVector3d		mClosestAgentPosition;
 	LLUUID			mClosestAgentAtLastRightClick;
-
-	static BOOL		sRotateMap;
-	static LLNetMap*	sInstance;
-	static BOOL isAgentUnderCursor(void*) { return sInstance && sInstance->mClosestAgentToCursor.notNull(); }
-	static BOOL outsideSlop(S32 x, S32 y, S32 start_x, S32 start_y, S32 slop);
 
 	static void showAgentProfile(void*);
 	BOOL isAgentUnderCursor() { return mClosestAgentToCursor.notNull(); }
@@ -183,10 +209,7 @@ private:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
 
-
-
 	//moymod - Custom minimap markers :o
-
 	class mmsetred : public LLMemberListener<LLNetMap> //moymod
 	{
 	public:
@@ -224,9 +247,6 @@ private:
 	};
 
 
-
-
-
 	class LLEnableProfile : public LLMemberListener<LLNetMap>
 	{
 	public:
@@ -238,7 +258,16 @@ private:
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	};
-	
+
+// [SL:KB] - Patch: World-MiniMap | Checked: 2012-07-08 (Catznip-3.3.0)
+	class OverlayToggle : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
+	};
+// [/SL:KB]
+
+	LLMenuGL*		mPopupMenu;
 };
 
 

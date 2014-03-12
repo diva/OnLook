@@ -55,8 +55,9 @@
 #include "llvoavatar.h" // For mIdleTimer reset
 #include "llviewerregion.h"
 
-// [RLVa:KB]
-#include "rlvhandler.h"
+// [RLVa:KB] - Checked: 2013-05-10 (RLVa-1.4.9)
+#include "rlvactions.h"
+#include "rlvcommon.h"
 // [/RLVa:KB]
 
 class AIHTTPTimeoutPolicy;
@@ -82,11 +83,11 @@ LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_
 		return gSavedSettings.getColor4("UserChatColor");
 
 	static const LLCachedControl<bool> color_linden_chat("ColorLindenChat");
-	if (color_linden_chat && LLMuteList::getInstance()->isLinden(name))
+	if (color_linden_chat && LLMuteList::getInstance()->isLinden(id))
 		return gSavedSettings.getColor4("AscentLindenColor");
 
 	// [RLVa:LF] Chat colors would identify names, don't use them in local chat if restricted
-	if (local_chat && rlv_handler_t::isEnabled() && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+	if (local_chat && RlvActions::hasBehaviour(RLV_BHVR_SHOWNAMES))
 		return gSavedSettings.getColor4("AgentChatColor");
 
 	static const LLCachedControl<bool> color_friend_chat("ColorFriendChat");
@@ -104,11 +105,6 @@ LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_
 	return local_chat ? gSavedSettings.getColor4("AgentChatColor") : gSavedSettings.getColor("IMChatColor");
 }
 
-// returns true if a should appear before b
-//static BOOL group_dictionary_sort( LLGroupData* a, LLGroupData* b )
-//{
-//	return (LLStringUtil::compareDict( a->mName, b->mName ) < 0);
-//}
 
 class LLViewerChatterBoxInvitationAcceptResponder : public LLHTTPClient::ResponderWithResult
 {
@@ -1492,15 +1488,15 @@ public:
 			}
 
 			bool group = gAgent.isInGroup(session_id);
-// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
-			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0)
+			if ( (RlvActions::hasBehaviour(RLV_BHVR_RECVIM)) || (RlvActions::hasBehaviour(RLV_BHVR_RECVIMFROM)) )
 			{
-				if (group)												// Group chat: don't accept the invite if not an exception
+				if (group)
 				{
-					if (!gRlvHandler.canReceiveIM(session_id))
+					if (!RlvActions::canReceiveIM(session_id))
 						return;
 				}
-				else if (!gRlvHandler.canReceiveIM(from_id))			// Conference chat: don't block; censor if not an exception
+				else if (!RlvActions::canReceiveIM(from_id))
 				{
 					message = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
 				}

@@ -1575,6 +1575,10 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 		for (U32 j = 0; j < count; ++j)
 		{
 			LLJoint* joint = avatar->getJoint(skin->mJointNames[j]);
+			if(!joint)
+			{
+				joint = avatar->getJoint("mRoot");
+			}
 			if (joint)
 			{
 				mat[j] = skin->mInvBindMatrix[j];
@@ -1599,7 +1603,7 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 			{
 				F32 w = weight[j][k];
 
-				idx[k] = llclamp((S32) floorf(w), 0, 63);
+				idx[k] = llclamp((S32) floorf(w), 0, S32(count-1));
 				wght[k] = w - floorf(w);
 				scale += wght[k];
 			}
@@ -1703,6 +1707,10 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				for (U32 i = 0; i < count; ++i)
 				{
 					LLJoint* joint = avatar->getJoint(skin->mJointNames[i]);
+					if(!joint)
+					{
+						joint = avatar->getJoint("mRoot");
+					}
 					if (joint)
 					{
 						mat[i] = skin->mInvBindMatrix[i];
@@ -1747,7 +1755,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 					(GLfloat*) mp);
 
 				LLDrawPoolAvatar::sVertexProgram->uniform3fv(LLShaderMgr::AVATAR_TRANSLATION, count, transp);
-
+				LLDrawPoolAvatar::sVertexProgram->uniform1f(LLShaderMgr::AVATAR_MAX_WEIGHT, F32(count-1));
 				
 				stop_glerror();
 			}

@@ -24,10 +24,10 @@ terreno:
 		Scegli un prezzo appropriato per questa terra.
 	</text>
 	<text name="price_ld">
-		L$
+		[CURRENCY]
 	</text>
 	<text name="price_per_m">
-		([PER_METER] L$ per metro quadro)
+		([PER_METER] [CURRENCY] per metro quadro)
 	</text>
 	<text name="sell_to_label">
 		Vendi la terra a:
