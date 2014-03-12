@@ -839,7 +839,7 @@ void LLVivoxVoiceClient::stateMachine()
 						std::string loglevel = gSavedSettings.getString("VivoxDebugLevel");
 						if(loglevel.empty())
 						{
-							loglevel = "-0";	// turn logging off completely
+							loglevel = "0";	// turn logging off completely
 						}
 
 						args += " -ll ";
