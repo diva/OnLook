@@ -55,7 +55,7 @@
 	<key>SGAllowRiggedMeshSelection</key>
 	<map>
 	  <key>Comment</key>
-	  <string>Allow selection of your worn rigged meshes in build mode</string>
+	  <string>Allow selection of worn rigged meshes in build or inspect mode</string>
 	  <key>Persist</key>
 	  <integer>1</integer>
 	  <key>Type</key>

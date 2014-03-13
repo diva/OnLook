@@ -45,6 +45,7 @@
 #include "llvolumeoctree.h"
 #include "llviewercamera.h"
 #include "llface.h"
+#include "llfloaterinspect.h"
 #include "llfloatertools.h"
 #include "llviewercontrol.h"
 #include "llviewerregion.h"
@@ -4372,7 +4373,7 @@ public:
 				if (vobj->isAvatar())
 				{
 					LLVOAvatar* avatar = (LLVOAvatar*) vobj;
-					if (avatar->isSelf() && gFloaterTools->getVisible())
+					if (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists())
 					{
 						LLViewerObject* hit = avatar->lineSegmentIntersectRiggedAttachments(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mTangent);
 						if (hit)
