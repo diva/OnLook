@@ -265,11 +265,12 @@ LLFloaterAbout::LLFloaterAbout()
     getWindow()->setCursor(UI_CURSOR_ARROW);
 #endif
 
-// [RLVa:KB] - Checked: 2010-04-18 (RLVa-1.2.0)
-	support.append("RLV Version: " + (RlvActions::isRlvEnabled()) ? RlvStrings::getVersionAbout() : "(disabled)");
-// [/RLVa:KB]
 	support.append("OpenGL Version: ");
 	support.append( (const char*) glGetString(GL_VERSION) );
+// [RLVa:KB] - Checked: 2010-04-18 (RLVa-1.2.0)
+	support.append("\n");
+	support.append("RLV Version: " + (RlvActions::isRlvEnabled()) ? RlvStrings::getVersionAbout() : "(disabled)");
+// [/RLVa:KB]
 	support.append("\n\n");
 
 	support.append("Viewer SSE Version: ");
