@@ -1494,7 +1494,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	
 	bool busy = gAgent.getBusy();
 	
-// [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1e) | Added: RLVa-1.2.1e
+// [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1)
 	bool fRlvNotifyAccepted = false;
 // [/RLVa:KB]
 	switch(button)
@@ -1505,25 +1505,23 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		// group_notice_inventory is 1 greater than the offer integer value.
 
 // [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1e) | Modified: RLVa-1.2.1e
-		// Only change the inventory offer's destination folder to the shared root if:
+		// Only treat the offer as 'Give to #RLV' if:
 		//   - the user has enabled the feature
 		//   - the inventory offer came from a script (and specifies a folder)
 		//   - the name starts with the prefix - mDesc format: '[OBJECTNAME]'  ( http://slurl.com/... )
-		if ( (rlv_handler_t::isEnabled()) && 
-			 (IM_TASK_INVENTORY_OFFERED == mIM) && (LLAssetType::AT_CATEGORY == mType) && (mDesc.find(RLV_PUTINV_PREFIX) == 1) )
+		if ( (rlv_handler_t::isEnabled()) && (IM_TASK_INVENTORY_OFFERED == mIM) && (LLAssetType::AT_CATEGORY == mType) && (mDesc.find(RLV_PUTINV_PREFIX) == 1) )
 		{
 			fRlvNotifyAccepted = true;
 			if (!RlvSettings::getForbidGiveToRLV())
 			{
-				const LLViewerInventoryCategory* pRlvRoot = RlvInventory::instance().getSharedRoot();
-				if (pRlvRoot)
-				{
-					fRlvNotifyAccepted = false;		// "accepted_in_rlv" is sent from RlvGiveToRLVTaskOffer *after* we have the folder
-					mFolderID = pRlvRoot->getUUID();
+				const LLUUID& idRlvRoot = RlvInventory::instance().getSharedRootID();
+				if (idRlvRoot.notNull())
+					mFolderID = idRlvRoot;
 
-					RlvGiveToRLVTaskOffer* pOfferObserver = new RlvGiveToRLVTaskOffer(mTransactionID);
-					gInventory.addObserver(pOfferObserver);
-				}
+				fRlvNotifyAccepted = false;		// "accepted_in_rlv" is sent from RlvGiveToRLVTaskOffer *after* we have the folder
+
+				RlvGiveToRLVTaskOffer* pOfferObserver = new RlvGiveToRLVTaskOffer(mTransactionID);
+				gInventory.addObserver(pOfferObserver);
 			}
 		}
 // [/RLVa:KB]
@@ -1536,7 +1534,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		// send the message
 		msg->sendReliable(mHost);
 			
-// [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1e) | Added: RLVa-1.2.1e
+// [RLVa:KB] - Checked: 2010-09-23 (RLVa-1.2.1)
 			if (fRlvNotifyAccepted)
 			{
 				std::string::size_type idxToken = mDesc.find("'  ( http://");
@@ -1563,9 +1561,8 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 			// This is an offer from an agent. In this case, the back
 			// end has already copied the items into your inventory,
 			// so we can fetch it out of our inventory.
-// [RLVa:KB] - Checked: 2010-04-18 (RLVa-1.2.0e) | Modified: RLVa-1.2.0e
-			if ( (rlv_handler_t::isEnabled()) && (!RlvSettings::getForbidGiveToRLV()) && (LLAssetType::AT_CATEGORY == mType) && 
-				 (RlvInventory::instance().getSharedRoot()) && (mDesc.find(RLV_PUTINV_PREFIX) == 0) )
+// [RLVa:KB] - Checked: 2010-04-18 (RLVa-1.2.0)
+			if ( (rlv_handler_t::isEnabled()) && (!RlvSettings::getForbidGiveToRLV()) && (LLAssetType::AT_CATEGORY == mType) && (mDesc.find(RLV_PUTINV_PREFIX) == 0) )
 			{
 				RlvGiveToRLVAgentOffer* pOfferObserver = new RlvGiveToRLVAgentOffer(mObjectID);
 				pOfferObserver->startFetch();
@@ -4006,10 +4003,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 			// Filtering "rules":
 			//   avatar  => filter all avie text (unless it's this avie or they're an exemption)
-			//   objects => filter everything except attachments this avie owns (never filter llOwnerSay chat)
+			//   objects => filter everything except attachments this avie owns (never filter llOwnerSay or llRegionSayTo chat)
 			if ( ( (CHAT_SOURCE_AGENT == chat.mSourceType) && (from_id != gAgent.getID()) ) || 
 				 ( (CHAT_SOURCE_OBJECT == chat.mSourceType) && ((!is_owned_by_me) || (!is_attachment)) && 
-				   (CHAT_TYPE_OWNER != chat.mChatType) ) )
+				   (CHAT_TYPE_OWNER != chat.mChatType) && (CHAT_TYPE_DIRECT != chat.mChatType) ) )
 			{
 				bool fIsEmote = RlvUtil::isEmote(mesg);
 				if ((!fIsEmote) &&

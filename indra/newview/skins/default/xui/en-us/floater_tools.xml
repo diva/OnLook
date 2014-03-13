@@ -52,6 +52,7 @@
 	     function="BuildTool.setTool"
 	     parameter="Land" />
 	</button>
+	<button name="mini_button" bottom="-34" left="245" height="22" width="22" control_name="LiruMiniBuildFloater" label="" image_selected="down_arrow.tga" image_unselected="up_arrow.tga" scale_image="true" toggle="true" tool_tip="Toggle tiny build floater"/>
 
 <!-- Focus panel -->
 
@@ -128,7 +129,7 @@
 			function="BuildTool.commitRadioEdit"/>
 	</check_box>
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	    initial_value="false" label="Align (Ctrl-A)" left="4" mouse_opaque="true"
+	    initial_value="false" label="Align" left="4" mouse_opaque="true"
 	    name="radio align" radio_style="true" width="114" >
 	    <check_box.commit_callback
 			function="BuildTool.commitRadioEdit"/>
