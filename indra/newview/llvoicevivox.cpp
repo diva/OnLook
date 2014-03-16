@@ -846,7 +846,7 @@ void LLVivoxVoiceClient::stateMachine()
 // Singu Note: hard code log level to -1 for Linux, as we are using 2.x version of the SDK there
 // Singu TODO: Remove this when the Vivox SDK 4.x is working on Linux
 #if LL_LINUX
-						args += "-1":
+						args += "-1";
 #else
 						args += loglevel;
 #endif
