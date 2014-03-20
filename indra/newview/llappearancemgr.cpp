@@ -4423,7 +4423,6 @@ void wear_multiple(const uuid_vec_t& ids, bool replace)
 
 // SLapp for easy-wearing of a stock (library) avatar
 //
-/*
 class LLWearFolderHandler : public LLCommandHandler
 {
 public:
@@ -4453,4 +4452,4 @@ public:
 	}
 };
 
-LLWearFolderHandler gWearFolderHandler;*/
+LLWearFolderHandler gWearFolderHandler;
