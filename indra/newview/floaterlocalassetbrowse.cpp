@@ -858,9 +858,9 @@ void FloaterLocalAssetBrowser::onClickUpload(void* userdata)
 
 void FloaterLocalAssetBrowser::onChooseBitmapList()
 {
-	bool button_status = mBitmapList->isEmpty();
-	mDelBtn->setEnabled(!button_status);
-	mUploadBtn->setEnabled(!button_status);
+	bool button_status = !mBitmapList->isEmpty() && mBitmapList->getFirstSelected();
+	mDelBtn->setEnabled(button_status);
+	mUploadBtn->setEnabled(button_status);
 
 	UpdateRightSide();
 }
@@ -943,7 +943,7 @@ void FloaterLocalAssetBrowser::UpdateBitmapScrollList()
 		}
 
 	}
-	sLFInstance->UpdateRightSide();
+	sLFInstance->onChooseBitmapList();
 }
 
 void FloaterLocalAssetBrowser::UpdateRightSide()

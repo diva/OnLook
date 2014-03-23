@@ -40,6 +40,7 @@
 #include "llviewercontrol.h"
 #include "lldir.h"
 #include "llflexibleobject.h"
+#include "llfloaterinspect.h"
 #include "llfloatertools.h"
 #include "llmaterialid.h"
 #include "llmaterialtable.h"
@@ -3643,7 +3644,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
 		static const LLCachedControl<bool> allow_mesh_picking("SGAllowRiggedMeshSelection");
-		if (allow_mesh_picking && gFloaterTools->getVisible() && getAvatar()->isSelf())
+		if (allow_mesh_picking && (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists()))
 		{
 			updateRiggedVolume();
 			//genBBoxes(FALSE);
@@ -3825,10 +3826,8 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 
 bool LLVOVolume::treatAsRigged()
 {
-	return gFloaterTools->getVisible() && 
+	return (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists()) && 
 			isAttachment() && 
-			getAvatar() &&
-			getAvatar()->isSelf() &&
 			mDrawable.notNull() &&
 			mDrawable->isState(LLDrawable::RIGGED);
 }

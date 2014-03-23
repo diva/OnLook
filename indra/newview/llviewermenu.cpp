@@ -6146,7 +6146,7 @@ class LLWorldCreateLandmark : public view_listener_t
 		
 		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 							  folder_id, LLTransactionID::tnull,
-							  pos_string, pos_string, // name, desc
+							  pos_string, agent_parcel->getDesc(), // name, desc, // name, desc
 							  LLAssetType::AT_LANDMARK,
 							  LLInventoryType::IT_LANDMARK,
 							  NOT_WEARABLE, PERM_ALL, 
