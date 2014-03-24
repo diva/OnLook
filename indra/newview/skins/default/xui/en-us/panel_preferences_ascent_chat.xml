@@ -54,9 +54,44 @@
       <check_box bottom_delta="-20" follows="top" control_name="OtherChatsTornOff" label="Open new IMs in separate floaters" name="chats_torn_off"/>
       <check_box bottom_delta="-20" follows="top" control_name="PhoenixIMAnnounceStealFocus" label="Focus new instant messages" name="chat_steal_focus"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="ShowLocalChatFloaterBar" label="Show chat bar in torn-off local chat floater" name="show_local_chat_floater_bar"/>
-      <check_box bottom_delta="-20" control_name="ContactsUseHorizontalButtons" follows="top" height="16" label="Use horizontal buttons for contacts floater (Needs restart)" tool_tip="When enabled, the buttons on the Friends and Groups panels will be at the bottom, horizontally arranged, instead of vertically arranged on the right." name="horiz_butt"/>	  
-      <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacySpeakerNames" label="Use legacy names for speaker lists (Affects new speakers)" tool_tip="Allows for easier moderation of chats by showing only the account names" name="legacy_speaker_names"/>
-      <check_box bottom_delta="-20" control_name="UseConciseIMButtons" follows="top" height="16" label="Buttons on the same line as name for IMs (Affects new IMs)" name="im_concise_butt"/>
+      <check_box bottom_delta="-20" control_name="ContactsUseHorizontalButtons" follows="top" height="16" label="Use horizontal buttons for contacts floater (Needs restart)" tool_tip="When enabled, the buttons on the Friends and Groups panels will be at the bottom, horizontally arranged, instead of vertically arranged on the right." name="horiz_butt"/>
+      <text bottom_delta="-14" left="16" follows="top" name="namesystems_text_box">Format for names in lists of/for:</text>
+      <text bottom_delta="-18" left="20" follows="top" name="friends_namesystem_text_box">Friends:</text>
+      <combo_box bottom_delta="-5" left_delta="140" follows="top" height="18" control_name="FriendNameSystem" name="friends_namesystem_combobox" width="130">
+        <combo_item name="Old Names" value="0">Old Names</combo_item>
+        <combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+        <combo_item name="Display Names only" value="2">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
+      </combo_box>
+      <text bottom_delta="-18" left="20" follows="top" name="group_members_namesystem_text_box">Group Members:</text>
+      <combo_box bottom_delta="-5" left_delta="140" follows="top" height="18" control_name="GroupMembersNameSystem" name="group_members_namesystem_combobox" width="130">
+        <combo_item name="Old Names" value="0">Old Names</combo_item>
+        <combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+        <combo_item name="Display Names only" value="2">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
+      </combo_box>
+      <text bottom_delta="-18" left="20" follows="top" name="land_management_namesystem_text_box">Land Management:</text>
+      <combo_box bottom_delta="-5" left_delta="140" follows="top" height="18" control_name="LandManagementNameSystem" name="land_management_namesystem_combobox" width="130">
+        <combo_item name="Old Names" value="0">Old Names</combo_item>
+        <combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+        <combo_item name="Display Names only" value="2">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
+      </combo_box>
+      <text bottom_delta="-18" left="20" follows="top" name="radar_namesystem_text_box">Radar:</text>
+      <combo_box bottom_delta="-5" left_delta="140" follows="top" height="18" control_name="RadarNameSystem" name="radar_namesystem_combobox" width="130">
+        <combo_item name="Old Names" value="0">Old Names</combo_item>
+        <combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+        <combo_item name="Display Names only" value="2">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
+      </combo_box>
+      <text bottom_delta="-18" left="20" follows="top" name="speaker_namesystem_text_box">Speakers:</text>
+      <combo_box bottom_delta="-5" left_delta="140" follows="top" height="18" control_name="SpeakerNameSystem" name="speaker_namesystem_combobox" width="130">
+        <combo_item name="Old Names" value="0">Old Names</combo_item>
+        <combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+        <combo_item name="Display Names only" value="2">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
+      </combo_box>
+      <check_box bottom_delta="-24" left="10" control_name="UseConciseIMButtons" follows="top" height="16" label="Buttons on the same line as name for IMs (Affects new IMs)" name="im_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseGroupChatButtons" follows="top" height="16" label="Buttons on group chat name line (Affects new group chats)" name="group_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseConferenceButtons" follows="top" height="16" label="Buttons on conference title line (Affects new conferences)" name="conf_concise_butt"/>
       <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacyLogLaunch" label="Log button opens external text editor (Windows only)" name="legacy_log_launch"/>

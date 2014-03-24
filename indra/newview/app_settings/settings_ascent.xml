@@ -25,12 +25,67 @@
 			<key>Value</key>
 			<integer>0</integer>
 		</map>
+		<key>FriendNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For friends list names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>GroupMembersNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For lists of group members names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>LandManagementNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For names land management lists. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
 		<key>PhoenixNameSystem</key>
 		<map>
 		  <key>Comment</key>
-		  <string>Use Display Names instead of Legacy Names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only</string>
+		  <string>For general purpose names in the viewer. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
 		  <key>Persist</key>
 		  <integer>2</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>RadarNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For names in the radar. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>SpeakerNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For names in lists of speakers. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
 		  <key>Type</key>
 		  <string>S32</string>
 		  <key>Value</key>

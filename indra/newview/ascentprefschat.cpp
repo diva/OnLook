@@ -298,7 +298,11 @@ void LLPrefsAscentChat::refreshValues()
 	mOnlyComm                       = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 	mItalicizeActions               = gSavedSettings.getBOOL("LiruItalicizeActions");
 	mLegacyLogLaunch                = gSavedSettings.getBOOL("LiruLegacyLogLaunch");
-	mLegacySpeakerNames             = gSavedSettings.getBOOL("LiruLegacySpeakerNames");
+	mFriendNames                    = gSavedSettings.getBOOL("FriendNameSystem");
+	mGroupMembersNames              = gSavedSettings.getBOOL("GroupMembersNameSystem");
+	mLandManagementNames            = gSavedSettings.getBOOL("LandManagementNameSystem");
+	mRadarNames                     = gSavedSettings.getBOOL("RadarNameSystem");
+	mSpeakerNames                   = gSavedSettings.getBOOL("SpeakerNameSystem");
 
 	//Autoresponse ------------------------------------------------------------------------
 	mIMResponseAnyoneItemID     = gSavedPerAccountSettings.getString("AutoresponseAnyoneItemID");
@@ -537,7 +541,11 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("CommunicateSpecificShortcut",          mOnlyComm);
 	gSavedSettings.setBOOL("LiruItalicizeActions",                 mItalicizeActions);
 	gSavedSettings.setBOOL("LiruLegacyLogLaunch",                  mLegacyLogLaunch);
-	gSavedSettings.setBOOL("LiruLegacySpeakerNames",               mLegacySpeakerNames);
+	gSavedSettings.setBOOL("FriendNameSystem",                     mFriendNames);
+	gSavedSettings.setBOOL("GroupMembersNameSystem",               mGroupMembersNames);
+	gSavedSettings.setBOOL("LandManagementNameSystem",             mLandManagementNames);
+	gSavedSettings.setBOOL("RadarNameSystem",                      mRadarNames);
+	gSavedSettings.setBOOL("SpeakerNameSystem",                    mSpeakerNames);
 
 	//Autoresponse ------------------------------------------------------------------------
 	gSavedPerAccountSettings.setString("AutoresponseAnyoneItemID",      mIMResponseAnyoneItemID);

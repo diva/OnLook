@@ -407,6 +407,12 @@ BOOL LLPanelFriends::postBuild()
 	return TRUE;
 }
 
+static const S32& friend_name_system()
+{
+	static const LLCachedControl<S32> name_system("FriendNameSystem", 0);
+	return name_system;
+}
+
 BOOL LLPanelFriends::addFriend(const LLUUID& agent_id)
 {
 	LLAvatarTracker& at = LLAvatarTracker::instance();
@@ -417,7 +423,7 @@ BOOL LLPanelFriends::addFriend(const LLUUID& agent_id)
 	bool isOnline = relationInfo->isOnline();
 
 	std::string fullname;
-	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
+	bool have_name = LLAvatarNameCache::getPNSName(agent_id, fullname, friend_name_system());
 	if (!have_name) gCacheName->getFullName(agent_id, fullname);
 
 	LLSD element;
@@ -505,7 +511,7 @@ BOOL LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 	bool isOnline = info->isOnline();
 
 	std::string fullname;
-	BOOL have_name = LLAvatarNameCache::getPNSName(agent_id, fullname);
+	bool have_name = LLAvatarNameCache::getPNSName(agent_id, fullname, friend_name_system());
 	if (!have_name) gCacheName->getFullName(agent_id, fullname);
 
 	// Name of the status icon to use
@@ -1083,7 +1089,7 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& rights, EGrantRevoke comm
 	{
 		LLSD args;
 		std::string fullname;
-		if (LLAvatarNameCache::getPNSName(rights.begin()->first, fullname))
+		if (LLAvatarNameCache::getPNSName(rights.begin()->first, fullname, friend_name_system()))
 			args["NAME"] = fullname;
 
 		if (command == GRANT)

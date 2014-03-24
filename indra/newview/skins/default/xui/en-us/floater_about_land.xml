@@ -1382,7 +1382,7 @@ Select the thumbnail to choose a different texture.
 			<name_list allow_calling_card_drop="false" background_visible="true" bottom="-304"
 			     column_padding="0" draw_border="true" draw_heading="false" enabled="true"
 			     follows="top|bottom" heading_font="SansSerifSmall" heading_height="14"
-			     height="80" left="20" mouse_opaque="true" multi_select="true"
+			     height="80" left="20" mouse_opaque="true" multi_select="true" name_system="LandManagementNameSystem"
 			     name="AccessList" tool_tip="([LISTED] listed, [MAX] max)" width="195" menu_num="0"/>
 			<button bottom_delta="-20" enabled="true" follows="bottom" font="SansSerifSmall"
 			     halign="center" height="16" label="Add..." label_selected="Add..."
@@ -1402,7 +1402,7 @@ Select the thumbnail to choose a different texture.
 			     column_padding="0" draw_border="true" draw_heading="false" enabled="true"
 			     follows="top|bottom" heading_font="SansSerifSmall"
 			     heading_height="14" height="80" left_delta="0" mouse_opaque="true"
-			     multi_select="true" name="BannedList"
+			     multi_select="true" name="BannedList" name_system="LandManagementNameSystem"
 			     tool_tip="([LISTED] listed, [MAX] max)" width="195" menu_num="0"/>
 			<button bottom_delta="-20" enabled="true" follows="bottom" font="SansSerifSmall"
 			     halign="center" height="16" label="Add..." label_selected="Add..."

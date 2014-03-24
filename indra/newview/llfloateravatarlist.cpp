@@ -603,8 +603,9 @@ void LLFloaterAvatarList::updateAvatarList()
 		{
 			const LLUUID &avid = avatar_ids[i];
 
+			static const LLCachedControl<S32> namesystem("RadarNameSystem");
 			std::string name;
-			if (!LLAvatarNameCache::getPNSName(avid, name))
+			if (!LLAvatarNameCache::getPNSName(avid, name, namesystem))
 				continue; //prevent (Loading...)
 
 			LLAvatarListEntry* entry = getAvatarEntry(avid);

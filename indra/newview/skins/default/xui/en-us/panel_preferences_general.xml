@@ -11,9 +11,10 @@
 		<combo_item name="Always" value="Always">Always</combo_item>
 	</combo_box>
 	<combo_box bottom_delta="0" follows="top" height="18" left="220" name="namesystem_combobox" width="166">
-		<combo_item name="Old Names" value="Old Names">Old Names</combo_item>
-		<combo_item name="Display Names (with Username)" value="Display Names (with Username)">Display Names(w/Username)</combo_item>
-		<combo_item name="Display Names only" value="Display Names only">Display Names only</combo_item>
+		<combo_item name="Old Names" value="0">Old Names</combo_item>
+		<combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+		<combo_item name="Display Names only" value="2">Display Names only</combo_item>
+		<combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
 	</combo_box>
 	<check_box bottom_delta="0" follows="top" height="16" label="Show Resident" left_delta="174" name="show_resident_checkbox"/>
 	<check_box bottom_delta="-25" follows="top" height="16" initial_value="true" label="Small Avatar Names" left="101" name="small_avatar_names_checkbox"/>
