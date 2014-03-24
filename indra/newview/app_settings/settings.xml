@@ -573,7 +573,7 @@
   <key>CheckForGridUpdates</key>
   <map>
   	<key>Comment</key>
-  	<string>Fetch list of grids from Hippo server</string>
+	<string>Fetch list of grids from location set in GridUpdateList</string>
   	<key>Persist</key>
   	<integer>1</integer>
   	<key>Type</key>
@@ -591,6 +591,17 @@
   	<string>String</string>
   	<key>Value</key>
   	<string>Second Life</string>
+  </map>
+  <key>GridUpdateList</key>
+  <map>
+    <key>Comment</key>
+    <string>URL to fetch Grid updates from</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>String</string>
+    <key>Value</key>
+    <string/>
   </map>
 
   <key>VivoxLicenseAccepted</key>

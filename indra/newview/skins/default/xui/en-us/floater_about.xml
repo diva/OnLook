@@ -2,7 +2,7 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
  can_resize="false" height="440" min_height="100" min_width="100"
  name="floater_about" rect_control="FloaterAboutRect"
- title="About Singularity Viewer" width="470">
+ title="About [APP_NAME]" width="470">
   <tab_container follows="all" bottom="1" border="false" left="10" height="414" width="450" name="about_tab" tab_position="top">
     <panel border="false" height="386" label="Info" help_topic="about_support_tab" name="support_panel">
       <text_editor parse_urls="true" follows="top|left" font="SansSerif" top="-1" bg_readonly_color="transparent" left="3" max_length="65536" name="support_editor" bottom="28" width="443" word_wrap="true"/>

@@ -442,12 +442,12 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 // virtual
 void LLFloaterIMPanel::changed(U32 mask)
 {
-	if (mask & REMOVE|ADD) // Fix remove/add friend choices
+	if (mask & (REMOVE|ADD)) // Fix remove/add friend choices
 		rebuildDynamics(getChild<LLComboBox>("instant_message_flyout"));
 	/* Singu TODO: Chat UI - Online icons?
 	if (mask & ONLINE)
 		// Show online icon here
-	else if (mask & NONE)
+	else
 		// Show offline icon here
 	*/
 }

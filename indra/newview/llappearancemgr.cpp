@@ -3030,7 +3030,7 @@ void LLAppearanceMgr::removeCOFItemLinks(const LLUUID& item_id)
 		const LLViewerInventoryItem* item = item_array.get(i).get();
 		if (item->getIsLinkType() && item->getLinkedUUID() == item_id)
 		{
-#if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
+#if 0 // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 			// NOTE-RLVa: debug-only, can be removed down the line
 			if (rlv_handler_t::isEnabled())
 			{
@@ -3062,7 +3062,7 @@ void LLAppearanceMgr::removeCOFLinksOfType(LLWearableType::EType type)
 		if (item->getIsLinkType()) // we must operate on links only
 		{
 // [RLVa:KB] - Checked: 2013-02-12 (RLVa-1.4.8)
-#if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
+#if 0 // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 			// NOTE-RLVa: debug-only, can be removed down the line
 			if (rlv_handler_t::isEnabled())
 			{

@@ -2076,7 +2076,7 @@ void LLAgentCamera::handleScrollWheel(S32 clicks)
 			if (MASK mask = gKeyboard->currentMask(true)) // Singu Note: Conveniently set view offsets while modifier keys are held during scroll
 			{
 				static const LLCachedControl<bool> enableCameraOffsetScroll("SinguOffsetScrollKeys");
-				if (mask & MASK_CONTROL|MASK_SHIFT && enableCameraOffsetScroll)
+				if (mask & (MASK_CONTROL|MASK_SHIFT) && enableCameraOffsetScroll)
 				{
 					const F32 change(static_cast<F32>(clicks) * 0.1f);
 					if (mask & MASK_SHIFT)

@@ -47,6 +47,7 @@
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
+extern const std::string OLD_LOG_FILE;
 
 class LLCrashLoggerResponder : public LLHTTPClient::ResponderWithResult
 {
@@ -284,7 +285,7 @@ void LLCrashLogger::gatherFiles()
 	mCrashInfo["DebugLog"] = mDebugLog;
 	mFileMap["StatsLog"] = gDirUtilp->getExpandedFilename(LL_PATH_DUMP,"stats.log");
 	// Singu Note: we have just started again, log has been renamed
-	mFileMap["SecondLifeLog"] = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "Singularity.old");
+	mFileMap["SecondLifeLog"] = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, OLD_LOG_FILE);
 
 	llinfos << "Encoding files..." << llendl;
 
@@ -395,6 +396,8 @@ void LLCrashLogger::checkCrashDump()
 	if (pref == 2) return; //never send
 
 	mCrashHost = gSavedSettings.getString("CrashHostUrl");
+	// Don't send if there's no crash host. :O
+	if (mCrashHost.empty()) return;
 	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
 
 	// Do we have something to send, and somewhere to send it
