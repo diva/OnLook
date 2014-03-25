@@ -188,13 +188,13 @@ void RlvUIEnabler::onToggleSetEnv()
 	if (!fEnable)
 	{
 		// Only close the floaters if their instance exists and they're actually visible
-		if ( (LLFloaterEnvSettings::isOpen()) && (LLFloaterEnvSettings::instance()->getVisible()) )
+		if ( (LLFloaterEnvSettings::isOpen()) )
 			LLFloaterEnvSettings::instance()->close();
-		if ( (LLFloaterWindLight::isOpen()) && (LLFloaterWindLight::instance()->getVisible()) )
+		if ( (LLFloaterWindLight::isOpen()) )
 			LLFloaterWindLight::instance()->close();
-		if ( (LLFloaterWater::isOpen()) && (LLFloaterWater::instance()->getVisible()) )
+		if ( (LLFloaterWater::isOpen()) )
 			LLFloaterWater::instance()->close();
-		if ( (LLFloaterDayCycle::isOpen()) && (LLFloaterDayCycle::instance()->getVisible()) )
+		if ( (LLFloaterDayCycle::isOpen()) )
 			LLFloaterDayCycle::instance()->close();
 	}
 

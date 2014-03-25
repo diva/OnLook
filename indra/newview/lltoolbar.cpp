@@ -495,10 +495,7 @@ void LLToolBar::onClickChat(void* user_data)
 // static
 void LLToolBar::onClickAppearance(void*)
 {
-	if (gAgentWearables.areWearablesLoaded())
-	{
-		LLFloaterCustomize::show();
-	}
+	LLFloaterCustomize::show();
 }
 
 // static

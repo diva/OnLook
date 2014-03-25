@@ -5456,7 +5456,7 @@ void LLVOAvatar::processAnimationStateChanges()
 
 			processSingleAnimationStateChange(anim_it->first, FALSE);
 			// <edit>
-			LLFloaterExploreAnimations::stopAnim(getID(), anim_it->first);
+			LLFloaterExploreAnimations::processAnim(getID(), anim_it->first, false);
 			// </edit>
 			mPlayingAnimations.erase(anim_it++);
 			continue;
@@ -5474,7 +5474,7 @@ void LLVOAvatar::processAnimationStateChanges()
 		if (found_anim == mPlayingAnimations.end() || found_anim->second != anim_it->second)
 		{
 			// <edit>
-			LLFloaterExploreAnimations::startAnim(getID(), anim_it->first);
+			LLFloaterExploreAnimations::processAnim(getID(), anim_it->first, true);
 			// </edit>
 			if (processSingleAnimationStateChange(anim_it->first, TRUE))
 			{

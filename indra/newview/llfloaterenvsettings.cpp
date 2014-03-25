@@ -50,6 +50,7 @@
 #include "llviewerwindow.h"
 
 #include "pipeline.h"
+#include "rlvactions.h"
 
 #include <sstream>
 
@@ -175,13 +176,12 @@ LLFloaterEnvSettings* LLFloaterEnvSettings::instance()
 	if (!sEnvSettings)
 	{
 		sEnvSettings = new LLFloaterEnvSettings();
-		sEnvSettings->open();
-		sEnvSettings->setFocus(TRUE);
 	}
 	return sEnvSettings;
 }
 void LLFloaterEnvSettings::show()
 {
+	if (RlvActions::hasBehaviour(RLV_BHVR_SETENV)) return;
 	LLFloaterEnvSettings* envSettings = instance();
 	envSettings->syncMenu();
 
@@ -189,7 +189,10 @@ void LLFloaterEnvSettings::show()
 	//LLUICtrlFactory::getInstance()->buildFloater(envSettings, "floater_env_settings.xml");
 	//envSettings->initCallbacks();
 
-	envSettings->open();
+	if (envSettings->getVisible())
+		envSettings->close();
+	else
+		envSettings->open();
 }
 
 bool LLFloaterEnvSettings::isOpen()

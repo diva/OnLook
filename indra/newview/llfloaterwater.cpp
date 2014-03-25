@@ -48,6 +48,7 @@
 #include "llagent.h"
 #include "llwaterparammanager.h"
 #include "llwaterparamset.h"
+#include "rlvactions.h"
 
 #undef max // Fixes a Windows compiler error
 
@@ -284,6 +285,7 @@ LLFloaterWater* LLFloaterWater::instance()
 }
 void LLFloaterWater::show()
 {
+	if (RlvActions::hasBehaviour(RLV_BHVR_SETENV)) return;
 	if (!sWaterMenu)
 	{
 		LLFloaterWater* water = instance();

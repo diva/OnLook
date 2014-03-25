@@ -42,6 +42,7 @@
 #include "llfeaturemanager.h"
 #include "llsecondlifeurls.h"
 // <edit>
+#include "floaterlocalassetbrowse.h"
 #include "llfloaterexploreanimations.h"
 #include "llfloaterexploresounds.h"
 #include "llfloaterblacklist.h"
@@ -103,7 +104,9 @@
 #include "llfloaterreporter.h"
 #include "llfloaterscriptdebug.h"
 #include "llfloaterscriptlimits.h"
+#include "llfloatersearch.h"
 #include "llfloatersettingsdebug.h"
+#include "llfloatersnapshot.h"
 
 #include "llfloaterenvsettings.h"
 #include "llfloaterstats.h"
@@ -1984,23 +1987,6 @@ class LLViewCheckJoystickFlycam : public view_listener_t
 	}
 };
 
-class LLViewCommunicate : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		static LLCachedControl<bool> only_comm("CommunicateSpecificShortcut");
-		if (!only_comm && LLFloaterChatterBox::getInstance()->getFloaterCount() == 0)
-		{
-			LLFloaterMyFriends::toggleInstance();
-		}
-		else
-		{
-			LLFloaterChatterBox::toggleInstance();
-		}
-		return true;
-	}
-};
-
 
 void handle_toggle_flycam()
 {
@@ -2127,15 +2113,6 @@ void handle_attachment_edit(const LLUUID& idItem)
 	handle_object_edit();
 }
 // [/SL:KB]
-
-class LLObjectInspect : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterInspect::showInstance();
-		return true;
-	}
-};
 
 // <dogmode> Derenderizer. Originally by Phox.
 class LLObjectDerender : public view_listener_t
@@ -2879,19 +2856,6 @@ class LLObjectPFLinksetsSelected : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLFloaterPathfindingLinksets::openLinksetsWithSelectedObjects();
-		return true;
-	}
-};
-
-class LLAvatarAnims : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-		if(avatar)
-		{
-			new LLFloaterExploreAnimations(avatar->getID()); //temporary
-		}
 		return true;
 	}
 };
@@ -5769,15 +5733,6 @@ class LLViewEnableLastChatter : public view_listener_t
 	}
 };
 
-class LLViewToggleRadar: public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterAvatarList::toggle(0);
-		return true;
-	}
-};
-
 class LLEditEnableDeselect : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -6449,32 +6404,87 @@ void handle_viewer_disable_message_log(void*)
 	gMessageSystem->stopLogging();
 }
 
+void show_outfit_dialog() { new LLMakeOutfitDialog(false); }
+bool is_visible_view(boost::function<LLView* ()> get)
+{
+	if (LLView* v = get())
+		return v->getVisible();
+	return false;
+}
 struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 {
 	typedef std::map<const std::string, std::pair<boost::function<void ()>, boost::function<bool ()> > > menu_floater_map_t;
 	menu_floater_map_t mEntries;
+
+	struct CommWrapper
+	{
+		static bool only_comm()
+		{
+			static const LLCachedControl<bool> only("CommunicateSpecificShortcut");
+			return only || LLFloaterChatterBox::getInstance()->getFloaterCount();
+		}
+		static bool instanceVisible(const LLSD& key)
+		{
+			return only_comm()
+				? LLFloaterChatterBox::instanceVisible(key)
+				: LLFloaterMyFriends::instanceVisible(key);
+		}
+		static void toggleInstance(const LLSD& key)
+		{
+			if (only_comm())
+				LLFloaterChatterBox::toggleInstance(key);
+			else
+				LLFloaterMyFriends::toggleInstance(key);
+		}
+	};
 	MenuFloaterDict()
 	{
 		registerFloater("about",		boost::bind(&LLFloaterAbout::show,(void*)NULL));
 		//registerFloater("about region", boost::bind(&LLFloaterRegionInfo::showInstance,LLSD()));
+		registerFloater("ao", boost::bind(LLFloaterAO::show, (void*)NULL));
+		registerFloater("appearance", boost::bind(LLFloaterCustomize::show));
 		registerFloater("buy currency", boost::bind(&LLFloaterBuyCurrency::buyCurrency));
+		registerFloater("buy land", boost::bind(&LLViewerParcelMgr::startBuyLand, boost::bind(LLViewerParcelMgr::getInstance), false));
+		registerFloater("complaint reporter", boost::bind(LLFloaterReporter::showFromMenu, COMPLAINT_REPORT));
+		registerFloater("debug avatar", boost::bind(handle_debug_avatar_textures, (void*)NULL));
+		registerFloater("debug settings", boost::bind(handle_singleton_toggle<LLFloaterSettingsDebug>, (void*)NULL));
 		registerFloater("displayname",	boost::bind(&LLFloaterDisplayName::show));
 		//registerFloater("friends",		boost::bind(&LLFloaterMyFriends::toggleInstance,0),			boost::bind(&LLFloaterMyFriends::instanceVisible,0));
 		registerFloater("gestures",		boost::bind(&LLFloaterGesture::toggleVisibility),			boost::bind(&LLFloaterGesture::instanceVisible));
 		registerFloater("grid options",	boost::bind(&LLFloaterBuildOptions::show,(void*)NULL));
+		//Singu TODO: Re-implement f1 help.
+		/*else if (floater_name == "help f1")
+		{
+			gViewerHtmlHelp.show();
+		}*/
 		registerFloater("help tutorial",boost::bind(&LLFloaterHUD::showHUD));
-		registerFloater("im",			boost::bind(&LLFloaterChatterBox::toggleInstance,LLSD()),	boost::bind(&LLFloaterMyFriends::instanceVisible,0));
+		registerFloater("inspect", boost::bind(LLFloaterInspect::showInstance));
+		registerFloater("inventory", boost::bind(LLInventoryView::toggleVisibility, (void*)NULL), boost::bind(is_visible_view, static_cast<boost::function<LLView* ()> >(LLInventoryView::getActiveInventory)));
 		//registerFloater("lag meter",	boost::bind(&LLFloaterLagMeter::showInstance,LLSD()));
+		registerFloater("local assets", boost::bind(FloaterLocalAssetBrowser::show, (void*)0));
+		registerFloater("mean events", boost::bind(LLFloaterBump::show, (void*)NULL));
+		registerFloater("media ticker", boost::bind(handle_ticker_toggle, (void*)NULL), boost::bind(SHFloaterMediaTicker::instanceExists));
 		registerFloater("my land",		boost::bind(&LLFloaterLandHoldings::show,(void*)NULL));
+		registerFloater("outfit", boost::bind(show_outfit_dialog));
 		registerFloater("preferences",	boost::bind(&LLFloaterPreference::show,(void*)NULL));
+		registerFloater("radar", boost::bind(LLFloaterAvatarList::toggle, (void*)NULL), boost::bind(LLFloaterAvatarList::instanceVisible));
 		registerFloater("script errors",boost::bind(&LLFloaterScriptDebug::show,LLUUID::null));
 		//registerFloater("script info",	boost::bind(&LLFloaterScriptLimits::showInstance,LLSD()));
+		registerFloater("search", boost::bind(LLFloaterSearch::showInstance, LLFloaterSearch::SearchQuery(), false));
+		registerFloater("snapshot", boost::bind(LLFloaterSnapshot::show, (void*)NULL));
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
 		registerFloater("toolbar",		boost::bind(&LLToolBar::toggle,(void*)NULL),				boost::bind(&LLToolBar::visible,(void*)NULL));
+		registerFloater("web", boost::bind(LLFloaterWebContent::showInstance, "dict web", LLFloaterWebContent::Params()));
 		registerFloater("world map",	boost::bind(&LLFloaterWorldMap::toggle));
+		registerFloater("anims_explorer", boost::bind(LLFloaterExploreAnimations::show));
 		registerFloater("sound_explorer",	boost::bind(&LLFloaterExploreSounds::toggle),			boost::bind(&LLFloaterExploreSounds::visible));
 		registerFloater("asset_blacklist",	boost::bind(&LLFloaterBlacklist::toggle),				boost::bind(&LLFloaterBlacklist::visible));
-
+		registerFloater("DayCycle", boost::bind(LLFloaterDayCycle::show), boost::bind(LLFloaterDayCycle::isOpen));
+		registerFloater("EnvSettings", boost::bind(LLFloaterEnvSettings::show), boost::bind(LLFloaterEnvSettings::isOpen));
+		registerFloater("PostProcess", boost::bind(LLFloaterPostProcess::show));
+		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
+		registerFloater("WaterSettings", boost::bind(LLFloaterWater::show), boost::bind(LLFloaterWater::isOpen));
+		registerFloater<CommWrapper>				("im");
 		registerFloater<LLFloaterLand>				("about land");
 		registerFloater<LLFloaterRegionInfo>		("about region");
 		registerFloater<LLFloaterActiveSpeakers>	("active speakers");
@@ -6484,6 +6494,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterChat>				("chat history");
 		registerFloater<LLFloaterChatterBox>		("communicate");
 		registerFloater<LLFloaterMyFriends>			("friends",0);
+		registerFloater<LLFloaterMyFriends>			("groups",1);
 		registerFloater<LLFloaterLagMeter>			("lag meter");
 		registerFloater<SLFloaterMediaFilter>		("media filter");
 		registerFloater<LLFloaterMap>				("mini map");
@@ -6497,6 +6508,11 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterVoiceEffect>		("voice effect");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
+		// [RLVa:LF]
+		registerFloater<RlvFloaterBehaviours>("rlv restrictions");
+		registerFloater<RlvFloaterLocks>("rlv locks");
+		registerFloater<RlvFloaterStrings>("rlv strings");
+		// [/RLVa:LF]
 
 	}
 	void registerFloater(const std::string& name, boost::function<void ()> show, boost::function<bool ()> visible = NULL)
@@ -6523,56 +6539,6 @@ class LLShowFloater : public view_listener_t
 		{
 			it->second.first();
 		}
-		else if (floater_name == "appearance")
-		{
-			if (gAgentWearables.areWearablesLoaded())
-			{
-				LLFloaterCustomize::show();
-			}
-		}
-		else if (floater_name == "outfit")
-		{
-			new LLMakeOutfitDialog(false);
-		}
-		else if (floater_name == "inventory")
-		{
-			LLInventoryView::toggleVisibility(NULL);
-		}
-		else if (floater_name == "buy land")
-		{
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
-			{
-				return true;
-			}
-// [/RLVa:KB]
-			if (LLViewerParcelMgr::getInstance()->selectionEmpty())
-			{
-				LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
-			}
-			LLViewerParcelMgr::getInstance()->startBuyLand();
-		}
-
-		//Singu TODO: Re-implement f1 help.
-		/*else if (floater_name == "help f1")
-		{
-			llinfos << "Spawning HTML help window" << llendl;
-			gViewerHtmlHelp.show();
-		}*/
-
-		else if (floater_name == "complaint reporter")
-		{
-			// Prevent menu from appearing in screen shot.
-			gMenuHolder->hideMenus();
-			LLFloaterReporter::showFromMenu(COMPLAINT_REPORT);
-		}
-		else if (floater_name == "mean events")
-		{
-			if (!gNoRender)
-			{
-				LLFloaterBump::show(NULL);
-			}
-		}
 		else // Simple codeless floater
 		{
 			LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name);
@@ -6596,11 +6562,6 @@ class LLFloaterVisible : public view_listener_t
 		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.second != NULL)
 		{
 			new_value = it->second.second();
-		}
-		else if (floater_name == "inventory")
-		{
-			LLInventoryView* iv = LLInventoryView::getActiveInventory(); 
-			new_value = (NULL != iv && TRUE == iv->getVisible());
 		}
 		gMenuHolder->findControl(control_name)->setValue(new_value);
 		return true;
@@ -6711,15 +6672,6 @@ class LLShowAgentProfile : public view_listener_t
 		{
 			LLAvatarActions::showProfile(avatar->getID());
 		}
-		return true;
-	}
-};
-
-class LLShowAgentGroups : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterMyFriends::toggleInstance(1);
 		return true;
 	}
 };
@@ -9055,22 +9007,6 @@ class LLWorldEnvSettings : public view_listener_t
 // [/RLVa:KB]
 
 		std::string tod = userdata.asString();
-		
-		if (tod == "editor")
-		{
-			// if not there or is hidden, show it
-			if(	!LLFloaterEnvSettings::isOpen() || 
-				!LLFloaterEnvSettings::instance()->getVisible())
-			{
-				LLFloaterEnvSettings::show();
-			}
-			else
-			{
-				// otherwise, close it button acts like a toggle
-				LLFloaterEnvSettings::instance()->close();
-			}
-			return true;
-		}
 
 		if (tod == "sunrise")
 		{
@@ -9097,76 +9033,12 @@ class LLWorldEnvSettings : public view_listener_t
 	}
 };
 
-/// Water Menu callbacks
-class LLWorldWaterSettings : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SETENV))
-		{
-			return true;
-		}
-// [/RLVa:KB]
-
-		// if not there or is hidden, show it
-		if(	!LLFloaterWater::isOpen() || 
-			!LLFloaterWater::instance()->getVisible()) {
-			LLFloaterWater::show();
-				
-		// otherwise, close it button acts like a toggle
-		} 
-		else 
-		{
-			LLFloaterWater::instance()->close();
-		}
-		return true;
-	}
-};
-
-/// Post-Process callbacks
-class LLWorldPostProcess : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterPostProcess::show();
-		return true;
-	}
-};
-
-/// Day Cycle callbacks
-class LLWorldDayCycle : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SETENV))
-		{
-			return true;
-		}
-// [/RLVa:KB]
-
-		LLFloaterDayCycle::show();
-		return true;
-	}
-};
-
 
 class SinguCloseAllDialogs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		handle_close_all_notifications(NULL);
-		return true;
-	}
-};
-
-class SinguAnimationOverride : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterAO::show(NULL);
-
 		return true;
 	}
 };
@@ -9186,36 +9058,6 @@ class SinguCheckNimble : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(gSavedSettings.getBOOL("Nimble"));
-
-		return true;
-	}
-};
-
-class SinguAssetBlacklist : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterBlacklist::toggle();
-
-		return true;
-	}
-};
-
-class SinguStreamingAudioDisplay : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		handle_ticker_toggle(NULL);
-
-		return true;
-	}
-};
-
-class SinguCheckStreamingAudioDisplay : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(handle_singleton_check<SHFloaterMediaTicker>(NULL));
 
 		return true;
 	}
@@ -9257,33 +9099,12 @@ class SinguRebake : public view_listener_t
 	}
 };
 
-class SinguDebugConsole : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		handle_singleton_toggle<LLFloaterRegionDebugConsole>(NULL);
-		return true;
-	}
-};
-
-class SinguCheckDebugConsole : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(handle_singleton_check<LLFloaterRegionDebugConsole>(NULL));
-		return true;
-	}
-};
-
 class SinguVisibleDebugConsole : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (LLViewerRegion* region = gAgent.getRegion())
-		{
-			if (LLView* item = gMenuBarView->getChildView("Region Debug Console", true, false))
-				item->setVisible(!(region->getCapability("SimConsoleAsync").empty() || region->getCapability("SimConsole").empty()));
-		}
+		LLViewerRegion* region = gAgent.getRegion();
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(region && !(region->getCapability("SimConsoleAsync").empty() || region->getCapability("SimConsole").empty()));
 		return true;
 	}
 };
@@ -9704,7 +9525,6 @@ void initialize_menus()
 	// View menu
 	addMenu(new LLViewMouselook(), "View.Mouselook");
 	addMenu(new LLViewJoystickFlycam(), "View.JoystickFlycam");
-	addMenu(new LLViewCommunicate(), "View.Communicate");
 	addMenu(new LLViewResetView(), "View.ResetView");
 	addMenu(new LLViewResetPresetAngles(), "View.ResetPresetAngles");
 	addMenu(new LLViewLookAtLastChatter(), "View.LookAtLastChatter");
@@ -9721,7 +9541,6 @@ void initialize_menus()
 	addMenu(new LLViewEnableMouselook(), "View.EnableMouselook");
 	addMenu(new LLViewEnableJoystickFlycam(), "View.EnableJoystickFlycam");
 	addMenu(new LLViewEnableLastChatter(), "View.EnableLastChatter");
-	addMenu(new LLViewToggleRadar(), "View.ToggleAvatarList");
 
 	addMenu(new LLViewCheckJoystickFlycam(), "View.CheckJoystickFlycam");
 	addMenu(new LLViewCheckShowHoverTips(), "View.CheckShowHoverTips");
@@ -9749,11 +9568,7 @@ void initialize_menus()
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
 
 	addMenu(new LLWorldCheckAlwaysRun(), "World.CheckAlwaysRun");
-	
 	(new LLWorldEnvSettings())->registerListener(gMenuHolder, "World.EnvSettings");
-	(new LLWorldWaterSettings())->registerListener(gMenuHolder, "World.WaterSettings");
-	(new LLWorldPostProcess())->registerListener(gMenuHolder, "World.PostProcess");
-	(new LLWorldDayCycle())->registerListener(gMenuHolder, "World.DayCycle");
 
 
 	// Tools menu
@@ -9776,7 +9591,6 @@ void initialize_menus()
 	addMenu(new LLToolsEnableReleaseKeys(), "Tools.EnableReleaseKeys");
 	addMenu(new LLToolsLookAtSelection(), "Tools.LookAtSelection");
 	addMenu(new LLToolsBuyOrTake(), "Tools.BuyOrTake");
-	addMenu(new LLToolsTakeCopy(), "Tools.TakeCopy");
 	addMenu(new LLToolsTakeCopy(), "Tools.TakeCopy");
 
 	// <edit>
@@ -9827,7 +9641,6 @@ void initialize_menus()
 	addMenu(new LLAvatarEject(), "Avatar.Eject");
 	addMenu(new LLAvatarSendIM(), "Avatar.SendIM");
 	addMenu(new LLAvatarReportAbuse(), "Avatar.ReportAbuse");
-	addMenu(new LLAvatarAnims(),"Avatar.Anims");
 	addMenu(new LLObjectEnableMute(), "Avatar.EnableMute");
 	addMenu(new LLAvatarEnableAddFriend(), "Avatar.EnableAddFriend");
 	addMenu(new LLAvatarEnableFreezeEject(), "Avatar.EnableFreezeEject");
@@ -9858,7 +9671,6 @@ void initialize_menus()
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");
 	addMenu(new LLObjectEdit(), "Object.Edit");
-	addMenu(new LLObjectInspect(), "Object.Inspect");
 	// <dogmode> Visual mute, originally by Phox.
 	addMenu(new LLObjectDerender(), "Object.DERENDER");
 	addMenu(new LLAvatarReloadTextures(), "Avatar.ReloadTextures");
@@ -9905,7 +9717,6 @@ void initialize_menus()
 	addMenu(new LLShowFloater(), "ShowFloater");
 	addMenu(new LLPromptShowURL(), "PromptShowURL");
 	addMenu(new LLShowAgentProfile(), "ShowAgentProfile");
-	addMenu(new LLShowAgentGroups(), "ShowAgentGroups");
 	addMenu(new LLToggleControl(), "ToggleControl");
 
 	addMenu(new LLGoToObject(), "GoToObject");
@@ -9928,17 +9739,12 @@ void initialize_menus()
 	// Singularity menu
 	addMenu(new SinguCloseAllDialogs(), "CloseAllDialogs");
 	// ---- Fake away handled elsewhere
-	addMenu(new SinguAnimationOverride(), "AnimationOverride");
 	addMenu(new SinguNimble(), "Nimble");
 	addMenu(new SinguCheckNimble(), "CheckNimble");
-	addMenu(new SinguStreamingAudioDisplay(), "StreamingAudioDisplay");
 	addMenu(new SinguEnableStreamingAudioDisplay(), "EnableStreamingAudioDisplay");
-	addMenu(new SinguCheckStreamingAudioDisplay(), "CheckStreamingAudioDisplay");
 	addMenu(new SinguPoseStand(), "PoseStand");
 	addMenu(new SinguCheckPoseStand(), "CheckPoseStand");
 	addMenu(new SinguRebake(), "Rebake");
-	addMenu(new SinguDebugConsole(), "RegionDebugConsole");
-	addMenu(new SinguCheckDebugConsole(), "CheckRegionDebugConsole");
 	addMenu(new SinguVisibleDebugConsole(), "VisibleRegionDebugConsole");
 
 // [RLVa:KB] - Checked: 2010-01-18 (RLVa-1.1.0m) | Added: RLVa-1.1.0m | OK
