@@ -693,7 +693,7 @@ void LLAvatarNameCache::getPNSName(const LLAvatarName& avatar_name, std::string&
 		case 0 : name = avatar_name.getLegacyName(); break;
 		case 1 : name = avatar_name.getCompleteName(); break;
 		case 2 : name = avatar_name.mDisplayName; break;
-		case 3 : name = avatar_name.getLegacyName() + " (" + avatar_name.mDisplayName + ")"; break;
+		case 3 : name = avatar_name.getLegacyName() + (avatar_name.mIsDisplayNameDefault ? "" : " (" + avatar_name.mDisplayName + ")"); break;
 		default : name = avatar_name.getLegacyName(); break;
 	}
 }

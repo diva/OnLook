@@ -306,7 +306,8 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 	else
 	{
 		LLAvatarNameCache::setForceDisplayNames(false);
-		LLAvatarNameCache::setUseDisplayNames(gSavedSettings.getS32("PhoenixNameSystem") == 1 || gSavedSettings.getS32("PhoenixNameSystem") == 2);
+		const S32 namesys = gSavedSettings.getS32("PhoenixNameSystem");
+		LLAvatarNameCache::setUseDisplayNames(namesys > 0 && namesys < 4);
 	}
 	LLVOAvatar::invalidateNameTags();	// See handleDisplayNamesOptionChanged()
 }

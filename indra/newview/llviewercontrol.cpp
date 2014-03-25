@@ -614,7 +614,7 @@ bool handleAscentAvatarModifier(const LLSD& newvalue)
 static bool handlePhoenixNameSystemChanged(const LLSD& newvalue)
 {
 	S32 dnval = (S32)newvalue.asInteger();
-	if (dnval <= 0 || dnval > 2) LLAvatarNameCache::setUseDisplayNames(false);
+	if (dnval <= 0 || dnval > 3) LLAvatarNameCache::setUseDisplayNames(false);
 	else LLAvatarNameCache::setUseDisplayNames(true);
 	LLVOAvatar::invalidateNameTags();
 	return true;
