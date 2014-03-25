@@ -3542,6 +3542,7 @@ BOOL LLFolderBridge::dragOrDrop(MASK mask, BOOL drop,
 			// DAD_LINK type might mean one of two asset types: AT_LINK or AT_LINK_FOLDER.
 			// If we have an item of AT_LINK_FOLDER type we should process the linked
 			// category being dragged or dropped into folder.
+			/* <Singu> Note: No, we shouldn't, this behavior is misleading, just copy the link as usual.
 			if (inv_item && LLAssetType::AT_LINK_FOLDER == inv_item->getActualType())
 			{
 				LLInventoryCategory* linked_category = gInventory.getCategory(inv_item->getLinkedUUID());
@@ -3551,6 +3552,7 @@ BOOL LLFolderBridge::dragOrDrop(MASK mask, BOOL drop,
 				}
 			}
 			else
+			</Singu> */
 			{
 				accept = dragItemIntoFolder(inv_item, drop);
 			}
