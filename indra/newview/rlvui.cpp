@@ -299,8 +299,8 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 		// Close the "Active Speakers" panel if it's currently visible
 		LLFloaterChat::getInstance()->childSetVisible("active_speakers_panel", false);
 		// Close the "Avatar List/Radar" floater if it's currently visible
-		if ( LLFloaterAvatarList::instanceExists() && LLFloaterAvatarList::getInstance()->getVisible() )
-			LLFloaterAvatarList::toggle(NULL);
+		if (LLFloaterAvatarList::instanceVisible())
+			LLFloaterAvatarList::toggleInstance();
 		LLAvatarNameCache::setForceDisplayNames(true);
 	}
 	else

@@ -291,7 +291,7 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 }
 
 //static
-void LLFloaterAvatarList::toggle(void*)
+void LLFloaterAvatarList::toggleInstance(const LLSD&)
 {
 // [RLVa:KB]
 	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
@@ -301,7 +301,7 @@ void LLFloaterAvatarList::toggle(void*)
 	}
 	else
 // [/RLVa:KB]
-	if(!instanceExists() || !getInstance()->getVisible())
+	if (!instanceVisible())
 	{
 		showInstance();
 	}

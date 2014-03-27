@@ -42,133 +42,88 @@
 #include "llfeaturemanager.h"
 #include "llsecondlifeurls.h"
 // <edit>
-#include "floaterlocalassetbrowse.h"
-#include "llfloaterexploreanimations.h"
-#include "llfloaterexploresounds.h"
 #include "llfloaterblacklist.h"
 // </edit>
 #include "statemachine/aifilepicker.h"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llappearancemgr.h"
 #include "llagentwearables.h"
-#include "jcfloaterareasearch.h"
-#include "lfsimfeaturehandler.h"
 
 #include "llagentpilot.h"
+#include "llavatarpropertiesprocessor.h"
+#include "llcallingcard.h"
 #include "llcompilequeue.h"
 #include "llconsole.h"
 #include "lldebugview.h"
 #include "llenvmanager.h"
 #include "llfirstuse.h"
-#include "llfloaterabout.h"
-#include "llfloateractivespeakers.h"
-#include "llfloateravatarlist.h"
 #include "llfloateravatartextures.h"
-#include "llfloaterbeacons.h"
-#include "llfloaterbuildoptions.h"
-#include "llfloaterbump.h"
 #include "llfloaterbuy.h"
 #include "llfloaterbuycontents.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterbuyland.h"
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
-#include "llfloaterdaycycle.h"
 #include "llfloaterdirectory.h"
 #include "llfloatereditui.h"
-#include "llfloaterchatterbox.h"
 #include "llfloaterfonttest.h"
-#include "llfloatergesture.h"
 #include "llfloatergodtools.h"
 #include "llfloaterhtmlcurrency.h"
-#include "llfloaterhud.h"
-#include "llfloaterinspect.h"
-#include "llfloaterinventory.h"
-#include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
-#include "llfloaterlandholdings.h"
-#include "llfloatermap.h"
 #include "llfloatermute.h"
 #include "llfloateropenobject.h"
-#include "llfloateroutbox.h"
 #include "llfloaterpathfindingcharacters.h"
 #include "llfloaterpathfindinglinksets.h"
-#include "llfloaterperms.h"
-#include "llfloaterpostprocess.h"
-#include "llfloaterpreference.h"
 #include "llfloaterregiondebugconsole.h"
 #include "llfloaterregioninfo.h"
 #include "llfloaterreporter.h"
-#include "llfloaterscriptdebug.h"
-#include "llfloaterscriptlimits.h"
-#include "llfloatersearch.h"
 #include "llfloatersettingsdebug.h"
-#include "llfloatersnapshot.h"
-
-#include "llfloaterenvsettings.h"
-#include "llfloaterstats.h"
-#include "llfloaterteleporthistory.h"
 #include "llfloatertest.h"
 #include "llfloatertools.h"
-#include "llfloatervoiceeffect.h"
-#include "llfloaterwater.h"
-#include "llfloaterwebcontent.h"
-#include "llfloaterwindlight.h"
 #include "llfloaterworldmap.h"
 #include "llfloatermemleak.h"
 #include "llframestats.h"
-#include "llgivemoney.h"
 #include "llavataractions.h"
+#include "llgivemoney.h"
 #include "llgroupmgr.h"
 #include "llhoverview.h"
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
-#include "llimview.h"
-#include "llinventorybridge.h"
-#include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
-#include "llmakeoutfitdialog.h"
 #include "llmimetypes.h"
-#include "llmenucommands.h"
 #include "llmenuoptionpathfindingrebakenavmesh.h"
-#include "llmoveview.h"
 #include "llmutelist.h"
 #include "llnotify.h"
-#include "llpanellogin.h"
 #include "llparcel.h"
 #include "llregioninfomodel.h"
 #include "llselectmgr.h"
 #include "llstatusbar.h"
 #include "lltextureview.h"
-#include "lltoolbar.h"
 #include "lltoolcomp.h"
+#include "lltoolgrab.h"
 #include "lltoolmgr.h"
 #include "lltoolpie.h"
 #include "lltoolselectland.h"
+#include "lltrans.h"
 #include "lluictrlfactory.h"
-#include "lluserauth.h"
 #include "llvelocitybar.h"
 #include "llviewercamera.h"
 #include "llviewergenericmessage.h"
+#include "llviewerjoystick.h"
 #include "llviewertexturelist.h"	// gTextureList
 #include "llviewermenufile.h"	// init_menu_file()
 #include "llviewermessage.h"
 #include "llviewernetwork.h"
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
-#include "llviewerstats.h"
 #include "llvoavatarself.h"
 #include "llworld.h"
 #include "llworldmap.h"
 #include "pipeline.h"
-#include "llviewerjoystick.h"
-#include "llwaterparammanager.h"
-#include "llwlanimator.h"
-#include "llwlparammanager.h"
-#include "llfloatercamera.h"
 #include "llfloaternotificationsconsole.h"
 
 // <edit>
@@ -179,12 +134,8 @@
 // </edit>
 
 #include "scriptcounter.h"
-#include "llfloaterdisplayname.h"
-#include "floaterao.h"
-#include "slfloatermediafilter.h"
 #include "llviewerobjectbackup.h"
 #include "llagentui.h"
-#include "lltoolgrab.h"
 #include "llpathfindingmanager.h"
 #include <boost/lexical_cast.hpp>
 
@@ -193,8 +144,6 @@
 
 #include "hippogridmanager.h"
 #include "wlfPanel_AdvSettings.h"
-
-void toggle_search_floater();
 
 using namespace LLOldEvents;
 using namespace LLAvatarAppearanceDefines;
@@ -858,7 +807,7 @@ void init_client_menu(LLMenuGL* menu)
 		}
 
 		sub->addChild(new LLMenuItemCheckGL("HTTP Console", 
-										&AIHTTPView::toggle_visibility,
+										&toggle_visibility,
 										NULL,
 										&get_visibility,
 										(void*)gHttpView,
@@ -1529,16 +1478,8 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	item = new LLMenuItemCheckGL("Audit Texture", menu_toggle_control, NULL, menu_check_control, (void*)"AuditTexture");
 	menu->addChild(item);
 
-#ifndef LL_RELEASE_FOR_DOWNLOAD
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL("Memory Leaking Simulation", LLFloaterMemLeak::show, NULL, NULL));
-#else
-	if(gSavedSettings.getBOOL("QAMode"))
-	{
-		menu->addSeparator();
-		menu->addChild(new LLMenuItemCallGL("Memory Leaking Simulation", LLFloaterMemLeak::show, NULL, NULL));
-	}
-#endif
 	
 	menu->createJumpKeys();
 }
@@ -4184,22 +4125,6 @@ class LLViewLookAtLastChatter : public view_listener_t
 	}
 };
 
-class LLViewMouselook : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		if (!gAgentCamera.cameraMouselook())
-		{
-			gAgentCamera.changeCameraToMouselook();
-		}
-		else
-		{
-			gAgentCamera.changeCameraToDefault();
-		}
-		return true;
-	}
-};
-
 class LLViewFullscreen : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -4266,6 +4191,7 @@ void handle_duplicate_in_place(void*)
 }
 
 /* dead code 30-apr-2008
+#include "llviewerstats.h"
 void handle_deed_object_to_group(void*)
 {
 	LLUUID group_id;
@@ -5624,15 +5550,6 @@ bool enable_object_delete()
 	return new_value;
 }
 
-class LLEditSearch : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		toggle_search_floater();
-		return true;
-	}
-};
-
 class LLObjectsReturnPackage
 {
 public:
@@ -5961,55 +5878,17 @@ class LLWorldTeleportHome : public view_listener_t
 	}
 };
 
-class LLWorldAlwaysRun : public view_listener_t
+void toggle_sit()
 {
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		// as well as altering the default walk-vs-run state,
-		// we also change the *current* walk-vs-run state.
-		if (gAgent.getAlwaysRun())
-		{
-			gAgent.clearAlwaysRun();
-//			gAgent.clearRunning();
-		}
-		else
-		{
-			gAgent.setAlwaysRun();
-//			gAgent.setRunning();
-		}
-
-		// tell the simulator.
-//		gAgent.sendWalkRun(gAgent.getAlwaysRun());
-
-		return true;
-	}
-};
-
-class LLWorldCheckAlwaysRun : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		bool new_value = gAgent.getAlwaysRun();
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
+	if (!gAgentAvatarp) return;
+	gAgent.setControlFlags(gAgentAvatarp->isSitting() ? AGENT_CONTROL_STAND_UP : AGENT_CONTROL_SIT_ON_GROUND);
+}
 
 class LLWorldSitOnGround : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgentAvatarp)
-		{
-			if(!gAgentAvatarp->isSitting())
-			{
-				gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
-			} 
-			else 
-			{
-				gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
-			}
-		}
+		toggle_sit();
 		return true;
 	}
 };
@@ -6404,166 +6283,23 @@ void handle_viewer_disable_message_log(void*)
 	gMessageSystem->stopLogging();
 }
 
-void show_outfit_dialog() { new LLMakeOutfitDialog(false); }
-bool is_visible_view(boost::function<LLView* ()> get)
-{
-	if (LLView* v = get())
-		return v->getVisible();
-	return false;
-}
-struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
-{
-	typedef std::map<const std::string, std::pair<boost::function<void ()>, boost::function<bool ()> > > menu_floater_map_t;
-	menu_floater_map_t mEntries;
-
-	struct CommWrapper
-	{
-		static bool only_comm()
-		{
-			static const LLCachedControl<bool> only("CommunicateSpecificShortcut");
-			return only || LLFloaterChatterBox::getInstance()->getFloaterCount();
-		}
-		static bool instanceVisible(const LLSD& key)
-		{
-			return only_comm()
-				? LLFloaterChatterBox::instanceVisible(key)
-				: LLFloaterMyFriends::instanceVisible(key);
-		}
-		static void toggleInstance(const LLSD& key)
-		{
-			if (only_comm())
-				LLFloaterChatterBox::toggleInstance(key);
-			else
-				LLFloaterMyFriends::toggleInstance(key);
-		}
-	};
-	MenuFloaterDict()
-	{
-		registerFloater("about",		boost::bind(&LLFloaterAbout::show,(void*)NULL));
-		//registerFloater("about region", boost::bind(&LLFloaterRegionInfo::showInstance,LLSD()));
-		registerFloater("ao", boost::bind(LLFloaterAO::show, (void*)NULL));
-		registerFloater("appearance", boost::bind(LLFloaterCustomize::show));
-		registerFloater("buy currency", boost::bind(&LLFloaterBuyCurrency::buyCurrency));
-		registerFloater("buy land", boost::bind(&LLViewerParcelMgr::startBuyLand, boost::bind(LLViewerParcelMgr::getInstance), false));
-		registerFloater("complaint reporter", boost::bind(LLFloaterReporter::showFromMenu, COMPLAINT_REPORT));
-		registerFloater("debug avatar", boost::bind(handle_debug_avatar_textures, (void*)NULL));
-		registerFloater("debug settings", boost::bind(handle_singleton_toggle<LLFloaterSettingsDebug>, (void*)NULL));
-		registerFloater("displayname",	boost::bind(&LLFloaterDisplayName::show));
-		//registerFloater("friends",		boost::bind(&LLFloaterMyFriends::toggleInstance,0),			boost::bind(&LLFloaterMyFriends::instanceVisible,0));
-		registerFloater("gestures",		boost::bind(&LLFloaterGesture::toggleVisibility),			boost::bind(&LLFloaterGesture::instanceVisible));
-		registerFloater("grid options",	boost::bind(&LLFloaterBuildOptions::show,(void*)NULL));
-		//Singu TODO: Re-implement f1 help.
-		/*else if (floater_name == "help f1")
-		{
-			gViewerHtmlHelp.show();
-		}*/
-		registerFloater("help tutorial",boost::bind(&LLFloaterHUD::showHUD));
-		registerFloater("inspect", boost::bind(LLFloaterInspect::showInstance));
-		registerFloater("inventory", boost::bind(LLInventoryView::toggleVisibility, (void*)NULL), boost::bind(is_visible_view, static_cast<boost::function<LLView* ()> >(LLInventoryView::getActiveInventory)));
-		//registerFloater("lag meter",	boost::bind(&LLFloaterLagMeter::showInstance,LLSD()));
-		registerFloater("local assets", boost::bind(FloaterLocalAssetBrowser::show, (void*)0));
-		registerFloater("mean events", boost::bind(LLFloaterBump::show, (void*)NULL));
-		registerFloater("media ticker", boost::bind(handle_ticker_toggle, (void*)NULL), boost::bind(SHFloaterMediaTicker::instanceExists));
-		registerFloater("my land",		boost::bind(&LLFloaterLandHoldings::show,(void*)NULL));
-		registerFloater("outfit", boost::bind(show_outfit_dialog));
-		registerFloater("preferences",	boost::bind(&LLFloaterPreference::show,(void*)NULL));
-		registerFloater("radar", boost::bind(LLFloaterAvatarList::toggle, (void*)NULL), boost::bind(LLFloaterAvatarList::instanceVisible));
-		registerFloater("script errors",boost::bind(&LLFloaterScriptDebug::show,LLUUID::null));
-		//registerFloater("script info",	boost::bind(&LLFloaterScriptLimits::showInstance,LLSD()));
-		registerFloater("search", boost::bind(LLFloaterSearch::showInstance, LLFloaterSearch::SearchQuery(), false));
-		registerFloater("snapshot", boost::bind(LLFloaterSnapshot::show, (void*)NULL));
-		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
-		registerFloater("toolbar",		boost::bind(&LLToolBar::toggle,(void*)NULL),				boost::bind(&LLToolBar::visible,(void*)NULL));
-		registerFloater("web", boost::bind(LLFloaterWebContent::showInstance, "dict web", LLFloaterWebContent::Params()));
-		registerFloater("world map",	boost::bind(&LLFloaterWorldMap::toggle));
-		registerFloater("anims_explorer", boost::bind(LLFloaterExploreAnimations::show));
-		registerFloater("sound_explorer",	boost::bind(&LLFloaterExploreSounds::toggle),			boost::bind(&LLFloaterExploreSounds::visible));
-		registerFloater("asset_blacklist",	boost::bind(&LLFloaterBlacklist::toggle),				boost::bind(&LLFloaterBlacklist::visible));
-		registerFloater("DayCycle", boost::bind(LLFloaterDayCycle::show), boost::bind(LLFloaterDayCycle::isOpen));
-		registerFloater("EnvSettings", boost::bind(LLFloaterEnvSettings::show), boost::bind(LLFloaterEnvSettings::isOpen));
-		registerFloater("PostProcess", boost::bind(LLFloaterPostProcess::show));
-		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
-		registerFloater("WaterSettings", boost::bind(LLFloaterWater::show), boost::bind(LLFloaterWater::isOpen));
-		registerFloater<CommWrapper>				("im");
-		registerFloater<LLFloaterLand>				("about land");
-		registerFloater<LLFloaterRegionInfo>		("about region");
-		registerFloater<LLFloaterActiveSpeakers>	("active speakers");
-		registerFloater<JCFloaterAreaSearch>		("areasearch");
-		registerFloater<LLFloaterBeacons>			("beacons");
-		registerFloater<LLFloaterCamera>			("camera controls");
-		registerFloater<LLFloaterChat>				("chat history");
-		registerFloater<LLFloaterChatterBox>		("communicate");
-		registerFloater<LLFloaterMyFriends>			("friends",0);
-		registerFloater<LLFloaterMyFriends>			("groups",1);
-		registerFloater<LLFloaterLagMeter>			("lag meter");
-		registerFloater<SLFloaterMediaFilter>		("media filter");
-		registerFloater<LLFloaterMap>				("mini map");
-		registerFloater<LLFloaterMove>				("movement controls");
-		registerFloater<LLFloaterMute>				("mute list");
-		registerFloater<LLFloaterOutbox>			("outbox");
-		registerFloater<LLFloaterPerms>				("perm prefs");
-		registerFloater<LLFloaterScriptLimits>		("script info");
-		registerFloater<LLFloaterStats>				("stat bar");
-		registerFloater<LLFloaterTeleportHistory>	("teleport history");
-		registerFloater<LLFloaterVoiceEffect>		("voice effect");
-		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
-		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
-		// [RLVa:LF]
-		registerFloater<RlvFloaterBehaviours>("rlv restrictions");
-		registerFloater<RlvFloaterLocks>("rlv locks");
-		registerFloater<RlvFloaterStrings>("rlv strings");
-		// [/RLVa:LF]
-
-	}
-	void registerFloater(const std::string& name, boost::function<void ()> show, boost::function<bool ()> visible = NULL)
-	{
-		mEntries.insert( std::make_pair( name, std::make_pair( show, visible ) ) );
-	}
-	template <typename T>
-	void registerFloater(const std::string& name, const LLSD& key = LLSD())
-	{
-		registerFloater(name, boost::bind(&T::toggleInstance,key), boost::bind(&T::instanceVisible,key));
-	}
-
-};
-
 // TomY TODO: Move!
+void show_floater(const std::string& floater_name);
 class LLShowFloater : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		std::string floater_name = userdata.asString();
-		if (floater_name.empty()) return false;
-		MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
-		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.first != NULL)
-		{
-			it->second.first();
-		}
-		else // Simple codeless floater
-		{
-			LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name);
-			if (floater)
-				gFloaterView->bringToFront(floater);
-			else
-				LLUICtrlFactory::getInstance()->buildFloater(new LLFloater(), floater_name);
-		}
+		show_floater(userdata.asString());
 		return true;
 	}
 };
 
+bool floater_visible(const std::string& floater_name);
 class LLFloaterVisible : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		std::string control_name = userdata["control"].asString();
-		std::string floater_name = userdata["data"].asString();
-		bool new_value = false;
-		MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
-		if(it != MenuFloaterDict::instance().mEntries.end() && it->second.second != NULL)
-		{
-			new_value = it->second.second();
-		}
-		gMenuHolder->findControl(control_name)->setValue(new_value);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(floater_visible(userdata["data"].asString()));
 		return true;
 	}
 };
@@ -8958,15 +8694,6 @@ class LLEditTakeOff : public view_listener_t
 	}
 };
 
-class LLWorldChat : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		handle_chat(NULL);
-		return true;
-	}
-};
-
 class LLToolsSelectTool : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9503,7 +9230,6 @@ void initialize_menus()
 	addMenu(new LLEditCopy(), "Edit.Copy");
 	addMenu(new LLEditPaste(), "Edit.Paste");
 	addMenu(new LLEditDelete(), "Edit.Delete");
-	addMenu(new LLEditSearch(), "Edit.Search");
 	addMenu(new LLEditSelectAll(), "Edit.SelectAll");
 	addMenu(new LLEditDeselect(), "Edit.Deselect");
 	addMenu(new LLEditDuplicate(), "Edit.Duplicate");
@@ -9523,7 +9249,6 @@ void initialize_menus()
 	addMenu(new LLEditEnableChangeDisplayname(), "Edit.EnableChangeDisplayname");
 
 	// View menu
-	addMenu(new LLViewMouselook(), "View.Mouselook");
 	addMenu(new LLViewJoystickFlycam(), "View.JoystickFlycam");
 	addMenu(new LLViewResetView(), "View.ResetView");
 	addMenu(new LLViewResetPresetAngles(), "View.ResetPresetAngles");
@@ -9549,8 +9274,6 @@ void initialize_menus()
 	addMenu(new LLViewCheckHUDAttachments(), "View.CheckHUDAttachments");
 
 	// World menu
-	addMenu(new LLWorldChat(), "World.Chat");
-	addMenu(new LLWorldAlwaysRun(), "World.AlwaysRun");
 	addMenu(new LLWorldSitOnGround(), "World.SitOnGround");
 	addMenu(new LLWorldEnableSitOnGround(), "World.EnableSitOnGround");
 	addMenu(new LLWorldFly(), "World.Fly");
@@ -9566,8 +9289,6 @@ void initialize_menus()
 	addMenu(new LLWorldEnableSetHomeLocation(), "World.EnableSetHomeLocation");
 	addMenu(new LLWorldEnableTeleportHome(), "World.EnableTeleportHome");
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
-
-	addMenu(new LLWorldCheckAlwaysRun(), "World.CheckAlwaysRun");
 	(new LLWorldEnvSettings())->registerListener(gMenuHolder, "World.EnvSettings");
 
 

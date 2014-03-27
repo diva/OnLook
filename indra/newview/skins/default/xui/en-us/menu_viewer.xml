@@ -134,7 +134,7 @@
 		     mouse_opaque="true" name="separator2" width="153" />
 		<menu_item_call bottom="-159" enabled="true" height="19" label="Search..." left="0"
 		     mouse_opaque="true" name="Search..." shortcut="control|F" width="153">
-			<on_click function="Edit.Search" userdata="" />
+			<on_click function="ShowFloater" userdata="search"/>
 		</menu_item_call>
 		<menu_item_separator bottom="-167" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator3" width="153" />
@@ -285,12 +285,12 @@
 		     mouse_opaque="true" name="~~~~~~~~~~~" width="211" />
 		<menu_item_call bottom="-29" enabled="true" height="19" label="Mouselook" left="0"
 		     mouse_opaque="true" name="Mouselook" shortcut="M" width="211">
-			<on_click function="View.Mouselook" userdata="" />
+			<on_click function="ShowFloater" userdata="mouselook"/>
 			<on_enable function="View.EnableMouselook" />
 		</menu_item_call>
 		<menu_item_check bottom="-48" enabled="true" height="19" label="Build" left="0"
 		     mouse_opaque="true" name="Build" shortcut="B" width="211">
-			<on_click function="View.BuildMode" userdata="" />
+			<on_click function="ShowFloater" userdata="build" />
 			<on_check function="View.CheckBuildMode" />
 		</menu_item_check>
 		<menu_item_check bottom="-48" enabled="true" height="19" label="Joystick Flycam" left="0"
@@ -495,12 +495,12 @@
 	     opaque="true" tear_off="true" width="185">
 		<menu_item_call bottom="-29" enabled="true" height="19" label="Chat" left="0"
 		     mouse_opaque="true" name="Chat" shortcut="" width="185">
-			<on_click function="World.Chat" userdata="" />
+			<on_click function="FloaterShow" userdata="chatbar" />
 		</menu_item_call>
 		<menu_item_check bottom="-67" enabled="true" height="19" label="Always Run" left="0"
 		     mouse_opaque="true" name="Always Run" shortcut="control|R" width="185">
-			<on_click function="World.AlwaysRun" userdata="" />
-			<on_check function="World.CheckAlwaysRun" userdata="" />
+			<on_click function="ShowFloater" userdata="always run" />
+			<on_check function="FloaterVisible" userdata="always run" />
 		</menu_item_check>
 		<menu_item_call bottom="-67" enabled="true" height="19" label="Sit on Ground" left="0"
 		     mouse_opaque="true" name="Sit on Ground" shortcut="control|alt|S" width="185">
@@ -509,7 +509,7 @@
 		</menu_item_call>
 		<menu_item_check bottom="-86" enabled="true" height="19" label="Fly" left="0"
 		     mouse_opaque="true" name="Fly" shortcut="Home" width="185">
-			<on_click function="World.Fly" userdata="" />
+			<on_click function="ShowFloater" userdata="fly"/>
 			<on_enable function="World.EnableFly" />
 			<on_check control="FlyBtnState" />
 		</menu_item_check>
@@ -917,8 +917,7 @@
 			<on_click function="PromptShowURL" name="ScriptingPortal_url"
 			     userdata="WebLaunchLSLWiki,http://wiki.secondlife.com/wiki/LSL_Portal" />
 		</menu_item_call>
-		<menu_item_separator bottom="-148" enabled="true" height="8" label="-----------" left="0"
-		     mouse_opaque="true" name="separator3" width="166" />
+		<menu_item_separator name="separator3"/>
 		<menu_item_call bottom="-194" enabled="true" height="19" label="Report Abuse..." left="0"
 		     mouse_opaque="true" name="Report Abuse..." width="166">
 			<on_click function="ShowFloater" userdata="complaint reporter" />
@@ -931,8 +930,7 @@
 		<menu_item_call label="Lag Meter" name="Lag Meter">
 			<on_click function="ShowFloater" userdata="lag meter" />
 		</menu_item_call>
-		<menu_item_separator bottom="-411" enabled="true" height="8" label="-----------" left="0"
-		     mouse_opaque="true" name="separator7" width="250" />
+		<menu_item_separator name="separator7"/>
 		<menu bottom="-554" create_jump_keys="true" drop_shadow="true" enabled="true"
 		     height="109" label="Bug Reporting" left="0" mouse_opaque="false"
 		     name="Bug Reporting" opaque="true" tear_off="true" width="118">
@@ -951,8 +949,7 @@
 				<on_click function="PromptShowURL" name="SinguIssueTracker_url"
 						userdata="WebLaunchSinguIssue,http://links.singularityviewer.org/?to=issues" />
 			</menu_item_call>
-			<menu_item_separator bottom="-411" enabled="true" height="8" label="-----------" left="0"
-			     mouse_opaque="true" name="separator7" width="250" />
+			<menu_item_separator name="separator7" />
 			<menu_item_call bottom="-94" enabled="true" height="19" label="Bug Reporting 101..." left="0"
 			     mouse_opaque="true" name="Bug Reporting 101..." width="166">
 				<on_click function="PromptShowURL" name="BugReporting101_url"
@@ -968,8 +965,7 @@
 				<on_click function="PromptShowURL" name="QAWiki_url"
 				     userdata="WebLaunchQAWiki,http://wiki.secondlife.com/wiki/QA_Portal" />
 			</menu_item_call>
-			<menu_item_separator bottom="-411" enabled="true" height="8" label="-----------" left="0"
-			     mouse_opaque="true" name="separator9" width="250" />
+			<menu_item_separator name="separator9"/>
 			<menu_item_call bottom="-240" enabled="true" height="19" label="Report Bug..." left="0"
 			     mouse_opaque="true" name="Report Bug..." width="166">
 				<on_click function="PromptShowURL" name="ReportBug_url"

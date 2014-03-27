@@ -62,9 +62,9 @@ public:
 	virtual BOOL postBuild();
 
 	static void show();
-	static void toggleVisibility();
+	static void toggleInstance(const LLSD& = LLSD());
 	static void refreshAll();
-	static bool instanceVisible();
+	static bool instanceVisible(const LLSD& = LLSD());
 
 protected:
 	// Reads from the gesture manager's list of active gestures
