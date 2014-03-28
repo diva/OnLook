@@ -2549,15 +2549,13 @@ void LLPipeline::downsampleDepthBuffer(LLRenderTarget& source, LLRenderTarget& d
 	{
 		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
 		mDeferredVB->allocateBuffer(8, 0, true);
-	}
-
-	LLStrider<LLVector3> vert; 
-	mDeferredVB->getVertexStrider(vert);
-	LLStrider<LLVector2> tc0;
+		LLStrider<LLVector3> vert; 
+		mDeferredVB->getVertexStrider(vert);
 		
-	vert[0].set(-1,1,0);
-	vert[1].set(-1,-3,0);
-	vert[2].set(3,1,0);
+		vert[0].set(-1,1,0);
+		vert[1].set(-1,-3,0);
+		vert[2].set(3,1,0);
+	}
 	
 	if (source.getUsage() == LLTexUnit::TT_RECT_TEXTURE)
 	{
@@ -7962,15 +7960,14 @@ void LLPipeline::renderDeferredLighting()
 		{
 			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
 			mDeferredVB->allocateBuffer(8, 0, true);
+			LLStrider<LLVector3> vert; 
+			mDeferredVB->getVertexStrider(vert);
+		
+			vert[0].set(-1,1,0);
+			vert[1].set(-1,-3,0);
+			vert[2].set(3,1,0);
 		}
 
-		LLStrider<LLVector3> vert; 
-		mDeferredVB->getVertexStrider(vert);
-
-		vert[0].set(-1,1,0);
-		vert[1].set(-1,-3,0);
-		vert[2].set(3,1,0);
-		
 		{
 			setupHWLights(NULL); //to set mSunDir;
 			LLVector4 dir(mSunDir, 0.f);
@@ -8392,12 +8389,6 @@ void LLPipeline::renderDeferredLighting()
 				unbindDeferredShader(gDeferredSpotLightProgram);
 			}
 
-			//reset mDeferredVB to fullscreen triangle
-			mDeferredVB->getVertexStrider(vert);
-			vert[0].set(-1,1,0);
-			vert[1].set(-1,-3,0);
-			vert[2].set(3,1,0);
-
 			{
 				LLGLDepthTest depth(GL_FALSE);
 
@@ -8510,14 +8501,10 @@ void LLPipeline::renderDeferredLighting()
 	{
 		LLGLDepthTest depth(GL_FALSE, GL_FALSE);
 
-		LLVector2 tc1(0,0);
-		LLVector2 tc2((F32) mScreen.getWidth()*2,
-				  (F32) mScreen.getHeight()*2);
-
 		mScreen.bindTarget();
 		// Apply gamma correction to the frame here.
 		gDeferredPostGammaCorrectProgram.bind();
-		//mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
+		mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 		S32 channel = 0;
 		channel = gDeferredPostGammaCorrectProgram.enableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mScreen.getUsage());
 		if (channel > -1)
@@ -8528,21 +8515,7 @@ void LLPipeline::renderDeferredLighting()
 		
 		gDeferredPostGammaCorrectProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mScreen.getWidth(), mScreen.getHeight());
 		
-		//F32 gamma = gSavedSettings.getF32("RenderDeferredDisplayGamma");
-
-		//gDeferredPostGammaCorrectProgram.uniform1f(LLShaderMgr::DISPLAY_GAMMA, (gamma > 0.1f) ? 1.0f / gamma : (1.0f/2.2f));
-		
-		gGL.begin(LLRender::TRIANGLE_STRIP);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-		
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
+		mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
 		
 		gGL.getTexUnit(channel)->unbind(mScreen.getUsage());
 		gDeferredPostGammaCorrectProgram.unbind();
