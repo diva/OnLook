@@ -1731,7 +1731,8 @@ bool LLAppearanceMgr::getCanRemoveFromCOF(const LLUUID& outfit_cat_id)
 
 	// Is there an active gesture in outfit_cat_id?
 	items.reset();
-	gInventory.collectDescendentsIf(outfit_cat_id, cats, items, LLInventoryModel::EXCLUDE_TRASH, LLIsType(LLAssetType::AT_GESTURE), /*follow_folder_links=*/ true);
+	LLIsType is_gesture(LLAssetType::AT_GESTURE);
+	gInventory.collectDescendentsIf(outfit_cat_id, cats, items, LLInventoryModel::EXCLUDE_TRASH, is_gesture, /*follow_folder_links=*/ true);
 	for(S32 i = 0; i  < items.count(); ++i)
 		if (LLGestureMgr::instance().isGestureActive(items.get(i)->getLinkedUUID()))
 			return true;
