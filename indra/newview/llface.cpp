@@ -1338,9 +1338,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			}
 			}
 
-			if (shiny_in_alpha)
+			if(getPoolType() == LLDrawPool::POOL_FULLBRIGHT)
 			{
-
+				color.mV[3] = 1.f; //Simple fullbright reads alpha for fog contrib, not shiny/transparency, so since opaque, force to 1.
+			}
+			else if (shiny_in_alpha)
+			{
 				GLfloat alpha[4] =
 				{
 					0.00f,

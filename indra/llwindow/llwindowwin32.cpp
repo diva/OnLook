@@ -363,7 +363,7 @@ LLWindowWin32::LLWindowWin32(LLWindowCallbacks* callbacks,
 							 const std::string& title, const std::string& name, S32 x, S32 y, S32 width,
 							 S32 height, U32 flags, 
 							 BOOL fullscreen, BOOL clearBg,
-							 BOOL disable_vsync,
+							 const S32 vsync_mode,
 							 BOOL ignore_pixel_depth,
 							 U32 fsaa_samples)
 	: LLWindow(callbacks, fullscreen, flags)
@@ -903,7 +903,7 @@ BOOL LLWindowWin32::setSizeImpl(const LLCoordWindow size)
 }
 
 // changing fullscreen resolution
-BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BOOL disable_vsync, const LLCoordScreen * const posp)
+BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, const S32 vsync_mode, const LLCoordScreen * const posp)
 {
 	GLuint	pixel_format;
 	DEVMODE dev_mode;
@@ -1650,14 +1650,27 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, BO
 	}
 
 	// Disable vertical sync for swap
-	if (disable_vsync && wglSwapIntervalEXT)
+	if(wglSwapIntervalEXT)
 	{
-		LL_DEBUGS("Window") << "Disabling vertical sync" << LL_ENDL;
-		wglSwapIntervalEXT(0);
-	}
-	else
-	{
-		LL_DEBUGS("Window") << "Keeping vertical sync" << LL_ENDL;
+		if (vsync_mode == 0)
+		{
+			LL_DEBUGS("Window") << "Disabling vertical sync" << LL_ENDL;
+			wglSwapIntervalEXT(0);
+		}
+		else if(vsync_mode == -1)
+		{
+			LL_DEBUGS("Window") << "Enabling adaptive vertical sync" << LL_ENDL;
+			if(wglSwapIntervalEXT(-1) == 0)
+			{
+				LL_DEBUGS("Window") << "Failed to enable adaptive vertical sync. Disabling vsync." << LL_ENDL;
+				wglSwapIntervalEXT(0);
+			}
+		}
+		else
+		{
+			LL_DEBUGS("Window") << "Enabling vertical sync" << LL_ENDL;
+			wglSwapIntervalEXT(1);
+		}
 	}
 
 	SetWindowLongPtr(mWindowHandle, GWLP_USERDATA, (LONG_PTR)this);
@@ -3028,6 +3041,16 @@ void LLWindowWin32::setFSAASamples(const U32 fsaa_samples)
 U32 LLWindowWin32::getFSAASamples()
 {
 	return mFSAASamples;
+}
+
+S32 LLWindowWin32::getVsyncMode()
+{
+	return mVsyncMode;
+}
+
+void LLWindowWin32::setVsyncMode(const S32 vsync_mode)
+{
+	mVsyncMode = vsync_mode;
 }
 
 LLWindow::LLWindowResolution* LLWindowWin32::getSupportedResolutions(S32 &num_resolutions)
