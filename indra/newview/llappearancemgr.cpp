@@ -1526,7 +1526,7 @@ void LLAppearanceMgr::takeOffOutfit(const LLUUID& cat_id)
 	LLInventoryModel::item_array_t items;
 	LLFindWearablesEx collector(/*is_worn=*/ true, /*include_body_parts=*/ false);
 
-	gInventory.collectDescendentsIf(cat_id, cats, items, FALSE, collector);
+	gInventory.collectDescendentsIf(cat_id, cats, items, FALSE, collector, true);
 
 	LLInventoryModel::item_array_t::const_iterator it = items.begin();
 	const LLInventoryModel::item_array_t::const_iterator it_end = items.end();
@@ -1539,16 +1539,16 @@ void LLAppearanceMgr::takeOffOutfit(const LLUUID& cat_id)
 	removeItemsFromAvatar(uuids_to_remove);
 
 	// deactivate all gestures in the outfit folder
- 	LLInventoryModel::item_array_t gest_items;
- 	getDescendentsOfAssetType(cat_id, gest_items, LLAssetType::AT_GESTURE, false);
- 	for(U32 i = 0; i < gest_items.count(); ++i)
- 	{
- 		LLViewerInventoryItem* gest_item = gest_items.get(i);
- 		if (LLGestureMgr::instance().isGestureActive(gest_item->getLinkedUUID()))
- 		{
- 			LLGestureMgr::instance().deactivateGesture(gest_item->getLinkedUUID());
- 		}
- 	}
+	LLInventoryModel::item_array_t gest_items;
+	getDescendentsOfAssetType(cat_id, gest_items, LLAssetType::AT_GESTURE, true);
+	for(S32 i = 0; i < gest_items.count(); ++i)
+	{
+		LLViewerInventoryItem* gest_item = gest_items.get(i);
+		if (LLGestureMgr::instance().isGestureActive(gest_item->getLinkedUUID()))
+		{
+			LLGestureMgr::instance().deactivateGesture(gest_item->getLinkedUUID());
+		}
+	}
 }
 
 // Create a copy of src_id + contents as a subfolder of dst_id.
@@ -1724,8 +1724,18 @@ bool LLAppearanceMgr::getCanRemoveFromCOF(const LLUUID& outfit_cat_id)
 		cats,
 		items,
 		LLInventoryModel::EXCLUDE_TRASH,
-		is_worn);
-	return items.size() > 0;
+		is_worn,
+		/*follow_folder_links=*/ true);
+
+	if (items.size()) return true;
+
+	// Is there an active gesture in outfit_cat_id?
+	items.reset();
+	gInventory.collectDescendentsIf(outfit_cat_id, cats, items, LLInventoryModel::EXCLUDE_TRASH, LLIsType(LLAssetType::AT_GESTURE), /*follow_folder_links=*/ true);
+	for(S32 i = 0; i  < items.count(); ++i)
+		if (LLGestureMgr::instance().isGestureActive(items.get(i)->getLinkedUUID()))
+			return true;
+	return false;
 }
 
 // static
@@ -1956,10 +1966,10 @@ void LLAppearanceMgr::linkAll(const LLUUID& cat_uuid,
 void LLAppearanceMgr::updateCOF(const LLUUID& category, bool append)
 {
 	LLInventoryModel::item_array_t body_items_new, wear_items_new, obj_items_new, gest_items_new;
-	getDescendentsOfAssetType(category, body_items_new, LLAssetType::AT_BODYPART, false);
-	getDescendentsOfAssetType(category, wear_items_new, LLAssetType::AT_CLOTHING, false);
-	getDescendentsOfAssetType(category, obj_items_new, LLAssetType::AT_OBJECT, false);
-	getDescendentsOfAssetType(category, gest_items_new, LLAssetType::AT_GESTURE, false);
+	getDescendentsOfAssetType(category, body_items_new, LLAssetType::AT_BODYPART, true);
+	getDescendentsOfAssetType(category, wear_items_new, LLAssetType::AT_CLOTHING, true);
+	getDescendentsOfAssetType(category, obj_items_new, LLAssetType::AT_OBJECT, true);
+	getDescendentsOfAssetType(category, gest_items_new, LLAssetType::AT_GESTURE, true);
 	updateCOF(body_items_new, wear_items_new, obj_items_new, gest_items_new, append, category);
 }
 

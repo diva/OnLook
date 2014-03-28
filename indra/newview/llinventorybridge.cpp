@@ -1766,7 +1766,8 @@ BOOL LLItemBridge::removeItem()
 											cat_array,
 											item_array,
 											LLInventoryModel::INCLUDE_TRASH,
-											is_linked_item_match);
+											is_linked_item_match,
+											true);
 
 			const U32 num_links = cat_array.size() + item_array.size();
 			if (num_links > 0)
@@ -3254,7 +3255,8 @@ BOOL LLFolderBridge::checkFolderForContentsOfType(LLInventoryModel* model, LLInv
 								cat_array,
 								item_array,
 								LLInventoryModel::EXCLUDE_TRASH,
-								is_type);
+								is_type,
+								true);
 	return ((item_array.count() > 0) ? TRUE : FALSE );
 }
 
@@ -5597,7 +5599,8 @@ void remove_inventory_category_from_avatar_step2( BOOL proceed, LLUUID category_
 										cat_array,
 										item_array,
 										LLInventoryModel::EXCLUDE_TRASH,
-										is_wearable);
+										is_wearable,
+										true);
 		S32 i;
 		S32 wearable_count = item_array.count();
 
@@ -5608,7 +5611,8 @@ void remove_inventory_category_from_avatar_step2( BOOL proceed, LLUUID category_
 										obj_cat_array,
 										obj_item_array,
 										LLInventoryModel::EXCLUDE_TRASH,
-										is_object);
+										is_object,
+										true);
 		S32 obj_count = obj_item_array.count();
 
 		// Find all gestures in this folder
@@ -5619,7 +5623,8 @@ void remove_inventory_category_from_avatar_step2( BOOL proceed, LLUUID category_
 										gest_cat_array,
 										gest_item_array,
 										LLInventoryModel::EXCLUDE_TRASH,
-										is_gesture);
+										is_gesture,
+										true);
 		S32 gest_count = gest_item_array.count();
 
 		if (wearable_count > 0)	//Loop through wearables.  If worn, remove.
