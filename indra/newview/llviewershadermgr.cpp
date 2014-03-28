@@ -190,7 +190,7 @@ LLGLSLShader			gDeferredWaterProgram(LLViewerShaderMgr::SHADER_DEFERRED); //calc
 LLGLSLShader			gDeferredUnderWaterProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);//Not in mShaderList
 LLGLSLShader			gDeferredDiffuseAlphaMaskProgram(LLViewerShaderMgr::SHADER_DEFERRED);
-LLGLSLShader			gDeferredNonIndexedDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+//LLGLSLShader			gDeferredNonIndexedDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredNonIndexedDiffuseAlphaMaskProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredNonIndexedDiffuseAlphaMaskNoColorProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredSkinnedDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);
@@ -1078,7 +1078,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		success = gDeferredNonIndexedDiffuseAlphaMaskNoColorProgram.createShader(NULL, NULL);
 	}
 
-	if (success)
+	/*if (success)
 	{
 		gDeferredNonIndexedDiffuseProgram.mName = "Non Indexed Deferred Diffuse Shader";
 		gDeferredNonIndexedDiffuseProgram.mShaderFiles.clear();
@@ -1086,7 +1086,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		gDeferredNonIndexedDiffuseProgram.mShaderFiles.push_back(make_pair("deferred/diffuseF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gDeferredNonIndexedDiffuseProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
 		success = gDeferredNonIndexedDiffuseProgram.createShader(NULL, NULL);
-	}
+	}*/
 		
 
 	if (success)
