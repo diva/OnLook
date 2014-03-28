@@ -43,7 +43,7 @@ void LLFloaterExploreAnimations::show()
 }
 
 LLFloaterExploreAnimations::LLFloaterExploreAnimations(const LLUUID avatarid)
-:	LLInstanceTracker(avatarid)
+:	LLInstanceTracker<LLFloaterExploreAnimations, LLUUID>(avatarid)
 ,	mAnimPreview(256, 256)
 {
 	mLastMouseX = 0;
