@@ -204,6 +204,12 @@ bool handleRenderAvatarComplexityLimitChanged(const LLSD& newvalue)
 
 bool handleRenderTransparentWaterChanged(const LLSD& newvalue)
 {
+	LLPipeline::sWaterReflections = gGLManager.mHasCubeMap && gSavedSettings.getBOOL("VertexShaderEnable");
+	if (gPipeline.isInit())	//If water is opaque then distortion/reflection fbos will not be needed.
+	{
+		gPipeline.releaseGLBuffers();
+		gPipeline.createGLBuffers();
+	}
 	LLWorld::getInstance()->updateWaterObjects();
 	return true;
 }

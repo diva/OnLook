@@ -1567,34 +1567,39 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 	}
 	else
 	{
+	static const LLCachedControl<bool> sh_fullbright_deferred("SHFullbrightDeferred",true);
+
+	//Bump goes into bump pool unless using deferred and there's a normal map that takes precedence.
+	bool legacy_bump = (!LLPipeline::sRenderDeferred || !mat || mat->getNormalID().isNull()) && LLPipeline::sRenderBump && te->getBumpmap() && te->getBumpmap() < 18;
 	if (alpha)
 	{
 		return LLDrawPool::POOL_ALPHA;
 	}
-	else if ((!LLPipeline::sRenderDeferred || !mat || mat->getNormalID().isNull()) && LLPipeline::sRenderBump && te->getBumpmap() && te->getBumpmap() < 18)
-	{
-		return LLDrawPool::POOL_BUMP;	//Bump goes into bump pool unless using deferred and there's a normal map that takes precedence.
-	}
 	else if (mat && mat->getDiffuseAlphaMode() == LLMaterial::DIFFUSE_ALPHA_MODE_MASK)
 	{
-		if(te->getFullbright())
+		if(!LLPipeline::sRenderDeferred || legacy_bump)
+		{
+			return te->getFullbright() ? LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK : LLDrawPool::POOL_ALPHA_MASK;
+		}
+		else if(te->getFullbright() && !mat->getEnvironmentIntensity() && !te->getShiny())
 		{
 			return LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
 		}
-		else
-		{
-			return LLPipeline::sRenderDeferred ? LLDrawPool::POOL_MATERIALS : LLDrawPool::POOL_ALPHA_MASK;
-		}
+		return LLDrawPool::POOL_MATERIALS;
+	}
+	else if (legacy_bump)
+	{
+		return LLDrawPool::POOL_BUMP;	
 	}
 	else if(LLPipeline::sRenderDeferred && mat)
 	{
-		if(te->getFullbright() && mat->getEnvironmentIntensity())
+		if(te->getFullbright() && !mat->getEnvironmentIntensity() && !te->getShiny())
 		{
-			return LLDrawPool::POOL_FULLBRIGHT;
+			return sh_fullbright_deferred ? LLDrawPool::POOL_FULLBRIGHT : LLDrawPool::POOL_SIMPLE;
 		}
 		return LLDrawPool::POOL_MATERIALS;
 	}
-	else if(te->getFullbright())
+	else if((sh_fullbright_deferred || !LLPipeline::sRenderDeferred) && te->getFullbright())
 	{
 		return (LLPipeline::sRenderBump && te->getShiny()) ? LLDrawPool::POOL_BUMP : LLDrawPool::POOL_FULLBRIGHT;
 	}
@@ -8558,10 +8563,10 @@ void LLPipeline::renderDeferredLighting()
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 //LLPipeline::RENDER_TYPE_VOLUME,
+						 LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
+						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -8573,7 +8578,7 @@ void LLPipeline::renderDeferredLighting()
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 LLPipeline::RENDER_TYPE_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT_ALPHA_MASK,
@@ -9181,10 +9186,10 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 //LLPipeline::RENDER_TYPE_VOLUME,
+						 LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
+						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -9196,7 +9201,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 LLPipeline::RENDER_TYPE_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT_ALPHA_MASK,
@@ -9401,7 +9406,8 @@ inline float sgn(float a)
 
 void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 {
-	if (LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
+	static const LLCachedControl<bool> render_transparent_water("RenderTransparentWater",false);
+	if ((render_transparent_water || LLPipeline::sRenderDeferred) && LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
 	{
 		BOOL skip_avatar_update = FALSE;
 		if (!isAgentAvatarValid() || gAgentCamera.getCameraAnimating() || gAgentCamera.getCameraMode() != CAMERA_MODE_MOUSELOOK || !LLVOAvatar::sVisibleInFirstPerson)
