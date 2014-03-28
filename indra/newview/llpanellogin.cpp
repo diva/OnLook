@@ -647,7 +647,7 @@ void LLPanelLogin::updateLocationSelectorsVisibility()
 
 		sInstance->getChildView("location_panel")->setVisible(show_start);
 	
-		bool show_server = true;
+		bool show_server = gSavedSettings.getBOOL("ForceShowGrid");
 		sInstance->getChildView("grids_panel")->setVisible(show_server);
 	}
 	

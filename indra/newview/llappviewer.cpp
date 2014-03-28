@@ -355,6 +355,7 @@ void init_default_trans_args()
 {
 	default_trans_args.insert("SECOND_LIFE"); // World
 	default_trans_args.insert("APP_NAME");
+	default_trans_args.insert("SHORT_APP_NAME");
 	default_trans_args.insert("CAPITALIZED_APP_NAME");
 	default_trans_args.insert("SECOND_LIFE_GRID");
 	default_trans_args.insert("SUPPORT_SITE");
@@ -2363,23 +2364,6 @@ bool LLAppViewer::initConfiguration()
 #if LL_DARWIN
 	// Initialize apple menubar and various callbacks
 	init_apple_menu(LLTrans::getString("APP_NAME").c_str());
-
-#if __ppc__
-	// If the CPU doesn't have Altivec (i.e. it's not at least a G4), don't go any further.
-	// Only test PowerPC - all Intel Macs have SSE.
-	if(!gSysCPU.hasAltivec())
-	{
-		std::ostringstream msg;
-		msg << LLTrans::getString("MBRequiresAltiVec");
-		OSMessageBox(
-			msg.str(),
-			LLStringUtil::null,
-			OSMB_OK);
-		removeMarkerFile();
-		return false;
-	}
-#endif
-	
 #endif // LL_DARWIN
 
 	// Display splash screen.  Must be after above check for previous

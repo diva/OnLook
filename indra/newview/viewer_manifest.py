@@ -406,6 +406,8 @@ class WindowsManifest(ViewerManifest):
             'inst_name':self.channel_oneword() + ' (64 bit)' if self.is_win64() else self.channel_oneword(),
             'installer_file':self.installer_file(),
             'viewer_name': "%s%s" % (self.channel(), " (64 bit)" if self.is_win64() else "" ),
+            'install_icon': "install_icon_%s.ico" % self.viewer_branding_id(),
+            'uninstall_icon': "uninstall_icon_%s.ico" % self.viewer_branding_id(),
             }
 
         version_vars = """
@@ -422,8 +424,9 @@ class WindowsManifest(ViewerManifest):
         !define INSTNAME   "%(inst_name)s"
         !define SHORTCUT   "%(viewer_name)s Viewer"
         !define URLNAME   "secondlife"
-        !define INSTALL_ICON "install_icon_singularity.ico"
-        !define UNINSTALL_ICON "install_icon_singularity.ico"
+        !define INSTALL_ICON   "%(install_icon)s"
+        !define UNINSTALL_ICON   "%(uninstall_icon)s"
+        !define AUTHOR "Linden Research, Inc."  #TODO: Hook this up to cmake et al for easier branding.
         Caption "${VIEWERNAME} ${VERSION_LONG}"
         """
         if 'installer_name' in self.args:
@@ -493,8 +496,7 @@ class DarwinManifest(ViewerManifest):
                 self.path("featuretable_mac.txt")
                 self.path("SecondLife.nib")
 
-                          # SG:TODO
-                self.path("../newview/res/singularity.icns", dst="singularity.icns")
+                self.path(("../newview/res/%s_icon.icns" % self.viewer_branding_id()), dst=("%s_icon.icns" % self.viewer_branding_id()))
 
                 # Translations
                 self.path("English.lproj")
