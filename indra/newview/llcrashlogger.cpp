@@ -396,8 +396,6 @@ void LLCrashLogger::checkCrashDump()
 	if (pref == 2) return; //never send
 
 	mCrashHost = gSavedSettings.getString("CrashHostUrl");
-	// Don't send if there's no crash host. :O
-	if (mCrashHost.empty()) return;
 	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
 
 	// Do we have something to send, and somewhere to send it
