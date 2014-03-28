@@ -1348,7 +1348,7 @@ S32 LLWindowMacOSX::getVsyncMode()
 }
 void LLWindowMacOSX::setVsyncMode(const S32 vsync_mode)
 {
-	mVsyncMode = vsync_mode
+	mVsyncMode = vsync_mode;
 	mForceRebuild = TRUE;
 }
 
