@@ -4195,7 +4195,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	U32 pool_type = facep->getPoolType();
 
 	bool cmp_bump = (type == LLRenderPass::PASS_BUMP) || (type == LLRenderPass::PASS_POST_BUMP);
-	bool cmp_mat =	(!alt_batching) || LLPipeline::sRenderDeferred && facep->getTextureEntry()->getColor().mV[3] >= 0.999f && 
+	bool cmp_mat =	(!alt_batching) || LLPipeline::sRenderDeferred && /*facep->getTextureEntry()->getColor().mV[3] >= 0.999f &&*/
 					((pool_type == LLDrawPool::POOL_MATERIALS) || (pool_type == LLDrawPool::POOL_ALPHA));
 	bool cmp_shiny = (!alt_batching) ? !!mat : (mat && cmp_mat);
 	bool cmp_fullbright = !alt_batching || cmp_shiny || pool_type == LLDrawPool::POOL_ALPHA;
