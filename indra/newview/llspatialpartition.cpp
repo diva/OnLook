@@ -1528,6 +1528,7 @@ static LLFastTimer::DeclareTimer FTM_OCCLUSION_DRAW("Draw");
 
 void LLSpatialGroup::doOcclusion(LLCamera* camera)
 {
+	LLGLDisable stencil(GL_STENCIL_TEST);
 	if (mSpatialPartition->isOcclusionEnabled() && LLPipeline::sUseOcclusion > 1)
 	{
 		//static const LLCachedControl<BOOL> render_water_void_culling("RenderWaterVoidCulling", TRUE);
@@ -3866,6 +3867,8 @@ public:
 		{
 			return;
 		}
+
+		LLGLDisable stencil(GL_STENCIL_TEST);
 
 		group->rebuildGeom();
 		group->rebuildMesh();
