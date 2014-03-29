@@ -27,6 +27,7 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 	<string name="SECOND_LIFE">Second Life</string>
 	<string name="APP_NAME">Singularity Viewer</string>
 	<string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
+	<string name="SHORT_APP_NAME">Singularity</string>
 	<string name="SECOND_LIFE_GRID">Second Life Grid</string>
 	<string name="SUPPORT_SITE">Second Life Support Portal</string>
 
@@ -66,7 +67,7 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 	<string name="LoginRetrySeedCapGrant">Requesting region capabilities, attempt [NUMBER]...</string>
 	<string name="LoginWaitingForRegionHandshake">Waiting for region handshake...</string>
 	<string name="LoginConnectingToRegion">Connecting to region...</string>
-	<string name="LoginDownloadingClothing">Downloading clothing...</string>
+	<string name="LoginDownloadingClothing">Dry cleaning clothing...</string>
 
 	<string name="LoginFailed">Login failed.</string>
 	<string name="Quit">Quit</string>

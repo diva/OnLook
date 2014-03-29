@@ -60,10 +60,17 @@ LLToolGun::LLToolGun( LLToolComposite* composite )
 
 void LLToolGun::handleSelect()
 {
-	gViewerWindow->hideCursor();
-	gViewerWindow->moveCursorToCenter();
-	gViewerWindow->getWindow()->setMouseClipping(TRUE);
-	mIsSelected = TRUE;
+// [RLVa:KB] - Checked: 2014-02-24 (RLVa-1.4.10)
+	if (gFocusMgr.getAppHasFocus())
+	{
+// [/RLVa:KB]
+		gViewerWindow->hideCursor();
+		gViewerWindow->moveCursorToCenter();
+		gViewerWindow->getWindow()->setMouseClipping(TRUE);
+		mIsSelected = TRUE;
+// [RLVa:KB] - Checked: 2014-02-24 (RLVa-1.4.10)
+	}
+// [/RLVa:KB]
 }
 
 void LLToolGun::handleDeselect()
@@ -137,11 +144,14 @@ BOOL LLToolGun::handleHover(S32 x, S32 y, MASK mask)
 
 void LLToolGun::draw()
 {
-	if( gSavedSettings.getBOOL("ShowCrosshairs") )
+	static const LLCachedControl<bool> show("ShowCrosshairs");
+	if (show)
 	{
 		LLUIImagePtr crosshair = LLUI::getUIImage("UIImgCrosshairsUUID");
+		static const LLCachedControl<LLColor4> color("LiruCrosshairColor");
 		crosshair->draw(
 			( gViewerWindow->getWorldViewRectScaled().getWidth() - crosshair->getWidth() ) / 2,
-			( gViewerWindow->getWorldViewRectScaled().getHeight() - crosshair->getHeight() ) / 2);
+			( gViewerWindow->getWorldViewRectScaled().getHeight() - crosshair->getHeight() ) / 2,
+			color);
 	}
 }

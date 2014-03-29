@@ -19,7 +19,7 @@
 	</combo_box>
 	<button label="Aggiorna" name="classified_update_btn"/>
 	<string name="ad_placed_paid">
-		Inserzione accettata: [DATE], Pagati [AMT] L$ per l&apos;inserzione.
+		Inserzione accettata: [DATE], Pagati [AMT] [CURRENCY] per l&apos;inserzione.
 	</string>
 	<string name="update_txt">
 		Aggiorna

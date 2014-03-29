@@ -11,9 +11,10 @@
 		<combo_item name="Always" value="Always">Always</combo_item>
 	</combo_box>
 	<combo_box bottom_delta="0" follows="top" height="18" left="220" name="namesystem_combobox" width="166">
-		<combo_item name="Old Names" value="Old Names">Old Names</combo_item>
-		<combo_item name="Display Names (with Username)" value="Display Names (with Username)">Display Names(w/Username)</combo_item>
-		<combo_item name="Display Names only" value="Display Names only">Display Names only</combo_item>
+		<combo_item name="Old Names" value="0">Old Names</combo_item>
+		<combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+		<combo_item name="Display Names only" value="2">Display Names only</combo_item>
+		<combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
 	</combo_box>
 	<check_box bottom_delta="0" follows="top" height="16" label="Show Resident" left_delta="174" name="show_resident_checkbox"/>
 	<check_box bottom_delta="-25" follows="top" height="16" initial_value="true" label="Small Avatar Names" left="101" name="small_avatar_names_checkbox"/>
@@ -47,13 +48,13 @@
 		<combo_item name="System Default Language" value="default">System Default</combo_item>
 		<combo_item name="English" value="en-us">English</combo_item>		
 		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
+		<combo_item name="Deutsch(German)" value="de">Deutsch(German)</combo_item>
 		<combo_item name="Spanish" value="es">Español(Spanish)</combo_item>
 		<combo_item name="French" value="fr">Français(French)</combo_item>
+		<combo_item name="Italian" value="it">Italiano(Italian)</combo_item>
 		<combo_item name="Portugese" value="pt">Portugués(Portuguese)</combo_item>
 		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
 		<combo_item name="Danish" value="da">Dansk(Danish)*</combo_item>
-		<combo_item name="Deutsch(German)" value="de">Deutsch(German)*</combo_item>
-		<combo_item name="Italian" value="it">Italiano(Italian)*</combo_item>
 		<combo_item name="Hungarian" value="hu">Magyar(Hungarian)*</combo_item>
 		<combo_item name="Dutch" value="nl">Nederlands(Dutch)*</combo_item>
 		<combo_item name="Polish" value="pl">Polski(Polish)*</combo_item>

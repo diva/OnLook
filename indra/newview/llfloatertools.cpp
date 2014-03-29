@@ -829,7 +829,18 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	
 	childSetVisible("link_num_obj_count", !land_visible);
 	childSetVisible("prim_count", !land_visible);
-	mTab->setVisible(!land_visible);
+	static const LLCachedControl<bool> mini("LiruMiniBuildFloater");
+	mTab->setVisible(!mini && !land_visible);
+	getChildView("mini_button")->setVisible(!land_visible);
+	bool small = mini && !land_visible;
+	const S32 cur_height = getRect().getHeight();
+	static const S32 full_height = cur_height;
+	if (small == (cur_height == full_height))
+	{
+		S32 new_height = small ? full_height - mTab->getRect().getHeight() + 8 : full_height;
+		translate(0, cur_height - new_height);
+		reshape(getRect().getWidth(), new_height);
+	}
 	mPanelLandInfo->setVisible(land_visible);
 }
 

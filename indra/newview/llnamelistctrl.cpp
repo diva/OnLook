@@ -49,11 +49,11 @@ void LLNameListCtrl::NameTypeNames::declareValues()
 	declare("SPECIAL", LLNameListCtrl::SPECIAL);
 }
 
-LLNameListCtrl::LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL allow_multiple_selection, BOOL draw_border, bool draw_heading, S32 name_column_index, const std::string& tooltip)
+LLNameListCtrl::LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL allow_multiple_selection, BOOL draw_border, bool draw_heading, S32 name_column_index, const std::string& name_system, const std::string& tooltip)
 :	LLScrollListCtrl(name, rect, NULL, allow_multiple_selection, draw_border,draw_heading),
 	mNameColumnIndex(name_column_index),
 	mAllowCallingCardDrop(false),
-	mShortNames(false),
+	mNameSystem(name_system),
 	mAvatarNameCacheConnection()
 {
 	setToolTip(tooltip);
@@ -189,10 +189,7 @@ LLScrollListItem* LLNameListCtrl::addNameItemRow(
 		}
 		else if (LLAvatarNameCache::get(id, &av_name))
 		{
-			if (mShortNames)
-				fullname = av_name.mDisplayName;
-			else
-				fullname = av_name.getCompleteName();
+			LLAvatarNameCache::getPNSName(av_name, fullname, mNameSystem);
 		}
 		else
 		{
@@ -266,10 +263,7 @@ void LLNameListCtrl::onAvatarNameCache(const LLUUID& agent_id,
 	//mAvatarNameCacheConnection.disconnect();
 
 	std::string name;
-	if (mShortNames)
-		name = av_name.mDisplayName;
-	else
-		name = av_name.getCompleteName();
+	LLAvatarNameCache::getPNSName(av_name, name, mNameSystem);
 
 	LLNameListItem* list_item = item.get();
 	if (list_item && list_item->getUUID() == agent_id)
@@ -326,7 +320,10 @@ LLView* LLNameListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 	S32 name_column_index = 0;
 	node->getAttributeS32("name_column_index", name_column_index);
 
-	LLNameListCtrl* name_list = new LLNameListCtrl("name_list", rect, multi_select, draw_border, draw_heading, name_column_index);
+	std::string name_system("PhoenixNameSystem");
+	node->getAttributeString("name_system", name_system);
+
+	LLNameListCtrl* name_list = new LLNameListCtrl("name_list", rect, multi_select, draw_border, draw_heading, name_column_index, name_system);
 	if (node->hasAttribute("heading_height"))
 	{
 		S32 heading_height;

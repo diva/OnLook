@@ -2,31 +2,25 @@
  * @file llviewerparcelmgr.h
  * @brief Viewer-side representation of owned land
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -36,9 +30,12 @@
 #include "v3dmath.h"
 #include "lldarray.h"
 #include "llframetimer.h"
-#include "llmemory.h"
+#include "llsingleton.h"
 #include "llparcelselection.h"
 #include "llui.h"
+
+#include <boost/function.hpp>
+#include <boost/signals2.hpp>
 
 class LLUUID;
 class LLMessageSystem;
@@ -169,6 +166,14 @@ public:
 	LLParcel*	getHoverParcel() const;
 
 	LLParcel*	getCollisionParcel() const;
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	const U8*	getCollisionBitmap() const { return mCollisionBitmap; }
+	size_t		getCollisionBitmapSize() const { return mParcelsPerEdge * mParcelsPerEdge / 8; }
+	U64			getCollisionRegionHandle() const { return mCollisionRegionHandle; }
+
+	typedef boost::signals2::signal<void (const LLViewerRegion*)> collision_update_signal_t;
+	boost::signals2::connection setCollisionUpdateCallback(const collision_update_signal_t::slot_type & cb);
+// [/SL:KB]
 
 	// Can this agent build on the parcel he is on?
 	// Used for parcel property icons in nav bar.
@@ -361,6 +366,11 @@ private:
 	// Watch for pending collisions with a parcel you can't access.
 	// If it's coming, draw the parcel's boundaries.
 	LLParcel*					mCollisionParcel;
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	U8*							mCollisionBitmap;
+	U64							mCollisionRegionHandle;
+	collision_update_signal_t*	mCollisionUpdateSignal;
+// [/SL:KB]
 	U8*							mCollisionSegments;
 	BOOL						mRenderCollision; 
 	BOOL						mRenderSelection;

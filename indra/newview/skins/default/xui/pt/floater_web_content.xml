@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="floater_web_content" title="Navegador de Mídia">
+	<layout_stack name="stack1">
+		<layout_panel name="nav_controls">
+			<button tool_tip="Para trás" name="back"/>
+			<button tool_tip="Para a frente"name="forward"/>
+			<button tool_tip="Recarregar" name="reload"/>
+			<button tool_tip="Abrir no meu Navegador de Web" name="popexternal"/>
+		</layout_panel>
+		</layout_panel>
+	</layout_stack>
+</floater>

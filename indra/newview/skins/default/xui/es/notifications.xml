@@ -3404,7 +3404,7 @@ Por favor, vuelve a intentarlo.
 	</notification>
 	
 	<notification name="OfferedCard">
-		Has ofrecido una tarjeta de visita a [FIRST] [LAST]
+		Has ofrecido una tarjeta de visita a [NAME]
 	</notification>
 	
 	<notification name="UnableToBuyWhileDownloading">

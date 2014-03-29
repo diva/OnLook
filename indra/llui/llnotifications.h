@@ -197,7 +197,7 @@ class LLNotification  :
 {
 LOG_CLASS(LLNotification);
 friend class LLNotifications;
-friend class UpdateItem;
+friend struct UpdateItem;
 
 public:
 	// parameter object used to instantiate a new notification
@@ -568,7 +568,7 @@ class LLNotificationChannelBase :
 	public boost::signals2::trackable
 {
 	LOG_CLASS(LLNotificationChannelBase);
-	friend class UpdateItem;
+	friend struct UpdateItem;
 public:
 	LLNotificationChannelBase(LLNotificationFilter filter, LLNotificationComparator comp) : 
 		mFilter(filter), mItems_sf(comp) 

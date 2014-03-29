@@ -174,9 +174,9 @@ void LLFloaterGesture::show()
 }
 
 // static
-void LLFloaterGesture::toggleVisibility()
+void LLFloaterGesture::toggleInstance(const LLSD&)
 {
-	if(sInstance && sInstance->getVisible())
+	if (instanceVisible())
 	{
 		sInstance->close();
 	}
@@ -187,7 +187,7 @@ void LLFloaterGesture::toggleVisibility()
 }
 
 // static
-bool LLFloaterGesture::instanceVisible()
+bool LLFloaterGesture::instanceVisible(const LLSD&)
 {
 	return sInstance && sInstance->getVisible();
 }

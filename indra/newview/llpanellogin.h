@@ -49,18 +49,15 @@ class LLPanelLogin:
 {
 	LOG_CLASS(LLPanelLogin);
 public:
-	LLPanelLogin(const LLRect &rect,
-				void (*callback)(S32 option, void* user_data),
-				void *callback_data);
+	LLPanelLogin(const LLRect& rect = LLRect());
 	~LLPanelLogin();
 
 	virtual BOOL handleKeyHere(KEY key, MASK mask);
 	virtual void draw();
 	virtual void setFocus( BOOL b );
 
-	static void show(const LLRect &rect, 
-		void (*callback)(S32 option, void* user_data), 
-		void* callback_data);
+	static void show();
+	static void hide() { if (sInstance) sInstance->setVisible(false); }
 
 	// Remember password checkbox is set via gSavedSettings "RememberPassword"
 
@@ -69,7 +66,6 @@ public:
 	 * @param	firstname	First name value.
 	 * @param	lastname	Last name value.
 	 * @param	password	Password, as plaintext or munged.
-	 * @param	is_secondlife True if First/Last refer to a SecondLife(tm) account.
 	 */
 	static void setFields(const std::string& firstname, const std::string& lastname,
 						  const std::string& password);
@@ -110,7 +106,7 @@ private:
 	void reshapeBrowser();
 	void onLocationSLURL();
 
-	static void onClickConnect(void*);
+	void onClickConnect();
 	static void onClickNewAccount();
 	static bool newAccountAlertCallback(const LLSD& notification, const LLSD& response);
 	static void onClickGrids(void*);
@@ -124,10 +120,6 @@ private:
 	static void clearPassword();
 
 public:
-	/**
-	 * @brief	Set the login history data.
-	 */
-	static void setLoginHistory(LLSavedLogins const& login_history);
 
 	/**
 	 * @brief	Returns the login history data.
@@ -144,13 +136,8 @@ public:
 	 */
 	static bool getRememberLogin();
 
-	//static void selectFirstElement(void);
-
 private:
 	LLPointer<LLUIImage> mLogoImage;
-
-	void			(*mCallback)(S32 option, void *userdata);
-	void*			mCallbackData;
 
 	std::string mIncomingPassword;
 	std::string mMungedPassword;

@@ -332,7 +332,7 @@ Você não tem [CURRENCY] suficientes para associar-se a este grupo.
 		Criar este grupo custa [CURRENCY]100.
 Grupos ser formados por mais de um membro, caso contrário serão definitivamente excluídos. 
 Convite outros membros dentro de 48 horas.
-		<usetemplate canceltext="Cancelar" name="okcancelbuttons" notext="Cancelar" yestext="Criar grupo por L$100"/>
+		<usetemplate canceltext="Cancelar" name="okcancelbuttons" notext="Cancelar" yestext="Criar grupo por [CURRENCY]100"/>
 	</notification>
 
 	<notification name="LandBuyPass">
@@ -3167,7 +3167,7 @@ Como isto afeta a senha digitada, você provavelmente desejará desativá-lo.
 	</notification>
 
 	<notification name="OfferedCard">
-		Você ofereceu um cartão de visita a [FIRST] [LAST]
+		Você ofereceu um cartão de visita a [NAME]
 	</notification>
 
 	<notification name="UnableToBuyWhileDownloading">
@@ -3595,7 +3595,7 @@ No entanto, esta região tem conteúdo acessível apenas para adultos.
 
 
 	<notification name="OfferCallingCard">
-		[FIRST] [LAST] está oferecendo seu cartão de visita.
+		[NAME] está oferecendo seu cartão de visita.
 Isto adicionará uma anotação em seu inventário, de modo que você possa mandar rapidamente uma IM para este residente.
 		<form name="form">
 			<button name="Accept" text="Aceitar"/>
@@ -3944,7 +3944,7 @@ Para sua segurança, os SLurls serão bloqueados por alguns instantes.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	<notification name="UploadCostConfirmation">
-		O carregamento custa L$[PRICE]. Deseja prosseguir?
+		O carregamento custa [CURRENCY][PRICE]. Deseja prosseguir?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Carregar"/>
 	</notification>
 	<notification name="ConfirmClearTeleportHistory">
@@ -4001,7 +4001,7 @@ Tem certeza de que quer compartilhar os itens abaixo?
 	<notification name="ReleasedLandWithReclaim">
 		O lote de [AREA] m² &apos;[PARCEL_NAME]&apos; foi liberado.
 
-Você tem [RECLAIM_PERIOD] para reivindicá-lo por L$0. Depois o lote será colocado à venda para qualquer interessado.
+Você tem [RECLAIM_PERIOD] para reivindicá-lo por [CURRENCY]0. Depois o lote será colocado à venda para qualquer interessado.
 	</notification>
 	<notification name="ReleasedLandNoReclaim">
 		O lote de [AREA] m² &apos;[PARCEL_NAME]&apos; foi liberado.
@@ -4120,7 +4120,7 @@ Se o botão Falar for ocultado, o recurso de voz será desabilitado.
 		Você encontrará seus pertences no inventário.  Os itens mais novos também ficam na guia Itens recentes.
 	</notification>
 	<notification label="Você tem dólares Linden!" name="HintLindenDollar">
-		Seu saldo de L$ está aqui.  Clique em Comprar L$ para trocar mais dólares Linden.
+		Seu saldo de [CURRENCY] está aqui.  Clique em Comprar [CURRENCY] para trocar mais dólares Linden.
 	</notification>
 	<notification name="LowMemory">
 		Seu pool de memória está baixo. Algumas funções do SL foram desativadas para evitar falhas. Encerre os outros aplicativos. Reinicie o SL se o problema persistir.

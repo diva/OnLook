@@ -29,7 +29,7 @@
 			No se puede iniciar sesión de MI con [RECIPIENT] debido a las restricciones RLV
 		</string>
 		<string name="blocked_startconf">
-			No se puede iniciar una conferencia con [RECIPIENT] debido a las restricciones RLV
+			No se puede iniciar una conferencia debido a las restricciones RLV
 		</string>
 		<string name="blocked_teleport">
 			No se puede iniciar el Teleporte debido a las restricciones RLV

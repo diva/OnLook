@@ -574,9 +574,10 @@ set(viewer_SOURCE_FILES
     noise.cpp
     pipeline.cpp
     qtoolalign.cpp
+    rlvactions.cpp
     rlvcommon.cpp
     rlvextensions.cpp
-    rlvfloaterbehaviour.cpp
+    rlvfloaters.cpp
     rlvhandler.cpp
     rlvhelper.cpp
     rlvinventory.cpp
@@ -1100,10 +1101,11 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     qtoolalign.h
+    rlvactions.h
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h
-    rlvfloaterbehaviour.h
+    rlvfloaters.h
     rlvhandler.h
     rlvhelper.h
     rlvinventory.h
@@ -1516,7 +1518,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
-	  --arch=${ARCH}
+          --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --branding_id=${VIEWER_BRANDING_ID}
           --build=${CMAKE_CURRENT_BINARY_DIR}
@@ -1538,7 +1540,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
-	  --arch=${ARCH}
+          --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --actions=copy
           --branding_id=${VIEWER_BRANDING_ID}

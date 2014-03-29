@@ -16,11 +16,14 @@ endif(WORD_SIZE EQUAL 32)
 
 set(vivox_src_dir "${CMAKE_SOURCE_DIR}/newview/vivox-runtime/i686-win32")
 set(vivox_files
-    SLVoice.exe
-    alut.dll
-    vivoxsdk.dll
+    ca-bundle.crt
+    libsndfile-1.dll
     ortp.dll
-    wrap_oal.dll
+    SLVoice.exe
+    vivoxoal.dll
+    vivoxplatform.dll
+    vivoxsdk.dll
+    zlib1.dll
     )
 copy_if_different(
     ${vivox_src_dir}

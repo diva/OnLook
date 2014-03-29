@@ -1,5 +1,5 @@
 /** 
- * @file lltoolface.cpp
+ * @file qtoolalign.cpp
  * @brief A tool to align objects
  */
 
@@ -13,14 +13,11 @@
 #include "v3math.h"
 
 // Viewer includes
-#include "llagent.h"
 #include "llagentcamera.h"
 #include "llbox.h"
 #include "llcylinder.h"
 #include "llfloatertools.h"
-#include "llmanip.h"
 #include "llselectmgr.h"
-#include "lltoolcomp.h"
 #include "llviewercamera.h"
 #include "llviewercontrol.h"
 #include "llviewerobject.h"
@@ -33,7 +30,7 @@ const F32 MANIPULATOR_SELECT_SIZE = 20.0;
 
 
 QToolAlign::QToolAlign()
-:	LLToolComposite(std::string("Align"))
+:	LLTool(std::string("Align"))
 {
 }
 
@@ -48,49 +45,14 @@ BOOL QToolAlign::handleMouseDown(S32 x, S32 y, MASK mask)
 {
 	if (mHighlightedAxis != -1)
 	{
-	align();
+		align();
 	}
 	else
 	{
 		gViewerWindow->pickAsync(x, y, mask, pickCallback);
 	}
-		
+
 	return TRUE;
-}
-
-BOOL QToolAlign::handleMouseUp(S32 x, S32 y, MASK mask)
-{
-	// first, perform normal processing in case this was a quick-click
-	handleHover(x, y, mask);
-	LLSelectMgr::getInstance()->updateSelectionCenter();
-	BOOL	handled = FALSE;
-	if( hasMouseCapture() )
-	{
-		handled = TRUE;
-		setMouseCapture( FALSE );
-	}
-	return handled;
-}
-
-BOOL QToolAlign::handleDoubleClick(S32 x, S32 y, MASK mask)
-{
-	return FALSE;
-}
-
-LLTool* QToolAlign::getOverrideTool(MASK mask)
-{
-	if (!gKeyboard->getKeyDown('A'))
-	{
-		if (mask == MASK_CONTROL)
-		{
-			return LLToolCompRotate::getInstance();
-		}
-		else if (mask == (MASK_CONTROL | MASK_SHIFT))
-		{
-			return LLToolCompScale::getInstance();
-		}
-	}
-	return LLToolComposite::getOverrideTool(mask);
 }
 
 void QToolAlign::pickCallback(const LLPickInfo& pick_info)
@@ -140,9 +102,8 @@ void QToolAlign::handleSelect()
 {
 	// no parts, please
 
-	//llwarns << "in select" << llendl;
+	LL_DEBUGS("ALIGNTOOL") << "in select" << LL_ENDL;
 	LLSelectMgr::getInstance()->promoteSelectionToRoot();
-	LLSelectMgr::getInstance()->updateSelectionCenter();
 	gFloaterTools->setStatusText("align");
 }
 
@@ -150,6 +111,7 @@ void QToolAlign::handleSelect()
 void QToolAlign::handleDeselect()
 {
 }
+
 
 BOOL QToolAlign::findSelectedManipulator(S32 x, S32 y)
 {
@@ -182,8 +144,9 @@ BOOL QToolAlign::findSelectedManipulator(S32 x, S32 y)
 	}
 
 
-	F32 half_width = (F32)gViewerWindow->getWindowWidth() / 2.f;
-	F32 half_height = (F32)gViewerWindow->getWindowHeight() / 2.f;
+	LLRect world_view_rect = gViewerWindow->getWorldViewRectScaled();
+	F32 half_width = (F32)world_view_rect.getWidth() / 2.f;
+	F32 half_height = (F32)world_view_rect.getHeight() / 2.f;
 	LLVector2 manip2d;
 	LLVector2 mousePos((F32)x - half_width, (F32)y - half_height);
 	LLVector2 delta;
@@ -416,25 +379,24 @@ void QToolAlign::render()
 	LLColor4 default_normal_color( 0.7f, 0.7f, 0.7f, 0.1f );
 	gGL.color4fv( default_normal_color.mV );
 
-	
+	// <edit>
 	LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getEditSelection();
-	BOOL can_move = selection->getObjectCount() != 0;
-	if (can_move)
+	if (selection->getObjectCount() == 0) return;
+	struct F : public LLSelectedObjectFunctor
 	{
-		struct f : public LLSelectedObjectFunctor
+		virtual bool apply(LLViewerObject* objectp)
 		{
-			virtual bool apply(LLViewerObject* objectp)
-			{
-				return objectp->permMove() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
-			}
-		} func;
-		can_move = selection->applyToObjects(&func);
-	}
-	if (can_move)
-	{
-		render_bbox(mBBox);
-		renderManipulators();
-	}
+			if (!objectp->permMove()) return false;
+			if (objectp->permModify()) return true;
+			static const LLCachedControl<bool> edit_linked("EditLinkedParts");
+			return !edit_linked;
+		}
+	} f;
+	if (!selection->applyToObjects(&f)) return;
+	// </edit>
+
+	render_bbox(mBBox);
+	renderManipulators();
 }
 
 // only works for our specialized (AABB, position centered) bboxes
@@ -564,7 +526,7 @@ void QToolAlign::align()
 			// check to see if it overlaps the previously placed objects
 			BOOL overlap = FALSE;
 
-			llwarns << "i=" << i << " j=" << j << llendl;
+			LL_DEBUGS("ALIGNTOOL") << "i=" << i << " j=" << j << LL_ENDL;
 			
 			if (!mForce) // well, don't check if in force mode
 			{
@@ -577,8 +539,8 @@ void QToolAlign::align()
 
 					if (overlaps_this)
 					{
-						llwarns << "overlap" << new_bbox.getCenterAgent() << other_bbox.getCenterAgent() << llendl;
-						llwarns << "extent" << new_bbox.getExtentLocal() << other_bbox.getExtentLocal() << llendl;
+						LL_DEBUGS("ALIGNTOOL") << "overlap" << new_bbox.getCenterAgent() << other_bbox.getCenterAgent() << LL_ENDL;
+						LL_DEBUGS("ALIGNTOOL") << "extent" << new_bbox.getExtentLocal() << other_bbox.getExtentLocal() << LL_ENDL;
 					}
 
 					overlap = (overlap || overlaps_this);

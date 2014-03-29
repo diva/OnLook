@@ -195,7 +195,7 @@
 	     width="100" />
   <check_box bottom_delta="-20" enabled="false" follows="left|top" font="SansSerifSmall"
 	     height="16" initial_value="false" label="Root" left="413"
-	     mouse_opaque="true" name="checkbox_Root" radio_style="false"
+	     mouse_opaque="true" name="checkbox_Avatar Center" radio_style="false"
 	     width="100" />
   <check_box bottom_delta="-20" enabled="false" follows="left|top" font="SansSerifSmall"
 	     height="16" initial_value="false" label="Center 2" left="413"

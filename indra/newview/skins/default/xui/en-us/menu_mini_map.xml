@@ -1,36 +1,67 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <menu bottom="100" color="MenuDefaultBgColor" drop_shadow="true" height="101" left="100"
 	 mouse_opaque="false" name="popup" opaque="true" width="128">
-	<menu_item_call bottom_delta="-18" height="18" label="Zoom Close" left="0"
-		 mouse_opaque="true" name="Zoom Close" width="128">
+	<menu_item_call label="Zoom Close" name="Zoom Close">
 		<on_click function="MiniMap.ZoomLevel" userdata="2" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Zoom Medium" left="0"
-		 mouse_opaque="true" name="Zoom Medium" width="128">
+	<menu_item_call label="Zoom Medium" name="Zoom Medium">
 		<on_click function="MiniMap.ZoomLevel" userdata="1" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Zoom Far" left="0"
-		 mouse_opaque="true" name="Zoom Far" width="128">
+	<menu_item_call label="Zoom Far" name="Zoom Far">
 		<on_click function="MiniMap.ZoomLevel" userdata="0" />
 	</menu_item_call>
 	<menu_item_separator />
-	<menu_item_check bottom_delta="-18" enabled="true" height="18" label="Center on Camera"
-		 left="0" mouse_opaque="true" name="Center on Camera" width="128">
+	<menu_item_check label="Center on Camera" name="Center on Camera">
 		<on_click function="MiniMap.Center" userdata="1" />
 		<on_check function="MiniMap.CheckCenter" userdata="1" />
 	</menu_item_check>
-	<menu_item_check bottom_delta="-18" enabled="true" height="18" label="Rotate Mini-Map"
-		left="0" mouse_opaque="true" name="Rotate Mini-Map" width="128">
+	<menu_item_check label="Rotate Mini-Map" name="Rotate Mini-Map">
 	  <on_click function="MiniMap.ToggleControl" userdata="MiniMapRotate" />
 	  <on_check control="MiniMapRotate" />
 	</menu_item_check>
-    <menu_item_check bottom_delta="-18" enabled="false" height="18" label="Show Objects"
-        left="0" mouse_opaque="true" name="Show Objects" width="128">
-      <on_click function="MiniMap.ToggleControl" userdata="ShowMiniMapObjects" />
-      <on_check control="ShowMiniMapObjects" />
+  <menu
+   label="Show"
+   name="Minimap Show">
+    <menu_item_check
+     label="Objects"
+     name="Objects">
+      <menu_item_check.on_click
+       function="MiniMap.ToggleControl"
+       userdata="ShowMiniMapObjects" />
+      <menu_item_check.on_check
+       control="ShowMiniMapObjects" />
     </menu_item_check>
-	<menu bottom_delta="0" color="MenuDefaultBgColor" drop_shadow="true" height="175" left="0"
-	     mouse_opaque="false" name="Chat Distance Rings" label="Chat Distance Rings" opaque="true" tear_off="false" width="125">
+    <menu_item_check
+     label="Property Lines"
+     name="Property Lines">
+      <menu_item_check.on_click
+       function="Minimap.ToggleOverlay"
+       userdata="MiniMapPropertyLines" />
+      <menu_item_check.on_check
+       control="MiniMapPropertyLines" />
+    </menu_item_check>
+    <menu_item_check
+     label="Parcels for Sale"
+     name="Parcels for Sale">
+      <menu_item_check.on_click
+       function="Minimap.ToggleOverlay"
+       userdata="MiniMapForSaleParcels" />
+      <menu_item_check.on_check
+       control="MiniMapForSaleParcels" />
+      <menu_item_check.on_enable
+       control="MiniMapPropertyLines" />
+    </menu_item_check>
+    <menu_item_check
+     label="Radar Tracking Circles"
+     name="Radar Tracking Circles">
+      <menu_item_check.on_check
+       control="MiniMapRadarTrackingCircles"/>
+      <menu_item_check.on_click
+       function="MiniMap.ToggleControl"
+       userdata="MiniMapRadarTrackingCircles"/>
+    </menu_item_check>
+  </menu>
+	<menu name="Chat Distance Rings" label="Chat Distance Rings">
 		<menu_item_check label="Show All" name="Show All">
 			<on_check function="MiniMap.CheckChatRings" />
 			<on_click function="MiniMap.ChatRings" />
@@ -50,47 +81,41 @@
 		</menu_item_check>
     </menu>
 	<menu_item_separator />
-	<menu_item_call bottom_delta="-18" enabled = "false" height="18" label="Stop Tracking"
-		 left="0" mouse_opaque="true" name="Stop Tracking" width="128">
+	<menu_item_call label="Stop Tracking" name="Stop Tracking">
 		<on_click function="MiniMap.StopTracking" />
 		<on_enable function="MiniMap.EnableTracking" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" enabled = "false" height="18" label="Profile..."
-		 left="0" mouse_opaque="true" name="Profile" width="128">
+	<menu_item_call label="Profile..." name="Profile">
 		<on_click function="MiniMap.ShowProfile" />
 		<on_enable function="MiniMap.EnableProfile" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Cam..."
-		 left="0" mouse_opaque="true" name="Camfollow" width="128">
+	<menu_item_call label="Cam..." name="Camfollow">
 		<on_click function="MiniMap.CamFollow" />
 		<on_enable function="MiniMap.EnableProfile" />
 	</menu_item_call>
-	<menu bottom_delta="0" color="MenuDefaultBgColor" drop_shadow="true" height="175" left="0"
-	     mouse_opaque="false" name="Mark" label="Mark" opaque="true" tear_off="false" width="125">
-		<menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Red"
-			 left="0" mouse_opaque="true" name="Red" width="128">
+	<menu name="Mark" label="Mark">
+		<menu_item_call label="Red" name="Red">
 			<on_click function="MiniMap.setred" />
 		</menu_item_call>
-		<menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Green"
-			 left="0" mouse_opaque="true" name="Green" width="128">
+		<menu_item_call label="Green" name="Green">
 			<on_click function="MiniMap.setgreen" />
 		</menu_item_call>
-		<menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Blue"
-			 left="0" mouse_opaque="true" name="Blue" width="128">
+		<menu_item_call label="Blue" name="Blue">
 			<on_click function="MiniMap.setblue" />
 		</menu_item_call>
-		<menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Yellow"
-			 left="0" mouse_opaque="true" name="Yellow" width="128">
+		<menu_item_call label="Yellow" name="Yellow">
 			<on_click function="MiniMap.setyellow" />
 		</menu_item_call>
-		<menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Custom..."
-			 left="0" mouse_opaque="true" name="Custom" width="128">
+		<menu_item_call label="Custom..." name="Custom">
 			<on_click function="MiniMap.setcustom" />
 		</menu_item_call>
   </menu>
-  <menu_item_call bottom_delta="-18" enabled = "true" height="18" label="Unmark"
-   left="0" mouse_opaque="true" name="Unmark" width="128">
+  <menu_item_call label="Unmark" name="Unmark">
     <on_click function="MiniMap.setunmark" />
     <on_enable function="MiniMap.enableunmark" />
   </menu_item_call>
+  <menu_item_check label="World Map Textures" name="World Map Textures">
+    <on_check control="MiniMapWorldMapTextures" />
+    <on_click function="MiniMap.ToggleControl" userdata="MiniMapWorldMapTextures" />
+  </menu_item_check>
 </menu>

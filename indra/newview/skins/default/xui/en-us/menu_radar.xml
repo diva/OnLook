@@ -65,6 +65,10 @@
       <on_click function="List.CopyUUIDs"/>
       <on_enable function="List.EnableAnySelected"/>
     </menu_item_call>
+    <menu_item_call label="Copy SLURL" name="Copy SLURL">
+      <on_click function="List.CopySLURL"/>
+      <on_visible function="List.EnableSingleSelected"/>
+    </menu_item_call>
   </menu>
   <menu label="Focusing" name="Focusing" create_jump_keys="true">
     <menu_item_call label="Focus" name="Focus" shortcut="Enter">

@@ -35,29 +35,21 @@
 
 #include "lltoolbar.h"
 
-#include "llbutton.h"
 #include "llflyoutbutton.h"
 #include "llscrolllistitem.h"
-#include "llui.h"
 
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llagentwearables.h"
-#include "llfirstuse.h"
-#include "llviewerparcelmgr.h"
-#include "llfloateravatarlist.h"
 #include "llfloaterchat.h"
 #include "llfloaterchatterbox.h"
-#include "llfloatercustomize.h"
 #include "llfloaterfriends.h"
 #include "llfloaterinventory.h"
 #include "llfloatermute.h"
-#include "llfloatersnapshot.h"
 #include "llimpanel.h"
 #include "llimview.h"
-#include "llmenucommands.h"
-#include "lltoolmgr.h"
 #include "lltoolgrab.h"
+#include "lltoolmgr.h"
+#include "llviewerparcelmgr.h"
 #include "llvoavatarself.h"
 
 // [RLVa:KB]
@@ -102,6 +94,7 @@ F32	LLToolBar::sInventoryAutoOpenTime = 1.f;
 //
 // Functions
 //
+void show_floater(const std::string& floater_name);
 
 LLToolBar::LLToolBar()
 :	LLLayoutPanel()
@@ -111,47 +104,14 @@ LLToolBar::LLToolBar()
 {
 	setIsChrome(TRUE);
 	setFocusRoot(TRUE);
+	mCommitCallbackRegistrar.add("ShowFloater", boost::bind(show_floater, _2));
 }
 
 
 BOOL LLToolBar::postBuild()
 {
-	childSetCommitCallback("communicate_btn", onClickCommunicate, this);
-
-	childSetAction("chat_btn", onClickChat, this);
-	childSetControlName("chat_btn", "ChatVisible");
-
-	//childSetAction("appearance_btn", onClickAppearance, this);
-	//childSetControlName("appearance_btn", "");
-
-	childSetAction("radar_list_btn", onClickRadarList, this);
-	childSetControlName("radar_list_btn", "ShowRadar");
-
-	childSetAction("fly_btn", onClickFly, this);
-	childSetControlName("fly_btn", "FlyBtnState");
-
-	//childSetAction("sit_btn", onClickSit, this);
-	//childSetControlName("sit_btn", "SitBtnState");
-
-	childSetAction("snapshot_btn", onClickSnapshot, this);
-	childSetControlName("snapshot_btn", "SnapshotBtnState");
-
-	childSetAction("directory_btn", onClickDirectory, this);
-	childSetControlName("directory_btn", "ShowDirectory");
-
-	childSetAction("build_btn", onClickBuild, this);
-	childSetControlName("build_btn", "BuildBtnState");
-
-	childSetAction("radar_btn", onClickRadar, this);
-	childSetControlName("radar_btn", "ShowMiniMap");
-
-	childSetAction("map_btn", onClickMap, this);
-	childSetControlName("map_btn", "ShowWorldMap");
-
-	childSetAction("inventory_btn", onClickInventory, this);
-	childSetControlName("inventory_btn", "ShowInventory");
-
 	mCommunicateBtn.connect(this, "communicate_btn");
+	mCommunicateBtn->setCommitCallback(boost::bind(&LLToolBar::onClickCommunicate, this, _2));
 	mFlyBtn.connect(this, "fly_btn");
 	mBuildBtn.connect(this, "build_btn");
 	mMapBtn.connect(this, "map_btn");
@@ -202,11 +162,11 @@ BOOL LLToolBar::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 									 std::string& tooltip_msg)
 {
 	LLButton* inventory_btn = getChild<LLButton>("inventory_btn");
-	if (!inventory_btn) return FALSE;
+	if (!inventory_btn || !inventory_btn->getVisible()) return FALSE;
 
 	LLInventoryView* active_inventory = LLInventoryView::getActiveInventory();
 
-	if(active_inventory && active_inventory->getVisible())
+	if (active_inventory && active_inventory->getVisible())
 	{
 		mInventoryAutoOpen = FALSE;
 	}
@@ -229,22 +189,6 @@ BOOL LLToolBar::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 
 	return LLPanel::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
 }
-
-// static
-void LLToolBar::toggle(void*)
-{
-	BOOL show = gSavedSettings.getBOOL("ShowToolBar");                      
-	gSavedSettings.setBOOL("ShowToolBar", !show);                           
-	gToolBar->setVisible(!show);
-}
-
-
-// static
-BOOL LLToolBar::visible(void*)
-{
-	return gToolBar->getVisible();
-}
-
 
 void LLToolBar::layoutButtons()
 {
@@ -294,33 +238,21 @@ void LLToolBar::refresh()
 		return;
 
 	static LLCachedControl<bool> show("ShowToolBar", true);
-	static LLCachedControl<bool> ascent_build_always_enabled("AscentBuildAlwaysEnabled", true);
 	BOOL mouselook = gAgentCamera.cameraMouselook();
 	setVisible(show && !mouselook);
 
-	BOOL sitting = FALSE;
 	static LLCachedControl<bool> continue_flying_on_unsit("LiruContinueFlyingOnUnsit");
-	if (continue_flying_on_unsit)
-	{
-		sitting = false;
-	}
-	else if (gAgentAvatarp)
-	{
-		sitting = gAgentAvatarp->isSitting();
-	}
+	bool sitting = !continue_flying_on_unsit && gAgentAvatarp && gAgentAvatarp->isSitting();
 
 	mFlyBtn->setEnabled((gAgent.canFly() || gAgent.getFlying()) && !sitting );
+	static LLCachedControl<bool> ascent_build_always_enabled("AscentBuildAlwaysEnabled", true);
 	mBuildBtn->setEnabled((LLViewerParcelMgr::getInstance()->allowAgentBuild() || ascent_build_always_enabled));
 
 	// Check to see if we're in build mode
-	BOOL build_mode = LLToolMgr::getInstance()->inEdit();
 	// And not just clicking on a scripted object
-	if (LLToolGrab::getInstance()->getHideBuildHighlight())
-	{
-		build_mode = FALSE;
-	}
+	bool build_mode = LLToolMgr::getInstance()->inEdit() && !LLToolGrab::getInstance()->getHideBuildHighlight();
 	static LLCachedControl<bool> build_btn_state("BuildBtnState",false);
-	if(build_btn_state!=(bool)build_mode)
+	if (build_btn_state != build_mode)
 		build_btn_state = build_mode;
 
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-10 (RLVa-1.0.0g)
@@ -337,63 +269,42 @@ void LLToolBar::refresh()
 	}
 // [/RLVa:KB]
 
-	if (isInVisibleChain())
+	if (isInVisibleChain() && mCommunicateBtn->getVisible())
 	{
 		updateCommunicateList();
 	}
 }
 
+void bold_if_equal(const LLFloater* f1, const LLFloater* f2, LLScrollListItem* itemp)
+{
+	if (f1 != f2) return;
+	static_cast<LLScrollListText*>(itemp->getColumn(0))->setFontStyle(LLFontGL::BOLD);
+}
+
 void LLToolBar::updateCommunicateList()
 {
-	LLFlyoutButton* communicate_button = mCommunicateBtn;
-	LLSD selected = communicate_button->getValue();
+	LLSD selected = mCommunicateBtn->getValue();
 
-	communicate_button->removeall();
+	mCommunicateBtn->removeall();
 
 	LLFloater* frontmost_floater = LLFloaterChatterBox::getInstance()->getActiveFloater();
-	LLScrollListItem* itemp = NULL;
+	bold_if_equal(LLFloaterMyFriends::getInstance(), frontmost_floater, mCommunicateBtn->add(LLFloaterMyFriends::getInstance()->getShortTitle(), LLSD("contacts"), ADD_TOP));
+	bold_if_equal(LLFloaterChat::getInstance(), frontmost_floater, mCommunicateBtn->add(LLFloaterChat::getInstance()->getShortTitle(), LLSD("local chat"), ADD_TOP));
+	mCommunicateBtn->addSeparator(ADD_TOP);
+	mCommunicateBtn->add(getString("Redock Windows"), LLSD("redock"), ADD_TOP);
+	mCommunicateBtn->addSeparator(ADD_TOP);
+	bold_if_equal(LLFloaterMute::getInstance(), frontmost_floater, mCommunicateBtn->add(LLFloaterMute::getInstance()->getShortTitle(), LLSD("mute list"), ADD_TOP));
 
-	itemp = communicate_button->add(LLFloaterMyFriends::getInstance()->getShortTitle(), LLSD("contacts"), ADD_TOP);
-	if (LLFloaterMyFriends::getInstance() == frontmost_floater)
+	if (gIMMgr->getIMFloaterHandles().size() > 0) mCommunicateBtn->addSeparator(ADD_TOP);
+	for(std::set<LLHandle<LLFloater> >::const_iterator floater_handle_it = gIMMgr->getIMFloaterHandles().begin(); floater_handle_it != gIMMgr->getIMFloaterHandles().end(); ++floater_handle_it)
 	{
-		((LLScrollListText*)itemp->getColumn(0))->setFontStyle(LLFontGL::BOLD);
-		// make sure current tab is selected in list
-		if (selected.isUndefined())
+		if (LLFloaterIMPanel* im_floaterp = (LLFloaterIMPanel*)floater_handle_it->get())
 		{
-			selected = itemp->getValue();
-		}
-	}
-	itemp = communicate_button->add(LLFloaterChat::getInstance()->getShortTitle(), LLSD("local chat"), ADD_TOP);
-	if (LLFloaterChat::getInstance() == frontmost_floater)
-	{
-		((LLScrollListText*)itemp->getColumn(0))->setFontStyle(LLFontGL::BOLD);
-		if (selected.isUndefined())
-		{
-			selected = itemp->getValue();
-		}
-	}
-	communicate_button->addSeparator(ADD_TOP);
-	communicate_button->add(getString("Redock Windows"), LLSD("redock"), ADD_TOP);
-	communicate_button->addSeparator(ADD_TOP);
-	communicate_button->add(LLFloaterMute::getInstance()->getShortTitle(), LLSD("mute list"), ADD_TOP);
-	
-	std::set<LLHandle<LLFloater> >::const_iterator floater_handle_it;
-
-	if (gIMMgr->getIMFloaterHandles().size() > 0)
-	{
-		communicate_button->addSeparator(ADD_TOP);
-	}
-
-	for(floater_handle_it = gIMMgr->getIMFloaterHandles().begin(); floater_handle_it != gIMMgr->getIMFloaterHandles().end(); ++floater_handle_it)
-	{
-		LLFloaterIMPanel* im_floaterp = (LLFloaterIMPanel*)floater_handle_it->get();
-		if (im_floaterp)
-		{
-			static LLCachedControl<bool> show_counts("ShowUnreadIMsCounts", true);
 			S32 count = im_floaterp->getNumUnreadMessages();
 			std::string floater_title;
 			if (count > 0) floater_title = "*";
 			floater_title.append(im_floaterp->getShortTitle());
+			static LLCachedControl<bool> show_counts("ShowUnreadIMsCounts", true);
 			if (show_counts && count > 0)
 			{
 				floater_title += " - ";
@@ -408,32 +319,18 @@ void LLToolBar::updateCommunicateList()
 					floater_title += getString("IM");
 				}
 			}
-
-			itemp = communicate_button->add(floater_title, im_floaterp->getSessionID(), ADD_TOP);
-			if (im_floaterp  == frontmost_floater)
-			{
-				((LLScrollListText*)itemp->getColumn(0))->setFontStyle(LLFontGL::BOLD);
-				if (selected.isUndefined())
-				{
-					selected = itemp->getValue();
-				}
-			}
+			bold_if_equal(im_floaterp, frontmost_floater, mCommunicateBtn->add(floater_title, im_floaterp->getSessionID(), ADD_TOP));
 		}
 	}
 
-	communicate_button->setToggleState(gSavedSettings.getBOOL("ShowCommunicate"));
-	communicate_button->setValue(selected);
+	mCommunicateBtn->setToggleState(gSavedSettings.getBOOL("ShowCommunicate"));
+	if (!selected.isUndefined()) mCommunicateBtn->setValue(selected);
 }
 
 
 // static
-void LLToolBar::onClickCommunicate(LLUICtrl* ctrl, void* user_data)
+void LLToolBar::onClickCommunicate(const LLSD& selected_option)
 {
-	LLToolBar* toolbar = (LLToolBar*)user_data;
-	LLFlyoutButton* communicate_button = toolbar->getChild<LLFlyoutButton>("communicate_btn");
-	
-	LLSD selected_option = communicate_button->getValue();
-    
 	if (selected_option.asString() == "contacts")
 	{
 		LLFloaterMyFriends::showInstance();
@@ -484,104 +381,3 @@ void LLToolBar::onClickCommunicate(LLUICtrl* ctrl, void* user_data)
 		LLFloaterChatterBox::showInstance(selected_option);
 	}
 }
-
-
-// static
-void LLToolBar::onClickChat(void* user_data)
-{
-	handle_chat(NULL);
-}
-
-// static
-void LLToolBar::onClickAppearance(void*)
-{
-	if (gAgentWearables.areWearablesLoaded())
-	{
-		LLFloaterCustomize::show();
-	}
-}
-
-// static
-void LLToolBar::onClickRadarList(void*)
-{
-	LLFloaterAvatarList::toggle(0);
-}
-
-
-// static
-void LLToolBar::onClickFly(void*)
-{
-	gAgent.toggleFlying();
-}
-
-
-// static
-void LLToolBar::onClickSit(void*)
-{
-	if (!(gAgent.getControlFlags() & AGENT_CONTROL_SIT_ON_GROUND))
-	{
-		// sit down
-		gAgent.setFlying(FALSE);
-		gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
-
-		// Might be first sit
-		LLFirstUse::useSit();
-	}
-	else
-	{
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-		// NOTE-RLVa: dead code?
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT))
-		{
-			return;
-		}
-// [/RLVa:KB]
-
-		// stand up
-		gAgent.setFlying(FALSE);
-		gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
-	}
-}
-
-
-// static
-void LLToolBar::onClickSnapshot(void*)
-{
-	LLFloaterSnapshot::show (0);
-}
-
-
-// static
-void LLToolBar::onClickDirectory(void*)
-{
-	handle_find(NULL);
-}
-
-
-// static
-void LLToolBar::onClickBuild(void*)
-{
-	LLToolMgr::getInstance()->toggleBuildMode();
-}
-
-
-// static
-void LLToolBar::onClickRadar(void*)
-{
-	handle_mini_map(NULL);
-}
-
-
-// static
-void LLToolBar::onClickMap(void*)
-{
-	handle_map(NULL);
-}
-
-
-// static
-void LLToolBar::onClickInventory(void*)
-{
-	handle_inventory(NULL);
-}
-

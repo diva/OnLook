@@ -5149,14 +5149,6 @@ void LLViewerWindow::revealIntroPanel()
 	}
 }
 
-void LLViewerWindow::abortShowProgress()
-{
-	if (mProgressView)
-	{
-		mProgressView->abortShowProgress();
-	}
-}
-
 void LLViewerWindow::setShowProgress(const BOOL show)
 {
 	if (mProgressView)

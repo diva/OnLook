@@ -64,9 +64,6 @@ public:
 
 	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
 
-	static void toggle(void*);
-	static BOOL visible(void*);
-
 	// Move buttons to appropriate locations based on rect.
 	void layoutButtons();
 
@@ -74,24 +71,12 @@ public:
 	void refresh();
 
 	// callbacks
-	static void onClickCommunicate(LLUICtrl*, void*);
-	static void onClickChat(void* data);
-	static void onClickAppearance(void* data);
-	static void onClickFly(void*);
-	static void onClickSit(void*);
-	static void onClickSnapshot(void* data);
-	static void onClickDirectory(void* data);
-	static void onClickBuild(void* data);
-	static void onClickRadar(void* data);
-	static void onClickMap(void* data);
-	static void onClickInventory(void* data);
-	static void onClickRadarList(void* data);
+	void onClickCommunicate(const LLSD& selected);
 
 	static F32 sInventoryAutoOpenTime;
 
 private:
 	void updateCommunicateList();
-
 
 private:
 	BOOL		mInventoryAutoOpen;

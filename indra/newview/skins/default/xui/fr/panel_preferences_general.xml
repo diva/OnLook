@@ -43,13 +43,13 @@
 		<combo_item name="System Default Language">Choix par défaut</combo_item>
 		<combo_item name="English">English (Anglais)</combo_item>
 		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
+		<combo_item name="Deutsch(German)">Deutsch (Allemand)</combo_item>
 		<combo_item name="Spanish">Español (Espagnol)</combo_item>
 		<combo_item name="French">Français</combo_item>
+		<combo_item name="Italian">Italiano (Italien)</combo_item>
 		<combo_item name="Portugese">Portugués (Portugais)</combo_item>
 		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
 		<combo_item name="Danish">Dansk (Danois) - Bêta</combo_item>
-		<combo_item name="Deutsch(German)">Deutsch (Allemand) - Bêta</combo_item>
-		<combo_item name="Italian">Italiano (Italien) - Bêta</combo_item>
 		<combo_item name="Hungarian">Magyar (Hongrois) - Bêta</combo_item>
 		<combo_item name="Dutch">Nederlands (Néerlandais) - Bêta</combo_item>
 		<combo_item name="Polish">Polski (Polonais) - Bêta</combo_item>

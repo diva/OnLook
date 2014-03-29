@@ -3312,7 +3312,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 
 		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 
-		bool show_display_names = phoenix_name_system == 1 || phoenix_name_system == 2;
+		bool show_display_names = phoenix_name_system > 0 || phoenix_name_system < 4;
 		bool show_usernames = phoenix_name_system != 2;
 		if (show_display_names && LLAvatarNameCache::useDisplayNames())
 		{
@@ -3332,7 +3332,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 			// Might be blank if name not available yet, that's OK
 			if (show_display_names)
 			{
-				firstnameText=av_name.mDisplayName;	//Defer for later formatting
+				firstnameText = phoenix_name_system == 3 ? av_name.mUsername : av_name.mDisplayName;	//Defer for later formatting
 				//addNameTagLine(av_name.mDisplayName, name_tag_color, LLFontGL::NORMAL,
 				//	LLFontGL::getFontSansSerif());
 			}
@@ -3341,7 +3341,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 			{
 				firstnameText.push_back(' ');
 				firstnameText.push_back('(');
-				firstnameText.append(av_name.mUsername);	//Defer for later formatting
+				firstnameText.append(phoenix_name_system == 3 ? av_name.mDisplayName : av_name.mUsername);	//Defer for later formatting
 				firstnameText.push_back(')');
 				// *HACK: Desaturate the color
 				//LLColor4 username_color = name_tag_color * 0.83f;
@@ -5456,7 +5456,7 @@ void LLVOAvatar::processAnimationStateChanges()
 
 			processSingleAnimationStateChange(anim_it->first, FALSE);
 			// <edit>
-			LLFloaterExploreAnimations::stopAnim(getID(), anim_it->first);
+			LLFloaterExploreAnimations::processAnim(getID(), anim_it->first, false);
 			// </edit>
 			mPlayingAnimations.erase(anim_it++);
 			continue;
@@ -5474,7 +5474,7 @@ void LLVOAvatar::processAnimationStateChanges()
 		if (found_anim == mPlayingAnimations.end() || found_anim->second != anim_it->second)
 		{
 			// <edit>
-			LLFloaterExploreAnimations::startAnim(getID(), anim_it->first);
+			LLFloaterExploreAnimations::processAnim(getID(), anim_it->first, true);
 			// </edit>
 			if (processSingleAnimationStateChange(anim_it->first, TRUE))
 			{
