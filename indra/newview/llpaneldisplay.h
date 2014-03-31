@@ -194,6 +194,7 @@ protected:
 	F32 mGamma;
 	S32 mVideoCardMem;
 	F32 mFogRatio;
+	S32 mVsyncMode;
 
 	// if the quality radio buttons are changed
 	void onChangeQuality(LLUICtrl* caller);

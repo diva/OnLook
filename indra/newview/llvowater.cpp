@@ -166,7 +166,7 @@ BOOL LLVOWater::updateGeometry(LLDrawable *drawable)
 
 	static const LLCachedControl<bool> render_transparent_water("RenderTransparentWater",false);
 	static const LLCachedControl<U32> water_subdiv("SianaVoidWaterSubdivision", 16);
-	const S32 size = (render_transparent_water && LLGLSLShader::sNoFixedFunction) ? water_subdiv : 1;
+	const S32 size = ((render_transparent_water || LLPipeline::sRenderDeferred) && LLGLSLShader::sNoFixedFunction) ? water_subdiv : 1;
 	const S32 num_quads = size * size;
 	face->setSize(vertices_per_quad * num_quads,
 				  indices_per_quad * num_quads);

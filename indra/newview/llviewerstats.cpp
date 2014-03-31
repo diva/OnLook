@@ -878,8 +878,9 @@ void send_stats()
 	llinfos << "Misc Stats: int_1: " << misc["int_1"] << " int_2: " << misc["int_2"] << llendl;
 	llinfos << "Misc Stats: string_1: " << misc["string_1"] << " string_2: " << misc["string_2"] << llendl;
 
-	body["DisplayNamesEnabled"] = gSavedSettings.getS32("PhoenixNameSystem") == 1 || gSavedSettings.getS32("PhoenixNameSystem") == 2;
-	body["DisplayNamesShowUsername"] = gSavedSettings.getS32("PhoenixNameSystem") == 1;
+	const S32 namesys = gSavedSettings.getS32("PhoenixNameSystem");
+	body["DisplayNamesEnabled"] = namesys > 0 && namesys < 4;
+	body["DisplayNamesShowUsername"] = namesys == 1 || namesys == 3;
 	
 	body["MinimalSkin"] = false;
 	

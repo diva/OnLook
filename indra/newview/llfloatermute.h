@@ -63,13 +63,12 @@ public:
 	void updateButtons();
 
 	// LLMuteListObserver callback interface implementation.
-	/* virtual */ void onChange();
+	/* virtual */ void onChange() { refreshMuteList(); }
 
 private:
 	// UI callbacks
 	static void onClickRemove(void *data);
 	static void onClickPick(void *data);
-	static void onSelectName(LLUICtrl* caller, void *data);
 	void onPickUser(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
 	static void onClickMuteByName(void*);
 	static void callbackMuteByName(const std::string& text, void*);

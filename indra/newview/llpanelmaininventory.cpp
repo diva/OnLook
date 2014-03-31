@@ -30,6 +30,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "lleconomy.h"
+#include "llfirstuse.h"
 #include "llfiltereditor.h"
 #include "llinventorybridge.h"
 #include "llinventoryfunctions.h"
@@ -444,6 +445,8 @@ void LLInventoryView::toggleVisibility()
 	S32 count = sActiveViews.count();
 	if (0 == count)
 	{
+		// We're using the inventory, possibly for the first time.
+		LLFirstUse::useInventory();
 		showAgentInventory(TRUE);
 	}
 	else if (1 == count)

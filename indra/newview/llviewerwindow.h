@@ -386,7 +386,7 @@ public:
 	void			requestResolutionUpdate(bool fullscreen_checked);
 	BOOL			checkSettings();
 	void			restartDisplay(BOOL show_progress_bar);
-	BOOL			changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, BOOL disable_vsync, BOOL show_progress_bar);
+	BOOL			changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, const S32 vsync_mode, BOOL show_progress_bar);
 	BOOL			getIgnoreDestroyWindow() { return mIgnoreActivate; }
 	F32				getDisplayAspectRatio() const;
 	const LLVector2& getDisplayScale() const { return mDisplayScale; }

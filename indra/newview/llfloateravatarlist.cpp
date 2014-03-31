@@ -291,7 +291,7 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 }
 
 //static
-void LLFloaterAvatarList::toggle(void*)
+void LLFloaterAvatarList::toggleInstance(const LLSD&)
 {
 // [RLVa:KB]
 	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
@@ -301,7 +301,7 @@ void LLFloaterAvatarList::toggle(void*)
 	}
 	else
 // [/RLVa:KB]
-	if(!instanceExists() || !getInstance()->getVisible())
+	if (!instanceVisible())
 	{
 		showInstance();
 	}
@@ -603,8 +603,9 @@ void LLFloaterAvatarList::updateAvatarList()
 		{
 			const LLUUID &avid = avatar_ids[i];
 
+			static const LLCachedControl<S32> namesystem("RadarNameSystem");
 			std::string name;
-			if (!LLAvatarNameCache::getPNSName(avid, name))
+			if (!LLAvatarNameCache::getPNSName(avid, name, namesystem))
 				continue; //prevent (Loading...)
 
 			LLAvatarListEntry* entry = getAvatarEntry(avid);

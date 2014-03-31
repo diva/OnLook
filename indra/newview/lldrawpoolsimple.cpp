@@ -548,11 +548,17 @@ void LLDrawPoolFullbright::beginPostDeferredPass(S32 pass)
 {
 	if (LLPipeline::sUnderWaterRender)
 	{
-		gDeferredFullbrightWaterProgram.bind();
+		//gDeferredFullbrightWaterProgram.bind();
+		//Use alpha-mask version to ignore alpha values while still allowing us to occlude glow.
+		gDeferredFullbrightAlphaMaskWaterProgram.bind();
+		gDeferredFullbrightAlphaMaskWaterProgram.setMinimumAlpha(0.f);
 	}
 	else
 	{
-		gDeferredFullbrightProgram.bind();
+		//gDeferredFullbrightProgram.bind();
+		//Use alpha-mask version to ignore alpha values while still allowing us to occlude glow.
+		gDeferredFullbrightAlphaMaskProgram.bind();
+		gDeferredFullbrightAlphaMaskProgram.setMinimumAlpha(0.f);
 	}
 	
 }
@@ -573,11 +579,11 @@ void LLDrawPoolFullbright::endPostDeferredPass(S32 pass)
 {
 	if (LLPipeline::sUnderWaterRender)
 	{
-		gDeferredFullbrightWaterProgram.unbind();
+		gDeferredFullbrightAlphaMaskWaterProgram.unbind();
 	}
 	else
 	{
-		gDeferredFullbrightProgram.unbind();
+		gDeferredFullbrightAlphaMaskProgram.unbind();
 	}
 	LLRenderPass::endRenderPass(pass);
 }

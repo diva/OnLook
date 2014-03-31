@@ -1526,7 +1526,7 @@ void LLAppearanceMgr::takeOffOutfit(const LLUUID& cat_id)
 	LLInventoryModel::item_array_t items;
 	LLFindWearablesEx collector(/*is_worn=*/ true, /*include_body_parts=*/ false);
 
-	gInventory.collectDescendentsIf(cat_id, cats, items, FALSE, collector);
+	gInventory.collectDescendentsIf(cat_id, cats, items, FALSE, collector, true);
 
 	LLInventoryModel::item_array_t::const_iterator it = items.begin();
 	const LLInventoryModel::item_array_t::const_iterator it_end = items.end();
@@ -1537,6 +1537,18 @@ void LLAppearanceMgr::takeOffOutfit(const LLUUID& cat_id)
 		uuids_to_remove.push_back(item->getUUID());
 	}
 	removeItemsFromAvatar(uuids_to_remove);
+
+	// deactivate all gestures in the outfit folder
+	LLInventoryModel::item_array_t gest_items;
+	getDescendentsOfAssetType(cat_id, gest_items, LLAssetType::AT_GESTURE, true);
+	for(S32 i = 0; i < gest_items.count(); ++i)
+	{
+		LLViewerInventoryItem* gest_item = gest_items.get(i);
+		if (LLGestureMgr::instance().isGestureActive(gest_item->getLinkedUUID()))
+		{
+			LLGestureMgr::instance().deactivateGesture(gest_item->getLinkedUUID());
+		}
+	}
 }
 
 // Create a copy of src_id + contents as a subfolder of dst_id.
@@ -1712,8 +1724,19 @@ bool LLAppearanceMgr::getCanRemoveFromCOF(const LLUUID& outfit_cat_id)
 		cats,
 		items,
 		LLInventoryModel::EXCLUDE_TRASH,
-		is_worn);
-	return items.size() > 0;
+		is_worn,
+		/*follow_folder_links=*/ true);
+
+	if (items.size()) return true;
+
+	// Is there an active gesture in outfit_cat_id?
+	items.reset();
+	LLIsType is_gesture(LLAssetType::AT_GESTURE);
+	gInventory.collectDescendentsIf(outfit_cat_id, cats, items, LLInventoryModel::EXCLUDE_TRASH, is_gesture, /*follow_folder_links=*/ true);
+	for(S32 i = 0; i  < items.count(); ++i)
+		if (LLGestureMgr::instance().isGestureActive(items.get(i)->getLinkedUUID()))
+			return true;
+	return false;
 }
 
 // static
@@ -1944,10 +1967,10 @@ void LLAppearanceMgr::linkAll(const LLUUID& cat_uuid,
 void LLAppearanceMgr::updateCOF(const LLUUID& category, bool append)
 {
 	LLInventoryModel::item_array_t body_items_new, wear_items_new, obj_items_new, gest_items_new;
-	getDescendentsOfAssetType(category, body_items_new, LLAssetType::AT_BODYPART, false);
-	getDescendentsOfAssetType(category, wear_items_new, LLAssetType::AT_CLOTHING, false);
-	getDescendentsOfAssetType(category, obj_items_new, LLAssetType::AT_OBJECT, false);
-	getDescendentsOfAssetType(category, gest_items_new, LLAssetType::AT_GESTURE, false);
+	getDescendentsOfAssetType(category, body_items_new, LLAssetType::AT_BODYPART, true);
+	getDescendentsOfAssetType(category, wear_items_new, LLAssetType::AT_CLOTHING, true);
+	getDescendentsOfAssetType(category, obj_items_new, LLAssetType::AT_OBJECT, true);
+	getDescendentsOfAssetType(category, gest_items_new, LLAssetType::AT_GESTURE, true);
 	updateCOF(body_items_new, wear_items_new, obj_items_new, gest_items_new, append, category);
 }
 
@@ -3014,21 +3037,25 @@ void LLAppearanceMgr::removeCOFItemLinks(const LLUUID& item_id)
 								  LLInventoryModel::EXCLUDE_TRASH);
 	for (S32 i=0; i<item_array.count(); i++)
 	{
-		const LLInventoryItem* item = item_array.get(i).get();
+// [RLVa:KB] - Checked: 2013-02-12 (RLVa-1.4.8)
+		const LLViewerInventoryItem* item = item_array.get(i).get();
 		if (item->getIsLinkType() && item->getLinkedUUID() == item_id)
 		{
-// [RLVa:KB] - Checked: 2013-02-12 (RLVa-1.4.8)
-#if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
+#if 0 // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 			// NOTE-RLVa: debug-only, can be removed down the line
 			if (rlv_handler_t::isEnabled())
 			{
 				RLV_ASSERT(rlvPredCanRemoveItem(item));
 			}
 #endif // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
-// [/RLVa:KB]
-
 			gInventory.purgeObject(item->getUUID());
 		}
+// [/RLVa:KB]
+//		const LLInventoryItem* item = item_array.get(i).get();
+//		if (item->getIsLinkType() && item->getLinkedUUID() == item_id)
+//		{
+//			gInventory.purgeObject(item->getUUID());
+//		}
 	}
 }
 
@@ -3046,7 +3073,7 @@ void LLAppearanceMgr::removeCOFLinksOfType(LLWearableType::EType type)
 		if (item->getIsLinkType()) // we must operate on links only
 		{
 // [RLVa:KB] - Checked: 2013-02-12 (RLVa-1.4.8)
-#if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
+#if 0 // LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 			// NOTE-RLVa: debug-only, can be removed down the line
 			if (rlv_handler_t::isEnabled())
 			{
@@ -3972,6 +3999,11 @@ void LLAppearanceMgr::wearBaseOutfit()
 
 void LLAppearanceMgr::removeItemsFromAvatar(const uuid_vec_t& ids_to_remove)
 {
+	if (ids_to_remove.empty())
+ 	{
+ 		llwarns << "called with empty list, nothing to do" << llendl;
+ 	}
+ 
 // [RLVa:KB] - Checked: 2013-02-12 (RLVa-1.4.8)
 	bool fUpdateAppearance = false;
 	for (uuid_vec_t::const_iterator it = ids_to_remove.begin(); it != ids_to_remove.end(); ++it)
@@ -4419,7 +4451,6 @@ void wear_multiple(const uuid_vec_t& ids, bool replace)
 
 // SLapp for easy-wearing of a stock (library) avatar
 //
-/*
 class LLWearFolderHandler : public LLCommandHandler
 {
 public:
@@ -4449,4 +4480,4 @@ public:
 	}
 };
 
-LLWearFolderHandler gWearFolderHandler;*/
+LLWearFolderHandler gWearFolderHandler;

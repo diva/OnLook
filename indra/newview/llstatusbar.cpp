@@ -923,13 +923,6 @@ static void onClickScripts(void*)
 
 static void onClickBuyLand(void*)
 {
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-	if (RlvActions::isRlvEnabled() && RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC))
-	{
-		return;
-	}
-// [/RLVa:KB]
-	LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
 	LLViewerParcelMgr::getInstance()->startBuyLand();
 }
 

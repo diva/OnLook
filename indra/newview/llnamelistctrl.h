@@ -102,7 +102,7 @@ public:
 	};
 
 protected:
-	LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL allow_multiple_selection, BOOL draw_border = TRUE, bool draw_heading = false, S32 name_column_index = 0, const std::string& tooltip = LLStringUtil::null);
+	LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL allow_multiple_selection, BOOL draw_border = TRUE, bool draw_heading = false, S32 name_column_index = 0, const std::string& name_system = "PhoenixNameSystem", const std::string& tooltip = LLStringUtil::null);
 	virtual ~LLNameListCtrl()
 	{
 		if (mAvatarNameCacheConnection.connected())
@@ -148,7 +148,7 @@ private:
 private:
 	S32    	 mNameColumnIndex;
 	BOOL	 mAllowCallingCardDrop;
-	bool			mShortNames;  // display name only, no SLID
+	const LLCachedControl<S32> mNameSystem;
 	boost::signals2::connection mAvatarNameCacheConnection;
 };
 

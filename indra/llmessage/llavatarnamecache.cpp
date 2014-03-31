@@ -669,25 +669,31 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 	return false;
 }
 
+const S32& LLAvatarNameCache::phoenix_name_system()
+{
+	static const LLCachedControl<S32> name_system("PhoenixNameSystem", 0);
+	return name_system;
+}
+
 // Return true when name has been set to Phoenix Name System Name, if not return false.
-bool LLAvatarNameCache::getPNSName(const LLUUID& agent_id, std::string& name)
+bool LLAvatarNameCache::getPNSName(const LLUUID& agent_id, std::string& name, const S32& name_system)
 {
 	LLAvatarName avatar_name;
 	if (get(agent_id, &avatar_name))
-		getPNSName(avatar_name, name);
+		getPNSName(avatar_name, name, name_system);
 	else return false;
 	return true;
 }
 
 // get() with callback compatible version of getPNSName
-void LLAvatarNameCache::getPNSName(const LLAvatarName& avatar_name, std::string& name)
+void LLAvatarNameCache::getPNSName(const LLAvatarName& avatar_name, std::string& name, const S32& name_system)
 {
-	static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-	switch (phoenix_name_system)
+	switch (name_system)
 	{
 		case 0 : name = avatar_name.getLegacyName(); break;
 		case 1 : name = avatar_name.getCompleteName(); break;
 		case 2 : name = avatar_name.mDisplayName; break;
+		case 3 : name = avatar_name.getLegacyName() + (avatar_name.mIsDisplayNameDefault ? "" : " (" + avatar_name.mDisplayName + ")"); break;
 		default : name = avatar_name.getLegacyName(); break;
 	}
 }

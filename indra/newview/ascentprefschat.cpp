@@ -298,7 +298,11 @@ void LLPrefsAscentChat::refreshValues()
 	mOnlyComm                       = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
 	mItalicizeActions               = gSavedSettings.getBOOL("LiruItalicizeActions");
 	mLegacyLogLaunch                = gSavedSettings.getBOOL("LiruLegacyLogLaunch");
-	mLegacySpeakerNames             = gSavedSettings.getBOOL("LiruLegacySpeakerNames");
+	mFriendNames                    = gSavedSettings.getS32("FriendNameSystem");
+	mGroupMembersNames              = gSavedSettings.getS32("GroupMembersNameSystem");
+	mLandManagementNames            = gSavedSettings.getS32("LandManagementNameSystem");
+	mRadarNames                     = gSavedSettings.getS32("RadarNameSystem");
+	mSpeakerNames                   = gSavedSettings.getS32("SpeakerNameSystem");
 
 	//Autoresponse ------------------------------------------------------------------------
 	mIMResponseAnyoneItemID     = gSavedPerAccountSettings.getString("AutoresponseAnyoneItemID");
@@ -375,6 +379,18 @@ void LLPrefsAscentChat::refresh()
     {
         combo->setCurrentByIndex(mDateFormat);
     }
+
+	//Chat UI -----------------------------------------------------------------------------
+	if (combo = getChild<LLComboBox>("friends_namesystem_combobox"))
+		combo->setCurrentByIndex(mFriendNames);
+	if (combo = getChild<LLComboBox>("group_members_namesystem_combobox"))
+		combo->setCurrentByIndex(mGroupMembersNames);
+	if (combo = getChild<LLComboBox>("land_management_namesystem_combobox"))
+		combo->setCurrentByIndex(mLandManagementNames);
+	if (combo = getChild<LLComboBox>("radar_namesystem_combobox"))
+		combo->setCurrentByIndex(mRadarNames);
+	if (combo = getChild<LLComboBox>("speaker_namesystem_combobox"))
+		combo->setCurrentByIndex(mSpeakerNames);
 
     //Antispam ------------------------------------------------------------------------
 	// sensitivity tuners
@@ -537,7 +553,11 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("CommunicateSpecificShortcut",          mOnlyComm);
 	gSavedSettings.setBOOL("LiruItalicizeActions",                 mItalicizeActions);
 	gSavedSettings.setBOOL("LiruLegacyLogLaunch",                  mLegacyLogLaunch);
-	gSavedSettings.setBOOL("LiruLegacySpeakerNames",               mLegacySpeakerNames);
+	gSavedSettings.setS32("FriendNameSystem",                      mFriendNames);
+	gSavedSettings.setS32("GroupMembersNameSystem",                mGroupMembersNames);
+	gSavedSettings.setS32("LandManagementNameSystem",              mLandManagementNames);
+	gSavedSettings.setS32("RadarNameSystem",                       mRadarNames);
+	gSavedSettings.setS32("SpeakerNameSystem",                     mSpeakerNames);
 
 	//Autoresponse ------------------------------------------------------------------------
 	gSavedPerAccountSettings.setString("AutoresponseAnyoneItemID",      mIMResponseAnyoneItemID);

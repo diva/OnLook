@@ -388,7 +388,7 @@ LLWindow* LLWindowManager::createWindow(
 	const std::string& title, const std::string& name, S32 x, S32 y, S32 width, S32 height, U32 flags,
 	BOOL fullscreen, 
 	BOOL clearBg,
-	BOOL disable_vsync,
+	const S32 vsync_mode,
 	BOOL use_gl,
 	BOOL ignore_pixel_depth,
 	U32 fsaa_samples)
@@ -400,26 +400,26 @@ LLWindow* LLWindowManager::createWindow(
 #if LL_MESA_HEADLESS
 		new_window = new LLWindowMesaHeadless(callbacks,
 			title, name, x, y, width, height, flags, 
-			fullscreen, clearBg, disable_vsync, ignore_pixel_depth);
+			fullscreen, clearBg, vsync_mode, ignore_pixel_depth);
 #elif LL_SDL
 		new_window = new LLWindowSDL(callbacks,
 			title, x, y, width, height, flags, 
-			fullscreen, clearBg, disable_vsync, ignore_pixel_depth, fsaa_samples);
+			fullscreen, clearBg, vsync_mode, ignore_pixel_depth, fsaa_samples);
 #elif LL_WINDOWS
 		new_window = new LLWindowWin32(callbacks,
 			title, name, x, y, width, height, flags, 
-			fullscreen, clearBg, disable_vsync, ignore_pixel_depth, fsaa_samples);
+			fullscreen, clearBg, vsync_mode, ignore_pixel_depth, fsaa_samples);
 #elif LL_DARWIN
 		new_window = new LLWindowMacOSX(callbacks,
 			title, name, x, y, width, height, flags, 
-			fullscreen, clearBg, disable_vsync, ignore_pixel_depth, fsaa_samples);
+			fullscreen, clearBg, vsync_mode, ignore_pixel_depth, fsaa_samples);
 #endif
 	}
 	else
 	{
 		new_window = new LLWindowHeadless(callbacks,
 			title, name, x, y, width, height, flags, 
-			fullscreen, clearBg, disable_vsync, ignore_pixel_depth);
+			fullscreen, clearBg, vsync_mode, ignore_pixel_depth);
 	}
 
 	if (FALSE == new_window->isValid())

@@ -40,6 +40,7 @@
 #include "llviewercontrol.h"
 #include "lldir.h"
 #include "llflexibleobject.h"
+#include "llfloaterinspect.h"
 #include "llfloatertools.h"
 #include "llmaterialid.h"
 #include "llmaterialtable.h"
@@ -3643,7 +3644,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
 		static const LLCachedControl<bool> allow_mesh_picking("SGAllowRiggedMeshSelection");
-		if (allow_mesh_picking && gFloaterTools->getVisible() && getAvatar()->isSelf())
+		if (allow_mesh_picking && (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists()))
 		{
 			updateRiggedVolume();
 			//genBBoxes(FALSE);
@@ -3825,10 +3826,8 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 
 bool LLVOVolume::treatAsRigged()
 {
-	return gFloaterTools->getVisible() && 
+	return (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists()) && 
 			isAttachment() && 
-			getAvatar() &&
-			getAvatar()->isSelf() &&
 			mDrawable.notNull() &&
 			mDrawable->isState(LLDrawable::RIGGED);
 }
@@ -4191,10 +4190,14 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	//drawable->getVObj()->setDebugText(llformat("%d", drawable->isState(LLDrawable::ANIMATED_CHILD)));
 
 	LLMaterial* mat = facep->getTextureEntry()->getMaterialParams().get(); 
+	
+	U32 pool_type = facep->getPoolType();
 
 	bool cmp_bump = (type == LLRenderPass::PASS_BUMP) || (type == LLRenderPass::PASS_POST_BUMP);
-	bool cmp_shiny = !alt_batching ? !!mat : ((type == LLRenderPass::PASS_SHINY) || (type == LLRenderPass::PASS_FULLBRIGHT_SHINY) || (type == LLRenderPass::PASS_INVISI_SHINY));
-	bool cmp_mat = !alt_batching || LLPipeline::sRenderDeferred && ((facep->getPoolType() == LLDrawPool::POOL_MATERIALS) || (facep->getPoolType() == LLDrawPool::POOL_ALPHA));
+	bool cmp_mat =	(!alt_batching) || LLPipeline::sRenderDeferred && /*facep->getTextureEntry()->getColor().mV[3] >= 0.999f &&*/
+					((pool_type == LLDrawPool::POOL_MATERIALS) || (pool_type == LLDrawPool::POOL_ALPHA));
+	bool cmp_shiny = (!alt_batching) ? !!mat : (mat && cmp_mat);
+	bool cmp_fullbright = !alt_batching || cmp_shiny || pool_type == LLDrawPool::POOL_ALPHA;
 
 	U8 bump = facep->getTextureEntry()->getBumpmap();
 	U8 shiny = facep->getTextureEntry()->getShiny();
@@ -4209,7 +4212,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 
 	U32 shader_mask = 0xFFFFFFFF; //no shader
 
-	if (mat)
+	if (mat && cmp_mat)
 	{
 		if (type == LLRenderPass::PASS_ALPHA)
 		{
@@ -4255,9 +4258,9 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 #endif
 		(!cmp_mat || draw_vec[idx]->mMaterial == mat) &&
 		//draw_vec[idx]->mMaterialID == mat_id &&
-		draw_vec[idx]->mFullbright == fullbright &&
+		(!cmp_fullbright || draw_vec[idx]->mFullbright == fullbright) &&
 		(!cmp_bump || draw_vec[idx]->mBump == bump)  &&
-		(!cmp_shiny || !!draw_vec[idx]->mShiny == !!shiny) &&
+		(!cmp_shiny || draw_vec[idx]->mShiny == shiny) &&
 		//(!mat || (draw_vec[idx]->mShiny == shiny)) && // need to break batches when a material is shared, but legacy settings are different
 		draw_vec[idx]->mTextureMatrix == tex_mat &&
 		draw_vec[idx]->mModelMatrix == model_mat &&
@@ -4539,6 +4542,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 
 			bool is_rigged = false;
 
+			static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+			
 			//for each face
 			for (S32 i = 0; i < drawablep->getNumFaces(); i++)
 			{
@@ -4647,7 +4652,9 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						}
 
 						LLMaterial* mat = te->getMaterialParams().get();
-
+						
+						if(!alt_batching)
+						{
 						if (mat && LLPipeline::sRenderDeferred)
 						{
 							U8 alpha_mode = mat->getDiffuseAlphaMode();
@@ -4760,6 +4767,68 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 								}
 							}
 						}
+						}
+						else
+						{
+						if(type == LLDrawPool::POOL_ALPHA)
+						{
+							if(te->getColor().mV[3] > 0.f)
+							{
+								U32 mask = te->getFullbright() ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT_ALPHA : LLDrawPoolAvatar::RIGGED_ALPHA;
+								if (mat && LLPipeline::sRenderDeferred && te->getColor().mV[3] >= 0.999f )
+								{
+									if(mat->getDiffuseAlphaMode() == LLMaterial::DIFFUSE_ALPHA_MODE_BLEND)
+										mask = mat->getShaderMask(LLMaterial::DIFFUSE_ALPHA_MODE_BLEND);
+									else
+										mask = mat->getShaderMask();
+								}
+								pool->addRiggedFace(facep, mask);
+							}
+						}
+						else if(!LLPipeline::sRenderDeferred)
+						{
+							if(type == LLDrawPool::POOL_FULLBRIGHT || type == LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK)
+							{
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_FULLBRIGHT);
+							}
+							else if(type == LLDrawPool::POOL_SIMPLE || type == LLDrawPool::POOL_ALPHA_MASK)
+							{
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_SIMPLE);
+							}
+							else if(type == LLDrawPool::POOL_BUMP)	//Either shiny, or bump (which isn't used in non-deferred)
+							{
+								if(te->getShiny())
+									pool->addRiggedFace(facep, te->getFullbright() ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT_SHINY : LLDrawPoolAvatar::RIGGED_SHINY);
+								else
+									pool->addRiggedFace(facep, te->getFullbright() ? LLDrawPoolAvatar::RIGGED_FULLBRIGHT : LLDrawPoolAvatar::RIGGED_SIMPLE);
+							}
+							else
+							{
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_SIMPLE);
+							}
+						}
+						
+						else
+						{
+							if( type == LLDrawPool::POOL_FULLBRIGHT || type == LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK)
+							{
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_FULLBRIGHT);
+							}
+							//Annoying exception to the rule. getPoolTypeFromTE will return POOL_ALPHA_MASK for legacy bumpmaps, but there is no POOL_ALPHA_MASK in deferred.
+							else if(type == LLDrawPool::POOL_MATERIALS || (type == LLDrawPool::POOL_ALPHA_MASK && mat))
+							{
+								pool->addRiggedFace(facep, mat->getShaderMask());
+							}
+							else if (type == LLDrawPool::POOL_BUMP && te->getBumpmap())
+							{
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP);
+							}
+							else
+							{
+								pool->addRiggedFace(facep, LLDrawPoolAvatar::RIGGED_DEFERRED_SIMPLE);
+							}
+						}
+						}
 					}
 
 					continue;
@@ -4804,8 +4873,6 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						}
 					}
 
-					static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
-
 					bool force_fullbright = group->isHUDGroup();
 					BOOL force_simple = (facep->getPixelArea() < FORCE_SIMPLE_RENDER_AREA);
 					U32 type = gPipeline.getPoolTypeFromTE(te, tex);
@@ -4836,7 +4903,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 							}
 						}
 					}
-					else if (force_fullbright)
+					else if (force_fullbright)	//Hud is done in a forward render. Fullbright cannot be shared with simple.
 					{
 						if(type == LLDrawPool::POOL_ALPHA_MASK)
 							type = LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
@@ -5368,11 +5435,9 @@ struct CompareBatchBreakerModified
 			return lte->getMaterialParams() < rte->getMaterialParams();
  		}
 		else if (LLPipeline::sRenderDeferred && (lte->getMaterialParams() == rte->getMaterialParams()) && (lte->getShiny() != rte->getShiny()))
-
  		{
  			return lte->getShiny() < rte->getShiny();
  		}
-
  		else
  		{
  			return lhs->getTexture() < rhs->getTexture();
@@ -5396,9 +5461,11 @@ struct CompareBatchBreakerModified
 			return !(batch_left < batch_right);
 		}
 
-		bool batch_shiny = (!LLPipeline::sRenderDeferred || lhs->isState(LLFace::FULLBRIGHT)) && lhs->getPoolType() == LLDrawPool::POOL_BUMP;
+		static const LLCachedControl<bool> sh_fullbright_deferred("SHFullbrightDeferred",true);
+		bool batch_shiny = (!LLPipeline::sRenderDeferred || (sh_fullbright_deferred && lhs->isState(LLFace::FULLBRIGHT))) && lhs->getPoolType() == LLDrawPool::POOL_BUMP;
+		bool batch_fullbright = sh_fullbright_deferred || !LLPipeline::sRenderDeferred && lhs->getPoolType() == LLDrawPool::POOL_ALPHA;
 
-		if (lhs->isState(LLFace::FULLBRIGHT) != rhs->isState(LLFace::FULLBRIGHT))
+		if (batch_fullbright && lhs->isState(LLFace::FULLBRIGHT) != rhs->isState(LLFace::FULLBRIGHT))
 		{
 			return lhs->isState(LLFace::FULLBRIGHT) < rhs->isState(LLFace::FULLBRIGHT);
 		}
@@ -6196,21 +6263,40 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 						llassert_always(mask & LLVertexBuffer::MAP_NORMAL);
 					}
 
-					if (is_fullbright)
+					if(LLPipeline::sRenderDeferred)
 					{
-						registerFace(group, facep, is_shiny_shader ? LLRenderPass::PASS_FULLBRIGHT_SHINY : LLRenderPass::PASS_FULLBRIGHT);
-						if(is_bump)
-							registerFace(group, facep, LLPipeline::sRenderDeferred ? LLRenderPass::PASS_POST_BUMP : LLRenderPass::PASS_BUMP);
+						static const LLCachedControl<bool> sh_fullbright_deferred("SHFullbrightDeferred",true);
+						if(sh_fullbright_deferred && is_fullbright)
+						{
+							registerFace(group, facep, is_shiny_shader ? LLRenderPass::PASS_FULLBRIGHT_SHINY : LLRenderPass::PASS_FULLBRIGHT);
+							if(is_bump)
+							{
+								registerFace(group, facep, LLRenderPass::PASS_POST_BUMP);
+							}
+						}
+						else
+						{
+							//is_bump should always be true.
+							registerFace(group, facep, is_bump ? LLRenderPass::PASS_BUMP : LLRenderPass::PASS_SIMPLE);
+						}
 					}
 					else
 					{
-						registerFace(group, facep, (LLPipeline::sRenderDeferred || !is_shiny_shader) ? LLRenderPass::PASS_SIMPLE : LLRenderPass::PASS_SHINY);
+						if (is_fullbright )
+						{
+							registerFace(group, facep, is_shiny_shader ? LLRenderPass::PASS_FULLBRIGHT_SHINY : LLRenderPass::PASS_FULLBRIGHT);
+						}
+						else
+						{
+							registerFace(group, facep, is_shiny_shader ? LLRenderPass::PASS_SHINY : LLRenderPass::PASS_SIMPLE);
+						}
+
 						if(is_bump)
 							registerFace(group, facep, LLRenderPass::PASS_BUMP);
-					}
 
-					if(is_shiny_fixed)
-						registerFace(group, facep, LLRenderPass::PASS_SHINY);
+						if(is_shiny_fixed)
+							registerFace(group, facep, LLRenderPass::PASS_SHINY);
+					}
 				}
 			}
 			if (!is_alpha && LLPipeline::sRenderGlow && te->getGlow() > 0.f)

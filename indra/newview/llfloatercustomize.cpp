@@ -253,6 +253,8 @@ void LLFloaterCustomize::editWearable(LLViewerWearable* wearable, bool disable_c
 //static
 void LLFloaterCustomize::show()
 {
+	if (!gAgentWearables.areWearablesLoaded()) return;
+
 	if(!LLFloaterCustomize::instanceExists())
 	{
 		const BOOL disable_camera_switch = LLWearableType::getDisableCameraSwitch(LLWearableType::WT_SHAPE);

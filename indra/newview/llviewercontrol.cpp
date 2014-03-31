@@ -204,6 +204,12 @@ bool handleRenderAvatarComplexityLimitChanged(const LLSD& newvalue)
 
 bool handleRenderTransparentWaterChanged(const LLSD& newvalue)
 {
+	LLPipeline::sWaterReflections = gGLManager.mHasCubeMap && gSavedSettings.getBOOL("VertexShaderEnable");
+	if (gPipeline.isInit())	//If water is opaque then distortion/reflection fbos will not be needed.
+	{
+		gPipeline.releaseGLBuffers();
+		gPipeline.createGLBuffers();
+	}
 	LLWorld::getInstance()->updateWaterObjects();
 	return true;
 }
@@ -614,7 +620,7 @@ bool handleAscentAvatarModifier(const LLSD& newvalue)
 static bool handlePhoenixNameSystemChanged(const LLSD& newvalue)
 {
 	S32 dnval = (S32)newvalue.asInteger();
-	if (dnval <= 0 || dnval > 2) LLAvatarNameCache::setUseDisplayNames(false);
+	if (dnval <= 0 || dnval > 3) LLAvatarNameCache::setUseDisplayNames(false);
 	else LLAvatarNameCache::setUseDisplayNames(true);
 	LLVOAvatar::invalidateNameTags();
 	return true;

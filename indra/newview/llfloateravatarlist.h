@@ -212,10 +212,10 @@ public:
 	 * @brief Toggles interface visibility
 	 * There is only one instance of the avatar scanner at any time.
 	 */
-	static void toggle(void*);
+	static void toggleInstance(const LLSD& = LLSD());
 
 	static void showInstance();
-	static bool instanceVisible() { return instanceExists() && instance().getVisible(); }
+	static bool instanceVisible(const LLSD& = LLSD()) { return instanceExists() && instance().getVisible(); }
 
 	// Decides which user-chosen columns to show and hide.
 	void assessColumns();

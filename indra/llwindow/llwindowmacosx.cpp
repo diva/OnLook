@@ -210,7 +210,7 @@ LLWindowMacOSX::LLWindowMacOSX(LLWindowCallbacks* callbacks,
 							   const std::string& title, const std::string& name, S32 x, S32 y, S32 width,
 							   S32 height, U32 flags,
 							   BOOL fullscreen, BOOL clearBg,
-							   BOOL disable_vsync,
+							   const S32 vsync_mode,
 							   BOOL ignore_pixel_depth,
 							   U32 fsaa_samples)
 	: LLWindow(NULL, fullscreen, flags)
@@ -253,6 +253,7 @@ LLWindowMacOSX::LLWindowMacOSX(LLWindowCallbacks* callbacks,
 	mPreeditor = NULL;
 	mRawKeyEvent = NULL;
 	mFSAASamples = fsaa_samples;
+	mVsyncMode = vsync_mode;
 	mForceRebuild = FALSE;
 
 	// For reasons that aren't clear to me, LLTimers seem to be created in the "started" state.
@@ -283,7 +284,7 @@ LLWindowMacOSX::LLWindowMacOSX(LLWindowCallbacks* callbacks,
 	gWindowImplementation = this;
 
 	// Create the GL context and set it up for windowed or fullscreen, as appropriate.
-	if(createContext(x, y, width, height, 32, fullscreen, disable_vsync))
+	if(createContext(x, y, width, height, 32, fullscreen, vsync_mode))
 	{
 		if(mWindow != NULL)
 		{
@@ -323,7 +324,7 @@ LLWindowMacOSX::LLWindowMacOSX(LLWindowCallbacks* callbacks,
 	stop_glerror();
 }
 
-BOOL LLWindowMacOSX::createContext(int x, int y, int width, int height, int bits, BOOL fullscreen, BOOL disable_vsync)
+BOOL LLWindowMacOSX::createContext(int x, int y, int width, int height, int bits, BOOL fullscreen, const S32 vsync_mode)
 {
 	OSStatus		err;
 	BOOL			glNeedsInit = FALSE;
@@ -780,7 +781,7 @@ BOOL LLWindowMacOSX::createContext(int x, int y, int width, int height, int bits
 
 	// Disable vertical sync for swap
 	GLint frames_per_swap = 0;
-	if (disable_vsync)
+	if (vsync_mode != 1)
 	{
 		LL_DEBUGS("GLInit") << "Disabling vertical sync" << LL_ENDL;
 		frames_per_swap = 0;
@@ -816,7 +817,7 @@ BOOL LLWindowMacOSX::createContext(int x, int y, int width, int height, int bits
 
 
 // changing fullscreen resolution, or switching between windowed and fullscreen mode.
-BOOL LLWindowMacOSX::switchContext(BOOL fullscreen, const LLCoordScreen &size, BOOL disable_vsync, const LLCoordScreen * const posp)
+BOOL LLWindowMacOSX::switchContext(BOOL fullscreen, const LLCoordScreen &size, const S32 vsync_mode, const LLCoordScreen * const posp)
 {
 	BOOL needsRebuild = FALSE;
 	BOOL result = true;
@@ -892,7 +893,7 @@ BOOL LLWindowMacOSX::switchContext(BOOL fullscreen, const LLCoordScreen &size, B
 	{
 		mForceRebuild = FALSE;
 		destroyContext();
-		result = createContext(0, 0, size.mX, size.mY, 0, fullscreen, disable_vsync);
+		result = createContext(0, 0, size.mX, size.mY, 0, fullscreen, vsync_mode);
 		if (result)
 		{
 			if(mWindow != NULL)
@@ -1338,6 +1339,16 @@ U32 LLWindowMacOSX::getFSAASamples()
 void LLWindowMacOSX::setFSAASamples(const U32 samples)
 {
 	mFSAASamples = samples;
+	mForceRebuild = TRUE;
+}
+
+S32 LLWindowMacOSX::getVsyncMode()
+{
+	return mVsyncMode;
+}
+void LLWindowMacOSX::setVsyncMode(const S32 vsync_mode)
+{
+	mVsyncMode = vsync_mode;
 	mForceRebuild = TRUE;
 }
 

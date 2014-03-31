@@ -334,6 +334,16 @@ BOOL LLPanelDisplay::postBuild()
 
 	mVBOStream = getChild<LLCheckBoxCtrl>("vbo_stream");
 
+	if(gGLManager.mIsATI)	//AMD gpus don't go beyond 8x fsaa.
+	{
+		LLComboBox* fsaa = getChild<LLComboBox>("fsaa");
+		fsaa->remove("16x");
+	}
+	if(!gGLManager.mHasAdaptiveVsync)
+	{
+		LLComboBox* vsync = getChild<LLComboBox>("vsync");
+		vsync->remove("VSyncAdaptive");
+	}
 
 	refresh();
 
@@ -447,8 +457,10 @@ void LLPanelDisplay::refresh()
 	mGamma = gSavedSettings.getF32("RenderGamma");
 	mVideoCardMem = gSavedSettings.getS32("TextureMemory");
 	mFogRatio = gSavedSettings.getF32("RenderFogRatio");
+	mVsyncMode = gSavedSettings.getS32("SHRenderVsyncMode");
 
 	childSetValue("fsaa", (LLSD::Integer) mFSAASamples);
+	childSetValue("vsync", (LLSD::Integer) mVsyncMode);
 
 	refreshEnabledState();
 }
@@ -846,13 +858,22 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setF32("RenderGamma", mGamma);
 	gSavedSettings.setS32("TextureMemory", mVideoCardMem);
 	gSavedSettings.setF32("RenderFogRatio", mFogRatio);
+	gSavedSettings.setS32("SHRenderVsyncMode", mVsyncMode);
 }
 
 void LLPanelDisplay::apply()
 {
 	U32 fsaa_value = childGetValue("fsaa").asInteger();
+	S32 vsync_value = childGetValue("vsync").asInteger();
+
+	if(vsync_value == -1 && !gGLManager.mHasAdaptiveVsync)
+		vsync_value = 0;
+
 	bool apply_fsaa_change = !gSavedSettings.getBOOL("RenderUseFBO") && (mFSAASamples != fsaa_value);
+	bool apply_vsync_change = vsync_value != mVsyncMode;
+
 	gSavedSettings.setU32("RenderFSAASamples", fsaa_value);
+	gSavedSettings.setS32("SHRenderVsyncMode", vsync_value);
 
 	applyResolution();
 	
@@ -865,7 +886,7 @@ void LLPanelDisplay::apply()
 	// Hardware tab
 	//Still do a bit of voodoo here. V2 forces restart to change FSAA with FBOs off.
 	//Let's not do that, and instead do pre-V2 FSAA change handling for that particular case
-	if(apply_fsaa_change)
+	if(apply_fsaa_change || apply_vsync_change)
 	{
 		bool logged_in = (LLStartUp::getStartupState() >= STATE_STARTED);
 		LLWindow* window = gViewerWindow->getWindow();
@@ -875,7 +896,7 @@ void LLPanelDisplay::apply()
 		LLGLState::checkTextureChannels();
 		gViewerWindow->changeDisplaySettings(window->getFullscreen(),
 												size,
-												gSavedSettings.getBOOL("DisableVerticalSync"),
+												vsync_value,
 												logged_in);
 		LLGLState::checkStates();
 		LLGLState::checkTextureChannels();

@@ -48,7 +48,7 @@ public:
 	/*virtual*/ BOOL setPosition(LLCoordScreen position) {return FALSE;};
 	/*virtual*/ BOOL setSizeImpl(LLCoordScreen size) {return FALSE;};
 	/*virtual*/ BOOL setSizeImpl(LLCoordWindow size) {return FALSE;};
-	/*virtual*/ BOOL switchContext(BOOL fullscreen, const LLCoordScreen &size, BOOL disable_vsync, const LLCoordScreen * const posp = NULL) {return FALSE;};
+	/*virtual*/ BOOL switchContext(BOOL fullscreen, const LLCoordScreen &size, const S32 vsync_mode, const LLCoordScreen * const posp = NULL) {return FALSE;};
 	/*virtual*/ BOOL setCursorPosition(LLCoordWindow position) {return FALSE;};
 	/*virtual*/ BOOL getCursorPosition(LLCoordWindow *position) {return FALSE;};
 	/*virtual*/ void showCursor() {};
@@ -69,6 +69,8 @@ public:
 	/*virtual*/ BOOL setGamma(const F32 gamma) {return FALSE; }; // Set the gamma
 	/*virtual*/ void setFSAASamples(const U32 fsaa_samples) { }
 	/*virtual*/ U32 getFSAASamples() { return 0; }
+	/*virtual*/ void setVsyncMode(const S32 vsync_mode) {}
+	/*virtual*/ S32	 getVsyncMode() { return 0; }
 	/*virtual*/ BOOL restoreGamma() {return FALSE; };	// Restore original gamma table (before updating gamma)
 	//virtual ESwapMethod getSwapMethod() { return mSwapMethod; }
 	/*virtual*/ void gatherInput() {};
@@ -96,7 +98,7 @@ public:
 		S32 x, S32 y, 
 		S32 width, S32 height,
 		U32 flags,  BOOL fullscreen, BOOL clear_background,
-		BOOL disable_vsync, BOOL ignore_pixel_depth);
+		const S32 vsync_mode, BOOL ignore_pixel_depth);
 	virtual ~LLWindowHeadless();
 
 private:

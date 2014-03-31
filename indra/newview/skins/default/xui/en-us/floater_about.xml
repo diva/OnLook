@@ -2,7 +2,7 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
  can_resize="false" height="440" min_height="100" min_width="100"
  name="floater_about" rect_control="FloaterAboutRect"
- title="About Singularity Viewer" width="470">
+ title="About [SHORT_APP_NAME]" width="470">
   <tab_container follows="all" bottom="1" border="false" left="10" height="414" width="450" name="about_tab" tab_position="top">
     <panel border="false" height="386" label="Info" help_topic="about_support_tab" name="support_panel">
       <text_editor parse_urls="true" follows="top|left" font="SansSerif" top="-1" bg_readonly_color="transparent" left="3" max_length="65536" name="support_editor" bottom="28" width="443" word_wrap="true"/>
@@ -31,7 +31,7 @@ Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
 cURL Copyright (C) 1996-2010, Daniel Stenberg, (daniel@haxx.se)
 DBus/dbus-glib Copyright (C) 2002, 2003  CodeFactory AB / Copyright (C) 2003, 2004 Red Hat, Inc.
 expat Copyright (C) 1998-2000 Thai Open Source Software Center Ltd., 2001-2006 Expat maintainers.
-FMOD Sound System, Copyright (C) 1994-2012 Firelight Technologies Pty, Ltd.
+FMOD Sound System, Copyright (C) 1994-2013 Firelight Technologies Pty, Ltd.
 FreeType Copyright (C) 1996-2002, The FreeType Project (www.freetype.org).
 GL Copyright (C) 1999-2004 Brian Paul.
 GLOD Copyright (C) 2003-04 Jonathan Cohen, Nat Duca, Chris Niski, Johns Hopkins University and David Luebke, Brenden Schubert, University of Virginia.

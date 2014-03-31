@@ -310,16 +310,12 @@ U32 AIHTTPView::updateColumn(U32 col, U32 start)
   return mStartColumn[col];
 }
 
-//static
-void AIHTTPView::toggle_visibility(void* user_data)
+// virtual
+void AIHTTPView::setVisible(BOOL visible)
 {
-  LLView* viewp = (LLView*)user_data;
-  bool visible = !viewp->getVisible();
-  if (visible)
-  {
-	AIPerService::resetUsed();
-  }
-  viewp->setVisible(visible);
+	if (visible && visible != getVisible())
+		AIPerService::resetUsed();
+	LLContainerView::setVisible(visible);
 }
 
 U64 AIHTTPView::sTime_40ms;

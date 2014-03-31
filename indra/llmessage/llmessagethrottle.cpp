@@ -30,6 +30,7 @@
 
 #include "llmessagethrottle.h"
 #include "llframetimer.h"
+#include "fix_macros.h"
 
 // This is used for the stl search_n function.
 #if _MSC_VER >= 1500 // VC9 has a bug in search_n

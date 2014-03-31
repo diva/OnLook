@@ -256,6 +256,10 @@ LLFloaterMemLeak* LLFloaterMemLeak::instance()
 
 void LLFloaterMemLeak::show(void*)
 {
+#ifdef LL_RELEASE_FOR_DOWNLOAD
+	if (!gSavedSettings.getBOOL("QAMode"))
+		return; // Singu Note: We should probably tell them why this won't work before returning.
+#endif
 	instance()->open();
 }
 

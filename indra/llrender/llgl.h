@@ -113,6 +113,8 @@ public:
 	BOOL mHasCubeMap;
 	BOOL mHasDebugOutput;
 
+	BOOL mHasAdaptiveVsync;
+
 	// Vendor-specific extensions
 	BOOL mIsATI;
 	BOOL mIsNVIDIA;
