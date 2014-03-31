@@ -1140,7 +1140,7 @@ if (DARWIN)
 
   # Add resource files to the project.
   set(viewer_RESOURCE_FILES
-    ${VIEWER_BRANDING_ID}.icns
+    ${VIEWER_BRANDING_ID}_icon.icns
     macview.r
     gpu_table.txt
     SecondLife.nib/
@@ -1702,7 +1702,7 @@ if (DARWIN)
     PROPERTIES
     OUTPUT_NAME "${product}"
     MACOSX_BUNDLE_INFO_STRING "A stable third-party Second Life viewer."
-    MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}.icns"
+    MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}_icon.icns"
     MACOSX_BUNDLE_GUI_IDENTIFIER "${VIEWER_BRANDING_NAME}"
     MACOSX_BUNDLE_LONG_VERSION_STRING "${viewer_VERSION}"
     MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_BRANDING_NAME}"
