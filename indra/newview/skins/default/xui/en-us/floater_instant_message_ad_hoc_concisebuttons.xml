@@ -9,7 +9,10 @@
 	<string name="session_start_string">Starting session with [NAME], please wait.</string>
 	<string name="default_text_label">Click here to instant message.</string>
 	<button bottom="-20" follows="right|top" height="20" label="History" right="-165" name="history_btn" width="80"/>
-	<button bottom_delta="0" enabled="false" follows="right|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="80" name="start_call_btn" width="80"/>
+    <button bottom_delta="0" follows="left|top" height="20" left_delta="80" width="50" toggle="true" name="ding_btn" label="Ding">
+      <button.commit_callback function="FlipDing"/>
+    </button>
+    <button bottom_delta="0" enabled="false" follows="right|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="50" name="start_call_btn" width="80"/>
 	<button bottom_delta="0" follows="right|top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" label="End Call" left_delta="0" name="end_call_btn" visible="false" width="80"/>
 	<button bottom_delta="0" follows="right|top" height="20" label="&lt; &lt;" label_selected="&gt; &gt;" left="420" name="toggle_active_speakers_btn" right="450" tool_tip="Click here to toggle a list of active participants in this IM session." visible="true" width="80"/>
 	<layout_stack border="false" bottom="0" follows="left|top|right|bottom" height="180" left="0" orientation="horizontal" tab_group="1" width="496" name="panels">
