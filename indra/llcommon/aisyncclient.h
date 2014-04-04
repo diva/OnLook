@@ -248,7 +248,7 @@ class LL_COMMON_API AISyncServerMap : public LLSingleton<AISyncServerMap>
 	void register_client(AISyncClient* client, AISyncKey* new_key);
 
   private:
-    friend void intrusive_ptr_release(AISyncServer* server);
+    friend LL_COMMON_API void intrusive_ptr_release(AISyncServer* server);
 	// Remove a server from the map, only called by intrusive_ptr_release when there is one pointer left;
 	// therefore, the server should not have any clients.
 	void remove_server(AISyncServer* server);
