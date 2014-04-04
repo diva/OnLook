@@ -502,7 +502,7 @@ public:
 	//-------------------------------------------------------------------------
 	// JointMotionList
 	//-------------------------------------------------------------------------
-	class JointMotionList
+	class JointMotionList : public LLRefCount
 	{
 	public:
 		std::vector<JointMotion*> mJointMotionArray;
