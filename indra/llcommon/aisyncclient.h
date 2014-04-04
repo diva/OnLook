@@ -108,12 +108,13 @@ enum synckeytype_t
 
 typedef U32 synceventset_t;					// A mask where each bit represents a ready state.
 
+static F32 const sSyncKeyExpirationTime = 0.25;  // In seconds.
+
 class LL_COMMON_API AISyncKey
 {
   private:
 	LLFrameTimer mFrameTimer;				// This timer is started at the moment the sync key is created.
 	U32 mStartFrameCount;					// The frame count at which the timer was started.
-	static F32 const sExpirationTime = 0.1;	// In seconds.
 
   public:
 	// Constructor.
@@ -125,7 +126,7 @@ class LL_COMMON_API AISyncKey
 	  }
 	  else
 	  {
-		mFrameTimer.reset(sExpirationTime);
+		mFrameTimer.reset(sSyncKeyExpirationTime);
 	  }
 	}
 
@@ -135,14 +136,14 @@ class LL_COMMON_API AISyncKey
 	// Return true if this key expired.
 	bool expired(void) const
 	{
-	  // The key has expired when sExpirationTime seconds have elapsed AND at least two frames have passed.
+	  // The key has expired when sSyncKeyExpirationTime seconds have elapsed AND at least two frames have passed.
 	  return mFrameTimer.getFrameCount() > mStartFrameCount + 1 && mFrameTimer.hasExpired();
 	}
 
 	// Returns true if this object and key would not compare equal based on time because this object is too old.
 	bool is_older_than(AISyncKey const& key) const
 	{
-	  return key.mStartFrameCount > mStartFrameCount + 1 && key.mFrameTimer.getStartTime() > mFrameTimer.getStartTime() + sExpirationTime;
+	  return key.mStartFrameCount > mStartFrameCount + 1 && key.mFrameTimer.getStartTime() > mFrameTimer.getStartTime() + sSyncKeyExpirationTime;
 	}
 
 	// Return the creation time of this key (in number of seconds since application start).
@@ -228,8 +229,8 @@ class LL_COMMON_API AISyncServer
 #endif
 
   private:
-    friend void intrusive_ptr_add_ref(AISyncServer* server);
-    friend void intrusive_ptr_release(AISyncServer* server);
+    friend LL_COMMON_API void intrusive_ptr_add_ref(AISyncServer* server);
+    friend LL_COMMON_API void intrusive_ptr_release(AISyncServer* server);
 };
 
 class LL_COMMON_API AISyncServerMap : public LLSingleton<AISyncServerMap>
@@ -247,7 +248,7 @@ class LL_COMMON_API AISyncServerMap : public LLSingleton<AISyncServerMap>
 	void register_client(AISyncClient* client, AISyncKey* new_key);
 
   private:
-    friend void intrusive_ptr_release(AISyncServer* server);
+    friend LL_COMMON_API void intrusive_ptr_release(AISyncServer* server);
 	// Remove a server from the map, only called by intrusive_ptr_release when there is one pointer left;
 	// therefore, the server should not have any clients.
 	void remove_server(AISyncServer* server);

@@ -72,7 +72,7 @@ void AISyncClientMotion::aisync_loaded(void)
   AISyncKey const& key = server->key();		// The allocation of this is owned by server.
   // There is no need to resync if there was not another motion started at the same time and the key already expired.
   bool need_resync = !(server->never_synced() && key.expired());
-  AISyncKey* new_key;
+  AISyncKey* new_key = NULL;
   if (need_resync)
   {
 	// Create a new key using the old start time.
