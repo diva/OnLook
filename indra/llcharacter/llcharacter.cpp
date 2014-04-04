@@ -136,7 +136,6 @@ LLMotion* LLCharacter::findMotion( const LLUUID &id )
 
 //-----------------------------------------------------------------------------
 // createMotion()
-// NOTE: Always assign the result to a LLPointer!
 //-----------------------------------------------------------------------------
 LLMotion* LLCharacter::createMotion( const LLUUID &id )
 {
@@ -195,11 +194,26 @@ void LLCharacter::updateMotions(e_update_t update_type)
 {
 	if (update_type == HIDDEN_UPDATE)
 	{
+		//<singu>
+		// Keep updating avatars that have at least one motion that is synchronized with a still running motion.
+		// This call tells the other controllers that we are in principle hidden.
+		// It returns false if we need to keep updating anyway.
+		if (!mMotionController.hidden(true))
+		{
+			mMotionController.updateMotions(LLCharacter::NORMAL_UPDATE);
+			return;
+		}
+		//</singu>
 		LLFastTimer t(FTM_UPDATE_HIDDEN_ANIMATION);
 		mMotionController.updateMotionsMinimal();
 	}
 	else
 	{
+		//<singu>
+		// This call tells the other controllers that we are visible and that they need
+		// to keep updating if they are synchronized with us, even if they are hidden.
+		mMotionController.hidden(false);
+		//</singu>
 		LLFastTimer t(FTM_UPDATE_ANIMATION);
 		// unpause if the number of outstanding pause requests has dropped to the initial one
 		if (mMotionController.isPaused() && mPauseRequest->getNumRefs() == 1)
@@ -527,5 +541,19 @@ LLAnimPauseRequest LLCharacter::requestPause()
 {
 	mMotionController.pauseAllMotions();
 	return mPauseRequest;
+}
+
+void LLCharacter::requestPause(std::vector<LLAnimPauseRequest>& avatar_pause_handles)
+{
+	mMotionController.pauseAllMotions();
+	avatar_pause_handles.push_back(mPauseRequest);
+}
+
+void LLCharacter::pauseAllSyncedCharacters(std::vector<LLAnimPauseRequest>& avatar_pause_handles)
+{
+	// Pause this avatar.
+	requestPause(avatar_pause_handles);
+	// Also pause all avatars with synchronized motions.
+	mMotionController.pauseAllSyncedCharacters(avatar_pause_handles);
 }
 

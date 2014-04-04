@@ -146,6 +146,7 @@ public:
 
 	// is this motion active?
 	BOOL isMotionActive( const LLUUID& id );
+	bool isMotionActive(U32 bit) const { return mMotionController.isactive(bit); }
 
 	// Event handler for motion deactivation.
 	// Called when a motion has completely stopped and has been deactivated.
@@ -158,6 +159,8 @@ public:
 	void updateMotions(e_update_t update_type);
 
 	LLAnimPauseRequest requestPause();
+	void requestPause(std::vector<LLAnimPauseRequest>& avatar_pause_handles);
+	void pauseAllSyncedCharacters(std::vector<LLAnimPauseRequest>& avatar_pause_handles);
 	BOOL areAnimationsPaused() const { return mMotionController.isPaused(); }
 	void setAnimTimeFactor(F32 factor) { mMotionController.setTimeFactor(factor); }
 	void setTimeStep(F32 time_step) { mMotionController.setTimeStep(time_step); }

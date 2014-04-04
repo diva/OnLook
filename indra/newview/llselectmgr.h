@@ -793,7 +793,7 @@ private:
 	LLFrameTimer			mEffectsTimer;
 	BOOL					mForceSelection;
 
-	LLAnimPauseRequest		mPauseRequest;
+	std::vector<LLAnimPauseRequest> mPauseRequests;	// Selected avatar and all synchronized avatars.
 
 	friend class LLObjectBackup;
 };

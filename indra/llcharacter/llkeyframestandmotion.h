@@ -48,7 +48,7 @@ class LLKeyframeStandMotion :
 {
 public:
 	// Constructor
-	LLKeyframeStandMotion(const LLUUID &id);
+	LLKeyframeStandMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLKeyframeStandMotion();
@@ -60,7 +60,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLKeyframeStandMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLKeyframeStandMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------

@@ -52,7 +52,7 @@ const F32 TORSO_ROT_FRACTION = 0.5f;
 // LLTargetingMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLTargetingMotion::LLTargetingMotion(const LLUUID &id) : LLMotion(id)
+LLTargetingMotion::LLTargetingMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_TARGET)
 {
 	mCharacter = NULL;
 	mName = "targeting";
@@ -97,14 +97,6 @@ LLMotion::LLMotionInitStatus LLTargetingMotion::onInitialize(LLCharacter *charac
 	addJointState( mTorsoState );
 
 	return STATUS_SUCCESS;
-}
-
-//-----------------------------------------------------------------------------
-// LLTargetingMotion::onActivate()
-//-----------------------------------------------------------------------------
-BOOL LLTargetingMotion::onActivate()
-{
-	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -165,13 +157,5 @@ BOOL LLTargetingMotion::onUpdate(F32 time, U8* joint_mask)
 
 	return result;
 }
-
-//-----------------------------------------------------------------------------
-// LLTargetingMotion::onDeactivate()
-//-----------------------------------------------------------------------------
-void LLTargetingMotion::onDeactivate()
-{
-}
-
 
 // End

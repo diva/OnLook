@@ -46,11 +46,11 @@
 // class LLHeadRotMotion
 //-----------------------------------------------------------------------------
 class LLHeadRotMotion :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLHeadRotMotion(const LLUUID &id);
+	LLHeadRotMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLHeadRotMotion();
@@ -62,7 +62,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLHeadRotMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLHeadRotMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -94,18 +94,10 @@ public:
 	// must return true to indicate success and be available for activation
 	virtual LLMotionInitStatus onInitialize(LLCharacter *character);
 
-	// called when a motion is activated
-	// must return TRUE to indicate success, or else
-	// it will be deactivated
-	virtual BOOL onActivate();
-
 	// called per time step
 	// must return TRUE while it is active, and
 	// must return FALSE when the motion is completed.
 	virtual BOOL onUpdate(F32 time, U8* joint_mask);
-
-	// called when a motion is deactivated
-	virtual void onDeactivate();
 
 public:
 	//-------------------------------------------------------------------------
@@ -129,11 +121,11 @@ public:
 // class LLEyeMotion
 //-----------------------------------------------------------------------------
 class LLEyeMotion :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLEyeMotion(const LLUUID &id);
+	LLEyeMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLEyeMotion();
@@ -145,7 +137,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create( const LLUUID &id) { return new LLEyeMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLEyeMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -176,11 +168,6 @@ public:
 	// called after parameters have been set
 	// must return true to indicate success and be available for activation
 	virtual LLMotionInitStatus onInitialize(LLCharacter *character);
-
-	// called when a motion is activated
-	// must return TRUE to indicate success, or else
-	// it will be deactivated
-	virtual BOOL onActivate();
 
 	// called per time step
 	// must return TRUE while it is active, and
