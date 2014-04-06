@@ -98,7 +98,7 @@ class LocalBitmap
 {
 	public:
 		LocalBitmap(std::string filename);
-		virtual ~LocalBitmap(void);
+		virtual ~LocalBitmap();
 		friend class LocalAssetBrowser;
 
 	public: /* [enums, typedefs, etc] */
@@ -127,23 +127,22 @@ class LocalBitmap
 		};
 
 	public: /* [information query functions] */
-		std::string getShortName(void);
-		std::string getFileName(void);
-		LLUUID      getID(void);
-		LLSD        getLastModified(void);
-		std::string getLinkStatus(void);
-		bool        getUpdateBool(void);
+		std::string getShortName();
+		std::string getFileName();
+		LLUUID      getID();
+		LLSD        getLastModified();
+		std::string getLinkStatus();
+		bool        getUpdateBool();
 		void        setType( S32 );
-		bool        getIfValidBool(void);
-		S32		    getType(void);
-		void		getDebugInfo(void);
+		bool        getIfValidBool();
+		S32		    getType();
+		void		getDebugInfo();
 
 	private: /* [maintenence functions] */
-		void updateSelf(void);
+		void updateSelf();
 		bool decodeSelf(LLImageRaw* rawimg);
-		void setUpdateBool(void);
+		void setUpdateBool();
 
-		LocalBitmap*				 getThis(void);
 		std::vector<LLFace*>		 getFaceUsesThis(LLDrawable*);
 		std::vector<affected_object> getUsingObjects(bool seek_by_type = true,
 												     bool seek_textures = false, bool seek_sculptmaps = false);
@@ -184,7 +183,7 @@ class LocalAssetBrowser
 		static void UpdateTextureCtrlList(LLScrollListCtrl*);
 		static void setLayerUpdated(bool toggle) { mLayerUpdated = toggle; }
 		static void setSculptUpdated(bool toggle) { mSculptUpdated = toggle; }
-		static void AddBitmap(void);
+		static void AddBitmap();
 		static void AddBitmap_continued(AIFilePicker* filepicker);
 		static void DelBitmap( std::vector<LLScrollListItem*>, S32 column = BITMAPLIST_COL_ID );
 
@@ -194,18 +193,18 @@ class LocalAssetBrowser
 		   the latter - each time the button's pressed. */
 
 	private:
-		static void onChangeHappened(void);
+		static void onChangeHappened();
 		static void onUpdateBool(LLUUID);
 		static void onSetType(LLUUID, S32);
 		static LocalBitmap* GetBitmapUnit(LLUUID);
-		static bool IsDoingUpdates(void);
-		static void PingTimer(void);
-		static void PerformTimedActions(void);
-		static void PerformSculptUpdates(LocalBitmap*);
+		static bool IsDoingUpdates();
+		static void PingTimer();
+		static void PerformTimedActions();
+		static void PerformSculptUpdates(LocalBitmap&);
 
 	protected:
-		static  std::vector<LocalBitmap*> loaded_bitmaps;
-		typedef std::vector<LocalBitmap*>::iterator local_list_iter;
+		static  std::vector<LocalBitmap> loaded_bitmaps;
+		typedef std::vector<LocalBitmap>::iterator local_list_iter;
 		static  bool    mLayerUpdated;
 		static  bool    mSculptUpdated; 
 };
@@ -225,17 +224,13 @@ public:
     FloaterLocalAssetBrowser();
     virtual ~FloaterLocalAssetBrowser();
     static void show(void*);
-
-
  
 private: 
 	/* Widget related callbacks */
-    // Button callback declarations
-    static void onClickAdd(void* userdata);
-	static void onClickDel(void* userdata);
-	static void onClickMore(void* userdata);
-	static void onClickLess(void* userdata);
-	static void onClickUpload(void* userdata);
+	// Button callback declarations
+	void onClickAdd();
+	void onClickDel();
+	void onClickUpload();
 
 	// ScrollList callback declarations
 	void onChooseBitmapList();
@@ -271,17 +266,12 @@ private:
 	LLTextBox* mCaptionNameTxt;
 	LLTextBox* mCaptionTimeTxt;
 
-	/* static pointer to self, wai? oh well. */
-    static FloaterLocalAssetBrowser* sLFInstance;
-
 	// non-widget functions
-	static void FloaterResize(bool expand);
-	static void UpdateRightSide(void);
+	void FloaterResize(bool expand);
+	void UpdateRightSide();
 
 public:
-	static void UpdateBitmapScrollList(void);
-
-
+	void UpdateBitmapScrollList();
 };
 
 /*==================================================*/

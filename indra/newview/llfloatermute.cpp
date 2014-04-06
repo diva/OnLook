@@ -182,19 +182,12 @@ LLFloaterMute::LLFloaterMute(const LLSD& seed)
 :	LLFloater(std::string("mute floater"), std::string("FloaterMuteRect3"), FLOATER_TITLE, 
 			  RESIZE_YES, 220, 140, DRAG_ON_TOP, MINIMIZE_YES, CLOSE_YES)
 {
-
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_mute.xml", NULL, FALSE);
-}
-
-// LLMuteListObserver callback interface implementation.
-/* virtual */ void LLFloaterMute::onChange()
-{
-	refreshMuteList();
 }
 
 BOOL LLFloaterMute::postBuild()
 {
-	childSetCommitCallback("mutes", onSelectName, this);
+	childSetCommitCallback("mutes", boost::bind(&LLFloaterMute::updateButtons, this));
 	childSetAction("Mute resident...", onClickPick, this);
 	childSetAction("Mute object by name...", onClickMuteByName, this);
 	childSetAction("Unmute", onClickRemove, this);
@@ -233,17 +226,11 @@ void LLFloaterMute::refreshMuteList()
 	mMuteDict.clear();
 
 	std::vector<LLMute> mutes = LLMuteList::getInstance()->getMutes();
-	std::vector<LLMute>::iterator it;
-	U32 count = 0;
-	for (it = mutes.begin(); it != mutes.end(); ++it)
+	for (std::vector<LLMute>::iterator it = mutes.begin(); it != mutes.end(); ++it)
 	{
 		std::string display_name = it->mName;
 		LLNameListCtrl::NameItem element;
-		LLUUID entry_id;
-		if(it->mType == LLMute::GROUP || it->mType == LLMute::AGENT)
-			entry_id = it->mID;
-		else
-			entry_id.generate(boost::lexical_cast<std::string>( count++ ));
+		LLUUID entry_id = it->mID;
 		mMuteDict.insert(std::make_pair(entry_id,*it));
 		element.value = entry_id;
 		element.name = display_name;
@@ -299,24 +286,7 @@ void LLFloaterMute::selectMute(const LLUUID& mute_id)
 //-----------------------------------------------------------------------------
 void LLFloaterMute::updateButtons()
 {
-	if (mMuteList->getFirstSelected())
-	{
-		childSetEnabled("Unmute", TRUE);
-	}
-	else
-	{
-		childSetEnabled("Unmute", FALSE);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// onSelectName()
-//-----------------------------------------------------------------------------
-void LLFloaterMute::onSelectName(LLUICtrl *caller, void *data)
-{
-	LLFloaterMute *floater = (LLFloaterMute*)data;
-
-	floater->updateButtons();
+	getChildView("Unmute")->setEnabled(!!mMuteList->getFirstSelected());
 }
 
 //-----------------------------------------------------------------------------
@@ -328,11 +298,11 @@ void LLFloaterMute::onClickRemove(void *data)
 
 	S32 last_selected = floater->mMuteList->getFirstSelectedIndex();
 	bool removed = false;
-	const std::vector<LLScrollListItem*> items = floater->mMuteList->getAllSelected();
-	for(std::vector<LLScrollListItem*>::const_iterator it = items.begin(); it != items.end(); ++it)
+	uuid_vec_t items = floater->mMuteList->getSelectedIDs();
+	for(uuid_vec_t::const_iterator it = items.begin(); it != items.end(); ++it)
 	{
-		std::map<LLUUID,LLMute>::iterator mute_it = floater->mMuteDict.find((*it)->getUUID());
-		if(mute_it != floater->mMuteDict.end() && LLMuteList::getInstance()->remove(mute_it->second))
+		std::map<LLUUID,LLMute>::iterator mute_it = floater->mMuteDict.find(*it);
+		if (mute_it != floater->mMuteDict.end() && LLMuteList::getInstance()->remove(mute_it->second))
 		{
 			floater->mMuteDict.erase(mute_it);
 			removed = true;

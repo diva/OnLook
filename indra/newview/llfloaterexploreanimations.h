@@ -2,16 +2,15 @@
 #ifndef LL_LLFLOATEREXPLOREANIMATIONS_H
 #define LL_LLFLOATEREXPLOREANIMATIONS_H
 
-#include "llfloater.h"
 #include "llfloaterbvhpreview.h"
-#include "llviewerwindow.h" // gViewerWindow
+#include "llinstancetracker.h"
 
 class LLAnimHistoryItem
 {
 public:
-	LLAnimHistoryItem(LLUUID assetid);
+	LLAnimHistoryItem(LLUUID assetid = LLUUID(), bool playing = true);
+	bool setPlaying(bool playing);
 
-	LLUUID mAvatarID;
 	LLUUID mAssetID;
 	bool mPlaying;
 	F64 mTimeStarted;
@@ -19,25 +18,20 @@ public:
 };
 
 class LLFloaterExploreAnimations
-: public LLFloater
+: public LLFloater, public LLInstanceTracker<LLFloaterExploreAnimations, LLUUID>
 {
 public:
+	static void show();
 	LLFloaterExploreAnimations(LLUUID avatarid);
-	BOOL postBuild(void);
-	void close(bool app_quitting);
+	BOOL postBuild();
 
 	void update();
-
-	LLUUID mAvatarID;
-	LLPointer<LLPreviewAnimation> mAnimPreview;
 
 private:
 	virtual ~LLFloaterExploreAnimations();
 
-
-// static stuff!
 public:
-	static void onSelectAnimation(LLUICtrl* ctrl, void* user_data);
+	void onSelectAnimation();
 
 	BOOL handleMouseDown(S32 x, S32 y, MASK mask);
 	BOOL handleMouseUp(S32 x, S32 y, MASK mask);
@@ -45,16 +39,17 @@ public:
 	BOOL handleScrollWheel(S32 x, S32 y, S32 clicks); 
 	void onMouseCaptureLost();
 
-	static void startAnim(LLUUID avatarid, LLUUID assetid);
-	static void stopAnim(LLUUID avatarid, LLUUID assetid);
+// static stuff!
+	static void processAnim(LLUUID avatarid, LLUUID assetid, bool playing);
 
-	static std::map< LLUUID, std::list< LLAnimHistoryItem* > > animHistory;
-	static LLFloaterExploreAnimations* sInstance;
+	static std::map< LLUUID, std::list< LLAnimHistoryItem > > animHistory;
 private:
-	static void handleHistoryChange();
+	static void handleHistoryChange(LLUUID avatarid);
 
 protected:
 	void			draw();
+
+	LLPreviewAnimation mAnimPreview;
 	LLRect				mPreviewRect;
 	S32					mLastMouseX;
 	S32					mLastMouseY;

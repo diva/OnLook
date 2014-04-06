@@ -891,6 +891,8 @@ void HippoGridManager::loadFromFile()
 
 void HippoGridManager::parseUrl(const std::string url, bool mergeIfNewer)
 {
+	if (url.empty()) return;
+
 	llinfos << "Loading grid info from '" << url << "'." << llendl;
 
 	// query update server

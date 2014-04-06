@@ -1640,12 +1640,18 @@ LLViewerWindow::LLViewerWindow(
 	LLViewerWindow::sMovieBaseName = "SLmovie";
 	resetSnapshotLoc();
 
+	S32 vsync_mode = gSavedSettings.getS32("SHRenderVsyncMode");
+	if(vsync_mode == -1 && !gGLManager.mHasAdaptiveVsync)
+	{
+		vsync_mode = 0; //Disable vsync if adaptive is desired yet isn't supported.
+	}
+
 	// create window
 	mWindow = LLWindowManager::createWindow(this,
 		title, name, x, y, width, height, 0,
 		fullscreen, 
 		gNoRender,
-		gSavedSettings.getBOOL("DisableVerticalSync"),
+		vsync_mode,
 		!gNoRender,
 		ignore_pixel_depth,
 		gSavedSettings.getBOOL("RenderUseFBO") ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
@@ -4436,14 +4442,20 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 		BORDERHEIGHT = size.mY- y;
 		LLCoordScreen new_size(new_width + BORDERWIDTH, 
 							   new_height + BORDERHEIGHT);
-		BOOL disable_sync = gSavedSettings.getBOOL("DisableVerticalSync");
+
+		S32 vsync_mode = gSavedSettings.getS32("SHRenderVsyncMode");
+		if(vsync_mode == -1 && !gGLManager.mHasAdaptiveVsync)
+		{
+			vsync_mode = 0; //Disable vsync if adaptive is desired yet isn't supported.
+		}
+
 		if (gViewerWindow->getWindow()->getFullscreen())
 		{
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();
 			gViewerWindow->changeDisplaySettings(FALSE, 
 												new_size, 
-												disable_sync, 
+												vsync_mode, 
 												TRUE);
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();
@@ -5421,9 +5433,16 @@ BOOL LLViewerWindow::checkSettings()
 
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();
+
+			S32 vsync_mode = gSavedSettings.getS32("SHRenderVsyncMode");
+			if(vsync_mode == -1 && !gGLManager.mHasAdaptiveVsync)
+			{
+				vsync_mode = 0; //Disable vsync if adaptive is desired yet isn't supported.
+			}
+
 			changeDisplaySettings(TRUE, 
 								  desired_screen_size,
-								  gSavedSettings.getBOOL("DisableVerticalSync"),
+								  vsync_mode,
 								  mShowFullscreenProgress);
 			LLGLState::checkStates();
 			LLGLState::checkTextureChannels();
@@ -5464,7 +5483,7 @@ void LLViewerWindow::restartDisplay(BOOL show_progress_bar)
 	}
 }
 
-BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, BOOL disable_vsync, BOOL show_progress_bar)
+BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, const S32 vsync_mode, BOOL show_progress_bar)
 {
 	BOOL was_maximized = gSavedSettings.getBOOL("WindowMaximized");
 	mWantFullscreen = fullscreen;
@@ -5483,6 +5502,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 
 	U32 fsaa = gSavedSettings.getU32("RenderFSAASamples");
 	U32 old_fsaa = mWindow->getFSAASamples();
+
 	// going from windowed to windowed
 	if (!old_fullscreen && !fullscreen)
 	{
@@ -5492,7 +5512,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 			mWindow->setSize(size);
 		}
 
-		if (fsaa == old_fsaa)
+		if (fsaa == old_fsaa && vsync_mode == mWindow->getFSAASamples())
 		{
 			return TRUE;
 		}
@@ -5531,13 +5551,14 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 	}
 
 	mWindow->setFSAASamples(fsaa);
+	mWindow->setVsyncMode(vsync_mode);
 
-	result_first_try = mWindow->switchContext(fullscreen, size, disable_vsync, &new_pos);
+	result_first_try = mWindow->switchContext(fullscreen, size, vsync_mode, &new_pos);
 	if (!result_first_try)
 	{
 		// try to switch back
 		mWindow->setFSAASamples(old_fsaa);
-		result_second_try = mWindow->switchContext(old_fullscreen, old_size, disable_vsync, &new_pos);
+		result_second_try = mWindow->switchContext(old_fullscreen, old_size, vsync_mode, &new_pos);
 
 		if (!result_second_try)
 		{

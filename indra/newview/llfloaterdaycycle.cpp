@@ -59,6 +59,7 @@
 #include "llwlparammanager.h"
 #include "llfloaterwindlight.h"
 
+#include "rlvactions.h"
 
 LLFloaterDayCycle* LLFloaterDayCycle::sDayCycle = NULL;
 std::map<std::string, LLWLSkyKey> LLFloaterDayCycle::sSliderToKey;
@@ -277,6 +278,7 @@ bool LLFloaterDayCycle::isOpen()
 
 void LLFloaterDayCycle::show()
 {
+	if (RlvActions::hasBehaviour(RLV_BHVR_SETENV)) return;
 	LLFloaterDayCycle* dayCycle = instance();
 	dayCycle->syncMenu();
 	syncSliderTrack();

@@ -304,6 +304,8 @@ const std::string MARKER_FILE_NAME("Singularity.exec_marker");
 const std::string ERROR_MARKER_FILE_NAME("Singularity.error_marker");
 const std::string LLERROR_MARKER_FILE_NAME("Singularity.llerror_marker");
 const std::string LOGOUT_MARKER_FILE_NAME("Singularity.logout_marker");
+const std::string LOG_FILE("Singularity.log");
+extern const std::string OLD_LOG_FILE("Singularity.old");
 static BOOL gDoDisconnect = FALSE;
 static std::string gLaunchFileOnQuit;
 
@@ -353,6 +355,7 @@ void init_default_trans_args()
 {
 	default_trans_args.insert("SECOND_LIFE"); // World
 	default_trans_args.insert("APP_NAME");
+	default_trans_args.insert("SHORT_APP_NAME");
 	default_trans_args.insert("CAPITALIZED_APP_NAME");
 	default_trans_args.insert("SECOND_LIFE_GRID");
 	default_trans_args.insert("SUPPORT_SITE");
@@ -1946,13 +1949,11 @@ bool LLAppViewer::initLogging()
 	LLError::setFatalFunction(errorCallback);
 	
 	// Remove the last ".old" log file.
-	std::string old_log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,
-							     "Singularity.old");
+	std::string old_log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, OLD_LOG_FILE);
 	LLFile::remove(old_log_file);
 
 	// Rename current log file to ".old"
-	std::string log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,
-							     "Singularity.log");
+	std::string log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, LOG_FILE);
 	LLFile::rename(log_file, old_log_file);
 
 	// Set the log file to Singularity.log
@@ -2363,23 +2364,6 @@ bool LLAppViewer::initConfiguration()
 #if LL_DARWIN
 	// Initialize apple menubar and various callbacks
 	init_apple_menu(LLTrans::getString("APP_NAME").c_str());
-
-#if __ppc__
-	// If the CPU doesn't have Altivec (i.e. it's not at least a G4), don't go any further.
-	// Only test PowerPC - all Intel Macs have SSE.
-	if(!gSysCPU.hasAltivec())
-	{
-		std::ostringstream msg;
-		msg << LLTrans::getString("MBRequiresAltiVec");
-		OSMessageBox(
-			msg.str(),
-			LLStringUtil::null,
-			OSMB_OK);
-		removeMarkerFile();
-		return false;
-	}
-#endif
-	
 #endif // LL_DARWIN
 
 	// Display splash screen.  Must be after above check for previous
@@ -2664,7 +2648,7 @@ void LLAppViewer::writeSystemInfo()
 	// that the crash report will go to the proper location in the case of a 
 	// prior freeze.
 	std::string crashHostUrl = gSavedSettings.get<std::string>("CrashHostUrl");
-	if(crashHostUrl != "")
+	if (!crashHostUrl.empty())
 	{
 		gDebugInfo["CrashHostUrl"] = crashHostUrl;
 	}
@@ -2725,7 +2709,7 @@ void LLAppViewer::handleViewerCrash()
 
 	// Insert crash host url (url to post crash log to) if configured.
 	std::string crashHostUrl = gSavedSettings.get<std::string>("CrashHostUrl");
-	if(crashHostUrl != "")
+	if (!crashHostUrl.empty())
 	{
 		gDebugInfo["Dynamic"]["CrashHostUrl"] = crashHostUrl;
 	}

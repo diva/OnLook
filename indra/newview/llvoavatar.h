@@ -54,6 +54,9 @@
 
 #include "llavatarname.h"
 
+//<singu>
+#if 0
+// Hide these: should be using the bit masks everywhere.
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
 extern const LLUUID ANIM_AGENT_BREATHE_ROT;
 extern const LLUUID ANIM_AGENT_PHYSICS_MOTION;
@@ -65,6 +68,8 @@ extern const LLUUID ANIM_AGENT_HEAD_ROT;
 extern const LLUUID ANIM_AGENT_PELVIS_FIX;
 extern const LLUUID ANIM_AGENT_TARGET;
 extern const LLUUID ANIM_AGENT_WALK_ADJUST;
+#endif
+//</singu>
 
 class LLAPRFile;
 class LLViewerWearable;
@@ -230,6 +235,10 @@ public:
 	/*virtual*/ LLUUID			remapMotionID(const LLUUID& id);
 	/*virtual*/ BOOL			startMotion(const LLUUID& id, F32 time_offset = 0.f);
 	/*virtual*/ BOOL			stopMotion(const LLUUID& id, BOOL stop_immediate = FALSE);
+	//<singu>
+	void						startMotion(U32 bit, F32 start_offset = 0.f);
+	void						stopMotion(U32 bit, BOOL stop_immediate = FALSE);
+	//</singu>
 	virtual void			stopMotionFromSource(const LLUUID& source_id);
 	virtual void			requestStopMotion(LLMotion* motion);
 	LLMotion*				findMotion(const LLUUID& id) const;

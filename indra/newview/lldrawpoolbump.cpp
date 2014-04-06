@@ -270,7 +270,7 @@ void LLDrawPoolBump::render(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_BUMP);
 	
-	if (!gPipeline.hasRenderType(LLDrawPool::POOL_SIMPLE))
+	if (!gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SIMPLE))
 	{
 		return;
 	}

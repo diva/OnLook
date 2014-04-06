@@ -25,12 +25,67 @@
 			<key>Value</key>
 			<integer>0</integer>
 		</map>
+		<key>FriendNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For friends list names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>GroupMembersNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For lists of group members names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>LandManagementNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For names land management lists. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
 		<key>PhoenixNameSystem</key>
 		<map>
 		  <key>Comment</key>
-		  <string>Use Display Names instead of Legacy Names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only</string>
+		  <string>For general purpose names in the viewer. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
 		  <key>Persist</key>
 		  <integer>2</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>RadarNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For names in the radar. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>1</integer>
+		</map>
+		<key>SpeakerNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For names in lists of speakers. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name)</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
 		  <key>Type</key>
 		  <string>S32</string>
 		  <key>Value</key>
@@ -741,5 +796,990 @@
       <key>Value</key>
       <string>pages/login/</string>
     </map>
+    <!-- The following block of settings say whether or not a toolbar button is visible in
+    the future, we want this block gone, upstream handles this sorta thing much better-->
+    <key>ToolbarVisibleAbout</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for about is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAboutLand</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for about land is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAboutRegion</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for region/estate is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleActiveSpeakers</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for active speakers is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAlwaysRun</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for run is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAnimsExplorer</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for anims explorer is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAO</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the AO Floater is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAppearance</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for appearance is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAreaSearch</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for areasearch is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleAssetBlacklist</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for asset blacklist is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleBeacons</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for beacons is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleBuild</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for build is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleBuyCurrency</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for buy currency is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleBuyLand</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for buy land is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleCameraControls</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for camera controls is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleChatbar</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for toggling the chatbar is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleChatHistory</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for local chat history is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleCommunicate</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for communicate floater is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleCommunicateIM</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the flyout button for communicate is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleComplaintReporter</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for abuse report is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleDayCycle</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for day cycle editor is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleDebugAvatar</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for debug avatar textures is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleDebugConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the debug console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleDebugSettings</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for debug settings is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleDisplayName</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for display name is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleEditUI</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for edit ui is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleEnvSettings</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the environment settings editor is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleFastTimers</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for fast timers is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleFly</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for fly is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleFontTest</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for font test is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleFrameConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the frame console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleFriends</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for friends is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleGestures</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for gestures is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleGodTools</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for god tools is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleGridOptions</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for grid options for the build tools is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleGroups</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for groups is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleGroupTitles</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for group titles is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <!-- Singu TODO: Re-implement f1 help.
+    <key>ToolbarVisibleHelp</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for help is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    -->
+    <key>ToolbarVisibleHelpTutorial</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the tutorial is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleHTTPConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the http console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleInspect</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for inspect is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleInventory</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for inventory is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleInventoryFavs</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for favorites is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleInventoryOutfits</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for outfits is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleLagMeter</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for lag meter is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleLocalAssets</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for local textures is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMeanEvents</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for bumps, pushes, and hits is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMediaFilter</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for media filter is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMediaTicker</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the streaming audio display is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMemLeak</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for memory leak is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMessageLog</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for message log is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMiniMap</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the mini-map is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleMouselook</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for mouselook is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMovementControls</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for movement controls is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMuteList</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for mute list is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleMyLand</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for my land is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleOutbox</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for outbox is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleNotificationsConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the notifications console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleOutbox</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the merchant outbox is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleOutfit</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for make outfit is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisiblePathfindingCharacters</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for pathfinding characters is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisiblePathfindingLinksets</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for pathfinding linksets is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisiblePermPrefs</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for default upload permissions is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisiblePostProcess</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for post-processing effects is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisiblePreferences</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for preferences is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleRadar</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the radar is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleRegionDebugConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the region debug console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleScriptErrors</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for script errors is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleScriptInfo</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for script info is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleSearch</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for search is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleSit</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for sit is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleSnapshot</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for snapshot is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <key>ToolbarVisibleSoundExplorer</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the sound explorer is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleStatBar</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the statistics bar is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleTeleportHistory</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for teleport history is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleTest</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the test floater is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleTextureCategoryConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the texture category console is on the toolbar (requires a relog with AuditTexture true for the button to work)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleTextureConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the texture console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleTextureSizeConsole</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the texture size console is on the toolbar (requires a relog with AuditTexture true for the button to work)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleToolbarPrefs</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the floater to change buttons on the toolbar is on the toolbar (Nonfunctional, yet. Poke Liru.)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleVelocity</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for velocity is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleVoiceEffect</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for voice effects is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleWaterSettings</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the water editor is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleWeb</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the web browser is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleWindlight</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the windlight editor is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleWorldMap</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the world map is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
+    <!-- [RLVa:LF] -->
+    <key>ToolbarVisibleRLVLocks</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for RLVa Locks is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleRLVRestrictions</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for RLVa Restrictions is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleRLVStrings</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for RLVa Strings is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <!-- [/RLVa:LF] -->
     </map>
 </llsd>

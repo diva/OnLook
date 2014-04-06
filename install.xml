@@ -1360,16 +1360,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>2d7bf76438a6a13f1b3ee682af446f93</string>
+            <string>01573510dce7f380f44e561ef2f3dd9f</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/slvoice-4.5.0009.17865-linux-20140312.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/vivox-2.1.3010.6270-linux-20090309.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>2d7bf76438a6a13f1b3ee682af446f93</string>
+            <string>01573510dce7f380f44e561ef2f3dd9f</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/slvoice-4.5.0009.17865-linux-20140312.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/vivox-2.1.3010.6270-linux-20090309.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

@@ -190,7 +190,7 @@ LLGLSLShader			gDeferredWaterProgram(LLViewerShaderMgr::SHADER_DEFERRED); //calc
 LLGLSLShader			gDeferredUnderWaterProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);//Not in mShaderList
 LLGLSLShader			gDeferredDiffuseAlphaMaskProgram(LLViewerShaderMgr::SHADER_DEFERRED);
-LLGLSLShader			gDeferredNonIndexedDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+//LLGLSLShader			gDeferredNonIndexedDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredNonIndexedDiffuseAlphaMaskProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredNonIndexedDiffuseAlphaMaskNoColorProgram(LLViewerShaderMgr::SHADER_DEFERRED);
 LLGLSLShader			gDeferredSkinnedDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);
@@ -552,6 +552,7 @@ void LLViewerShaderMgr::setShaders()
 		else
 		{
 			LLGLSLShader::sNoFixedFunction = false;
+			LLGLSLShader::sIndexedTextureChannels = 1;
 			gPipeline.mVertexShadersEnabled = FALSE;
 			gPipeline.mVertexShadersLoaded = 0;
 			for (S32 i = 0; i < SHADER_COUNT; i++)
@@ -569,6 +570,7 @@ void LLViewerShaderMgr::setShaders()
 	else
 	{
 		LLGLSLShader::sNoFixedFunction = false;
+		LLGLSLShader::sIndexedTextureChannels = 1;
 		gPipeline.mVertexShadersEnabled = FALSE;
 		gPipeline.mVertexShadersLoaded = 0;
 		for (S32 i = 0; i < SHADER_COUNT; i++)
@@ -673,14 +675,7 @@ BOOL LLViewerShaderMgr::loadBasicShaders()
 	// (in order of shader function call depth for reference purposes, deepest level first)
 
 	shaders.clear();
-	S32 ch = 1;
-
-	if (gGLManager.mGLSLVersionMajor > 1 || gGLManager.mGLSLVersionMinor >= 30)
-	{ //use indexed texture rendering for GLSL >= 1.30
-		static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-		if(!no_texture_indexing)
-		ch = llmax(LLGLSLShader::sIndexedTextureChannels-1, 1);
-	}
+	S32 ch = llmax(LLGLSLShader::sIndexedTextureChannels-1, 1);
 
 	std::vector<S32> index_channels;
 	index_channels.push_back(-1);	 shaders.push_back( make_pair( "windlight/atmosphericsVarsF.glsl",		mVertexShaderLevel[SHADER_WINDLIGHT] ) );
@@ -1078,7 +1073,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		success = gDeferredNonIndexedDiffuseAlphaMaskNoColorProgram.createShader(NULL, NULL);
 	}
 
-	if (success)
+	/*if (success)
 	{
 		gDeferredNonIndexedDiffuseProgram.mName = "Non Indexed Deferred Diffuse Shader";
 		gDeferredNonIndexedDiffuseProgram.mShaderFiles.clear();
@@ -1086,7 +1081,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		gDeferredNonIndexedDiffuseProgram.mShaderFiles.push_back(make_pair("deferred/diffuseF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gDeferredNonIndexedDiffuseProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
 		success = gDeferredNonIndexedDiffuseProgram.createShader(NULL, NULL);
-	}
+	}*/
 		
 
 	if (success)

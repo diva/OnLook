@@ -3455,7 +3455,7 @@ void LLStartUp::initNameCache()
 	// capabilities for display name lookup
 	LLAvatarNameCache::initClass(false);
 	S32 phoenix_name_system = gSavedSettings.getS32("PhoenixNameSystem");
-	if(phoenix_name_system <= 0 || phoenix_name_system > 2) LLAvatarNameCache::setUseDisplayNames(false);
+	if(phoenix_name_system <= 0 || phoenix_name_system > 3) LLAvatarNameCache::setUseDisplayNames(false);
 	else LLAvatarNameCache::setUseDisplayNames(true);
 }
 

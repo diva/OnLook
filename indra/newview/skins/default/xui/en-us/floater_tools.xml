@@ -52,7 +52,7 @@
 	     function="BuildTool.setTool"
 	     parameter="Land" />
 	</button>
-	<button name="mini_button" bottom="-34" left="245" height="22" width="22" control_name="LiruMiniBuildFloater" label="" image_selected="down_arrow.tga" image_unselected="up_arrow.tga" scale_image="true" toggle="true" tool_tip="Toggle tiny build floater"/>
+	<button name="mini_button" bottom="-40" left="245" height="22" width="22" control_name="LiruMiniBuildFloater" label="" image_selected="down_arrow.tga" image_unselected="up_arrow.tga" scale_image="true" toggle="true" tool_tip="Toggle tiny build floater"/>
 
 <!-- Focus panel -->
 

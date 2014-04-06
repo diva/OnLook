@@ -83,9 +83,9 @@
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Security" name="Security">
-      <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" follows="top" initial_value="true" label="Broadcast Viewer Effects (Does not include beams)" left="10" name="broadcast_viewer_effects" width="400"/>
+      <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" follows="top" initial_value="true" label="Broadcast Viewer Effects (does not affect pointat and lookat)" left="10" name="broadcast_viewer_effects" width="400"/>
       <check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" follows="top" initial_value="true" label="Disable Point At And Beam" tool_tip="Don't point at or show your edit beam when selecting an object." name="disable_point_at_and_beams_check"/>
-      <check_box bottom_delta="-20" control_name="PrivateLookAt" follows="top" initial_value="false" label="Do not Look At objects (defeats ShowLookAt)" tool_tip="Turns off broadcasting headturns and lookat beacons for yourself." name="private_look_at_check"/>
+	  <check_box bottom_delta="-20" control_name="PrivateLookAt" follows="top" initial_value="false" label="Do not Look At objects and/or avatars" tool_tip="Disables headturns and lookat beacons: causes your avatar to look straight ahead like a zombie." name="private_look_at_check"/>
       <check_box bottom_delta="-20" control_name="AscentShowLookAt" follows="top" initial_value="false" label="Show others' LookAt beacons" tool_tip="Shows you where others are looking." name="show_look_at_check"/>
       <check_box bottom_delta="-20" control_name="SGDetachBridge" follows="top" initial_value="false" label="Auto detach LSL Bridge" tool_tip="Automatically detach LSL Bridge of Phoenix or Firestorm viewer." name="detach_bridge"/>
       <check_box bottom_delta="-20" control_name="QuietSnapshotsToDisk" follows="top" initial_value="false" label="Quiet Snapshots to Disk" tool_tip="Doesn't make a camera sound nor alert everyone when you take a snapshot to your computer." name="quiet_snapshots_check"/>

@@ -65,7 +65,7 @@ public:
 	/*virtual*/ BOOL setPosition(LLCoordScreen position);
 	/*virtual*/ BOOL setSizeImpl(LLCoordScreen size);
 	/*virtual*/ BOOL setSizeImpl(LLCoordWindow size);
-	/*virtual*/ BOOL switchContext(BOOL fullscreen, const LLCoordScreen &size, BOOL disable_vsync, const LLCoordScreen * const posp = NULL);
+	/*virtual*/ BOOL switchContext(BOOL fullscreen, const LLCoordScreen &size, const S32 vsync_mode, const LLCoordScreen * const posp = NULL);
 	/*virtual*/ BOOL setCursorPosition(LLCoordWindow position);
 	/*virtual*/ BOOL getCursorPosition(LLCoordWindow *position);
 	/*virtual*/ void showCursor();
@@ -92,6 +92,8 @@ public:
 	/*virtual*/ BOOL setGamma(const F32 gamma); // Set the gamma
 	/*virtual*/ U32 getFSAASamples();
 	/*virtual*/ void setFSAASamples(const U32 samples);
+	/*virtual*/ void setVsyncMode(const S32 vsync_mode);
+	/*virtual*/ S32	 getVsyncMode();
 	/*virtual*/ BOOL restoreGamma();			// Restore original gamma table (before updating gamma)
 	/*virtual*/ ESwapMethod getSwapMethod() { return mSwapMethod; }
 	/*virtual*/ void processMiscNativeEvents();
@@ -149,7 +151,7 @@ public:
 protected:
 	LLWindowSDL(LLWindowCallbacks* callbacks,
 		const std::string& title, int x, int y, int width, int height, U32 flags,
-		BOOL fullscreen, BOOL clearBg, BOOL disable_vsync,
+		BOOL fullscreen, BOOL clearBg, const S32 vsync_mode,
 		BOOL ignore_pixel_depth, U32 fsaa_samples);
 	~LLWindowSDL();
 
@@ -174,7 +176,7 @@ protected:
 	//
 
 	// create or re-create the GL context/window.  Called from the constructor and switchContext().
-	BOOL createContext(int x, int y, int width, int height, int bits, BOOL fullscreen, BOOL disable_vsync);
+	BOOL createContext(int x, int y, int width, int height, int bits, BOOL fullscreen, const S32 vsync_mode);
 	void destroyContext();
 	void setupFailure(const std::string& text, const std::string& caption, U32 type);
 	void fixWindowSize(void);
@@ -194,6 +196,7 @@ protected:
 	F32			mOverrideAspectRatio;
 	F32		mGamma;
 	U32		mFSAASamples;
+	S32		mVsyncMode;
 
 	int		mSDLFlags;
 

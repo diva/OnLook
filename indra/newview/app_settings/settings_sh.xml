@@ -251,5 +251,16 @@
       <key>Value</key>
       <real>1</real>
     </map>
+    <key>SHRenderVsyncMode</key>
+    <map>
+      <key>Comment</key>
+      <string>Desired vertical sychronization method. (0 = Disabled, 1 = Standard [Double-buffered], -1 = Adaptive [if supported])</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <real>0</real>
+    </map>
   </map>
 </llsd>

@@ -48,6 +48,7 @@
 #include "llfloateravatarlist.h"
 #include "llfloaterworldmap.h"
 #include "llmenugl.h"
+#include "lltoolbar.h"
 #include "lluictrlfactory.h"
 #include "llviewerregion.h"
 
@@ -188,13 +189,13 @@ void RlvUIEnabler::onToggleSetEnv()
 	if (!fEnable)
 	{
 		// Only close the floaters if their instance exists and they're actually visible
-		if ( (LLFloaterEnvSettings::isOpen()) && (LLFloaterEnvSettings::instance()->getVisible()) )
+		if ( (LLFloaterEnvSettings::isOpen()) )
 			LLFloaterEnvSettings::instance()->close();
-		if ( (LLFloaterWindLight::isOpen()) && (LLFloaterWindLight::instance()->getVisible()) )
+		if ( (LLFloaterWindLight::isOpen()) )
 			LLFloaterWindLight::instance()->close();
-		if ( (LLFloaterWater::isOpen()) && (LLFloaterWater::instance()->getVisible()) )
+		if ( (LLFloaterWater::isOpen()) )
 			LLFloaterWater::instance()->close();
-		if ( (LLFloaterDayCycle::isOpen()) && (LLFloaterDayCycle::instance()->getVisible()) )
+		if ( (LLFloaterDayCycle::isOpen()) )
 			LLFloaterDayCycle::instance()->close();
 	}
 
@@ -251,6 +252,8 @@ void RlvUIEnabler::onToggleShowInv(bool fQuitting)
 		LLMenuGL::sMenuContainer->childSetEnabled("My Outfits", true);
 		LLMenuGL::sMenuContainer->childSetEnabled("Favorites", true);
 	}
+	gToolBar->childSetEnabled("outfits_btn", fEnable);
+	gToolBar->childSetEnabled("favs_btn", fEnable);
 }
 
 // Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
@@ -299,14 +302,15 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 		// Close the "Active Speakers" panel if it's currently visible
 		LLFloaterChat::getInstance()->childSetVisible("active_speakers_panel", false);
 		// Close the "Avatar List/Radar" floater if it's currently visible
-		if ( LLFloaterAvatarList::instanceExists() && LLFloaterAvatarList::getInstance()->getVisible() )
-			LLFloaterAvatarList::toggle(NULL);
+		if (LLFloaterAvatarList::instanceVisible())
+			LLFloaterAvatarList::toggleInstance();
 		LLAvatarNameCache::setForceDisplayNames(true);
 	}
 	else
 	{
 		LLAvatarNameCache::setForceDisplayNames(false);
-		LLAvatarNameCache::setUseDisplayNames(gSavedSettings.getS32("PhoenixNameSystem") == 1 || gSavedSettings.getS32("PhoenixNameSystem") == 2);
+		const S32 namesys = gSavedSettings.getS32("PhoenixNameSystem");
+		LLAvatarNameCache::setUseDisplayNames(namesys > 0 && namesys < 4);
 	}
 	LLVOAvatar::invalidateNameTags();	// See handleDisplayNamesOptionChanged()
 }

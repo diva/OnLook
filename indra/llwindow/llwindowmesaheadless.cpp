@@ -41,7 +41,7 @@ U16 *gMesaBuffer = NULL;
 LLWindowMesaHeadless::LLWindowMesaHeadless(LLWindowCallbacks* callbacks,
                                            const std::string& title, const std::string& name, S32 x, S32 y, S32 width, S32 height,
 							 U32 flags,  BOOL fullscreen, BOOL clearBg,
-							 BOOL disable_vsync, BOOL ignore_pixel_depth)
+							 const S32 vsync_mode, BOOL ignore_pixel_depth)
 	: LLWindow(callbacks, fullscreen, flags)
 {
 	llinfos << "MESA Init" << llendl;

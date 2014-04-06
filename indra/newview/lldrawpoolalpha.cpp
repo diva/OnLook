@@ -373,6 +373,8 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 	BOOL light_enabled = TRUE;
 	
 	BOOL use_shaders = gPipeline.canUseVertexShaders();
+
+	BOOL depth_only = (pass == 1 && !LLPipeline::sImpostorRender);
 		
 	for (LLCullResult::sg_iterator i = gPipeline.beginAlphaGroups(); i != gPipeline.endAlphaGroups(); ++i)
 	{
@@ -387,7 +389,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 													  || group->mSpatialPartition->mPartitionType == LLViewerRegion::PARTITION_CLOUD
 													  || group->mSpatialPartition->mPartitionType == LLViewerRegion::PARTITION_HUD_PARTICLE;
 
-			bool draw_glow_for_this_partition = mVertexShaderLevel > 0; // no shaders = no glow.
+			bool draw_glow_for_this_partition = !depth_only && mVertexShaderLevel > 0; // no shaders = no glow.
 
 			static LLFastTimer::DeclareTimer FTM_RENDER_ALPHA_GROUP_LOOP("Alpha Group");
 			LLFastTimer t(FTM_RENDER_ALPHA_GROUP_LOOP);
@@ -410,7 +412,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 				// Fix for bug - NORSPEC-271
 				// If the face is more than 90% transparent, then don't update the Depth buffer for Dof
 				// We don't want the nearly invisible objects to cause of DoF effects
-				if(pass == 1 && !LLPipeline::sImpostorRender)
+				if(depth_only)
 				{
 					LLFace*	face = params.mFace;
 					if(face)
@@ -443,9 +445,10 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 					llassert_always(!LLGLSLShader::sNoFixedFunction);
 					llassert_always(!LLGLSLShader::sCurBoundShaderPtr);
 
-					if(params.mFullbright == light_enabled || !initialized_lighting)
+					bool fullbright = depth_only || params.mFullbright;
+					if(fullbright == !!light_enabled || !initialized_lighting)
 					{
-						light_enabled = !params.mFullbright;
+						light_enabled = !fullbright;
 						initialized_lighting = true;
 
 						if (light_enabled)	// Turn off lighting if it hasn't already been so.

@@ -69,6 +69,7 @@
 #include "lloverlaybar.h"
 #include "roles_constants.h"
 #include "llweb.h"
+#include "rlvactions.h"
 
 const F32 PARCEL_COLLISION_DRAW_SECS = 1.f;
 
@@ -2226,6 +2227,12 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 
 void LLViewerParcelMgr::startBuyLand(BOOL is_for_group)
 {
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
+	if (RlvActions::isRlvEnabled() && !RlvActions::canShowLocation())
+		return;
+// [/RLVa:KB]
+	if (selectionEmpty()) selectParcelAt(gAgent.getPositionGlobal());
+
 	LLFloaterBuyLand::buyLand(getSelectionRegion(), mCurrentParcelSelection, is_for_group == TRUE);
 }
 

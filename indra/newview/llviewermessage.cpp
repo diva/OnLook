@@ -5772,7 +5772,7 @@ void process_avatar_animation(LLMessageSystem *mesgsys, void **user_data)
 		}
 	}
 
-	if (num_blocks)
+	//if (num_blocks)  Singu note: commented out; having blocks or not is totally irrelevant!
 	{
 		avatarp->processAnimationStateChanges();
 	}

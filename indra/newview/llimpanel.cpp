@@ -60,7 +60,7 @@
 #include "llviewerwindow.h"
 #include "llvoicechannel.h"
 
-#include "boost/algorithm/string.hpp"
+#include <boost/lambda/lambda.hpp>
 
 // [RLVa:KB] - Checked: 2013-05-10 (RLVa-1.4.9)
 #include "rlvactions.h"
@@ -321,6 +321,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	case IM_SESSION_GROUP_START:
 	case IM_SESSION_INVITE:
 	case IM_SESSION_CONFERENCE_START:
+		mCommitCallbackRegistrar.add("FlipDing", boost::bind<void>(boost::lambda::_1 = !boost::lambda::_1, boost::ref(mDing)));
 		// determine whether it is group or conference session
 		if (gAgent.isInGroup(mSessionUUID))
 		{
@@ -442,12 +443,12 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 // virtual
 void LLFloaterIMPanel::changed(U32 mask)
 {
-	if (mask & REMOVE|ADD) // Fix remove/add friend choices
+	if (mask & (REMOVE|ADD)) // Fix remove/add friend choices
 		rebuildDynamics(getChild<LLComboBox>("instant_message_flyout"));
 	/* Singu TODO: Chat UI - Online icons?
 	if (mask & ONLINE)
 		// Show online icon here
-	else if (mask & NONE)
+	else
 		// Show offline icon here
 	*/
 }

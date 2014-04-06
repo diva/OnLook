@@ -62,7 +62,6 @@
 #include "lltrans.h"
 #include "llfloaterbuycurrency.h"
 // <edit>
-#include "floaterlocalassetbrowse.h"
 #include "llassettype.h"
 #include "llinventorytype.h"
 // </edit>
@@ -517,15 +516,6 @@ class LLFileMinimizeAllWindows : public view_listener_t
 		return true;
 	}
 };
-
-class LLFileLocalAssetBrowser : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent>, const LLSD&)
-	{
-		FloaterLocalAssetBrowser::show(0);
-		return true;
-	}
-};
 // </edit>
 
 class LLFileSavePreview : public view_listener_t
@@ -537,15 +527,6 @@ class LLFileSavePreview : public view_listener_t
 		{
 			top->saveAs();
 		}
-		return true;
-	}
-};
-
-class LLFileTakeSnapshot : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterSnapshot::show(NULL);
 		return true;
 	}
 };
@@ -979,21 +960,21 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 	{
 		LLUUID item_id;
 		item_id.generate();
-		LLPermissions* perms = new LLPermissions();
-		perms->set(LLPermissions::DEFAULT);
-		perms->setOwnerAndGroup(gAgentID, gAgentID, gAgentID, false);
+		LLPermissions perms;
+		perms.set(LLPermissions::DEFAULT);
+		perms.setOwnerAndGroup(gAgentID, gAgentID, gAgentID, false);
 
 
-		perms->setMaskBase(PERM_ALL);
-		perms->setMaskOwner(PERM_ALL);
-		perms->setMaskEveryone(PERM_ALL);
-		perms->setMaskGroup(PERM_ALL);
-		perms->setMaskNext(PERM_ALL);
+		perms.setMaskBase(PERM_ALL);
+		perms.setMaskOwner(PERM_ALL);
+		perms.setMaskEveryone(PERM_ALL);
+		perms.setMaskGroup(PERM_ALL);
+		perms.setMaskNext(PERM_ALL);
 
 		LLViewerInventoryItem* item = new LLViewerInventoryItem(
 				item_id,
 				gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE),
-				*perms,
+				perms,
 				uuid,
 				(LLAssetType::EType)data->mAssetInfo.mType,
 				(LLInventoryType::EType)data->mInventoryType,
@@ -1368,10 +1349,8 @@ void init_menu_file()
 	(new LLFileEnableCloseAllWindows())->registerListener(gMenuHolder, "File.EnableCloseAllWindows");
 	// <edit>
 	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
-	(new LLFileLocalAssetBrowser())->registerListener(gMenuHolder, "File.LocalAssetBrowser");
 	// </edit>
 	(new LLFileSavePreview())->registerListener(gMenuHolder, "File.SavePreview");
-	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
