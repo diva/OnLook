@@ -971,7 +971,7 @@ void copy_profile_uri(const LLUUID& id, bool group = false);
 
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
-	if (value.isUndefined() || value == LLSD(0))
+	if (value.isUndefined() || value.asInteger() == 0)
 	{
 		LLAvatarActions::showProfile(mOtherParticipantUUID);
 		return;
