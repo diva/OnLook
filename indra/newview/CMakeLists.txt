@@ -126,6 +126,7 @@ set(viewer_SOURCE_FILES
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
+    llautoreplace.cpp
     llavataractions.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
@@ -181,6 +182,7 @@ set(viewer_SOURCE_FILES
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
     llfloaterauction.cpp
+    llfloaterautoreplacesettings.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
     llfloateravatarpicker.cpp
@@ -646,6 +648,7 @@ set(viewer_HEADER_FILES
     llassetuploadresponders.h
     llattachmentsmgr.h
     llaudiosourcevo.h
+    llautoreplace.h
     llavataractions.h
     llavatarpropertiesprocessor.h
     llbox.h
@@ -701,6 +704,7 @@ set(viewer_HEADER_FILES
     llfloaterabout.h
     llfloateractivespeakers.h
     llfloaterauction.h
+    llfloaterautoreplacesettings.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
     llfloateravatarpicker.h

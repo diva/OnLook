@@ -35,6 +35,7 @@
 
 #include "ascentkeyword.h"
 #include "llagent.h"
+#include "llautoreplace.h"
 #include "llavataractions.h"
 #include "llavatarnamecache.h"
 #include "llbutton.h"
@@ -466,6 +467,7 @@ BOOL LLFloaterIMPanel::postBuild()
 			LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _2));
 
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
+		mInputEditor->setAutoreplaceCallback(boost::bind(&LLAutoReplace::autoreplaceCallback, LLAutoReplace::getInstance(), _1, _2, _3, _4, _5));
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
 		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );

@@ -2704,6 +2704,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>AutoReplace</key>
+    <map>
+      <key>Comment</key>
+      <string>Replaces keywords with a configured word or phrase</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>AutoAcceptAllNewInventory</key>
     <map>
       <key>Comment</key>
