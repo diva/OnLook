@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater border="true" bottom="-298" can_close="true" can_minimize="false" can_resize="true" default_tab_group="1" enabled="true" follows="left|top|right|bottom" height="197" label="(unknown)" left="1" min_height="100" min_width="300" name="im_floater" rect_control="" title="(unknown)" width="501">
+<floater border="true" bottom="-298" can_close="true" can_minimize="false" can_resize="true" default_tab_group="1" enabled="true" follows="left|top|right|bottom" height="197" label="(unknown)" left="1" min_height="100" min_width="345" name="im_floater" rect_control="" title="(unknown)" width="501">
 	<string name="ringing">Joining Voice Chat...</string>
 	<string name="connected">Connected, click End Call to hang up</string>
 	<string name="hang_up">Left Voice Chat</string>
@@ -8,8 +8,8 @@
 	<string name="typing_start_string">[NAME] is typing...</string>
 	<string name="session_start_string">Starting session with [NAME], please wait.</string>
 	<string name="default_text_label">Click here to instant message.</string>
-	<button bottom="-20" follows="right|top" height="20" label="History" right="-165" name="history_btn" width="80"/>
-    <button bottom_delta="0" follows="left|top" height="20" left_delta="80" width="50" toggle="true" name="ding_btn" label="Ding">
+    <button bottom="-20" follows="right|top" height="20" label="History" right="-210" name="history_btn" width="80"/>
+    <button bottom_delta="0" follows="right|top" height="20" left_delta="80" width="50" toggle="true" name="ding_btn" label="Ding">
       <button.commit_callback function="FlipDing"/>
     </button>
     <button bottom_delta="0" enabled="false" follows="right|top" height="20" image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left" label="Call" left_delta="50" name="start_call_btn" width="80"/>
