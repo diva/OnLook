@@ -641,13 +641,29 @@ LLSD LLObjectBackup::primsToLLSD(LLViewerObject::child_list_t child_list, bool i
 		prim_llsd["scale"] = object->getScale().getValue();
 
 		// Flags
-		prim_llsd["shadows"] = FALSE;
-		prim_llsd["phantom"] = object->flagPhantom();
-		prim_llsd["physical"] = object->flagUsePhysics();
+		prim_llsd["flags"] = (S32)object->getFlags();
 
 		// Volume params
 		LLVolumeParams params = object->getVolume()->getParams();
 		prim_llsd["volume"] = params.asLLSD();
+
+		// Material
+		prim_llsd["material"] = object->getMaterial();
+
+		// Click Action
+		if (S32 action = object->getClickAction()) // Non-zero
+			prim_llsd["clickaction"] = action;
+
+		// Physics
+		if (!object->getPhysicsShapeUnknown())
+		{
+			LLSD& physics = prim_llsd["ExtraPhysics"];
+			physics["PhysicsShapeType"] = object->getPhysicsShapeType();
+			physics["Density"] = object->getPhysicsDensity();
+			physics["Friction"] = object->getPhysicsFriction();
+			physics["GravityMultiplier"] = object->getPhysicsGravity();
+			physics["Restitution"] = object->getPhysicsRestitution();
+		}
 
 		// Extra paramsb6fab961-af18-77f8-cf08-f021377a7244
 		if (object->isFlexible())
@@ -661,6 +677,12 @@ LLSD LLObjectBackup::primsToLLSD(LLViewerObject::child_list_t child_list, bool i
 			// Light
 			LLLightParams* light = (LLLightParams*)object->getParameterEntry(LLNetworkData::PARAMS_LIGHT);
 			prim_llsd["light"] = light->asLLSD();
+		}
+		if (object->getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT_IMAGE))
+		{
+			// Light Texture
+			LLLightImageParams* light_texture = (LLLightImageParams*)object->getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+			prim_llsd["light_texture"] = light_texture->asLLSD();
 		}
 		if (object->getParameterEntryInUse(LLNetworkData::PARAMS_SCULPT))
 		{
@@ -714,7 +736,10 @@ LLSD LLObjectBackup::primsToLLSD(LLViewerObject::child_list_t child_list, bool i
 				for (iter = mTexturesList.begin(); iter != mTexturesList.end(); iter++) 
 				{
 					if ((*iter) == t_id)
+					{
 						alreadyseen = true;
+						break;
+					}
 				}
 				if (alreadyseen == false)
 					mTexturesList.push_back(t_id);
@@ -871,7 +896,7 @@ void LLObjectBackup::importObject_continued(AIFilePicker* filepicker)
 				}
 			}
 
-			LLSD te_llsd = prim_llsd["textures"];
+			LLSD& te_llsd = prim_llsd.has("textures") ? prim_llsd["textures"] : prim_llsd["texture"]; // Firestorm's format uses singular "texture"
 
 			for (text_it = te_llsd.beginArray(); text_it != te_llsd.endArray(); text_it++)
 			{
@@ -968,6 +993,16 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 		LLSelectMgr::getInstance()->selectionSetObjectDescription(prim_llsd["description"]);
 	}
 
+	if (prim_llsd.has("material"))
+	{
+		LLSelectMgr::getInstance()->selectionSetMaterial(prim_llsd["material"].asInteger());
+	}
+
+	if (prim_llsd.has("clickaction"))
+	{
+		LLSelectMgr::getInstance()->selectionSetClickAction(prim_llsd["clickaction"].asInteger());
+	}
+
 	if (prim_llsd.has("parent"))
 	{
 		//we are not the root node.
@@ -985,6 +1020,13 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 
 	object->setScale(prim_llsd["scale"]);
 
+	if (prim_llsd.has("flags"))
+	{
+		U32 flags(prim_llsd["flags"].asInteger());
+		object->setFlags(flags, true);
+	}
+	else // Legacy
+	{
 	/*if (prim_llsd.has("shadows"))
 		if (prim_llsd["shadows"].asInteger() == 1)
 			object->setFlags(FLAGS_CAST_SHADOWS, true);*/
@@ -996,6 +1038,18 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 	if (prim_llsd.has("physical"))
 		if (prim_llsd["physical"].asInteger() == 1)
 			object->setFlags(FLAGS_USE_PHYSICS, true);
+	}
+
+	if (prim_llsd.has("ExtraPhysics"))
+	{
+		const LLSD& physics = prim_llsd["ExtraPhysics"];
+		object->setPhysicsShapeType(physics["PhysicsShapeType"].asInteger());
+		object->setPhysicsDensity(physics["Density"].asFloat());
+		object->setPhysicsFriction(physics["Friction"].asFloat());
+		object->setPhysicsGravity(physics["GravityMultiplier"].asFloat());
+		object->setPhysicsRestitution(physics["Restitution"].asFloat());
+		object->updateFlags(true);
+	}
 
 	// Volume params
 	LLVolumeParams volume_params = object->getVolume()->getParams();
@@ -1025,6 +1079,14 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 		object->setParameterEntry(LLNetworkData::PARAMS_LIGHT, light, true);
 	}
 
+	if (prim_llsd.has("light_texture"))
+	{
+		// Light Texture
+		LLLightImageParams light_texture;
+		light_texture.fromLLSD(prim_llsd["light_texture"]);
+		object->setParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE, light_texture, true);
+	}
+
 	if (prim_llsd.has("flexible"))
 	{
 		LLFlexibleObjectData flex;
@@ -1034,7 +1096,7 @@ void LLObjectBackup::xmlToPrim(LLSD prim_llsd, LLViewerObject* object)
 
 	// Textures
 	LL_INFOS("ObjectBackup") << "Processing textures for prim" << LL_ENDL;
-	LLSD te_llsd = prim_llsd["textures"];
+	LLSD& te_llsd = prim_llsd.has("textures") ? prim_llsd["textures"] : prim_llsd["texture"]; // Firestorm's format uses singular "texture"
 	LLSD::array_iterator text_it;
 	U8 i = 0;
 
