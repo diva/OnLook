@@ -246,7 +246,6 @@ set(viewer_SOURCE_FILES
     llfloaterpathfindingcharacters.cpp
     llfloaterpathfindinglinksets.cpp
     llfloaterpathfindingobjects.cpp
-    llfloaterpermissionsmgr.cpp
     llfloaterperms.cpp
     llfloaterpostcard.cpp
     llfloaterpostprocess.cpp
@@ -768,7 +767,6 @@ set(viewer_HEADER_FILES
     llfloaterpathfindingcharacters.h
     llfloaterpathfindinglinksets.h
     llfloaterpathfindingobjects.h
-    llfloaterpermissionsmgr.h
     llfloaterperms.h
     llfloaterpostcard.h
     llfloaterpostprocess.h

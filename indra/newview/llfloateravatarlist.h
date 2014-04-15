@@ -10,6 +10,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
+
+#ifndef LL_LLFLOATERAVATARLIST_H
+#define LL_LLFLOATERAVATARLIST_H
+
 #include "llavatarname.h"
 #include "llavatarpropertiesprocessor.h"
 #include "llfloater.h"
@@ -373,3 +377,5 @@ private:
 	 */
 	LLUUID mFocusedAvatar;
 };
+
+#endif

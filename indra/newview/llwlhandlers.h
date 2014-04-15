@@ -33,7 +33,6 @@
 #ifndef LL_LLWLHANDLERS_H
 #define LL_LLWLHANDLERS_H
 
-#include "llviewerprecompiledheaders.h"
 #include "llhttpclient.h"
 
 class AIHTTPTimeoutPolicy;

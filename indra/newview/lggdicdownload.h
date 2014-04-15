@@ -28,6 +28,8 @@
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 * THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef LGG_DICDOWNLOAD_H
+#define LGG_DICDOWNLOAD_H
 
 class LggDicDownload
 {
@@ -35,3 +37,4 @@ class LggDicDownload
 	static void show( BOOL showw , std::vector<std::string> shortNames, std::vector<std::string> longNames, void * data);
 };
 
+#endif

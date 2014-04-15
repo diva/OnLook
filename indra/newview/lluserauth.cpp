@@ -40,7 +40,6 @@
 #include "lldir.h"
 #include "sgversion.h"
 #include "llappviewer.h"
-#include "llviewerbuild.h"
 #include "llviewercontrol.h"
 #include "llxmlrpcresponder.h"
 #include "llsdutil.h"
