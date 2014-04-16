@@ -839,69 +839,77 @@ void LLFloaterAvatarList::refreshAvatarList()
 		alt.value = temp;
 
 		LLScrollListCell::Params act;
-		act.column = "activity";
-		act.type = "icon";
-		switch(entry->getActivity())
+		static const LLCachedControl<bool> hide_act("RadarColumnActivityHidden");
+		if (!hide_act)
 		{
-		case LLAvatarListEntry::ACTIVITY_MOVING:
-			act.value = "inv_item_animation.tga";
-			act.tool_tip = getString("Moving");
-			break;
-		case LLAvatarListEntry::ACTIVITY_GESTURING:
-			act.value = "inv_item_gesture.tga";
-			act.tool_tip = getString("Playing a gesture");
-			break;
-		case LLAvatarListEntry::ACTIVITY_SOUND:
-			act.value = "inv_item_sound.tga";
-			act.tool_tip = getString("Playing a sound");
-			break;
-		case LLAvatarListEntry::ACTIVITY_REZZING:
-			act.value = "ff_edit_theirs.tga";
-			act.tool_tip = getString("Rezzing objects");
-			break;
-		case LLAvatarListEntry::ACTIVITY_PARTICLES:
-			act.value = "particles_scan.tga";
-			act.tool_tip = getString("Creating particles");
-			break;
-		case LLAvatarListEntry::ACTIVITY_NEW:
-			act.value = "avatar_new.tga";
-			act.tool_tip = getString("Just arrived");
-			break;
-		case LLAvatarListEntry::ACTIVITY_TYPING:
-			act.value = "avatar_typing.tga";
-			act.tool_tip = getString("Typing");
-			break;
-		default:
-			break;
+			act.column = "activity";
+			act.type = "icon";
+			switch(entry->getActivity())
+			{
+			case LLAvatarListEntry::ACTIVITY_MOVING:
+				act.value = "inv_item_animation.tga";
+				act.tool_tip = getString("Moving");
+				break;
+			case LLAvatarListEntry::ACTIVITY_GESTURING:
+				act.value = "inv_item_gesture.tga";
+				act.tool_tip = getString("Playing a gesture");
+				break;
+			case LLAvatarListEntry::ACTIVITY_SOUND:
+				act.value = "inv_item_sound.tga";
+				act.tool_tip = getString("Playing a sound");
+				break;
+			case LLAvatarListEntry::ACTIVITY_REZZING:
+				act.value = "ff_edit_theirs.tga";
+				act.tool_tip = getString("Rezzing objects");
+				break;
+			case LLAvatarListEntry::ACTIVITY_PARTICLES:
+				act.value = "particles_scan.tga";
+				act.tool_tip = getString("Creating particles");
+				break;
+			case LLAvatarListEntry::ACTIVITY_NEW:
+				act.value = "avatar_new.tga";
+				act.tool_tip = getString("Just arrived");
+				break;
+			case LLAvatarListEntry::ACTIVITY_TYPING:
+				act.value = "avatar_typing.tga";
+				act.tool_tip = getString("Typing");
+				break;
+			default:
+				break;
+			}
 		}
 
 		LLScrollListCell::Params voice;
-		voice.column("voice");
-		voice.type("icon");
-		// transplant from llparticipantlist.cpp, update accordingly.
-		if (LLPointer<LLSpeaker> speakerp = speakermgr.findSpeaker(av_id))
+		static const LLCachedControl<bool> hide_voice("RadarColumnVoiceHidden");
+		if (!hide_voice)
 		{
-			if (speakerp->mStatus == LLSpeaker::STATUS_MUTED)
+			voice.column("voice");
+			voice.type("icon");
+			// transplant from llparticipantlist.cpp, update accordingly.
+			if (LLPointer<LLSpeaker> speakerp = speakermgr.findSpeaker(av_id))
 			{
-				voice.value("mute_icon.tga");
-				voice.color(speakerp->mModeratorMutedVoice ? ascent_muted_color : LLColor4(1.f, 71.f / 255.f, 71.f / 255.f, 1.f));
-			}
-			else
-			{
-				switch(llmin(2, llfloor((speakerp->mSpeechVolume / LLVoiceClient::OVERDRIVEN_POWER_LEVEL) * 3.f)))
+				if (speakerp->mStatus == LLSpeaker::STATUS_MUTED)
 				{
-					case 0:
-						voice.value("icn_active-speakers-dot-lvl0.tga");
-						break;
-					case 1:
-						voice.value("icn_active-speakers-dot-lvl1.tga");
-						break;
-					case 2:
-						voice.value("icn_active-speakers-dot-lvl2.tga");
-						break;
+					voice.value("mute_icon.tga");
+					voice.color(speakerp->mModeratorMutedVoice ? ascent_muted_color : LLColor4(1.f, 71.f / 255.f, 71.f / 255.f, 1.f));
 				}
-				// non voice speakers have hidden icons, render as transparent
-				voice.color(speakerp->mStatus > LLSpeaker::STATUS_VOICE_ACTIVE ? LLColor4::transparent : speakerp->mDotColor);
+				else
+				{
+					switch(llmin(2, llfloor((speakerp->mSpeechVolume / LLVoiceClient::OVERDRIVEN_POWER_LEVEL) * 3.f)))
+					{
+						case 0:
+							voice.value("icn_active-speakers-dot-lvl0.tga");
+							break;
+						case 1:
+							voice.value("icn_active-speakers-dot-lvl1.tga");
+							break;
+						case 2:
+							voice.value("icn_active-speakers-dot-lvl2.tga");
+							break;
+					}
+					// non voice speakers have hidden icons, render as transparent
+					voice.color(speakerp->mStatus > LLSpeaker::STATUS_VOICE_ACTIVE ? LLColor4::transparent : speakerp->mDotColor);
+				}
 			}
 		}
 
@@ -963,9 +971,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element.columns.add(dist);
 		element.columns.add(pos);
 		element.columns.add(alt);
-		static const LLCachedControl<bool> hide_act("RadarColumnActivityHidden");
 		if (!hide_act) element.columns.add(act);
-		static const LLCachedControl<bool> hide_voice("RadarColumnVoiceHidden");
 		if (!hide_voice) element.columns.add(voice);
 		element.columns.add(agep);
 		element.columns.add(time);
