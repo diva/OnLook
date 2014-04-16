@@ -75,6 +75,9 @@ class LLDataPacker;
 class LLDataPackerBinaryBuffer;
 class LLHost;
 class LLBBox;
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
+class LLViewerTexture;
+// [/SL:KB]
 
 class LLViewerRegionImpl;
 
@@ -143,7 +146,12 @@ public:
 	inline BOOL getRestrictPushObject()		const;
 	inline BOOL getReleaseNotesRequested()		const;
 
-	bool isAlive(); // can become false if circuit disconnects
+//	bool isAlive(); // can become false if circuit disconnects
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+	bool isAlive() const; // can become false if circuit disconnects
+
+	LLViewerTexture* getWorldMapTile() const;
+// [/SL:KB]
 
 	void setWaterHeight(F32 water_level);
 	F32 getWaterHeight() const;
@@ -454,6 +462,10 @@ private:
 
 	LLDynamicArray<U32>						mCacheMissFull;
 	LLDynamicArray<U32>						mCacheMissCRC;
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
+	mutable LLPointer<LLViewerTexture>		mWorldMapTile;
+// [/SL:KB]
 
 	bool	mAlive;					// can become false if circuit disconnects
 	bool	mCapabilitiesReceived;

@@ -80,14 +80,33 @@ void LLHUDManager::updateEffects()
 
 void LLHUDManager::sendEffects()
 {
+	static LLCachedControl<bool> disable_lookat_effect(gSavedSettings, "PrivateLookAt", false);
+	static LLCachedControl<bool> disable_pointat_effect(gSavedSettings, "DisablePointAtAndBeam", false);
+	static LLCachedControl<bool> broadcast_viewer_effects(gSavedSettings, "BroadcastViewerEffects", true);
 
-	if(!gSavedSettings.getBOOL("BroadcastViewerEffects"))
-		return;
-	
 	S32 i;
 	for (i = 0; i < mHUDEffects.count(); i++)
 	{
 		LLHUDEffect *hep = mHUDEffects[i];
+		if (hep->mType == LLHUDObject::LL_HUD_EFFECT_LOOKAT)
+		{
+			if (disable_lookat_effect)
+			{
+				continue;
+			}
+		}
+		else if (hep->mType == LLHUDObject::LL_HUD_EFFECT_POINTAT ||
+		         hep->mType == LLHUDObject::LL_HUD_EFFECT_BEAM)
+		{
+			if (disable_pointat_effect)
+			{
+				continue;
+			}
+		}
+		else if (!broadcast_viewer_effects)
+		{
+			continue;
+		}
 		if (hep->isDead())
 		{
 			llwarns << "Trying to send dead effect!" << llendl;

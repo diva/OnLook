@@ -4,14 +4,32 @@
 		Riunisci tutte le finestre
 	</string>
 	<layout_stack name="toolbar_stack">
-		<button label="" name="chat_btn" tool_tip="Mostra la barra della chat. (Invio)"/>
-		<flyout_button label="Comunica" name="communicate_btn" tool_tip="Comunica con i tuoi amici e gruppi."/>
-		<button label="Vola" label_selected="Ferma il volo" name="fly_btn" tool_tip="Inizia a volare. Usa E/C o PagSu/PagGiù per volare su o giù."/>
-		<button label="Fotografie" name="snapshot_btn" tool_tip="Salva una fotografia sul tuo Pc o nell&apos;inventario."/>
-		<button label="Cerca" name="directory_btn" tool_tip="Cerca posti, eventi, gente ed altro."/>
-		<button label="Costruisci" name="build_btn" tool_tip="Crea nuovi oggetti."/>
-		<button label="Mappa" name="map_btn" tool_tip="Mappa globale. (Ctrl-M)"/>
-		<button label="Mini-Mappa" name="radar_btn" tool_tip="Mappa dell&apos;area intorno a te. (Ctrl-Shift-M)"/>
-		<button label="Inventario" name="inventory_btn" tool_tip="I tuoi oggetti. (Ctrl-I)"/>
+		<layout_panel name="panel2" >
+			<button label="" name="chat_btn" tool_tip="Mostra la barra della chat. (Invio)"/>
+		</layout_panel>
+		<layout_panel name="panel4" >
+			<flyout_button label="Comunica" name="communicate_btn" tool_tip="Comunica con i tuoi amici e gruppi."/>
+		</layout_panel>
+		<layout_panel name="panel7" >
+			<button label="Vola" label_selected="Ferma il volo" name="fly_btn" tool_tip="Inizia a volare. Usa E/C o PagSu/PagGiù per volare su o giù."/>
+		</layout_panel>
+		<layout_panel name="panel8" >
+			<button label="Fotografie" name="snapshot_btn" tool_tip="Salva una fotografia sul tuo Pc o nell&apos;inventario."/>
+		</layout_panel>
+		<layout_panel name="panel9" >
+			<button label="Cerca" name="directory_btn" tool_tip="Cerca posti, eventi, gente ed altro."/>
+		</layout_panel>
+		<layout_panel name="panel10" >
+			<button label="Costruisci" name="build_btn" tool_tip="Crea nuovi oggetti."/>
+		</layout_panel>
+		<layout_panel name="panel11" >
+			<button label="Mappa" name="map_btn" tool_tip="Mappa globale. (Ctrl-M)"/>
+		</layout_panel>
+		<layout_panel name="panel12" >
+			<button label="Mini-Mappa" name="radar_btn" tool_tip="Mappa dell&apos;area intorno a te. (Ctrl-Shift-M)"/>
+		</layout_panel>
+		<layout_panel name="panel13" >
+			<button label="Inventario" name="inventory_btn" tool_tip="I tuoi oggetti. (Ctrl-I)"/>
+		</layout_panel>
 	</layout_stack>
 </panel>

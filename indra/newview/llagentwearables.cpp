@@ -52,7 +52,7 @@
 #include "llfloatercustomize.h"
 
 
-// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1)
 #include "rlvhandler.h"
 #include "rlvinventory.h"
 #include "llattachmentsmgr.h"
@@ -65,7 +65,7 @@
 LLAgentWearables gAgentWearables;
 
 BOOL LLAgentWearables::mInitialWearablesUpdateReceived = FALSE;
-// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-3.0.0a) | Added: Catznip-2.1.1d
+// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-2.1)
 bool LLAgentWearables::mInitialWearablesLoaded = false;
 // [/SL:KB]
 
@@ -829,7 +829,7 @@ const LLUUID LLAgentWearables::getWearableItemID(LLWearableType::EType type, U32
 		return LLUUID();
 }
 
-// [RLVa:KB] - Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+// [RLVa:KB] - Checked: 2011-03-31 (RLVa-1.3.0)
 void LLAgentWearables::getWearableItemIDs(uuid_vec_t& idItems) const
 {
 	for (wearableentry_map_t::const_iterator itWearableType = mWearableDatas.begin(); 
@@ -844,8 +844,8 @@ void LLAgentWearables::getWearableItemIDs(LLWearableType::EType eType, uuid_vec_
 	wearableentry_map_t::const_iterator itWearableType = mWearableDatas.find(eType);
 	if (mWearableDatas.end() != itWearableType)
 	{
-		for (wearableentry_vec_t::const_iterator itWearable = itWearableType->second.begin(), endWearable = itWearableType->second.end();
-				itWearable != endWearable; ++itWearable)
+		for (wearableentry_vec_t::const_iterator itWearable = itWearableType->second.begin();
+			itWearable != itWearableType->second.end(); ++itWearable)
 		{
 			LLViewerWearable* wearable = dynamic_cast<LLViewerWearable*>(*itWearable);
 			if(wearable)
@@ -1402,7 +1402,7 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 	// Start rendering & update the server
 	mWearablesLoaded = TRUE; 
 	checkWearablesLoaded();
-// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-09-22 (Catznip-3.0.0a) | Modified: Catznip-2.2.0a
+// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-09-22 (Catznip-2.2)
 	if (!mInitialWearablesLoaded)
 	{
 		mInitialWearablesLoaded = true;
@@ -1830,7 +1830,7 @@ void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_arra
 		msg->addUUIDFast(_PREHASH_ItemID, item->getLinkedUUID());
 		msg->addUUIDFast(_PREHASH_OwnerID, item->getPermissions().getOwner());
 		msg->addU8Fast(_PREHASH_AttachmentPt, replace? 0 : ATTACHMENT_ADD);	// Wear at the previous or default attachment point
-// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1)
 		if ( (rlv_handler_t::isEnabled()) && (sInitialAttachmentsRequested) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
 		{
 			RlvAttachmentLockWatchdog::instance().onWearAttachment(item, RLV_WEAR_ADD);
@@ -1847,7 +1847,7 @@ void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_arra
 		}
 	}
 
-// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1)
 	sInitialAttachmentsRequested = true;
 // [/RLVa:KB]
 }
@@ -2076,7 +2076,7 @@ boost::signals2::connection LLAgentWearables::addLoadedCallback(loaded_callback_
 	return mLoadedSignal.connect(cb);
 }
 
-// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-3.0.0a) | Added: Catznip-2.1.1d
+// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-2.1)
 boost::signals2::connection LLAgentWearables::addInitialWearablesLoadedCallback(loaded_callback_t cb)
 {
 	return mInitialWearablesLoadedSignal.connect(cb);

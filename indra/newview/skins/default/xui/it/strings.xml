@@ -17,7 +17,7 @@
 		Un precedente tentativo di login è fallito. Tentativo di connessione [NUMBER]
 	</string>
 	<string name="LoginPrecaching">
-		Sto caricando Second Life...
+		Sto caricando [SECOND_LIFE]...
 	</string>
 	<string name="LoginInitializingBrowser">
 		Inizializzazione del browser web incorporato...
@@ -83,7 +83,7 @@
 		Tocca
 	</string>
 	<string name="TooltipFlagL$">
-		L$
+		[CURRENCY]
 	</string>
 	<string name="TooltipFlagDropInventory">
 		Prendi dall&apos;inventario
@@ -101,7 +101,7 @@
 		Copia consentita
 	</string>
 	<string name="TooltipForSaleL$">
-		In Vendita: [AMOUNT]L$
+		In Vendita: [AMOUNT][CURRENCY]
 	</string>
 	<string name="TooltipForSaleMsg">
 		In Vendita: [MESSAGE]
@@ -483,4 +483,44 @@
 	<string name="choose_the_directory">
 		Scegli la cartella
 	</string>
+
+  <string name="ScriptQuestionCautionChatGranted">
+	A &apos;[OBJECTNAME]&apos;, un oggetto di proprietà di &apos;[OWNERNAME]&apos;, situato in [REGIONNAME] [REGIONPOS], è stato concesso il permesso di: [PERMISSIONS].
+  </string>
+  <string name="ScriptQuestionCautionChatDenied">
+	A &apos;[OBJECTNAME]&apos;, un oggetto di proprietà di &apos;[OWNERNAME]&apos;, situato in [REGIONNAME] [REGIONPOS], è stato negato il permesso di: [PERMISSIONS].
+  </string>
+  <string name="ScriptTakeMoney">
+	Prendere dollari Linden ([CURRENCY]) da te
+  </string>
+  <string name="ActOnControlInputs">
+	Agire sul tuo controllo degli input
+  </string>
+  <string name="RemapControlInputs">
+	Rimappare il tuo controllo degli input
+  </string>
+  <string name="AnimateYourAvatar">
+	Animare il tuo avatar
+  </string>
+  <string name="AttachToYourAvatar">
+	Far indossare al tuo avatar
+  </string>
+  <string name="ReleaseOwnership">
+	Rilasciare la propietà è far diventare pubblico.
+  </string>
+  <string name="LinkAndDelink">
+	Collegare e scollegare dagli altri oggetti
+  </string>
+  <string name="AddAndRemoveJoints">
+	Aggiungere e rimuovere le giunzioni insieme con gli altri oggetti
+  </string>
+  <string name="ChangePermissions">
+	Cambiare i permessi
+  </string>
+  <string name="TrackYourCamera">
+	Tracciare la fotocamera
+  </string>
+  <string name="ControlYourCamera">
+	Controllare la tua fotocamera
+  </string>
 </strings>

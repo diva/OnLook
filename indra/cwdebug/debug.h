@@ -392,6 +392,40 @@ void InstanceTracker<T>::dump(void)
 
 } // namespace debug
 
+template<class T>
+class AIDebugInstanceCounter
+{
+  public:
+	static int sInstanceCount;
+
+  protected:
+	static void print_count(char const* name, int count, bool destruction);
+
+	AIDebugInstanceCounter()
+	{
+	  print_count(typeid(T).name(), ++sInstanceCount, false);
+	}
+	AIDebugInstanceCounter(AIDebugInstanceCounter const&)
+	{
+	  print_count(typeid(T).name(), ++sInstanceCount, false);
+	}
+	~AIDebugInstanceCounter()
+	{
+	  print_count(typeid(T).name(), --sInstanceCount, true);
+	}
+};
+
+//static
+template<class T>
+int AIDebugInstanceCounter<T>::sInstanceCount;
+
+//static
+template<class T>
+void AIDebugInstanceCounter<T>::print_count(char const* name, int count, bool destruction)
+{
+  Dout(dc::notice, (destruction ? "Destructed " : "Constructing ") << name << ", now " << count << " instance" << ((count == 1) ? "." : "s."));
+}
+
 //! Debugging macro.
 //
 // Print "Entering " << \a data to channel \a cntrl and increment

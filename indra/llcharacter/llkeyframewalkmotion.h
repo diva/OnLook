@@ -52,7 +52,7 @@ class LLKeyframeWalkMotion :
 	friend class LLWalkAdjustMotion;
 public:
 	// Constructor
-	LLKeyframeWalkMotion(const LLUUID &id);
+	LLKeyframeWalkMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLKeyframeWalkMotion();
@@ -64,7 +64,7 @@ public:
 	
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLKeyframeWalkMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLKeyframeWalkMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -86,11 +86,11 @@ public:
 	S32			mDownFoot;
 };
 
-class LLWalkAdjustMotion : public LLMotion
+class LLWalkAdjustMotion : public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLWalkAdjustMotion(const LLUUID &id);
+	LLWalkAdjustMotion(LLUUID const& id, LLMotionController* controller);
 
 public:
 	//-------------------------------------------------------------------------
@@ -99,7 +99,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLWalkAdjustMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLWalkAdjustMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -136,11 +136,11 @@ public:
 	F32				mAnkleOffset;
 };
 
-class LLFlyAdjustMotion : public LLMotion
+class LLFlyAdjustMotion : public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLFlyAdjustMotion(const LLUUID &id);
+	LLFlyAdjustMotion(LLUUID const& id, LLMotionController* controller);
 
 public:
 	//-------------------------------------------------------------------------
@@ -149,7 +149,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLFlyAdjustMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLFlyAdjustMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -157,7 +157,6 @@ public:
 	//-------------------------------------------------------------------------
 	virtual LLMotionInitStatus onInitialize(LLCharacter *character);
 	virtual BOOL onActivate();
-	virtual void onDeactivate() {};
 	virtual BOOL onUpdate(F32 time, U8* joint_mask);
 	virtual LLJoint::JointPriority getPriority(){return LLJoint::HIGHER_PRIORITY;}
 	virtual BOOL getLoop() { return TRUE; }

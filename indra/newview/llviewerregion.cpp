@@ -48,6 +48,7 @@
 #include "v3math.h"
 #include "v4math.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llcallingcard.h"
@@ -222,7 +223,7 @@ public:
 	virtual ~BaseCapabilitiesComplete()
 	{ }
 
-    /*virtual*/ void error(U32 statusNum, const std::string& reason)
+    void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "Capabilities") << statusNum << ": " << reason << LL_ENDL;
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
@@ -232,7 +233,7 @@ public:
 		}
     }
 
-    /*virtual*/ void result(const LLSD& content)
+    void result(const LLSD& content)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region was removed
@@ -422,6 +423,14 @@ LLViewerRegion::~LLViewerRegion()
 
 	delete mImpl;
 	mImpl = NULL;
+
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
+	if (mWorldMapTile)
+	{
+		mWorldMapTile->setBoostLevel(LLViewerTexture::BOOST_NONE);
+		mWorldMapTile = NULL;
+	}
+// [/SL:KB]
 }
 
 LLEventPump& LLViewerRegion::getCapAPI() const
@@ -1087,7 +1096,28 @@ F32 LLViewerRegion::getLandHeightRegion(const LLVector3& region_pos)
 	return mImpl->mLandp->resolveHeightRegion( region_pos );
 }
 
-bool LLViewerRegion::isAlive()
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+LLViewerTexture* LLViewerRegion::getWorldMapTile() const
+{
+	if (!mWorldMapTile)
+	{
+		U32 gridX, gridY;
+		grid_from_region_handle(mHandle, &gridX, &gridY);
+		// Singu Note: We must obey the override on certain grids!
+		std::string simOverrideMap = LFSimFeatureHandler::instance().mapServerURL();
+		std::string strImgURL = (simOverrideMap.empty() ? gSavedSettings.getString("MapServerURL") : simOverrideMap) + llformat("map-1-%d-%d-objects.jpg", gridX, gridY);
+
+		mWorldMapTile = LLViewerTextureManager::getFetchedTextureFromUrl(strImgURL, TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE);
+		mWorldMapTile->setBoostLevel(LLViewerTexture::BOOST_MAP);
+	}
+	return mWorldMapTile;
+}
+// [/SL:KB]
+
+//bool LLViewerRegion::isAlive()
+// [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
+bool LLViewerRegion::isAlive() const
+// [/SL:KB]
 {
 	return mAlive;
 }
@@ -1281,7 +1311,7 @@ void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
 	std::stringstream str;
 	
 	LLSDSerialize::toPrettyXML(sim_features, str);
-	llinfos << str.str() << llendl;
+	LL_DEBUGS("SimFeatures") << "\n" << str.str() << LL_ENDL;
 	mSimulatorFeatures = sim_features;
 
 	mFeaturesReceived = true;
@@ -1817,13 +1847,13 @@ public:
     { }
 	
 	
-    /*virtual*/ void error(U32 statusNum, const std::string& reason)
+    void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
 		retry();
     }
 
-    /*virtual*/ void result(const LLSD& content)
+    void result(const LLSD& content)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region is removed or responder is not created.
@@ -2044,6 +2074,7 @@ void LLViewerRegion::getNeighboringRegionsStatus( std::vector<S32>& regions )
 {
 	mImpl->mLandp->getNeighboringRegionsStatus( regions );
 }
+
 void LLViewerRegion::showReleaseNotes()
 {
 	std::string url = this->getCapability("ServerReleaseNotes");

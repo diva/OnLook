@@ -45,6 +45,7 @@
 #include "llvolumeoctree.h"
 #include "llviewercamera.h"
 #include "llface.h"
+#include "llfloaterinspect.h"
 #include "llfloatertools.h"
 #include "llviewercontrol.h"
 #include "llviewerregion.h"
@@ -1528,6 +1529,7 @@ static LLFastTimer::DeclareTimer FTM_OCCLUSION_DRAW("Draw");
 
 void LLSpatialGroup::doOcclusion(LLCamera* camera)
 {
+	LLGLDisable stencil(GL_STENCIL_TEST);
 	if (mSpatialPartition->isOcclusionEnabled() && LLPipeline::sUseOcclusion > 1)
 	{
 		//static const LLCachedControl<BOOL> render_water_void_culling("RenderWaterVoidCulling", TRUE);
@@ -3867,6 +3869,8 @@ public:
 			return;
 		}
 
+		LLGLDisable stencil(GL_STENCIL_TEST);
+
 		group->rebuildGeom();
 		group->rebuildMesh();
 
@@ -4372,7 +4376,7 @@ public:
 				if (vobj->isAvatar())
 				{
 					LLVOAvatar* avatar = (LLVOAvatar*) vobj;
-					if (avatar->isSelf() && gFloaterTools->getVisible())
+					if (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists())
 					{
 						LLViewerObject* hit = avatar->lineSegmentIntersectRiggedAttachments(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mTangent);
 						if (hit)

@@ -42,7 +42,7 @@ class LLViewerJointMesh;
 
 class LLPreviewAnimation : public LLViewerDynamicTexture
 {
-protected:
+public:
 	virtual ~LLPreviewAnimation();
 
 public:

@@ -47,6 +47,7 @@
 
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy crashLoggerResponder_timeout;
+extern const std::string OLD_LOG_FILE;
 
 class LLCrashLoggerResponder : public LLHTTPClient::ResponderWithResult
 {
@@ -284,7 +285,7 @@ void LLCrashLogger::gatherFiles()
 	mCrashInfo["DebugLog"] = mDebugLog;
 	mFileMap["StatsLog"] = gDirUtilp->getExpandedFilename(LL_PATH_DUMP,"stats.log");
 	// Singu Note: we have just started again, log has been renamed
-	mFileMap["SecondLifeLog"] = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "Singularity.old");
+	mFileMap["SecondLifeLog"] = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, OLD_LOG_FILE);
 
 	llinfos << "Encoding files..." << llendl;
 

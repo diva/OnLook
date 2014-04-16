@@ -145,12 +145,12 @@ W&#xE4;hlen Sie ein einzelnes Objekt aus und versuchen Sie es erneut.</notificat
   <notification name="SaveClothingBodyChanges">&#xC4;nderung an Kleidung/K&#xF6;rperteilen speichern?<usetemplate canceltext="Abbrechen" name="yesnocancelbuttons" yestext="Alles speichern"/></notification>
 
   <notification name="GrantModifyRights">Die Gew&#xE4;hrung von &#xC4;nderungsrechten an andere Einwohner erm&#xF6;glicht es diesen, JEDES BELIEBIGE Objekt zu &#xE4;ndern oder an sich zu nehmen, das Sie in der Second Life-Welt besitzen. Seien Sie SEHR vorsichtig beim Erteilen dieser Erlaubnis.
-M&#xF6;chten Sie [FIRST_NAME] [LAST_NAME] &#xC4;nderungsrechte gew&#xE4;hren?<usetemplate name="okcancelbuttons" yestext="Ja"/></notification>
+M&#xF6;chten Sie [NAME] &#xC4;nderungsrechte gew&#xE4;hren?<usetemplate name="okcancelbuttons" yestext="Ja"/></notification>
 
   <notification name="GrantModifyRightsMultiple">Die Gew&#xE4;hrung von &#xC4;nderungsrechten an andere Einwohner erm&#xF6;glicht es diesen, JEDES BELIEBIGE Objekt zu &#xE4;ndern, das Sie in der Second Life-Welt besitzen. Seien Sie SEHR vorsichtig beim Erteilen dieser Erlaubnis.
 M&#xF6;chten Sie den ausgew&#xE4;hlten Einwohnern &#xC4;nderungsrechte gew&#xE4;hren?<usetemplate name="okcancelbuttons" yestext="Ja"/></notification>
 
-  <notification name="RevokeModifyRights">M&#xF6;chten Sie [FIRST_NAME] [LAST_NAME] die &#xC4;nderungsrechte entziehen?<usetemplate name="okcancelbuttons" yestext="Ja"/></notification>
+  <notification name="RevokeModifyRights">M&#xF6;chten Sie [NAME] die &#xC4;nderungsrechte entziehen?<usetemplate name="okcancelbuttons" yestext="Ja"/></notification>
 
   <notification name="RevokeModifyRightsMultiple">M&#xF6;chten Sie den ausgew&#xE4;hlten Einwohnern die &#xC4;nderungsrechte entziehen?<usetemplate name="okcancelbuttons" yestext="Ja"/></notification>
 
@@ -816,7 +816,7 @@ Sie sind nicht berechtigt, Land f&#xFC;r die aktive Gruppe zu kaufen.</notificat
       <button name="Cancel" text="Abbrechen"/>
     </form></notification>
 
-  <notification name="RemoveFromFriends">M&#xF6;chten Sie [FIRST_NAME] [LAST_NAME] aus Ihrer Freundesliste entfernen?<usetemplate name="okcancelbuttons" yestext="OK"/></notification>
+  <notification name="RemoveFromFriends">M&#xF6;chten Sie [NAME] aus Ihrer Freundesliste entfernen?<usetemplate name="okcancelbuttons" yestext="OK"/></notification>
 
   <notification name="RemoveMultipleFromFriends">M&#xF6;chten Sie mehrere Freunde aus Ihrer Freundesliste entfernen?<usetemplate name="okcancelbuttons" yestext="OK"/></notification>
 
@@ -902,7 +902,7 @@ Der Gruppe &#x201E;[GROUP_NAME]&#x201C;
  [AREA] m&#xB2; Land schenken?<usetemplate name="okcancelbuttons" yestext="OK"/></notification>
 
   <notification name="DeedLandToGroupWithContribution">Die Schenkung dieser Parzelle setzt voraus, dass die Gruppe &#xFC;ber ausreichende Landnutzungsrechte verf&#xFC;gt.
-Die Schenkung beinhaltet eine Land&#xFC;bertragung an die Gruppe von &#x201E;[FIRST_NAME] [LAST_NAME]&#x201C;.
+Die Schenkung beinhaltet eine Land&#xFC;bertragung an die Gruppe von &#x201E;[NAME]&#x201C;.
 Dem Eigent&#xFC;mer wird der Kaufpreis f&#xFC;r das Land nicht r&#xFC;ckerstattet. Bei Verkauf der &#xFC;bertragenen Parzelle wird der Erl&#xF6;s zwischen den Gruppenmitgliedern aufgeteilt.
 
 Der Gruppe &#x201E;[GROUP_NAME]&#x201C;
@@ -951,9 +951,9 @@ Sie k&#xF6;nnen sich sp&#xE4;ter noch umentscheiden.<usetemplate name="okcancelb
 
   <notification name="NotEnoughCurrency">[NAME] [PRICE] L$  Sie haben nicht gen&#xFC;gend L$, um diese Aktion auszuf&#xFC;hren.</notification>
 
-  <notification name="GrantedModifyRights">Sie verf&#xFC;gen &#xFC;ber &#xC4;nderungsrechte f&#xFC;r die Objekte von [FIRST_NAME] [LAST_NAME].</notification>
+  <notification name="GrantedModifyRights">Sie verf&#xFC;gen &#xFC;ber &#xC4;nderungsrechte f&#xFC;r die Objekte von [NAME].</notification>
 
-  <notification name="RevokedModifyRights">Ihnen wurden die &#xC4;nderungsrechte f&#xFC;r die Objekte von [FIRST_NAME] [LAST_NAME] entzogen.</notification>
+  <notification name="RevokedModifyRights">Ihnen wurden die &#xC4;nderungsrechte f&#xFC;r die Objekte von [NAME] entzogen.</notification>
 
   <notification name="FlushMapVisibilityCaches">Der Kartencache dieser Region wird geleert.
 Diese Aktion ist nur beim Debugging sinnvoll.

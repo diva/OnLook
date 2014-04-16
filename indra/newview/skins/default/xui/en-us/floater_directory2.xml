@@ -548,7 +548,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 			     label="Search" label_selected="Search" left="121" mouse_opaque="true"
 			     name="Search" width="95" />
       <scroll_list background_visible="true" bottom="-510" column_padding="0" draw_border="true"
-			     draw_heading="true" menu_file="menu_avs_list.xml"
+			     draw_heading="true" menu_num="0"
                                
 			     follows="left|top|right|bottom" height="450" left="4" mouse_opaque="true"
 			     multi_select="false" name="results" search_column="2" width="326">

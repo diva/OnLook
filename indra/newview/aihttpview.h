@@ -49,6 +49,7 @@ class AIHTTPView : public LLContainerView
 	~AIHTTPView();
 
 	/*virtual*/ void draw(void);
+	/*virtual*/ void setVisible(BOOL visible);
 	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
 
@@ -66,7 +67,6 @@ class AIHTTPView : public LLContainerView
 
   public:
 	static U64 getTime_40ms(void) { return sTime_40ms; }
-	static void toggle_visibility(void* user_data);
 };
 
 extern AIHTTPView *gHttpView;

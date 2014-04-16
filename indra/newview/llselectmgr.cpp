@@ -94,6 +94,7 @@
 #include "hippogridmanager.h"
 
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
+#include "rlvactions.h"
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
@@ -661,7 +662,7 @@ bool LLSelectMgr::enableLinkObjects()
 		}
 	}
 // [RLVa:KB] - Checked: 2011-03-19 (RLVa-1.3.0f) | Modified: RLVa-0.2.0g
-	if ( (new_value) && ((rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand())) )
+	if ( (new_value) && ((rlv_handler_t::isEnabled()) && (!RlvActions::canStand())) )
 	{
 		// Allow only if the avie isn't sitting on any of the selected objects
 		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
@@ -683,7 +684,7 @@ bool LLSelectMgr::enableUnlinkObjects()
 		!first_editable_object->isAttachment() && !first_editable_object->isPermanentEnforced() &&
 		((root_object == NULL) || !root_object->isPermanentEnforced());
 // [RLVa:KB] - Checked: 2011-03-19 (RLVa-1.3.0f) | Modified: RLVa-0.2.0g
-	if ( (new_value) && ((rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand())) )
+	if ( (new_value) && ((rlv_handler_t::isEnabled()) && (!RlvActions::canStand())) )
 	{
 		// Allow only if the avie isn't sitting on any of the selected objects
 		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
@@ -6505,7 +6506,7 @@ void LLSelectMgr::updateSelectionCenter()
 		mSelectionCenterGlobal.clearVec();
 		mShowSelection = FALSE;
 		mSelectionBBox = LLBBox(); 
-		mPauseRequest = NULL;
+		mPauseRequests.clear();
 		resetAgentHUDZoom();
 
 	}
@@ -6515,27 +6516,18 @@ void LLSelectMgr::updateSelectionCenter()
 
 		if (mSelectedObjects->mSelectType == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 		{
-			// Singu Note: Chalice Yao's pause agent on attachment selection
-			if (object->permYouOwner())
+			// Freeze avatars with a selected attachment, and all avatars with synchronized motions, if any.
+			LLVOAvatar* avatar = object->getAvatar();
+			// It is possible that 'avatar' is NULL despite this being an attachment because of some race condition.
+			// In that case just don't freeze the avatar.
+			if (avatar)
 			{
-				mPauseRequest = gAgentAvatarp->requestPause();
-			}
-			else if (LLViewerObject* objectp = mSelectedObjects->getPrimaryObject())
-			{
-				while (objectp && !objectp->isAvatar())
-				{
-					objectp = (LLViewerObject*)objectp->getParent();
-				}
-
-				if (objectp)
-				{
-					mPauseRequest = objectp->asAvatar()->requestPause();
-				}
+				avatar->pauseAllSyncedCharacters(mPauseRequests);
 			}
 		}
 		else
 		{
-			mPauseRequest = NULL;
+			mPauseRequests.clear();
 		}
 
 		if (mSelectedObjects->mSelectType != SELECT_TYPE_HUD && isAgentAvatarValid())
@@ -6732,6 +6724,24 @@ void LLSelectMgr::doDelete()
 {
 	selectDelete();
 }
+
+// <Singu> Note: Allow Ctrl-A for select all linked prims
+//-----------------------------------------------------------------------------
+// canSelectAll()
+//-----------------------------------------------------------------------------
+BOOL LLSelectMgr::canSelectAll() const
+{
+	return !mSelectedObjects->isEmpty();
+}
+
+//-----------------------------------------------------------------------------
+// selectAll()
+//-----------------------------------------------------------------------------
+void LLSelectMgr::selectAll()
+{
+	promoteSelectionToRoot();
+}
+// </Singu>
 
 //-----------------------------------------------------------------------------
 // canDeselect()

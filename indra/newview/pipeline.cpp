@@ -660,7 +660,17 @@ void LLPipeline::resizeScreenTexture()
 		GLuint resX = gViewerWindow->getWorldViewWidthRaw();
 		GLuint resY = gViewerWindow->getWorldViewHeightRaw();
 	
-		if ((resX != mScreen.getWidth()) || (resY != mScreen.getHeight()))
+// [RLVa:KB] - Checked: 2014-02-23 (RLVa-1.4.10)
+		U32 resMod = gSavedSettings.getU32("RenderResolutionDivisor"), resAdjustedX = resX, resAdjustedY = resY;
+		if ( (resMod > 1) && (resMod < resX) && (resMod < resY) )
+		{
+			resAdjustedX /= resMod;
+			resAdjustedY /= resMod;
+		}
+
+		if ( (resAdjustedX != mScreen.getWidth()) || (resAdjustedY != mScreen.getHeight()) )
+// [/RLVa:KB]
+//		if ((resX != mScreen.getWidth()) || (resY != mScreen.getHeight()))
 		{
 			releaseScreenBuffers();
 		if (!allocateScreenBuffer(resX,resY))
@@ -1526,24 +1536,28 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 	{
 		alpha = alpha || (imagep->getComponents() == 4 && imagep->getType() != LLViewerTexture::MEDIA_TEXTURE) || (imagep->getComponents() == 2);
 	}
-	
+
 	if (alpha && mat)
 	{
 		switch (mat->getDiffuseAlphaMode())
 		{
-			case 1:
+			case LLMaterial::DIFFUSE_ALPHA_MODE_BLEND:
 				alpha = true; // Material's alpha mode is set to blend.  Toss it into the alpha draw pool.
 				break;
-			case 0: //alpha mode set to none, never go to alpha pool
-			case 3: //alpha mode set to emissive, never go to alpha pool
+			case LLMaterial::DIFFUSE_ALPHA_MODE_NONE: //alpha mode set to none, never go to alpha pool
+			case LLMaterial::DIFFUSE_ALPHA_MODE_EMISSIVE: //alpha mode set to emissive, never go to alpha pool
 				alpha = color_alpha;
 				break;
 			default: //alpha mode set to "mask", go to alpha pool if fullbright
-				alpha = color_alpha; // Material's alpha mode is set to none, mask, or emissive.  Toss it into the opaque material draw pool.
+				alpha = color_alpha; // Material's alpha mode is set to mask, or default.  Toss it into the opaque material draw pool.
 				break;
 		}
 	}
 	
+	static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
+
+	if(!alt_batching)
+	{
 	if (alpha)
 	{
 		return LLDrawPool::POOL_ALPHA;
@@ -1559,6 +1573,54 @@ U32 LLPipeline::getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* ima
 	else
 	{
 		return LLDrawPool::POOL_SIMPLE;
+	}
+	}
+	else
+	{
+	static const LLCachedControl<bool> sh_fullbright_deferred("SHFullbrightDeferred",true);
+
+	//Bump goes into bump pool unless using deferred and there's a normal map that takes precedence.
+	bool legacy_bump = (!LLPipeline::sRenderDeferred || !mat || mat->getNormalID().isNull()) && LLPipeline::sRenderBump && te->getBumpmap() && te->getBumpmap() < 18;
+	if (alpha)
+	{
+		return LLDrawPool::POOL_ALPHA;
+	}
+	else if (mat && mat->getDiffuseAlphaMode() == LLMaterial::DIFFUSE_ALPHA_MODE_MASK)
+	{
+		if(!LLPipeline::sRenderDeferred || legacy_bump)
+		{
+			return te->getFullbright() ? LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK : LLDrawPool::POOL_ALPHA_MASK;
+		}
+		else if(te->getFullbright() && !mat->getEnvironmentIntensity() && !te->getShiny())
+		{
+			return LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
+		}
+		return LLDrawPool::POOL_MATERIALS;
+	}
+	else if (legacy_bump)
+	{
+		return LLDrawPool::POOL_BUMP;	
+	}
+	else if(LLPipeline::sRenderDeferred && mat)
+	{
+		if(te->getFullbright() && !mat->getEnvironmentIntensity() && !te->getShiny())
+		{
+			return sh_fullbright_deferred ? LLDrawPool::POOL_FULLBRIGHT : LLDrawPool::POOL_SIMPLE;
+		}
+		return LLDrawPool::POOL_MATERIALS;
+	}
+	else if((sh_fullbright_deferred || !LLPipeline::sRenderDeferred) && te->getFullbright())
+	{
+		return (LLPipeline::sRenderBump && te->getShiny()) ? LLDrawPool::POOL_BUMP : LLDrawPool::POOL_FULLBRIGHT;
+	}
+	else if (!LLPipeline::sRenderDeferred && LLPipeline::sRenderBump && te->getShiny())
+	{
+		return LLDrawPool::POOL_BUMP;	//Shiny goes into bump pool when not using deferred rendering.
+	}
+	else
+	{
+		return LLDrawPool::POOL_SIMPLE;
+	}
 	}
 }
 
@@ -2282,6 +2344,7 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 
 	LLGLDisable blend(GL_BLEND);
 	LLGLDisable test(GL_ALPHA_TEST);
+	LLGLDisable stencil(GL_STENCIL_TEST);
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 
@@ -2497,15 +2560,13 @@ void LLPipeline::downsampleDepthBuffer(LLRenderTarget& source, LLRenderTarget& d
 	{
 		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
 		mDeferredVB->allocateBuffer(8, 0, true);
-	}
-
-	LLStrider<LLVector3> vert; 
-	mDeferredVB->getVertexStrider(vert);
-	LLStrider<LLVector2> tc0;
+		LLStrider<LLVector3> vert; 
+		mDeferredVB->getVertexStrider(vert);
 		
-	vert[0].set(-1,1,0);
-	vert[1].set(-1,-3,0);
-	vert[2].set(3,1,0);
+		vert[0].set(-1,1,0);
+		vert[1].set(-1,-3,0);
+		vert[2].set(3,1,0);
+	}
 	
 	if (source.getUsage() == LLTexUnit::TT_RECT_TEXTURE)
 	{
@@ -4705,6 +4766,8 @@ void LLPipeline::renderDebug()
 
 	if(!mRenderDebugMask)
 		return;
+
+	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_LEQUAL);
 
 	// Debug stuff.
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
@@ -7908,15 +7971,14 @@ void LLPipeline::renderDeferredLighting()
 		{
 			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
 			mDeferredVB->allocateBuffer(8, 0, true);
+			LLStrider<LLVector3> vert; 
+			mDeferredVB->getVertexStrider(vert);
+		
+			vert[0].set(-1,1,0);
+			vert[1].set(-1,-3,0);
+			vert[2].set(3,1,0);
 		}
 
-		LLStrider<LLVector3> vert; 
-		mDeferredVB->getVertexStrider(vert);
-
-		vert[0].set(-1,1,0);
-		vert[1].set(-1,-3,0);
-		vert[2].set(3,1,0);
-		
 		{
 			setupHWLights(NULL); //to set mSunDir;
 			LLVector4 dir(mSunDir, 0.f);
@@ -8338,12 +8400,6 @@ void LLPipeline::renderDeferredLighting()
 				unbindDeferredShader(gDeferredSpotLightProgram);
 			}
 
-			//reset mDeferredVB to fullscreen triangle
-			mDeferredVB->getVertexStrider(vert);
-			vert[0].set(-1,1,0);
-			vert[1].set(-1,-3,0);
-			vert[2].set(3,1,0);
-
 			{
 				LLGLDepthTest depth(GL_FALSE);
 
@@ -8456,14 +8512,10 @@ void LLPipeline::renderDeferredLighting()
 	{
 		LLGLDepthTest depth(GL_FALSE, GL_FALSE);
 
-		LLVector2 tc1(0,0);
-		LLVector2 tc2((F32) mScreen.getWidth()*2,
-				  (F32) mScreen.getHeight()*2);
-
 		mScreen.bindTarget();
 		// Apply gamma correction to the frame here.
 		gDeferredPostGammaCorrectProgram.bind();
-		//mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
+		mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 		S32 channel = 0;
 		channel = gDeferredPostGammaCorrectProgram.enableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mScreen.getUsage());
 		if (channel > -1)
@@ -8474,21 +8526,7 @@ void LLPipeline::renderDeferredLighting()
 		
 		gDeferredPostGammaCorrectProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mScreen.getWidth(), mScreen.getHeight());
 		
-		//F32 gamma = gSavedSettings.getF32("RenderDeferredDisplayGamma");
-
-		//gDeferredPostGammaCorrectProgram.uniform1f(LLShaderMgr::DISPLAY_GAMMA, (gamma > 0.1f) ? 1.0f / gamma : (1.0f/2.2f));
-		
-		gGL.begin(LLRender::TRIANGLE_STRIP);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-		
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
+		mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
 		
 		gGL.getTexUnit(channel)->unbind(mScreen.getUsage());
 		gDeferredPostGammaCorrectProgram.unbind();
@@ -8509,10 +8547,10 @@ void LLPipeline::renderDeferredLighting()
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 //LLPipeline::RENDER_TYPE_VOLUME,
+						 LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
+						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -8524,7 +8562,7 @@ void LLPipeline::renderDeferredLighting()
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 LLPipeline::RENDER_TYPE_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT_ALPHA_MASK,
@@ -9132,10 +9170,10 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 		pushRenderTypeMask();
 		andRenderTypeMask(LLPipeline::RENDER_TYPE_ALPHA,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT,
-						 //LLPipeline::RENDER_TYPE_VOLUME,
+						 LLPipeline::RENDER_TYPE_VOLUME,
 						 LLPipeline::RENDER_TYPE_GLOW,
 						 LLPipeline::RENDER_TYPE_BUMP,
-						 /*LLPipeline::RENDER_TYPE_PASS_SIMPLE,	//These aren't used.
+						 LLPipeline::RENDER_TYPE_PASS_SIMPLE,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
@@ -9147,7 +9185,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 						 LLPipeline::RENDER_TYPE_PASS_GRASS,
 						 LLPipeline::RENDER_TYPE_PASS_SHINY,
 						 LLPipeline::RENDER_TYPE_PASS_INVISIBLE,
-						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,*/
+						 LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY,
 						 LLPipeline::RENDER_TYPE_AVATAR,
 						 LLPipeline::RENDER_TYPE_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_FULLBRIGHT_ALPHA_MASK,
@@ -9352,7 +9390,8 @@ inline float sgn(float a)
 
 void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 {
-	if (LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
+	static const LLCachedControl<bool> render_transparent_water("RenderTransparentWater",false);
+	if ((render_transparent_water || LLPipeline::sRenderDeferred) && LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
 	{
 		BOOL skip_avatar_update = FALSE;
 		if (!isAgentAvatarValid() || gAgentCamera.getCameraAnimating() || gAgentCamera.getCameraMode() != CAMERA_MODE_MOUSELOOK || !LLVOAvatar::sVisibleInFirstPerson)

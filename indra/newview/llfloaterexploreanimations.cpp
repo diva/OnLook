@@ -4,6 +4,7 @@
 #include "llfloaterexploreanimations.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
+#include "llagentdata.h"
 #include "llfloaterbvhpreview.h"
 #include "llvoavatar.h"
 #include "llviewercamera.h"
@@ -14,42 +15,51 @@
 #include "llselectmgr.h"
 // </stuff for jelly roll>
 
-std::map< LLUUID, std::list< LLAnimHistoryItem* > > LLFloaterExploreAnimations::animHistory;
-LLFloaterExploreAnimations* LLFloaterExploreAnimations::sInstance;
+std::map< LLUUID, std::list< LLAnimHistoryItem > > LLFloaterExploreAnimations::animHistory;
 
-
-LLAnimHistoryItem::LLAnimHistoryItem(LLUUID assetid)
+LLAnimHistoryItem::LLAnimHistoryItem(LLUUID assetid, bool playing)
+:	mAssetID(assetid)
+,	mPlaying(playing)
+,	mTimeStarted(LLTimer::getElapsedSeconds())
+,	mTimeStopped(playing ? 0.f : mTimeStarted)
+{}
+bool LLAnimHistoryItem::setPlaying(bool playing)
 {
-	mAssetID = assetid;
+	if (mPlaying == playing) return false;
+	mPlaying = playing;
+	playing ? mTimeStarted : mTimeStopped = LLTimer::getElapsedSeconds();
+	return true;
 }
 
-LLFloaterExploreAnimations::LLFloaterExploreAnimations(LLUUID avatarid)
-:	LLFloater()
+void LLFloaterExploreAnimations::show()
+{
+	LLViewerObject* avatar = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+	const LLUUID& id(avatar ? avatar->getID() : gAgentID);
+	if (LLFloaterExploreAnimations* f = getInstance(id))
+		if (avatar)	f->open();
+		else		f->close();
+	else
+		(new LLFloaterExploreAnimations(id))->open();
+}
+
+LLFloaterExploreAnimations::LLFloaterExploreAnimations(const LLUUID avatarid)
+:	LLInstanceTracker<LLFloaterExploreAnimations, LLUUID>(avatarid)
+,	mAnimPreview(256, 256)
 {
 	mLastMouseX = 0;
 	mLastMouseY = 0;
 
-	LLFloaterExploreAnimations::sInstance = this;
-	mAvatarID = avatarid;
-	mAnimPreview = new LLPreviewAnimation(256, 256);
-	mAnimPreview->setZoom(2.0f);
+	mAnimPreview.setZoom(2.0f);
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_explore_animations.xml");
-}
-
-void LLFloaterExploreAnimations::close(bool app_quitting)
-{
-	LLFloater::close(app_quitting);
 }
 
 LLFloaterExploreAnimations::~LLFloaterExploreAnimations()
 {
-	mAnimPreview = NULL;
-	LLFloaterExploreAnimations::sInstance = NULL;
 }
 
-BOOL LLFloaterExploreAnimations::postBuild(void)
+BOOL LLFloaterExploreAnimations::postBuild()
 {
-	childSetCommitCallback("anim_list", onSelectAnimation, this);
+	getChild<LLUICtrl>("anim_list")->setCommitCallback(boost::bind(&LLFloaterExploreAnimations::onSelectAnimation, this));
 	LLRect r = getRect();
 	mPreviewRect.set(r.getWidth() - 266, r.getHeight() - 25, r.getWidth() - 10, r.getHeight() - 256);
 	update();
@@ -59,29 +69,28 @@ BOOL LLFloaterExploreAnimations::postBuild(void)
 void LLFloaterExploreAnimations::update()
 {
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("anim_list");
-	LLUUID selection = list->getSelectedValue().asUUID();
+	LLUUID selection = list->getCurrentID();
 	list->clearRows(); // do this differently probably
 
-	std::list<LLAnimHistoryItem*> history = animHistory[mAvatarID];
-	std::list<LLAnimHistoryItem*>::iterator iter = history.begin();
-	std::list<LLAnimHistoryItem*>::iterator end = history.end();
-	for( ; iter != end; ++iter)
+	std::list<LLAnimHistoryItem> history = animHistory[getKey()];
+	std::list<LLAnimHistoryItem>::iterator end = history.end();
+	for(std::list<LLAnimHistoryItem>::iterator iter = history.begin(); iter != end; ++iter)
 	{
-		LLAnimHistoryItem* item = (*iter);
+		LLAnimHistoryItem item = (*iter);
 
 		LLSD element;
-		element["id"] = item->mAssetID;
+		element["id"] = item.mAssetID;
 
 		LLSD& name_column = element["columns"][0];
 		name_column["column"] = "name";
-		name_column["value"] = item->mAssetID.asString();
+		name_column["value"] = item.mAssetID.asString();
 
 		LLSD& info_column = element["columns"][1];
 		info_column["column"] = "info";
-		if(item->mPlaying)
+		if(item.mPlaying)
 			info_column["value"] = "Playing";
 		else
-			info_column["value"] = llformat("%.1f min ago", (LLTimer::getElapsedSeconds() - item->mTimeStopped) / 60.f);
+			info_column["value"] = llformat("%.1f min ago", (LLTimer::getElapsedSeconds() - item.mTimeStopped) / 60.f);
 
 		list->addElement(element, ADD_BOTTOM);
 	}
@@ -98,7 +107,7 @@ void LLFloaterExploreAnimations::draw()
 
 	gGL.color3f(1.f, 1.f, 1.f);
 
-	gGL.getTexUnit(0)->bind(mAnimPreview);
+	gGL.getTexUnit(0)->bind(&mAnimPreview);
 
 	gGL.begin( LLRender::QUADS );
 	{
@@ -115,157 +124,82 @@ void LLFloaterExploreAnimations::draw()
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-	//LLVOAvatar* avatarp = mAnimPreview->getDummyAvatar();
+	//LLVOAvatar* avatarp = mAnimPreview.getDummyAvatar();
 	//if (!avatarp->areAnimationsPaused())
 	//{
-	//	mAnimPreview->requestUpdate();
+	//	mAnimPreview.requestUpdate();
 	//}
 }
 
-
-
-
-
 // static
-void LLFloaterExploreAnimations::startAnim(LLUUID avatarid, LLUUID assetid)
+void LLFloaterExploreAnimations::processAnim(LLUUID avatarid, LLUUID assetid, bool playing)
 {
 	std::string asset_str = assetid.asString();
 	if(asset_str.find("17132261-c061") != std::string::npos) return; // dog1
 	else if(asset_str.find("fea558cb-8b9b") != std::string::npos) return; // dog2
 	else if(asset_str.find("50cb5750-0743") != std::string::npos) return; // dog3
-	else if(asset_str.find("-dead-") != std::string::npos) return; // emo
 
-	LLAnimHistoryItem* item = NULL;
-
-	std::list<LLAnimHistoryItem*> history = animHistory[avatarid];
-	std::list<LLAnimHistoryItem*>::iterator iter = history.begin();
-	std::list<LLAnimHistoryItem*>::iterator end = history.end();
-	for( ; iter != end; ++iter)
+	std::list<LLAnimHistoryItem>& history = animHistory[avatarid];
+	std::list<LLAnimHistoryItem>::iterator end = history.end();
+	for(std::list<LLAnimHistoryItem>::iterator iter = history.begin(); iter != end; ++iter)
 	{
-		if((*iter)->mAssetID == assetid)
-		{
-			item = (*iter);
-			break;
-		}
+		LLAnimHistoryItem& item = (*iter);
+		if (item.mAssetID != assetid) continue;
+		if (item.setPlaying(playing))
+			handleHistoryChange(avatarid);
+		return;
 	}
-	if(!item)
-	{
-		item = new LLAnimHistoryItem(assetid);
-		item->mAvatarID = avatarid;
-		item->mTimeStarted = LLTimer::getElapsedSeconds();
-	}
-	item->mPlaying = true;
-	history.push_back(item);
-	animHistory[avatarid] = history; // is this really necessary?
-	handleHistoryChange();
-}
+	// Trim it
+	if (history.size() > 31)
+		history.resize(31);
 
-// static
-void LLFloaterExploreAnimations::stopAnim(LLUUID avatarid, LLUUID assetid)
-{
-	std::string asset_str = assetid.asString();
-	if(asset_str.find("17132261-c061") != std::string::npos) return; // dog1
-	else if(asset_str.find("fea558cb-8b9b") != std::string::npos) return; // dog2
-	else if(asset_str.find("50cb5750-0743") != std::string::npos) return; // dog3
-	else if(asset_str.find("-dead-") != std::string::npos) return; // emo
-
-	LLAnimHistoryItem* item = NULL;
-
-	std::list<LLAnimHistoryItem*> history = animHistory[avatarid];
-	std::list<LLAnimHistoryItem*>::iterator iter = history.begin();
-	std::list<LLAnimHistoryItem*>::iterator end = history.end();
-	for( ; iter != end; ++iter)
-	{
-		if((*iter)->mAssetID == assetid)
-		{
-			item = (*iter);
-			break;
-		}
-	}
-	if(!item)
-	{
-		item = new LLAnimHistoryItem(assetid);
-		item->mAvatarID = avatarid;
-		item->mTimeStarted = LLTimer::getElapsedSeconds();
-		history.push_back(item);
-	}
-	item->mPlaying = false;
-	item->mTimeStopped = LLTimer::getElapsedSeconds();
-	handleHistoryChange();
+	history.push_back(LLAnimHistoryItem(assetid, playing));
+	handleHistoryChange(avatarid);
 }
 
 class LLAnimHistoryItemCompare
 {
 public:
-	bool operator() (LLAnimHistoryItem* first, LLAnimHistoryItem* second)
+	bool operator() (LLAnimHistoryItem first, LLAnimHistoryItem second)
 	{
-		if(first->mPlaying)
+		if (first.mPlaying)
 		{
-			if(second->mPlaying)
+			if (second.mPlaying)
 			{
-				return (first->mTimeStarted > second->mTimeStarted);
+				return (first.mTimeStarted > second.mTimeStarted);
 			}
 			else
 			{
 				return true;
 			}
 		}
-		else if(second->mPlaying)
+		else if (second.mPlaying)
 		{
 			return false;
 		}
 		else
 		{
-			return (first->mTimeStopped > second->mTimeStopped);
+			return (first.mTimeStopped > second.mTimeStopped);
 		}
 	}
 };
 
 // static
-void LLFloaterExploreAnimations::handleHistoryChange()
+void LLFloaterExploreAnimations::handleHistoryChange(LLUUID avatarid)
 {
-	std::map< LLUUID, std::list< LLAnimHistoryItem* > >::iterator av_iter = animHistory.begin();
-	std::map< LLUUID, std::list< LLAnimHistoryItem* > >::iterator av_end = animHistory.end();
-	for( ; av_iter != av_end; ++av_iter)
-	{
-		std::list<LLAnimHistoryItem*> history = (*av_iter).second;
-
-		// Sort it
-		LLAnimHistoryItemCompare c;
-		history.sort(c);
-
-		// Remove dupes
-		history.unique();
-
-		// Trim it
-		if(history.size() > 32)
-		{
-			history.resize(32);
-		}
-
-		animHistory[(*av_iter).first] = history;
-	}
+	// Sort it
+	animHistory[avatarid].sort(LLAnimHistoryItemCompare());
 
 	// Update floater
-	if(LLFloaterExploreAnimations::sInstance)
-		LLFloaterExploreAnimations::sInstance->update();
+	if (LLFloaterExploreAnimations* f = getInstance(avatarid))
+		f->update();
 }
 
-
-
-
-
-// static
-void LLFloaterExploreAnimations::onSelectAnimation(LLUICtrl* ctrl, void* user_data)
+void LLFloaterExploreAnimations::onSelectAnimation()
 {
-	LLFloaterExploreAnimations* floater = (LLFloaterExploreAnimations*)user_data;
-	LLPreviewAnimation* preview = (LLPreviewAnimation*)floater->mAnimPreview;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("anim_list");
-	LLUUID selection = list->getSelectedValue().asUUID();
-	
-	preview->getDummyAvatar()->deactivateAllMotions();
-	preview->getDummyAvatar()->startMotion(selection, 0.f);
-	preview->setZoom(2.0f);
+	mAnimPreview.getDummyAvatar()->deactivateAllMotions();
+	mAnimPreview.getDummyAvatar()->startMotion(getChild<LLScrollListCtrl>("anim_list")->getCurrentID(), 0.f);
+	mAnimPreview.setZoom(2.0f);
 }
 
 //-----------------------------------------------------------------------------
@@ -305,35 +239,35 @@ BOOL LLFloaterExploreAnimations::handleHover(S32 x, S32 y, MASK mask)
 {
 	MASK local_mask = mask & ~MASK_ALT;
 
-	if (mAnimPreview && hasMouseCapture())
+	if (hasMouseCapture())
 	{
 		if (local_mask == MASK_PAN)
 		{
 			// pan here
-			mAnimPreview->pan((F32)(x - mLastMouseX) * -0.005f, (F32)(y - mLastMouseY) * -0.005f);
+			mAnimPreview.pan((F32)(x - mLastMouseX) * -0.005f, (F32)(y - mLastMouseY) * -0.005f);
 		}
 		else if (local_mask == MASK_ORBIT)
 		{
 			F32 yaw_radians = (F32)(x - mLastMouseX) * -0.01f;
 			F32 pitch_radians = (F32)(y - mLastMouseY) * 0.02f;
 			
-			mAnimPreview->rotate(yaw_radians, pitch_radians);
+			mAnimPreview.rotate(yaw_radians, pitch_radians);
 		}
 		else 
 		{
 			F32 yaw_radians = (F32)(x - mLastMouseX) * -0.01f;
 			F32 zoom_amt = (F32)(y - mLastMouseY) * 0.02f;
 			
-			mAnimPreview->rotate(yaw_radians, 0.f);
-			mAnimPreview->zoom(zoom_amt);
+			mAnimPreview.rotate(yaw_radians, 0.f);
+			mAnimPreview.zoom(zoom_amt);
 		}
 
-		mAnimPreview->requestUpdate();
+		mAnimPreview.requestUpdate();
 
 		LLUI::setMousePositionLocal(this, mLastMouseX, mLastMouseY);
 	}
 
-	if (!mPreviewRect.pointInRect(x, y) || !mAnimPreview)
+	if (!mPreviewRect.pointInRect(x, y))
 	{
 		return LLFloater::handleHover(x, y, mask);
 	}
@@ -358,8 +292,8 @@ BOOL LLFloaterExploreAnimations::handleHover(S32 x, S32 y, MASK mask)
 //-----------------------------------------------------------------------------
 BOOL LLFloaterExploreAnimations::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
-	mAnimPreview->zoom((F32)clicks * -0.2f);
-	mAnimPreview->requestUpdate();
+	mAnimPreview.zoom((F32)clicks * -0.2f);
+	mAnimPreview.requestUpdate();
 	return TRUE;
 }
 

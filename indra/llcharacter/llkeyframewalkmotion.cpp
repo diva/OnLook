@@ -55,8 +55,8 @@ const F32 SPEED_ADJUST_TIME_CONSTANT = 0.1f; 	// time constant for speed adjustm
 // LLKeyframeWalkMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLKeyframeWalkMotion::LLKeyframeWalkMotion(const LLUUID &id)
-:	LLKeyframeMotion(id),
+LLKeyframeWalkMotion::LLKeyframeWalkMotion(LLUUID const& id, LLMotionController* controller)
+:	LLKeyframeMotion(id, controller),
     mCharacter(NULL),
     mCyclePhase(0.0f),
     mRealTimeLast(0.0f),
@@ -138,8 +138,8 @@ BOOL LLKeyframeWalkMotion::onUpdate(F32 time, U8* joint_mask)
 // LLWalkAdjustMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLWalkAdjustMotion::LLWalkAdjustMotion(const LLUUID &id) :
-	LLMotion(id),
+LLWalkAdjustMotion::LLWalkAdjustMotion(LLUUID const& id, LLMotionController* controller) :
+	AIMaskedMotion(id, controller, ANIM_AGENT_WALK_ADJUST),
 	mLastTime(0.f),
 	mAnimSpeed(0.f),
 	mAdjustedSpeed(0.f),
@@ -193,7 +193,7 @@ BOOL LLWalkAdjustMotion::onActivate()
 	F32 rightAnkleOffset = (mRightAnkleJoint->getWorldPosition() - mCharacter->getCharacterPosition()).magVec();
 	mAnkleOffset = llmax(leftAnkleOffset, rightAnkleOffset);
 
-	return TRUE;
+	return AIMaskedMotion::onActivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -325,13 +325,14 @@ BOOL LLWalkAdjustMotion::onUpdate(F32 time, U8* joint_mask)
 void LLWalkAdjustMotion::onDeactivate()
 {
 	mCharacter->removeAnimationData("Walk Speed");
+	AIMaskedMotion::onDeactivate();
 }
 
 //-----------------------------------------------------------------------------
 // LLFlyAdjustMotion::LLFlyAdjustMotion()
 //-----------------------------------------------------------------------------
-LLFlyAdjustMotion::LLFlyAdjustMotion(const LLUUID &id)
-	: LLMotion(id),
+LLFlyAdjustMotion::LLFlyAdjustMotion(LLUUID const& id, LLMotionController* controller)
+	: AIMaskedMotion(id, controller, ANIM_AGENT_FLY_ADJUST),
 	  mRoll(0.f)
 {
 	mName = "fly_adjust";
@@ -368,7 +369,7 @@ BOOL LLFlyAdjustMotion::onActivate()
 	mPelvisState->setPosition(LLVector3::zero);
 	mPelvisState->setRotation(LLQuaternion::DEFAULT);
 	mRoll = 0.f;
-	return TRUE;
+	return AIMaskedMotion::onActivate();
 }
 
 //-----------------------------------------------------------------------------

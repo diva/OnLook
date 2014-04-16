@@ -28,7 +28,7 @@ Passa il mouse sulle opzioni per un aiuto aggiuntivo.
 	<text_editor name="charter">
 		Statuto del gruppo
 	</text_editor>
-	<button label="Unisciti (0 L$)" label_selected="Unisciti (0 L$)" name="join_button"/>
+	<button label="Unisciti (0 [CURRENCY])" label_selected="Unisciti (0 [CURRENCY])" name="join_button"/>
 	<button label="Visualizza dettagli" label_selected="Visualizza dettagli" name="info_button"/>
 	<text name="text_owners_and_visible_members">
 		Proprietari &amp; Membri visibili
@@ -47,7 +47,7 @@ Passa il mouse sulle opzioni per un aiuto aggiuntivo.
 	<panel name="preferences_container">
 		<check_box label="Mostra nella ricerca" name="show_in_group_list" tool_tip="Lascia che i residenti vedano questo gruppo nella ricerca."/>
 		<check_box label="Iscrizione libera" name="open_enrollement" tool_tip="Imposta se questo gruppo permette ai nuovi membri di unirsi senza essere invitati."/>
-		<check_box label="Tassa di iscrizione: L$" name="check_enrollment_fee" tool_tip="Imposta se richiedere una tassa di iscrizione per unirsi al gruppo."/>
+		<check_box label="Tassa di iscrizione: [CURRENCY]" name="check_enrollment_fee" tool_tip="Imposta se richiedere una tassa di iscrizione per unirsi al gruppo."/>
 		<spinner width="60" left_delta="136" name="spin_enrollment_fee" tool_tip="I nuovi membri devono pagare questa tassa per unirsi al gruppo. La tassa di iscrizione è selezionata."/>
 		<combo_box name="group_mature_check" tool_tip="Imposta se le informazioni sul tuo gruppo sono da considerarsi Mature.">
 			<combo_item name="select_mature">
@@ -73,8 +73,8 @@ Passa il mouse sulle opzioni per un aiuto aggiuntivo.
 		Rilevando i dati dei membri
 	</string>
 	<string name="confirm_group_create_str">
-		Creare questo gruppo ti costerà 100 L$. 
-Sei davvero, davvero, DAVVERO sicuro che vuoi spendere 100 L$ per creare questo gruppo?
+		Creare questo gruppo ti costerà [GROUPCREATEFEE]. 
+Sei davvero, davvero, DAVVERO sicuro che vuoi spendere [GROUPCREATEFEE] per creare questo gruppo?
 Fai attenzione che se nessun altro viene unito al gruppo entro 48 ore, questo gruppo verrà dismesso e il nome del gruppo non sarà più disponibile in futuro.
 	</string>
 </panel>

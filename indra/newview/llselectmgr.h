@@ -389,6 +389,9 @@ public:
 	virtual BOOL canDoDelete() const;
 	virtual void doDelete();
 
+	virtual void selectAll();
+	virtual BOOL canSelectAll() const;
+
 	virtual void deselect();
 	virtual BOOL canDeselect() const;
 
@@ -790,7 +793,7 @@ private:
 	LLFrameTimer			mEffectsTimer;
 	BOOL					mForceSelection;
 
-	LLAnimPauseRequest		mPauseRequest;
+	std::vector<LLAnimPauseRequest> mPauseRequests;	// Selected avatar and all synchronized avatars.
 
 	friend class LLObjectBackup;
 };

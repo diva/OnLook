@@ -27,7 +27,7 @@
 	<check_box label="Girar (Ctrl)" name="radio rotate"/>
 	<check_box label="Estirar (Ctrl-Mayús)" name="radio stretch"/>
 	<check_box label="Elegir Cara" name="radio select face"/>
-	<check_box label="Alinear (Ctrl-A)" name="radio align"/>
+	<check_box label="Alinear" name="radio align"/>
 	<check_box label="Editar partes enlazadas" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">
 		Regla:

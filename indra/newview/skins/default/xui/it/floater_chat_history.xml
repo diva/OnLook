@@ -21,45 +21,6 @@
 	<string name="IM_end_log_string">
 		-- Fine della Registrazione Testo --
 	</string>
-  <string name="ScriptQuestionCautionChatGranted">
-	A &apos;[OBJECTNAME]&apos;, un oggetto di proprietà di &apos;[OWNERNAME]&apos;, situato in [REGIONNAME] [REGIONPOS], è stato concesso il permesso di: [PERMISSIONS].
-  </string>
-  <string name="ScriptQuestionCautionChatDenied">
-	A &apos;[OBJECTNAME]&apos;, un oggetto di proprietà di &apos;[OWNERNAME]&apos;, situato in [REGIONNAME] [REGIONPOS], è stato negato il permesso di: [PERMISSIONS].
-  </string>
-  <string name="ScriptTakeMoney">
-	Prendere dollari Linden (L$) da te
-  </string>
-  <string name="ActOnControlInputs">
-	Agire sul tuo controllo degli input
-  </string>
-  <string name="RemapControlInputs">
-	Rimappare il tuo controllo degli input
-  </string>
-  <string name="AnimateYourAvatar">
-	Animare il tuo avatar
-  </string>
-  <string name="AttachToYourAvatar">
-	Far indossare al tuo avatar
-  </string>
-  <string name="ReleaseOwnership">
-	Rilasciare la propietà è far diventare pubblico.
-  </string>
-  <string name="LinkAndDelink">
-	Collegare e scollegare dagli altri oggetti
-  </string>
-  <string name="AddAndRemoveJoints">
-	Aggiungere e rimuovere le giunzioni insieme con gli altri oggetti
-  </string>
-  <string name="ChangePermissions">
-	Cambiare i permessi
-  </string>
-  <string name="TrackYourCamera">
-	Tracciare la fotocamera
-  </string>
-  <string name="ControlYourCamera">
-	Controllare la tua fotocamera
-  </string>
 	<layout_stack name="panels">
 		<layout_panel name="im_contents_panel">
 			<combo_box label="Gesture" name="Gesture">

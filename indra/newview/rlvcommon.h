@@ -46,6 +46,7 @@ class LLInventoryItem;
 class LLViewerInventoryCategory;
 class LLViewerInventoryItem;
 class LLViewerJointAttachment;
+class LLViewerWearable;
 class LLWearable;
 
 //
@@ -79,7 +80,6 @@ template<typename T> inline T rlvGetPerUserSetting(const std::string& strSetting
 class RlvSettings
 {
 public:
-	static F32  getAvatarOffsetZ()				{ return rlvGetSetting<F32>(RLV_SETTING_AVATAROFFSET_Z, 0.0); }
 	static bool getDebug()						{ return rlvGetSetting<bool>(RLV_SETTING_DEBUG, false); }
 	static bool getCanOOC()						{ return fCanOOC; }
 	static bool getForbidGiveToRLV()			{ return rlvGetSetting<bool>(RLV_SETTING_FORBIDGIVETORLV, true); }
@@ -128,21 +128,25 @@ class RlvStrings
 {
 public:
 	static void initClass();
+	static void loadFromFile(const std::string& strFilePath, bool fDefault);
+	static void saveToFile(const std::string& strFilePath);
 
 	static const std::string& getAnonym(const LLAvatarName& avName);		// @shownames
 	static const std::string& getAnonym(const std::string& strName);		// @shownames
-	static const std::string& getBehaviourNotificationString(ERlvBehaviour eBhvr, ERlvParamType eType);
 	static const std::string& getString(const std::string& strStringName);
 	static const char*        getStringFromReturnCode(ERlvCmdRet eRet);
+	static const std::string& getStringMapPath() { return m_StringMapPath; }
 	static std::string        getVersion(bool fLegacy = false);				// @version
 	static std::string        getVersionAbout();							// Shown in Help / About
 	static std::string        getVersionNum();								// @versionnum
-	static bool               hasString(const std::string& strStringName);
+	static bool               hasString(const std::string& strStringName, bool fCheckCustom = false);
+	static void               setCustomString(const std::string& strStringName, const std::string& strStringValue);
 
 protected:
 	static std::vector<std::string> m_Anonyms;
-	typedef std::map<std::string, std::string> string_map_t;
+	typedef std::map<std::string, std::list<std::string> > string_map_t;
 	static string_map_t m_StringMap;
+	static std::string  m_StringMapPath;
 };
 
 // ============================================================================
@@ -239,8 +243,8 @@ protected:
 
 bool rlvPredCanWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWearMask);
 bool rlvPredCanNotWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWearMask);
-bool rlvPredCanRemoveItem(const LLInventoryItem* pItem);
-bool rlvPredCanNotRemoveItem(const LLInventoryItem* pItem);
+bool rlvPredCanRemoveItem(const LLViewerInventoryItem* pItem);
+bool rlvPredCanNotRemoveItem(const LLViewerInventoryItem* pItem);
 
 struct RlvPredCanWearItem
 {
@@ -256,6 +260,18 @@ struct RlvPredCanNotWearItem
 	bool operator()(const LLViewerInventoryItem* pItem) { return rlvPredCanNotWearItem(pItem, m_eWearMask); }
 protected:
 	ERlvWearMask m_eWearMask;
+};
+
+struct RlvPredCanRemoveItem
+{
+	RlvPredCanRemoveItem() {}
+	bool operator()(const LLViewerInventoryItem* pItem) { return rlvPredCanRemoveItem(pItem); }
+};
+
+struct RlvPredCanNotRemoveItem
+{
+	RlvPredCanNotRemoveItem() {}
+	bool operator()(const LLViewerInventoryItem* pItem) { return rlvPredCanNotRemoveItem(pItem); }
 };
 
 struct RlvPredIsEqualOrLinkedItem

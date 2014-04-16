@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Terra &amp; L$" name="land_money_tab">
+<panel label="Terra &amp; [CURRENCY]" name="land_money_tab">
 	<string name="help_text">
 		I terreni di proprietà del gruppo sono elencati insieme ai dettagli delle contribuzioni. Un avviso viene visualizzato se la superficie totale in uso è inferiore o pari al totale delle contribuzioni. Le schede: Pianificazione, Dettagli e Vendite forniscono informazioni sulle finanze del gruppo.
 	</string>
@@ -55,7 +55,7 @@
 la quantità  di terra in uso.
 	</text>
 	<text name="group_money_heading">
-		L$ del gruppo
+		[CURRENCY] del gruppo
 	</text>
 	<tab_container name="group_money_tab_container">
 		<panel label="Pianificazione" name="group_money_planning_tab">

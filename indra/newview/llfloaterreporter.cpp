@@ -43,6 +43,7 @@
 #include "llfontgl.h"
 #include "llimagej2c.h"
 #include "llinventory.h"
+#include "llmenugl.h"
 #include "llnotificationsutil.h"
 #include "llstring.h"
 #include "llsys.h"
@@ -462,6 +463,8 @@ void LLFloaterReporter::showFromMenu(EReportType report_type)
 		return;
 	}
 
+	// Prevent menu from appearing in screen shot.
+	LLMenuGL::sMenuContainer->hideMenus();
 	LLFloaterReporter* f = getInstance();
 	if (f)
 	{

@@ -87,8 +87,12 @@ private:
 	bool mOneLineConfButt;
 	bool mOnlyComm;
 	bool mItalicizeActions;
-	bool mLegacySpeakerNames;
 	bool mLegacyLogLaunch;
+	S32 mFriendNames;
+	S32 mGroupMembersNames;
+	S32 mLandManagementNames;
+	S32 mRadarNames;
+	S32 mSpeakerNames;
 
 	//Autoresponse ------------------------------------------------------------------------
 	std::string mIMResponseAnyoneItemID;

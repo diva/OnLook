@@ -1,12 +1,12 @@
 /** 
  *
- * Copyright (c) 2009-2010, Kitty Barnett
+ * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -181,7 +181,6 @@ RlvWindLight::RlvWindLight()
 	m_ControlLookupMap.insert(std::pair<std::string, RlvWindLightControl>("distancemultiplier", RlvWindLightControl(&pWLParamMgr->mDistanceMult)));
 	m_ControlLookupMap.insert(std::pair<std::string, RlvWindLightControl>("maxaltitude",	RlvWindLightControl(&pWLParamMgr->mMaxAlt)));
 	m_ControlLookupMap.insert(std::pair<std::string, RlvWindLightControl>("scenegamma",		RlvWindLightControl(&pWLParamMgr->mWLGamma)));
-	// TYPE_COLOR_R
 	m_ControlLookupMap.insert(std::pair<std::string, RlvWindLightControl>("hazedensity",	RlvWindLightControl(&pWLParamMgr->mHazeDensity)));
 	m_ControlLookupMap.insert(std::pair<std::string, RlvWindLightControl>("hazehorizon",	RlvWindLightControl(&pWLParamMgr->mHazeHorizon)));
 	// TYPE_COLOR

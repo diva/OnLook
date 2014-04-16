@@ -10,7 +10,7 @@ Gli annunci pagati maggiormente appariranno più in
 alto nell&apos;elenco, e nella ricerca.
 	</text>
 	<text name="price_text" width="146">
-		Prezzo per l&apos;annuncio (L$):
+		Prezzo per l&apos;annuncio ([CURRENCY]):
 	</text>
 	<line_editor left="166" name="price_edit" />
 	<button label="Annulla" name="cancel_btn"/>

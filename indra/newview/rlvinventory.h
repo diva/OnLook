@@ -1,12 +1,12 @@
 /** 
  *
- * Copyright (c) 2009-2011, Kitty Barnett
+ * Copyright (c) 2009-2014, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
- * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * GNU Lesser General Public License, version 2.1, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
- * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
- * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * PARTICULAR PURPOSE. Terms of the LGPL can be found in doc/LGPL-licence.txt
+ * in this distribution, or online at http://www.gnu.org/licenses/lgpl-2.1.txt
  * 
  * By copying, modifying or distributing this software, you acknowledge that
  * you have read and understood your obligations described above, and agree to 
@@ -54,11 +54,12 @@ public:
 	LLViewerInventoryCategory*	getSharedRoot() const;
 	const LLUUID&				getSharedRootID() const;
 	// Returns a subfolder of idParent that starts with strFolderName (exact match > partial match)
-	LLViewerInventoryCategory*	getSharedFolder(const LLUUID& idParent, const std::string& strFolderName) const;
+	LLViewerInventoryCategory*	getSharedFolder(const LLUUID& idParent, const std::string& strFolderName, bool fMatchPartial = true) const;
 	// Looks up a folder from a path (relative to the shared root)
-	LLViewerInventoryCategory*	getSharedFolder(const std::string& strPath) const;
+	LLViewerInventoryCategory*	getSharedFolder(const std::string& strPath, bool fMatchPartial = true) const;
 	// Returns the path of the supplied folder (relative to the shared root)
 	std::string					getSharedPath(const LLViewerInventoryCategory* pFolder) const;
+	std::string					getSharedPath(const LLUUID& idFolder) const;
 	// Returns TRUE if the supplied folder is a descendent of the #RLV folder
 	bool						isSharedFolder(const LLUUID& idFolder);
 
@@ -118,30 +119,51 @@ protected:
 // "Give to #RLV" helper classes
 //
 
+class RlvGiveToRLVOffer
+{
+protected:
+	RlvGiveToRLVOffer(){}
+	virtual ~RlvGiveToRLVOffer() {}
+protected:
+	bool	createDestinationFolder(const std::string& strPath);
+	virtual void onDestinationCreated(const LLUUID& idFolder, const std::string& strName) = 0;
+	void	moveAndRename(const LLUUID& idFolder, const LLUUID& idDestination, const std::string& strName);
+private:
+	static void onCategoryCreateCallback(const LLSD& sdData, void* pInstance);
+
+private:
+	std::list<std::string> m_DestPath;
+};
+
 // [See LLInventoryTransactionObserver which says it's not entirely complete?]
 // NOTE: the offer may span mulitple BulkUpdateInventory messages so if we're no longer around then (ie due to "delete this") then
 //       we'll miss those; in this specific case we only care about the *folder* though and that will be in the very first message
-class RlvGiveToRLVTaskOffer : public LLInventoryObserver
+class RlvGiveToRLVTaskOffer : public LLInventoryObserver, public RlvGiveToRLVOffer
 {
 public:
-	RlvGiveToRLVTaskOffer(const LLUUID& idTransaction) : m_idTransaction(idTransaction) {}
+	RlvGiveToRLVTaskOffer(const LLUUID& idTransaction) : RlvGiveToRLVOffer(), m_idTransaction(idTransaction) {}
 	/*virtual*/ void changed(U32 mask);
 protected:
 	/*virtual*/ void done();
 	void doneIdle();
+	/*virtual*/ void onDestinationCreated(const LLUUID& idFolder, const std::string& strName);
 
+protected:
 	typedef std::vector<LLUUID> folder_ref_t;
 	folder_ref_t m_Folders;
 	LLUUID       m_idTransaction;
 };
 
-class RlvGiveToRLVAgentOffer : public LLInventoryFetchDescendentsObserver
+class RlvGiveToRLVAgentOffer : public LLInventoryFetchDescendentsObserver, public RlvGiveToRLVOffer
 {
 public:
-	RlvGiveToRLVAgentOffer(const LLUUID& idFolder) : LLInventoryFetchDescendentsObserver(idFolder) {}
+	RlvGiveToRLVAgentOffer(const LLUUID& idFolder) : LLInventoryFetchDescendentsObserver(idFolder), RlvGiveToRLVOffer() {}
+	/*virtual*/ ~RlvGiveToRLVAgentOffer() {}
+public:
 	/*virtual*/ void done();
 protected:
 	void doneIdle();
+	/*virtual*/ void onDestinationCreated(const LLUUID& idFolder, const std::string& strName);
 };
 
 // ============================================================================
@@ -234,8 +256,19 @@ class RlvIsLinkType : public LLInventoryCollectFunctor
 {
 public:
 	RlvIsLinkType() {}
-	virtual ~RlvIsLinkType() {}
+	/*virtual*/ ~RlvIsLinkType() {}
 	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem) { return (pItem) && (pItem->getIsLinkType()); }
+};
+
+// If the attachment item is linked in COF but isn't worn (or just detached) the function will return inconsistent information
+class RlvFindAttachmentsOnPoint : public LLInventoryCollectFunctor
+{
+public:
+	RlvFindAttachmentsOnPoint(const LLViewerJointAttachment* pAttachPt) : m_pAttachPt(pAttachPt) {}
+	/*virtual*/ ~RlvFindAttachmentsOnPoint() {}
+	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem);
+protected:
+	const LLViewerJointAttachment* m_pAttachPt;
 };
 
 // ============================================================================
@@ -256,6 +289,12 @@ inline const LLUUID& RlvInventory::getFoldedParent(const LLUUID& idFolder, bool 
 	while ((pFolder) && (isFoldedFolder(pFolder, fCheckComposite)))
 		pFolder = gInventory.getCategory(pFolder->getParentUUID());
 	return (pFolder) ? pFolder->getUUID() : LLUUID::null;
+}
+
+// Checked: 2011-11-26 (RLVa-1.5.4a) | Added: RLVa-1.5.4a
+inline std::string RlvInventory::getSharedPath(const LLUUID& idFolder) const
+{
+	return getSharedPath(gInventory.getCategory(idFolder));
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a

@@ -126,6 +126,7 @@ set(viewer_SOURCE_FILES
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
+    llautoreplace.cpp
     llavataractions.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
@@ -181,6 +182,7 @@ set(viewer_SOURCE_FILES
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
     llfloaterauction.cpp
+    llfloaterautoreplacesettings.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
     llfloateravatarpicker.cpp
@@ -574,9 +576,10 @@ set(viewer_SOURCE_FILES
     noise.cpp
     pipeline.cpp
     qtoolalign.cpp
+    rlvactions.cpp
     rlvcommon.cpp
     rlvextensions.cpp
-    rlvfloaterbehaviour.cpp
+    rlvfloaters.cpp
     rlvhandler.cpp
     rlvhelper.cpp
     rlvinventory.cpp
@@ -645,6 +648,7 @@ set(viewer_HEADER_FILES
     llassetuploadresponders.h
     llattachmentsmgr.h
     llaudiosourcevo.h
+    llautoreplace.h
     llavataractions.h
     llavatarpropertiesprocessor.h
     llbox.h
@@ -700,6 +704,7 @@ set(viewer_HEADER_FILES
     llfloaterabout.h
     llfloateractivespeakers.h
     llfloaterauction.h
+    llfloaterautoreplacesettings.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
     llfloateravatarpicker.h
@@ -1100,10 +1105,11 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     qtoolalign.h
+    rlvactions.h
     rlvcommon.h
     rlvdefines.h
     rlvextensions.h
-    rlvfloaterbehaviour.h
+    rlvfloaters.h
     rlvhandler.h
     rlvhelper.h
     rlvinventory.h
@@ -1138,7 +1144,7 @@ if (DARWIN)
 
   # Add resource files to the project.
   set(viewer_RESOURCE_FILES
-    ${VIEWER_BRANDING_ID}.icns
+    ${VIEWER_BRANDING_ID}_icon.icns
     macview.r
     gpu_table.txt
     SecondLife.nib/
@@ -1516,7 +1522,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
-	  --arch=${ARCH}
+          --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --branding_id=${VIEWER_BRANDING_ID}
           --build=${CMAKE_CURRENT_BINARY_DIR}
@@ -1538,7 +1544,7 @@ if (WINDOWS)
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
-	  --arch=${ARCH}
+          --arch=${ARCH}
           --artwork=${ARTWORK_DIR}
           --actions=copy
           --branding_id=${VIEWER_BRANDING_ID}
@@ -1700,7 +1706,7 @@ if (DARWIN)
     PROPERTIES
     OUTPUT_NAME "${product}"
     MACOSX_BUNDLE_INFO_STRING "A stable third-party Second Life viewer."
-    MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}.icns"
+    MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}_icon.icns"
     MACOSX_BUNDLE_GUI_IDENTIFIER "${VIEWER_BRANDING_NAME}"
     MACOSX_BUNDLE_LONG_VERSION_STRING "${viewer_VERSION}"
     MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_BRANDING_NAME}"

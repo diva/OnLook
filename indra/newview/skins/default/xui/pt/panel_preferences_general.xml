@@ -98,11 +98,17 @@ conteúdo classificado:
 			English (Inglês)
 		</combo_item>
 		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
+		<combo_item name="Deutsch(German)">
+			Deutsch (Alemão)
+		</combo_item>
 		<combo_item name="Spanish">
 			Español (Espanhol)
 		</combo_item>
 		<combo_item name="French">
 			Français (Francês)
+		</combo_item>
+		<combo_item name="Italian">
+			Italiano
 		</combo_item>
 		<combo_item name="Portugese">
 			Português
@@ -110,12 +116,6 @@ conteúdo classificado:
 		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
 		<combo_item name="Danish">
 			Dansk (Dinamarquês)*
-		</combo_item>
-		<combo_item name="Deutsch(German)">
-			Deutsch (Alemão)*
-		</combo_item>
-		<combo_item name="Italian">
-			Italiano*
 		</combo_item>
 		<combo_item name="Hungarian">
 			Magyar (Húngaro)*

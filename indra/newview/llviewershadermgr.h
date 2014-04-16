@@ -300,7 +300,7 @@ extern LLGLSLShader			gDeferredDiffuseProgram;
 extern LLGLSLShader			gDeferredDiffuseAlphaMaskProgram;
 extern LLGLSLShader			gDeferredNonIndexedDiffuseAlphaMaskProgram;
 extern LLGLSLShader			gDeferredNonIndexedDiffuseAlphaMaskNoColorProgram;
-extern LLGLSLShader			gDeferredNonIndexedDiffuseProgram;
+//extern LLGLSLShader			gDeferredNonIndexedDiffuseProgram;
 extern LLGLSLShader			gDeferredSkinnedDiffuseProgram;
 extern LLGLSLShader			gDeferredSkinnedBumpProgram;
 extern LLGLSLShader			gDeferredSkinnedAlphaProgram;

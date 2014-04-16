@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Generale" name="general_panel">
-	<radio_group name="default_start_location">
-		<radio_item name="MyHome" tool_tip="Vai a casa di default quando fai login">
+	<radio_group name="default_start_location" width="284">
+		<radio_item name="home" tool_tip="Vai a casa di default quando fai login">
 			Casa mia
 		</radio_item>
-		<radio_item name="MyLastLocation" tool_tip="Vai nell&apos;ultimo posto visitato di default quando fai login.">
+		<radio_item name="last" tool_tip="Vai nell&apos;ultimo posto visitato di default quando fai login.">
 			Ultimo posto visitato
 		</radio_item>
 	</radio_group>
 	<check_box label="Mostra il punto di partenza nella schermata d&apos;inizio" name="show_location_checkbox"/>
-	<combo_box name="fade_out_combobox" width="166">
+	<combo_box name="fade_out_combobox">
 		<combo_item name="Never">
 			Mai
 		</combo_item>
@@ -31,17 +31,19 @@
 	<text name="UI Size:">
 		Dimensione interfaccia:
 	</text>
-	<check_box label="Usa ridimensionamento indipendente dalla risoluzione" name="ui_auto_scale"/>
+	<slider name="ui_scale_slider" left="128" bottom="-183"/>
+	<check_box label="Usa ridimensionamento indipendente dalla risoluzione" name="ui_auto_scale" bottom="-198"/>
 	<spinner label="Assente dopo:" name="afk_timeout_spinner"/>
 	<check_box label="Avvisami quando spendo o ricevo Linden Dollars (L$)" name="notify_money_change_checkbox"/>
-	<text name="maturity_desired_label" bottom="-312">
+	<check_box name="no_transaction_clutter_checkbox" left="286"/>
+	<text name="maturity_desired_label">
 		Categoria di accesso:
 	</text>
-	<text name="maturity_desired_prompt" bottom="-312">
+	<text name="maturity_desired_prompt" left="150" bottom="-287">
 		Voglio accedere al
 contenuto di tipo:
 	</text>
-	<combo_box name="maturity_desired_combobox" bottom="-330" left="274">
+	<combo_box name="maturity_desired_combobox" left="274">
 		<combo_item name="Desired_Adult">
 			PG, Mature e Adult
 		</combo_item>
@@ -52,7 +54,7 @@ contenuto di tipo:
 			solo PG
 		</combo_item>
 	</combo_box>
-	<text name="maturity_desired_textbox" bottom="-324" left="274">
+	<text name="maturity_desired_textbox" left="274">
 		solo PG
 	</text>
 	<text name="start_location_textbox">
@@ -73,7 +75,7 @@ contenuto di tipo:
 	<text name="language_textbox">
 		Lingua:
 	</text>
-	<text left_delta="313" name="language_textbox2">
+	<text left_delta="270" name="language_textbox2">
 		(Richiede il riavvio)
 	</text>
 	<string name="region_name_prompt">
@@ -97,20 +99,25 @@ contenuto di tipo:
 		<combo_item name="English">
 			English
 		</combo_item>
-		<combo_item name="Danish">
-			Dansk (Danese) - Beta
-		</combo_item>
+		<!-- After "System Default" and "English", please keep the rest of these combo_items in alphabetical order by the first character in the string.-->
 		<combo_item name="Deutsch(German)">
-			Deutsch (Tedesco) - Beta
+			Deutsch (Tedesco)
 		</combo_item>
 		<combo_item name="Spanish">
-			Español (Spagnolo) - Beta
+			Español (Spagnolo)
 		</combo_item>
 		<combo_item name="French">
-			Français (Francese) - Beta
+			Français (Francese)
 		</combo_item>
 		<combo_item name="Italian">
-			Italiano - Beta
+			Italiano
+		</combo_item>
+		<combo_item name="Portugese">
+			Portugués (Portoghese)
+		</combo_item>
+		<!-- Also, with the above advice in mind, keep completed UI translations above this line.-->
+		<combo_item name="Danish">
+			Dansk (Danese) - Beta
 		</combo_item>
 		<combo_item name="Hungarian">
 			Magyar (Ungherese) - Beta
@@ -120,9 +127,6 @@ contenuto di tipo:
 		</combo_item>
 		<combo_item name="Polish">
 			Polski (Polacco) - Beta
-		</combo_item>
-		<combo_item name="Portugese">
-			Portugués (Portoghese) - Beta
 		</combo_item>
 		<combo_item name="Russian">
 			Русский (Russo) - Beta

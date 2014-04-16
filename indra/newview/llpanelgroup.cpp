@@ -129,10 +129,7 @@ void LLPanelGroupTab::handleClickHelp()
 	}
 }
 
-static void copy_group_profile_uri(const LLUUID& id)
-{
-	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring("secondlife:///app/group/"+id.asString()+"/about"));
-}
+void copy_profile_uri(const LLUUID& id, bool group);
 
 LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
 :	LLPanel("PanelGroup", LLRect(), FALSE),
@@ -163,7 +160,7 @@ LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
 
 	LLGroupMgr::getInstance()->addObserver(this);
 
-	mCommitCallbackRegistrar.add("Group.CopyURI", boost::bind(copy_group_profile_uri, boost::ref(mID)));
+	mCommitCallbackRegistrar.add("Group.CopyURI", boost::bind(copy_profile_uri, boost::ref(mID), true));
 	// Pass on construction of this panel to the control factory.
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_group.xml", &getFactoryMap());
 }

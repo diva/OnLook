@@ -52,8 +52,9 @@
 #include "llslurl.h"			// IDEVO
 #include "llavatarname.h"
 #include "llagentui.h"
-// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
-#include "rlvhandler.h"
+// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0)
+#include "rlvactions.h"
+#include "rlvcommon.h"
 // [/RLVa:KB]
 
 #include "llviewerwindow.h"
@@ -182,16 +183,12 @@ void LLAvatarActions::startIM(const LLUUID& id)
 	if (id.isNull() || gAgentID == id)
 		return;
 
-// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
-	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(id)) )
+// [RLVa:KB] - Checked: 2013-05-09 (RLVa-1.4.9)
+	if ( (!RlvActions::canStartIM(id)) && (!RlvActions::hasOpenP2PSession(id)) )
 	{
-		LLUUID idSession = gIMMgr->computeSessionID(IM_NOTHING_SPECIAL, id);
-		if ( (idSession.notNull()) && (!gIMMgr->hasSession(idSession)) )
-		{
-			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
-			return;
-		}
+		make_ui_sound("UISndInvalidOp");
+		RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
+		return;
 	}
 // [/RLVa:KB]
 
@@ -234,16 +231,12 @@ void LLAvatarActions::startCall(const LLUUID& id)
 		return;
 	}
 
-// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
-	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(id)) )
+// [RLVa:KB] - Checked: 2013-05-09 (RLVa-1.4.9)
+	if ( (!RlvActions::canStartIM(id)) && (!RlvActions::hasOpenP2PSession(id)) )
 	{
-		LLUUID idSession = gIMMgr->computeSessionID(IM_NOTHING_SPECIAL, id);
-		if ( (idSession.notNull()) && (!gIMMgr->hasSession(idSession)) )
-		{
-			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
-			return;
-		}
+		make_ui_sound("UISndInvalidOp");
+		RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTIM, LLSD().with("RECIPIENT", LLSLURL("agent", id, "completename").getSLURLString()));
+		return;
 	}
 // [/RLVa:KB]
 
@@ -262,12 +255,12 @@ void LLAvatarActions::startAdhocCall(const uuid_vec_t& ids)
 	LLDynamicArray<LLUUID> id_array;
 	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
 	{
-// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
+// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0)
 		const LLUUID& idAgent = *it;
-		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(idAgent)) )
+		if (!RlvActions::canStartIM(idAgent))
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", LLSLURL("agent", idAgent, "completename").getSLURLString()));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF);
 			return;
 		}
 		id_array.push_back(idAgent);
@@ -315,12 +308,12 @@ void LLAvatarActions::startConference(const uuid_vec_t& ids)
 {
 	for (uuid_vec_t::const_iterator it = ids.begin(); it != ids.end(); ++it)
 	{
-// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0h) | Added: RLVa-1.3.0h
+// [RLVa:KB] - Checked: 2011-04-11 (RLVa-1.3.0)
 		const LLUUID& idAgent = *it;
-		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStartIM(idAgent)) )
+		if (!RlvActions::canStartIM(idAgent))
 		{
 			make_ui_sound("UISndInvalidOp");
-			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF, LLSD().with("RECIPIENT", LLSLURL("agent", idAgent, "completename").getSLURLString()));
+			RlvUtil::notifyBlocked(RLV_STRING_BLOCKED_STARTCONF);
 			return;
 		}
 // [/RLVa:KB]

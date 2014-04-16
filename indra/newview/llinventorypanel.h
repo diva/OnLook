@@ -114,7 +114,7 @@ public:
 	void setFilterSubString(const std::string& string);
 	const std::string getFilterSubString();
 	void setFilterWorn(bool worn);
-	bool getFilterWorn() const { return mFolderRoot->getFilterWorn(); }
+	bool getFilterWorn() const { return mFolderRoot.get()->getFilterWorn(); }
 	
 	void setSinceLogoff(BOOL sl);
 	void setHoursAgo(U32 hours);
@@ -123,10 +123,10 @@ public:
 
 	void setShowFolderState(LLInventoryFilter::EFolderShow show);
 	LLInventoryFilter::EFolderShow getShowFolderState();
-	void setAllowMultiSelect(BOOL allow) { mFolderRoot->setAllowMultiSelect(allow); }
+	void setAllowMultiSelect(BOOL allow) { mFolderRoot.get()->setAllowMultiSelect(allow); }
 	// This method is called when something has changed about the inventory.
 	void modelChanged(U32 mask);
-	LLFolderView* getRootFolder();
+	LLFolderView* getRootFolder() { return mFolderRoot.get(); }
 	LLScrollContainer* getScrollableContainer() { return mScroller; }
 	
 	void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
@@ -155,6 +155,9 @@ public:
 					   LLInventoryType::EType inv_type,
 					   U32 next_owner_perm = 0);
 
+	// Clean up stuff when the folder root gets deleted
+	void clearFolderRoot();
+
 protected:
 	void openStartFolderOrMyInventory(); // open the first level of inventory
 	void onItemsCompletion();			// called when selected items are complete
@@ -164,7 +167,7 @@ protected:
 	LLInvPanelComplObserver*	mCompletionObserver;
 	
 	BOOL 						mAllowMultiSelect;
-	LLFolderView*				mFolderRoot;
+	LLHandle<LLFolderView>				mFolderRoot;
 	LLScrollContainer*	mScroller;
 
 	/**
