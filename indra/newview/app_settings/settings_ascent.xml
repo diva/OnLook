@@ -1683,7 +1683,7 @@
     <key>ToolbarVisibleToolbarPrefs</key>
     <map>
       <key>Comment</key>
-      <string>Whether or not the button for the floater to change buttons on the toolbar is on the toolbar (Nonfunctional, yet. Poke Liru.)</string>
+      <string>Whether or not the button for the floater to change buttons on the toolbar is on the toolbar</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
