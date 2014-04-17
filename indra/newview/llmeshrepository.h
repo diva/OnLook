@@ -36,7 +36,7 @@
 
 #define LLCONVEXDECOMPINTER_STATIC 1
 
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 #include "lluploadfloaterobservers.h"
 #include "aistatemachinethread.h"
 

@@ -1,5 +1,5 @@
 /** 
- * @file   LLConvexDecomposition.cpp
+ * @file   llconvexdecomposition.cpp
  * @author falcon@lindenlab.com
  * @brief  A stub implementation of LLConvexDecomposition interface
  *
@@ -35,7 +35,7 @@
 
 #include "nd_hacdConvexDecomposition.h"
 
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 
 
 /*static */bool LLConvexDecomposition::s_isInitialized = false;

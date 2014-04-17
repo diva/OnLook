@@ -1,5 +1,5 @@
 /** 
- * @file   LLConvexDecompositionStubImpl.cpp
+ * @file   llconvexdecompositionstubimpl.cpp
  * @author falcon@lindenlab.com
  * @brief  A stub implementation of LLConvexDecomposition
  *
@@ -28,7 +28,7 @@
 
 #include <string.h>
 #include <memory>
-#include "LLConvexDecompositionStubImpl.h"
+#include "llconvexdecompositionstubimpl.h"
 
 LLConvexDecomposition* LLConvexDecompositionImpl::getInstance()
 {

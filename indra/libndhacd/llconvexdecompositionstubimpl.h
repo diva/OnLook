@@ -1,5 +1,5 @@
 /** 
- * @file   LLConvexDecompositionStubImpl.h
+ * @file   llconvexdecompositionstubimpl.h
  * @author falcon@lindenlab.com
  * @brief  A stub implementation of LLConvexDecomposition
  *
@@ -29,7 +29,7 @@
 #ifndef LL_CONVEX_DECOMP_UTIL_H
 #define LL_CONVEX_DECOMP_UTIL_H
 
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 
 class LLConvexDecompositionImpl : public LLConvexDecomposition
 {

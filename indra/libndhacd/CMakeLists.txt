@@ -7,7 +7,7 @@ include(00-Common)
 include_directories(${LIBS_OPEN_DIR}/libhacd)
 
 set (libndhacd_SOURCE_FILES
-    LLConvexDecomposition.cpp
+    llconvexdecomposition.cpp
     nd_hacdConvexDecomposition.cpp
     nd_hacdStructs.cpp
     nd_hacdUtils.cpp
@@ -16,12 +16,12 @@ set (libndhacd_SOURCE_FILES
 )
 
 set (libndhacd_HEADER_FILES
-    LLConvexDecomposition.h
+    llconvexdecomposition.h
     ndConvexDecomposition.h
     nd_hacdConvexDecomposition.h
     nd_hacdStructs.h
     nd_StructTracer.h
-    LLConvexDecompositionStubImpl.h
+    llconvexdecompositionstubimpl.h
     nd_EnterExitTracer.h
     nd_hacdDefines.h
     nd_hacdUtils.h
