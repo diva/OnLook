@@ -965,7 +965,6 @@ P(newAgentInventoryVariablePriceResponder);
 P(objectCostResponder);
 P(objectLinksetsResponder);
 P(physicsFlagsResponder);
-P(placeAvatarTeleportResponder);
 P(productInfoRequestResponder);
 P(regionResponder);
 P(remoteParcelRequestResponder);

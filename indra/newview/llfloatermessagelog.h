@@ -1,3 +1,6 @@
+#ifndef LL_LLFLOATERMESSAGELOG_H
+#define LL_LLFLOATERMESSAGELOG_H
+
 // <edit>
 #include "llfloater.h"
 #include "llmessagelog.h"
@@ -94,3 +97,5 @@ public:
 	static void onClickFilterMenu(void* user_data);
 };
 // </edit>
+
+#endif

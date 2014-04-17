@@ -202,9 +202,9 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>b31c495d5e77daa09394b370fc228312</string>
+            <string>6564a085a5a353a531908d2e6fcafd64</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.52.0-darwin-20130221.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/boost-1.52.0-darwin-20140202.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>

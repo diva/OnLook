@@ -172,16 +172,17 @@ To use spellcheck, right-click a misspelled word
 (red or otherwise) and select its replacement
       </text>
 
-      <view_border bevel_style="none" border_thickness="1" bottom_delta="-16" follows="top" height="0" left="5" name="CmdDivisor" width="356"/>
+      <button bottom_delta="-26" left="12" follows="top" height="20" width="250" label="Autoreplace Preferences" name="autoreplace"/>
+      <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top" height="0" left="5" name="CmdDivisor" width="376"/>
 
       <check_box bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="16"
         label="Highlight messages if any of them contain the terms" name="KeywordsOn" width="270"/>
       <text bottom_delta="-20" follows="top" height="20" left="12" name="keyword_txt1">(separated by commas)</text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" left_delta="5" max_length="500" name="KeywordsList" width="300"/>
-      <text bottom_delta="-24" follows="top" height="20" left_delta="15" name="EmKeyw">Is found within:</text>
-      <check_box bottom_delta="3" follows="top" height="16" left_delta="100" label="Local Chat Floater" name="KeywordsInChat"/>
-      <check_box bottom_delta="-15" follows="left|top" height="16" label="Instant Message Floater" name="KeywordsInIM"/>
-      <check_box bottom_delta="-24" follows="top" height="16" label="Highlight the message in this color:" left_delta="-110" name="KeywordsChangeColor"/>
+      <text bottom_delta="-24" follows="top" height="20" left_delta="0" name="EmKeyw">Is found within:</text>
+      <check_box bottom_delta="3" follows="top" height="16" left_delta="80" label="Local Chat Floater" name="KeywordsInChat"/>
+      <check_box bottom_delta="0" left_delta="120" follows="left|top" height="16" label="Instant Message Floater" name="KeywordsInIM"/>
+      <check_box bottom_delta="-24" follows="top" height="16" label="Highlight the message in this color:" left_delta="-195" name="KeywordsChangeColor"/>
       <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom_delta="-16" can_apply_immediately="true" color="1, 1, 1, 1" follows="left|top" height="35" left_delta="210" name="KeywordsColor" tool_tip="Click to open Color Picker" width="50"/>
       <check_box bottom_delta="-10" follows="top" height="16" left_delta="-210" label="Play this sound alert: (UUID)" name="KeywordsPlaySound"/>
       <line_editor bottom_delta="-20" follows="left|top" bevel_style="in" border_style="line" border_thickness="1" height="20" left_delta="-5" max_length="36" name="KeywordsSound" width="300"/>

@@ -27,6 +27,9 @@
  * $/LicenseInfo$
  */
 
+#ifndef LL_LLVIEWEROBJECTBACKUP_H
+#define LL_LLVIEWEROBJECTBACKUP_H
+
 #include "llviewerinventory.h"
 
 enum export_states {
@@ -179,3 +182,4 @@ private:
 	LLQuaternion mAgentRot;
 };
 
+#endif

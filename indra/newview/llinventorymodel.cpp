@@ -2112,25 +2112,6 @@ bool LLInventoryModel::loadSkeleton(
 	return rv;
 }
 
-//OGPX crap. Since this function is actually functionally the same as its LLSD variant.. 
-// just convert options_t to LLSD and route to the LLSD version. Yuck.
-bool LLInventoryModel::loadSkeleton(
-	const LLInventoryModel::options_t& options,
-	const LLUUID& owner_id)
-{
-	LLSD options_list;
-	for(options_t::const_iterator it = options.begin(); it < options.end(); ++it)
-	{
-		LLSD entry;
-		for(response_t::const_iterator it2 = it->begin(); it2 != it->end(); ++it2)
-		{
-			entry[it2->first]=it2->second;
-		}
-		options_list.append(entry);
-	}
-	return loadSkeleton(options_list,owner_id);
-}
-
 // This is a brute force method to rebuild the entire parent-child
 // relations. The overall operation has O(NlogN) performance, which
 // should be sufficient for our needs. 
