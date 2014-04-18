@@ -76,6 +76,7 @@
 		<menu_item_call label="Regarder le dernier intervenant" name="Look at Last Chatter"/>
 		<menu_item_separator label="-----------" name="separator"/>
 		<menu_item_check label="Barre d'outils" name="Toolbar"/>
+		<menu_item_call label="Customiser la barre d'outils" name="toolbar_prefs"/>
 		<menu_item_check label="Chat local" name="Chat History"/>
 		<menu_item_check label="Communiquer" name="Instant Message"/>
 		<menu_item_check label="Inventaire" name="Inventory"/>
