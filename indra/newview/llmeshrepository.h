@@ -225,6 +225,8 @@ public:
 	LLMutex*	mHeaderMutex;
 	LLCondition*	mSignal;
 
+	bool mWaiting;
+
 	//map of known mesh headers
 	typedef std::map<LLUUID, LLSD> mesh_header_map;
 	mesh_header_map mMeshHeader;
@@ -405,10 +407,11 @@ public:
 #endif
 	void init(instance_list& data, LLVector3& scale, bool upload_textures, bool upload_skin, bool upload_joints, bool do_upload,
 		LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer);
+	~LLMeshUploadThread();
 
 	void postRequest(std::string& url, AIMeshUpload* state_machine);
 
-	/*virtual*/ bool run();
+	virtual bool run();
 	void preStart();
 
 	void generateHulls();
@@ -504,8 +507,7 @@ public:
 
 	void uploadModel(std::vector<LLModelInstance>& data, LLVector3& scale, bool upload_textures,
 					 bool upload_skin, bool upload_joints, std::string upload_url, bool do_upload = true,
-					 LLHandle<LLWholeModelFeeObserver> fee_observer= (LLHandle<LLWholeModelFeeObserver>()),
-					 LLHandle<LLWholeModelUploadObserver> upload_observer = (LLHandle<LLWholeModelUploadObserver>()));
+					 LLHandle<LLWholeModelFeeObserver> fee_observer= (LLHandle<LLWholeModelFeeObserver>()), LLHandle<LLWholeModelUploadObserver> upload_observer = (LLHandle<LLWholeModelUploadObserver>()));
 
 	S32 getMeshSize(const LLUUID& mesh_id, S32 lod);
 
