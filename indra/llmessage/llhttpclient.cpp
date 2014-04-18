@@ -237,13 +237,21 @@ void LLHTTPClient::request(
 	req->run(parent, new_parent_state, parent != NULL, true, default_engine);
 }
 
-void LLHTTPClient::getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
+bool LLHTTPClient::getByteRange(std::string const& url, AIHTTPHeaders& headers, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
 {
-	if(offset > 0 || bytes > 0)
+	try
 	{
-		headers.addHeader("Range", llformat("bytes=%d-%d", offset, offset + bytes - 1));
+		if (offset > 0 || bytes > 0)
+		{
+			headers.addHeader("Range", llformat("bytes=%d-%d", offset, offset + bytes - 1));
+		}
+		request(url, HTTP_GET, NULL, responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug));
 	}
-    request(url, HTTP_GET, NULL, responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug));
+	catch(AICurlNoEasyHandle const&)
+	{
+		return false;
+	}
+	return true;
 }
 
 void LLHTTPClient::head(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))

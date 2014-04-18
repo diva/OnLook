@@ -133,6 +133,14 @@ public:
 	public:
 		typedef boost::shared_ptr<LLBufferArray> buffer_ptr_t;
 
+		/**
+		 * @brief return true if the status code indicates success.
+		 */
+		static bool isGoodStatus(U32 status)
+		{
+			return((200 <= status) && (status < 300));
+		}
+
 	protected:
 		ResponderBase(void);
 		virtual ~ResponderBase();
@@ -452,9 +460,9 @@ public:
 	static void head(std::string const& url, ResponderHeadersOnly* responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
 	    { AIHTTPHeaders headers; head(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
-	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
-	    { AIHTTPHeaders headers; getByteRange(url, offset, bytes, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
+	static bool getByteRange(std::string const& url, AIHTTPHeaders& headers, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static bool getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+		{ AIHTTPHeaders headers; return getByteRange(url, headers, offset, bytes, responder/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
 	static void get(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 	static void get(std::string const& url, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))

@@ -239,7 +239,7 @@ public:
 		}
 	}
 
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
+	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
@@ -278,7 +278,7 @@ public:
 		}
 	}
 
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
+	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
@@ -306,7 +306,7 @@ public:
 		llassert(mProcessed || LLApp::isExiting());
 	}
 
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
+	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
@@ -334,7 +334,7 @@ public:
 		llassert(mProcessed || LLApp::isExiting());
 	}
 
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
+	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
@@ -362,7 +362,7 @@ public:
 		llassert(mProcessed || LLApp::isExiting());
 	}
 
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
+	virtual void completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer);
 
@@ -437,7 +437,7 @@ public:
 	{
 	}
 
-	/*virtual*/ void completed(U32 status,
+	virtual void completed(U32 status,
 							   const std::string& reason,
 							   const LLSD& content)
 	{
@@ -451,7 +451,7 @@ public:
 
 		LLWholeModelFeeObserver* observer = mObserverHandle.get();
 
-		if (((200 <= status) && (status < 300)) &&
+		if (isGoodStatus(status) &&
 			cc["state"].asString() == "upload")
 		{
 			mWholeModelUploadURL = cc["uploader"].asString();
@@ -495,7 +495,7 @@ public:
 	{
 	}
 
-	/*virtual*/ void completed(U32 status,
+	virtual void completed(U32 status,
 							   const std::string& reason,
 							   const LLSD& content)
 	{
@@ -511,7 +511,7 @@ public:
 
 		// requested "mesh" asset type isn't actually the type
 		// of the resultant object, fix it up here.
-		if (((200 <= status) && (status < 300)) &&
+		if (isGoodStatus(status) &&
 			cc["state"].asString() == "complete")
 		{
 			mModelData["asset_type"] = "object";
@@ -583,50 +583,35 @@ void LLMeshRepoThread::run()
 
 			while (!mLODReqQ.empty() && count < MAX_MESH_REQUESTS_PER_SECOND && sActiveLODRequests < (S32)sMaxConcurrentRequests)
 			{
+				if (mMutex)
 				{
 					mMutex->lock();
 					LODRequest req = mLODReqQ.front();
 					mLODReqQ.pop();
 					LLMeshRepository::sLODProcessing--;
 					mMutex->unlock();
-					try
+					if (!fetchMeshLOD(req.mMeshParams, req.mLOD, count))//failed, resubmit
 					{
-						fetchMeshLOD(req.mMeshParams, req.mLOD, count);
-					}
-					catch(AICurlNoEasyHandle const& error)
-					{
-						llwarns << "fetchMeshLOD() failed: " << error.what() << llendl;
 						mMutex->lock();
-						LLMeshRepository::sLODProcessing++;
 						mLODReqQ.push(req);
 						mMutex->unlock();
-						break;
 					}
 				}
 			}
 
 			while (!mHeaderReqQ.empty() && count < MAX_MESH_REQUESTS_PER_SECOND && sActiveHeaderRequests < (S32)sMaxConcurrentRequests)
 			{
+				if (mMutex)
 				{
 					mMutex->lock();
 					HeaderRequest req = mHeaderReqQ.front();
 					mHeaderReqQ.pop();
 					mMutex->unlock();
-					bool success = false;
-					try
-					{
-						success = fetchMeshHeader(req.mMeshParams, count);
-					}
-					catch(AICurlNoEasyHandle const& error)
-					{
-						llwarns << "fetchMeshHeader() failed: " << error.what() << llendl;
-					}
-					if (!success)
+					if (!fetchMeshHeader(req.mMeshParams, count))//failed, resubmit
 					{
 						mMutex->lock();
 						mHeaderReqQ.push(req) ;
 						mMutex->unlock();
-						break;
 					}
 				}
 			}
@@ -636,16 +621,7 @@ void LLMeshRepoThread::run()
 				for (std::set<LLUUID>::iterator iter = mSkinRequests.begin(); iter != mSkinRequests.end(); ++iter)
 				{
 					LLUUID mesh_id = *iter;
-					bool success = false;
-					try
-					{
-						success = fetchMeshSkinInfo(mesh_id);
-					}
-					catch(AICurlNoEasyHandle const& error)
-					{
-						llwarns << "fetchMeshSkinInfo(" << mesh_id << ") failed: " << error.what() << llendl;
-					}
-					if (!success)
+					if (!fetchMeshSkinInfo(mesh_id))
 					{
 						incomplete.insert(mesh_id);
 					}
@@ -658,16 +634,7 @@ void LLMeshRepoThread::run()
 				for (std::set<LLUUID>::iterator iter = mDecompositionRequests.begin(); iter != mDecompositionRequests.end(); ++iter)
 				{
 					LLUUID mesh_id = *iter;
-					bool success = false;
-					try
-					{
-						success = fetchMeshDecomposition(mesh_id);
-					}
-					catch(AICurlNoEasyHandle const& error)
-					{
-						llwarns << "fetchMeshDecomposition(" << mesh_id << ") failed: " << error.what() << llendl;
-					}
-					if (!success)
+					if (!fetchMeshDecomposition(mesh_id))
 					{
 						incomplete.insert(mesh_id);
 					}
@@ -680,16 +647,7 @@ void LLMeshRepoThread::run()
 				for (std::set<LLUUID>::iterator iter = mPhysicsShapeRequests.begin(); iter != mPhysicsShapeRequests.end(); ++iter)
 				{
 					LLUUID mesh_id = *iter;
-					bool success = false;
-					try
-					{
-						success = fetchMeshPhysicsShape(mesh_id);
-					}
-					catch(AICurlNoEasyHandle const& error)
-					{
-						llwarns << "fetchMeshPhysicsShape(" << mesh_id << ") failed: " << error.what() << llendl;
-					}
-					if (!success)
+					if (!fetchMeshPhysicsShape(mesh_id))
 					{
 						incomplete.insert(mesh_id);
 					}
@@ -799,6 +757,7 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 		return false;
 	}
 
+	bool ret = true ;
 	U32 header_size = mMeshHeaderSize[mesh_id];
 	
 	if (header_size > 0)
@@ -820,7 +779,7 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 				U8* buffer = new U8[size];
 				file.read(buffer, size);
 
-				//make sure buffer isn't all 0's (reserved block but not written)
+				//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
 				bool zero = true;
 				for (S32 i = 0; i < llmin(size, 1024) && zero; ++i)
 				{
@@ -845,9 +804,12 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
-				LLHTTPClient::getByteRange(http_url, offset, size,
-											new LLMeshSkinInfoResponder(mesh_id, offset, size), headers);
-				LLMeshRepository::sHTTPRequestCount++;
+				ret = LLHTTPClient::getByteRange(http_url, headers, offset, size,
+												 new LLMeshSkinInfoResponder(mesh_id, offset, size));
+				if (ret)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 			}
 		}
 	}
@@ -857,7 +819,7 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 	}
 
 	//early out was not hit, effectively fetched
-	return true;
+	return ret;
 }
 
 //return false if failed to get header
@@ -873,6 +835,7 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 	}
 
 	U32 header_size = mMeshHeaderSize[mesh_id];
+	bool ret = true ;
 	
 	if (header_size > 0)
 	{
@@ -893,7 +856,7 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 				U8* buffer = new U8[size];
 				file.read(buffer, size);
 
-				//make sure buffer isn't all 0's (reserved block but not written)
+				//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
 				bool zero = true;
 				for (S32 i = 0; i < llmin(size, 1024) && zero; ++i)
 				{
@@ -918,10 +881,12 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
-				// This might throw AICurlNoEasyHandle.
-				LLHTTPClient::getByteRange(http_url, offset, size,
-											new LLMeshDecompositionResponder(mesh_id, offset, size), headers);
-				LLMeshRepository::sHTTPRequestCount++;
+				ret = LLHTTPClient::getByteRange(http_url, headers, offset, size,
+											new LLMeshDecompositionResponder(mesh_id, offset, size));
+				if(ret)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 			}
 		}
 	}
@@ -931,7 +896,7 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 	}
 
 	//early out was not hit, effectively fetched
-	return true;
+	return ret;
 }
 
 //return false if failed to get header
@@ -947,6 +912,7 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 	}
 
 	U32 header_size = mMeshHeaderSize[mesh_id];
+	bool ret = true ;
 
 	if (header_size > 0)
 	{
@@ -992,10 +958,13 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
-				// This might throw AICurlNoEasyHandle.
-			  LLHTTPClient::getByteRange(http_url, offset, size,
-										  new LLMeshPhysicsShapeResponder(mesh_id, offset, size), headers);
-				LLMeshRepository::sHTTPRequestCount++;
+				ret = LLHTTPClient::getByteRange(http_url, headers, offset, size,
+												 new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
+
+				if(ret)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 			}
 		}
 		else
@@ -1009,7 +978,7 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 	}
 
 	//early out was not hit, effectively fetched
-	return true;
+	return ret;
 }
 
 //static
@@ -1056,14 +1025,14 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 			LLMeshRepository::sCacheBytesRead += bytes;	
 			file.read(buffer, bytes);
 			if (headerReceived(mesh_params, buffer, bytes))
-			{
-				// Already have header, no need to retry.
+			{ //did not do an HTTP request, return false
 				return true;
 			}
 		}
 	}
 
 	//either cache entry doesn't exist or is corrupt, request header from simulator	
+	bool retval = true;
 	AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 	std::string http_url = constructUrl(mesh_params.getSculptID());
@@ -1072,18 +1041,23 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 		//grab first 4KB if we're going to bother with a fetch.  Cache will prevent future fetches if a full mesh fits
 		//within the first 4KB
 		//NOTE -- this will break of headers ever exceed 4KB		
-		// This might throw AICurlNoEasyHandle.
-		LLHTTPClient::getByteRange(http_url, 0, 4096, new LLMeshHeaderResponder(mesh_params), headers);
-		LLMeshRepository::sHTTPRequestCount++;
+		retval = LLHTTPClient::getByteRange(http_url, headers, 0, 4096, new LLMeshHeaderResponder(mesh_params));
+		if (retval)
+		{
+			LLMeshRepository::sHTTPRequestCount++;
+		}
 		count++;
 	}
 
-	return true;
+	return retval;
 }
 
-void LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count)
+//return false if failed to get mesh lod.
+bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count)
 { //protected by mMutex
 	mHeaderMutex->lock();
+
+	bool retval = true;
 
 	LLUUID mesh_id = mesh_params.getSculptID();
 	
@@ -1120,7 +1094,7 @@ void LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, 
 					if (lodReceived(mesh_params, lod, buffer, size))
 					{
 						delete[] buffer;
-						return;
+						return true;
 					}
 				}
 
@@ -1133,10 +1107,13 @@ void LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{				
-				// This might throw AICurlNoEasyHandle.
-				LLHTTPClient::getByteRange(constructUrl(mesh_id), offset, size,
-											new LLMeshLODResponder(mesh_params, lod, offset, size), headers);
-				LLMeshRepository::sHTTPRequestCount++;
+				retval = LLHTTPClient::getByteRange(constructUrl(mesh_id), headers, offset, size,
+										   new LLMeshLODResponder(mesh_params, lod, offset, size));
+
+				if (retval)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 				count++;
 			}
 			else
@@ -1476,17 +1453,17 @@ bool LLMeshUploadThread::run()
 
 void LLMeshUploadThread::postRequest(std::string& whole_model_upload_url, AIMeshUpload* state_machine)
 {
-	if (!mDoUpload)
-	{
-		LLHTTPClient::post(mWholeModelFeeCapability, mModelData,
-			new LLWholeModelFeeResponder(mModelData, mFeeObserverHandle, whole_model_upload_url)/*,*/
-			DEBUG_CURLIO_PARAM(debug_on), keep_alive, state_machine, AIMeshUpload_responderFinished);
-	}
-	else
+	if (mDoUpload)
 	{
 		LLHTTPClient::post(whole_model_upload_url, mBody,
 			new LLWholeModelUploadResponder(mModelData, mUploadObserverHandle)/*,*/
 			DEBUG_CURLIO_PARAM(debug_off), keep_alive, state_machine, AIMeshUpload_responderFinished);
+	}
+	else
+	{
+		LLHTTPClient::post(mWholeModelFeeCapability, mModelData,
+			new LLWholeModelFeeResponder(mModelData, mFeeObserverHandle, whole_model_upload_url)/*,*/
+			DEBUG_CURLIO_PARAM(debug_on), keep_alive, state_machine, AIMeshUpload_responderFinished);
 	}
 }
 
@@ -1877,6 +1854,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 		}
 		else
 		{
+			llassert(status == HTTP_INTERNAL_ERROR || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
 			llwarns << "Unhandled status " << status << llendl;
 		}
 		return;
@@ -1928,12 +1906,13 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 	{
 		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
-			llwarns << "Timeout or service unavailable, retrying." << llendl;
+			llwarns << "Timeout or service unavailable, retrying loadMeshSkinInfo() for " << mMeshID << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
 			gMeshRepo.mThread->loadMeshSkinInfo(mMeshID);
 		}
 		else
 		{
+			llassert(status == HTTP_INTERNAL_ERROR || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
 			llwarns << "Unhandled status " << status << llendl;
 		}
 		return;

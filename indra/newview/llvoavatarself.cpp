@@ -2492,7 +2492,7 @@ public:
 
 	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
 	{
-		if (200 <= status && status < 300)
+		if (isGoodStatus(status))
 		{
 			LL_DEBUGS("Avatar") << "status OK" << llendl;
 		}
