@@ -26,11 +26,11 @@
 	     left="0" name="step_1" width="64" />
 	<text bottom_delta="38" follows="top|left" height="16" left="72" name="contacting"
 	     right="-20" >
-		Contacting LindeX...
+		Contacting currency exchange...
 	</text>
 	<text bottom_delta="0" follows="top|left" height="16" left="72"
 	     name="buy_action_unknown" right="-20" >
-		Buy [CURRENCY] on the LindeX currency exchange
+		Buy [CURRENCY] on the currency exchange
 	</text>
 	<text bottom_delta="0" follows="top|left" height="16" left="72" name="buy_action"
 	     right="-20" >
