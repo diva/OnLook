@@ -564,7 +564,6 @@ public:
 LLMeshRepoThread::LLMeshRepoThread()
 : LLThread("mesh repo") 
 { 
-	mWaiting = false;
 	mMutex = new LLMutex();
 	mHeaderMutex = new LLMutex();
 	mSignal = new LLCondition();
@@ -588,12 +587,9 @@ void LLMeshRepoThread::run()
 		llwarns << "convex decomposition unable to be loaded" << llendl;
 	}
 
+	mSignal->lock();
 	while (!LLApp::isQuitting())
 	{
-		mWaiting = true;
-		mSignal->wait();
-		mWaiting = false;
-
 		if (!LLApp::isQuitting())
 		{
 			static U32 count = 0;
@@ -2473,10 +2469,11 @@ void LLMeshRepository::notifyLoadedMeshes()
 	//call completed callbacks on finished decompositions
 	mDecompThread->notifyCompleted();
 
-	if (!mThread->mWaiting)
+	if (!mThread->mSignal->tryLock())
 	{ //curl thread is churning, wait for it to go idle
 		return;
 	}
+	mThread->mSignal->unlock();
 
 	static std::string region_name("never name a region this");
 

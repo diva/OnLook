@@ -225,8 +225,6 @@ public:
 	LLMutex*	mHeaderMutex;
 	LLCondition*	mSignal;
 
-	bool mWaiting;
-
 	//map of known mesh headers
 	typedef std::map<LLUUID, LLSD> mesh_header_map;
 	mesh_header_map mMeshHeader;
