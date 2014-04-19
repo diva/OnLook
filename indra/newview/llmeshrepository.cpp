@@ -746,7 +746,7 @@ void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 		if (pending != mPendingLOD.end())
 		{	//append this lod request to existing header request
 			pending->second.push_back(lod);
-			llassert(pending->second.size() <= LLModel::NUM_LODS)
+			llassert(pending->second.size() <= LLModel::NUM_LODS);
 		}
 		else
 		{	//if no header request is pending, fetch header
@@ -1920,7 +1920,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 		}
 		else
 		{
-			llassert(status == HTTP_INTERNAL_ERROR || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
 			llwarns << "Unhandled status " << status << llendl;
 		}
 		return;
@@ -1984,7 +1984,7 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 		}
 		else
 		{
-			llassert(status == HTTP_INTERNAL_ERROR || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
 			llwarns << "Unhandled status " << status << llendl;
 		}
 		return;
@@ -2047,7 +2047,7 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 		}
 		else
 		{
-			llassert(status == HTTP_INTERNAL_ERROR || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
 			llwarns << "Unhandled status " << status << llendl;
 		}
 		return;
@@ -2111,7 +2111,7 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 		}
 		else
 		{
-			llassert(status == HTTP_INTERNAL_ERROR || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
 			llwarns << "Unhandled status " << status << llendl;
 		}
 		return;
@@ -2171,7 +2171,7 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 		// and (somewhat more optional than the others) retries
 		// again after some set period of time
 
-		llassert(status == HTTP_NOT_FOUND || status == HTTP_SERVICE_UNAVAILABLE || status == HTTP_REQUEST_TIME_OUT || status == HTTP_INTERNAL_ERROR);
+		llassert(status == HTTP_NOT_FOUND || status == HTTP_SERVICE_UNAVAILABLE || status == HTTP_REQUEST_TIME_OUT || is_internal_http_error_that_warrants_a_retry(status));
 
 		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//retry
