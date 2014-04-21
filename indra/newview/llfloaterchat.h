@@ -59,9 +59,9 @@ public:
 	LLFloaterChat(const LLSD& seed);
 	~LLFloaterChat();
 
-	virtual void setVisible( BOOL b );
 	virtual void draw();
 	virtual BOOL postBuild();
+	virtual void onOpen();
 	virtual void onClose(bool app_quitting);
 	virtual void onFocusReceived();
 	virtual void handleVisibilityChange(BOOL cur_visibility);

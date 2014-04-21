@@ -78,9 +78,14 @@ BOOL LLFloaterMyFriends::postBuild()
 	return TRUE;
 }
 
+void LLFloaterMyFriends::onOpen()
+{
+	gSavedSettings.setBOOL("ShowContacts", true);
+}
 
 void LLFloaterMyFriends::onClose(bool app_quitting)
 {
+	if (!app_quitting) gSavedSettings.setBOOL("ShowContacts", false);
 	setVisible(FALSE);
 }
 
@@ -113,6 +118,7 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 	{
 		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chatterbox_wolf.xml", NULL, FALSE);
 	}
+	if (gSavedSettings.getBOOL("ShowCommunicate")) open();
 	
 	if (gSavedSettings.getBOOL("ContactsTornOff"))
 	{
@@ -122,6 +128,7 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 		removeFloater(floater_contacts);
 		// reparent to floater view
 		gFloaterView->addChild(floater_contacts);
+		if (gSavedSettings.getBOOL("ShowContacts")) floater_contacts->open();
 	}
 	else
 	{
@@ -136,6 +143,7 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 		removeFloater(floater_chat);
 		// reparent to floater view
 		gFloaterView->addChild(floater_chat);
+		if (gSavedSettings.getBOOL("ShowChatHistory")) floater_chat->open();
 	}
 	else
 	{
