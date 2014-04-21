@@ -3277,7 +3277,7 @@ void LLWindowMacOSX::spawnWebBrowser(const std::string& escaped_url, bool async)
 
 	llinfos << "Opening URL " << escaped_url << llendl;
 
-	CFStringRef	stringRef = CFStringCreateWithCString(NULL, escaped_url.c_str(), kCFStringEncodingUTF8);
+	CFStringRef	stringRef = CFStringCreateWithBytes(NULL, (UInt8 *)escaped_url.c_str(), strlen(escaped_url.c_str()), kCFStringEncodingUTF8, false);
 	if (stringRef)
 	{
 		// This will succeed if the string is a full URL, including the http://
@@ -3313,6 +3313,21 @@ void LLWindowMacOSX::setTitle(const std::string &title)
 
 	CFStringRef title_str = CFStringCreateWithCString(NULL, title.c_str(), kCFStringEncodingUTF8);
 	SetWindowTitleWithCFString(mWindow, title_str);
+}
+
+// virtual
+void LLWindowMacOSX::ShellEx(const std::string& command)
+{
+	char * path = NULL;
+	asprintf(&path, "%s %s", (char*)"file://", command.c_str());
+	CFURLRef url = CFURLCreateAbsoluteURLWithBytes(NULL, (UInt8 *)path, strlen(path),
+												   kCFURLPOSIXPathStyle, NULL, true);
+	if (url != NULL)
+	{
+		LSOpenCFURLRef(url, NULL);
+		CFRelease(url);
+	}
+	free(path);
 }
 
 LLSD LLWindowMacOSX::getNativeKeyData()
