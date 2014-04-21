@@ -738,7 +738,7 @@
     <key>LiruLegacyLogLaunch</key>
     <map>
       <key>Comment</key>
-      <string>When opening a chat log, open in an external text editor instead of a browser floater(Windows Only).</string>
+      <string>When opening a chat log, open in an external text editor instead of a browser floater(Windows and Mac Only).</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
