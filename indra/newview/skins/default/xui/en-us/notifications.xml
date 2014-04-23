@@ -6943,9 +6943,8 @@ This will add a bookmark in your inventory so you can quickly IM this resident.
    icon="notify.tga"
    name="RegionRestartMinutes"
    priority="high"
-   sound="UISndAlert"
    type="notify">
-Region is restarting in [MINUTES] minutes.
+[TIME] This region will restart in [MINUTES] minutes.
 If you remain in this region you will be logged out.
   </notification>
 
@@ -6953,9 +6952,8 @@ If you remain in this region you will be logged out.
    icon="notify.tga"
    name="RegionRestartSeconds"
    priority="high"
-   sound="UISndAlert"
    type="notify">
-Region is restarting in [SECONDS] seconds.
+[TIME] This region will restart in [SECONDS] seconds.
 If you remain in this region you will be logged out.
   </notification>
 

@@ -6434,7 +6434,6 @@ bool handle_special_notification(std::string notificationID, LLSD& llsdBlock)
 	std::string regionMaturity = LLViewerRegion::accessToString(regionAccess);
 	LLStringUtil::toLower(regionMaturity);
 	llsdBlock["REGIONMATURITY"] = regionMaturity;
-	
 	bool returnValue = false;
 	LLNotificationPtr maturityLevelNotification;
 	std::string notifySuffix = "_Notify";
@@ -6583,6 +6582,17 @@ void home_position_set()
 	gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, FALSE);
 }
 
+void add_time_arg(LLSD& args)
+{
+	static const LLCachedControl<bool> show_local_time("LiruLocalTime");
+	// Get current UTC time, adjusted for the user's clock
+	// being off.
+	time_t utc_time = show_local_time ? time(NULL) : time_corrected();
+	std::string timeStr;
+	timeStructToFormattedString(show_local_time ? std::localtime(&utc_time) : utc_to_pacific_time(utc_time, gPacificDaylightTime), gSavedSettings.getString("ShortTimeFormat"), timeStr);
+	args["TIME"] = timeStr;
+}
+
 bool attempt_standard_notification(LLMessageSystem* msgsystem)
 {
 	// if we have additional alert data
@@ -6654,6 +6664,11 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 		{
 			LLViewerStats::getInstance()->incStat(LLViewerStats::ST_KILLED_COUNT);
 		}
+		else if (notificationID == "RegionRestartMinutes" || notificationID == "RegionRestartSeconds")
+		{
+			add_time_arg(llsdBlock);
+			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
+		}
 
 		LLNotificationsUtil::add(notificationID, llsdBlock);
 		return true;
@@ -6712,7 +6727,6 @@ bool handle_not_age_verified_alert(const std::string &pAlertName)
 bool handle_special_alerts(const std::string &pAlertName)
 {
 	bool isHandled = false;
-
 	if (LLStringUtil::compareStrings(pAlertName, "NotAgeVerified") == 0)
 	{
 		
@@ -6763,14 +6777,18 @@ void process_alert_core(const std::string& message, BOOL modal)
 			S32 mins = 0;
 			LLStringUtil::convertToS32(text.substr(18), mins);
 			args["MINUTES"] = llformat("%d",mins);
+			add_time_arg(args);
 			LLNotificationsUtil::add("RegionRestartMinutes", args);
+			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
 		}
 		else if (text.substr(0,17) == "RESTART_X_SECONDS")
 		{
 			S32 secs = 0;
 			LLStringUtil::convertToS32(text.substr(18), secs);
 			args["SECONDS"] = llformat("%d",secs);
+			add_time_arg(args);
 			LLNotificationsUtil::add("RegionRestartSeconds", args);
+			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
 		}
 		else
 		{
