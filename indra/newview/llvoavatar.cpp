@@ -910,6 +910,7 @@ const LLUUID SHClientTagMgr::getClientID(const LLVOAvatar* pAvatar) const
 	}
 	return tag.asUUID();
 }
+bool mm_getMarkerColor(const LLUUID&, LLColor4&);
 bool SHClientTagMgr::getClientColor(const LLVOAvatar* pAvatar, bool check_status, LLColor4& color) const
 {
 	static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
@@ -918,6 +919,7 @@ bool SHClientTagMgr::getClientColor(const LLVOAvatar* pAvatar, bool check_status
 
 	if(check_status && ascent_use_status_colors && !pAvatar->isSelf())
 	{
+		if (mm_getMarkerColor(pAvatar->getID(), color)) return true;
 		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(pAvatar->getPositionGlobal());
 		if(LLMuteList::getInstance()->isLinden(pAvatar->getFullname()))
 		{

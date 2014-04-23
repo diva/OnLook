@@ -215,6 +215,13 @@ std::size_t hash_value(const LLUUID& uuid)
 	return (std::size_t)uuid.getCRC32();
 }
 boost::unordered_map<const LLUUID,LLColor4> mm_MarkerColors;
+bool mm_getMarkerColor(const LLUUID& id, LLColor4& color)
+{
+	boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(id);
+	if (it == mm_MarkerColors.end()) return false;
+	color = it->second;
+	return true;
+}
 
 void LLNetMap::mm_setcolor(LLUUID key,LLColor4 col)
 {
@@ -574,11 +581,7 @@ void LLNetMap::draw()
 			LLUUID estate_owner = avatar_region ? avatar_region->getOwner() : LLUUID::null;
 
 			// MOYMOD Minimap custom av colors.
-			boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(uuid);
-			if(it != mm_MarkerColors.end())
-			{
-				color = it->second;
-			}
+			if (mm_getMarkerColor(uuid, color)) {}
 			//Lindens are always more Linden than your friend, make that take precedence
 			else if (LLMuteList::getInstance()->isLinden(uuid))
 			{
