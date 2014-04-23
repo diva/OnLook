@@ -118,7 +118,6 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 	{
 		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chatterbox_wolf.xml", NULL, FALSE);
 	}
-	if (gSavedSettings.getBOOL("ShowCommunicate")) open();
 	
 	if (gSavedSettings.getBOOL("ContactsTornOff"))
 	{
@@ -149,6 +148,7 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 	{
 		addFloater(floater_chat, FALSE);
 	}
+	if (gSavedSettings.getBOOL("ShowCommunicate")) open(); // After all floaters have been added, so we may not be hidden anyhow.
 	gSavedSettings.getControl("ShowLocalChatFloaterBar")->getSignal()->connect(boost::bind(handleLocalChatBar, floater_chat, _2));
 	mTabContainer->lockTabs();
 }
@@ -236,7 +236,7 @@ void LLFloaterChatterBox::onOpen()
 void LLFloaterChatterBox::onClose(bool app_quitting)
 {
 	setVisible(FALSE);
-	gSavedSettings.setBOOL("ShowCommunicate", FALSE);
+	if (!app_quitting) gSavedSettings.setBOOL("ShowCommunicate", false);
 }
 
 void LLFloaterChatterBox::setMinimized(BOOL minimized)
