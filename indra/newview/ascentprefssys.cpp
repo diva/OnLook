@@ -258,6 +258,7 @@ void LLPrefsAscentSys::refreshValues()
 	mDisableClickSitOtherOwner	= gSavedSettings.getBOOL("DisableClickSitOtherOwner");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
     mNumScriptDiff              = gSavedSettings.getF32("Ascentnumscriptdiff");
+	mLandmark			= gSavedPerAccountSettings.getString("EmergencyTeleportLandmark");
 
 	//Build -------------------------------------------------------------------------------
 	mAlpha						= gSavedSettings.getF32("EmeraldBuildPrefs_Alpha");
@@ -414,6 +415,7 @@ void LLPrefsAscentSys::cancel()
 	gSavedSettings.setBOOL("DisableClickSitOtherOwner",     mDisableClickSitOtherOwner);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
     gSavedSettings.setF32("Ascentnumscriptdiff",            mNumScriptDiff);
+	gSavedPerAccountSettings.setString("EmergencyTeleportLandmark",      mLandmark);
 
 	//Build -------------------------------------------------------------------------------
 	gSavedSettings.setF32("EmeraldBuildPrefs_Alpha",        mAlpha);

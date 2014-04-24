@@ -109,6 +109,7 @@ private:
 	bool mDisableClickSitOtherOwner;
 	bool mDisplayScriptJumps;
 	F32 mNumScriptDiff;
+	std::string mLandmark;
 
 	//Build -------------------------------------------------------------------------------
 	F32 mAlpha;

@@ -35,6 +35,18 @@
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 
+// <singu> For emergency teleports
+#include "llinventorymodel.h"
+void emergency_teleport()
+{
+	static const LLCachedControl<std::string> landmark(gSavedPerAccountSettings, "EmergencyTeleportLandmark");
+	if (landmark().empty()) return;
+	const LLUUID id(landmark);
+	if (id.isNull()) return;
+	if (LLViewerInventoryItem* item = gInventory.getItem(id))
+		gAgent.teleportViaLandmark(item->getAssetUUID());
+}
+// </singu>
 
 enum shake_state
 {
@@ -66,6 +78,7 @@ LLFloaterRegionRestarting::LLFloaterRegionRestarting(const LLSD& key) :
 	refresh();
 
 	mRegionChangedConnection = LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLFloaterRegionRestarting::close, this, false));
+	if (mSeconds <= 20) emergency_teleport(); // <singu/> For emergency teleports
 }
 
 LLFloaterRegionRestarting::~LLFloaterRegionRestarting()
@@ -93,6 +106,7 @@ void LLFloaterRegionRestarting::refresh()
 	args["[SECONDS]"] = llformat("%d", mSeconds);
 	mRestartSeconds->setValue(getString("RestartSeconds", args));
 
+	if (mSeconds == 20) emergency_teleport(); // <singu/> For emergency teleports
 	if (!mSeconds) return; // Zero means we're done.
 	--mSeconds;
 }
@@ -177,5 +191,6 @@ void LLFloaterRegionRestarting::onClose(bool app_quitting)
 void LLFloaterRegionRestarting::updateTime(const U32& time)
 {
 	mSeconds = time;
+	if (mSeconds <= 20) emergency_teleport(); // <singu/> For emergency teleports
 	sShakeState = SHAKE_START;
 }
