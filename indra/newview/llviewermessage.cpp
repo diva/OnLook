@@ -6685,7 +6685,7 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 		else if (notificationID == "RegionRestartMinutes" || notificationID == "RegionRestartSeconds")
 		{
 			update_region_restart(llsdBlock);
-			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 			return true; // Floater is enough.
 		}
 
@@ -6798,7 +6798,7 @@ void process_alert_core(const std::string& message, BOOL modal)
 			args["MINUTES"] = llformat("%d",mins);
 			update_region_restart(args);
 			//LLNotificationsUtil::add("RegionRestartMinutes", args); // Floater is enough.
-			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 		}
 		else if (text.substr(0,17) == "RESTART_X_SECONDS")
 		{
@@ -6807,15 +6807,16 @@ void process_alert_core(const std::string& message, BOOL modal)
 			args["SECONDS"] = llformat("%d",secs);
 			update_region_restart(args);
 			//LLNotificationsUtil::add("RegionRestartSeconds", args); // Floater is enough.
-			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
-		}
-		// *NOTE: If the text from the server ever changes this line will need to be adjusted.
-		else if (text.substr(0, 25) == "Region restart cancelled.")
-		{
-			LLFloaterRegionRestarting::hideInstance();
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 		}
 		else
 		{
+			// *NOTE: If the text from the server ever changes this line will need to be adjusted.
+			if (text.substr(0, 25) == "Region restart cancelled.")
+			{
+				LLFloaterRegionRestarting::hideInstance();
+			}
+
 			std::string new_msg =LLNotificationTemplates::instance().getGlobalString(text);
 // [RLVa:KB] - Checked: 2012-02-07 (RLVa-1.4.5) | Added: RLVa-1.4.5
 			if ( (new_msg == text) && (rlv_handler_t::isEnabled()) )

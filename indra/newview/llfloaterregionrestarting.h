@@ -45,6 +45,7 @@ private:
 	virtual BOOL tick();
 	virtual void refresh();
 	virtual void draw();
+	virtual void onClose(bool app_quitting);
 
 	class LLTextBox* mRestartSeconds;
 	U32 mSeconds;

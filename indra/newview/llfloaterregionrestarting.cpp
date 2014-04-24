@@ -164,6 +164,16 @@ void LLFloaterRegionRestarting::draw()
 	}
 }
 
+void LLFloaterRegionRestarting::onClose(bool app_quitting)
+{
+	if (sShakeState != SHAKE_DONE && sShakeState != SHAKE_START) // Finish shake if needed
+	{
+		gAgentCamera.resetView(TRUE, TRUE);
+		sShakeState = SHAKE_DONE;
+	}
+	LLFloater::onClose(app_quitting);
+}
+
 void LLFloaterRegionRestarting::updateTime(const U32& time)
 {
 	mSeconds = time;
