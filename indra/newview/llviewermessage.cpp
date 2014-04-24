@@ -67,6 +67,7 @@
 #include "llfloatermute.h"
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
+#include "llfloaterregionrestarting.h"
 #include "llfloaterteleporthistory.h"
 #include "llgroupactions.h"
 #include "llhudeffecttrail.h"
@@ -6582,15 +6583,32 @@ void home_position_set()
 	gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, FALSE);
 }
 
-void add_time_arg(LLSD& args)
+void update_region_restart(const LLSD& llsdBlock)
 {
-	static const LLCachedControl<bool> show_local_time("LiruLocalTime");
-	// Get current UTC time, adjusted for the user's clock
-	// being off.
-	time_t utc_time = show_local_time ? time(NULL) : time_corrected();
-	std::string timeStr;
-	timeStructToFormattedString(show_local_time ? std::localtime(&utc_time) : utc_to_pacific_time(utc_time, gPacificDaylightTime), gSavedSettings.getString("ShortTimeFormat"), timeStr);
-	args["TIME"] = timeStr;
+	U32 seconds;
+	if (llsdBlock.has("MINUTES"))
+	{
+		seconds = 60U * static_cast<U32>(llsdBlock["MINUTES"].asInteger());
+	}
+	else
+	{
+		seconds = static_cast<U32>(llsdBlock["SECONDS"].asInteger());
+	}
+
+	LLFloaterRegionRestarting* restarting_floater = LLFloaterRegionRestarting::findInstance();
+
+	if (restarting_floater)
+	{
+		restarting_floater->updateTime(seconds);
+		restarting_floater->center();
+	}
+	else
+	{
+		LLSD params;
+		params["NAME"] = llsdBlock["NAME"];
+		params["SECONDS"] = (LLSD::Integer)seconds;
+		LLFloaterRegionRestarting::showInstance(params);
+	}
 }
 
 bool attempt_standard_notification(LLMessageSystem* msgsystem)
@@ -6666,8 +6684,9 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 		}
 		else if (notificationID == "RegionRestartMinutes" || notificationID == "RegionRestartSeconds")
 		{
-			add_time_arg(llsdBlock);
+			update_region_restart(llsdBlock);
 			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
+			return true; // Floater is enough.
 		}
 
 		LLNotificationsUtil::add(notificationID, llsdBlock);
@@ -6777,8 +6796,8 @@ void process_alert_core(const std::string& message, BOOL modal)
 			S32 mins = 0;
 			LLStringUtil::convertToS32(text.substr(18), mins);
 			args["MINUTES"] = llformat("%d",mins);
-			add_time_arg(args);
-			LLNotificationsUtil::add("RegionRestartMinutes", args);
+			update_region_restart(args);
+			//LLNotificationsUtil::add("RegionRestartMinutes", args); // Floater is enough.
 			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
 		}
 		else if (text.substr(0,17) == "RESTART_X_SECONDS")
@@ -6786,9 +6805,14 @@ void process_alert_core(const std::string& message, BOOL modal)
 			S32 secs = 0;
 			LLStringUtil::convertToS32(text.substr(18), secs);
 			args["SECONDS"] = llformat("%d",secs);
-			add_time_arg(args);
-			LLNotificationsUtil::add("RegionRestartSeconds", args);
+			update_region_restart(args);
+			//LLNotificationsUtil::add("RegionRestartSeconds", args); // Floater is enough.
 			send_sound_trigger(LLUUID(gSavedSettings.getString("UISndRestart")), 1.0f);
+		}
+		// *NOTE: If the text from the server ever changes this line will need to be adjusted.
+		else if (text.substr(0, 25) == "Region restart cancelled.")
+		{
+			LLFloaterRegionRestarting::hideInstance();
 		}
 		else
 		{
