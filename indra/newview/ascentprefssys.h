@@ -103,6 +103,7 @@ private:
 	bool mPrivateLookAt;
 	bool mShowLookAt;
 	bool mQuietSnapshotsToDisk;
+	bool mAnnounceBumps;
 	bool mDetachBridge;
 	bool mRevokePermsOnStandUp;
 	bool mDisableClickSit;

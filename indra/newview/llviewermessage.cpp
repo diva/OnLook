@@ -6915,6 +6915,32 @@ void mean_name_callback(const LLUUID &id, const std::string& full_name, bool is_
 	}
 }
 
+void chat_mean_collision(const LLUUID& id, const LLAvatarName& avname, const EMeanCollisionType& type, const F32& mag)
+{
+	LLStringUtil::format_map_t args;
+	if (type == MEAN_BUMP)
+		args["ACT"] = LLTrans::getString("bump");
+	else if (type == MEAN_LLPUSHOBJECT)
+		args["ACT"] = LLTrans::getString("llpushobject");
+	else if (type == MEAN_SELECTED_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("selected_object_collide");
+	else if (type == MEAN_SCRIPTED_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("scripted_object_collide");
+	else if (type == MEAN_PHYSICAL_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("physical_object_collide");
+	else
+		return; // How did we get here? I used to know you so well.
+	std::string name;
+	LLAvatarNameCache::getPNSName(avname, name);
+	args["NAME"] = name;
+	args["MAG"] = llformat("%f", mag);
+	LLChat chat(LLTrans::getString("BumpedYou", args));
+	chat.mFromName = name;
+	chat.mURL = llformat("secondlife:///app/agent/%s/about", id.asString().c_str());
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	LLFloaterChat::addChat(chat);
+}
+
 void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **user_data)
 {
 	if (gAgent.inPrelude())
@@ -6944,6 +6970,8 @@ void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **use
 		msgsystem->getU8Fast(_PREHASH_MeanCollision, _PREHASH_Type, u8type);
 
 		type = (EMeanCollisionType)u8type;
+		static const LLCachedControl<bool> chat_collision("AnnounceBumps");
+		if (chat_collision) LLAvatarNameCache::get(perp, boost::bind(chat_mean_collision, _1, _2, type, mag));
 
 		BOOL b_found = FALSE;
 
