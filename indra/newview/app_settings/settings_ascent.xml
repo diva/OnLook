@@ -752,6 +752,34 @@
 			<key>Value</key>
 			<boolean>0</boolean>
 		</map>
+    <key>ExodusMapRolloverColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color setting for rollovers on the minimap.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <key>Value</key>
+      <array>
+        <real>0.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
+    <key>ExodusMinimapAreaEffect</key>
+    <map>
+      <key>Comment</key>
+      <string>Radius of the area of affect for the minimap, adjusted by shift scrolling over the minimap.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>3.5</real>
+    </map>
     <key>OBJExportNotifyFailed</key>
     <map>
       <key>Comment</key>
