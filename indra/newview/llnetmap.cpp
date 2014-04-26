@@ -750,6 +750,8 @@ void LLNetMap::draw()
 		}
 
 		// <exodus> Draw mouse radius
+		static const LLCachedControl<LLColor4> map_avatar_rollover_color("ExodusMapRolloverCircleColor");
+		gGL.color4fv((map_avatar_rollover_color()).mV);
 		// Todo: Detect if over the window and don't render a circle?
 		gl_circle_2d(local_mouse_x, local_mouse_y, min_pick_dist, 32, true);
 		// </exodus>
