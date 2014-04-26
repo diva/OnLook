@@ -321,8 +321,8 @@
 		     mouse_opaque="true" name="separator" width="211" />
 		<menu_item_check bottom="-113" enabled="true" height="19" label="Toolbar" left="0"
 		     mouse_opaque="true" name="Toolbar" width="211">
-			<on_click function="ShowFloater" userdata="toolbar" />
-			<on_check function="FloaterVisible" userdata="toolbar" />
+			<on_click function="ToggleControl" userdata="ShowToolBar"/>
+			<on_check control="ShowToolBar"/>
 		</menu_item_check>
 		<menu_item_call label="Change toolbar buttons" name="toolbar_prefs">
 			<on_click function="ShowFloater" userdata="floater_toolbar_prefs.xml"/>
