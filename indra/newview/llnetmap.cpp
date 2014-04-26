@@ -645,6 +645,7 @@ void LLNetMap::draw()
 					}
 					else LLWorldMapView::drawTrackingDot(pos_map.mV[VX],pos_map.mV[VY],color,0.f);
 				}
+			}
 
 			F32 dist_to_cursor_squared = dist_vec_squared(LLVector2(pos_map.mV[VX], pos_map.mV[VY]), LLVector2(local_mouse_x,local_mouse_y));
 			if (dist_to_cursor_squared < min_pick_dist_squared && dist_to_cursor_squared < closest_dist_squared)
@@ -772,7 +773,6 @@ void LLNetMap::draw()
 	setDirectionPos( getChild<LLTextBox>("se_label"), rotation + F_PI + F_PI_BY_TWO + F_PI_BY_TWO / 2);
 
 	LLUICtrl::draw();
-}
 }
 
 void LLNetMap::reshape(S32 width, S32 height, BOOL called_from_parent)
