@@ -1667,7 +1667,7 @@ LLView* LLViewerTextEditor::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlF
 	node->getAttributeBOOL("hide_border", hide_border);
 	text_editor->setBorderVisible(!hide_border);
 
-	BOOL parse_html = text_editor->mParseHTML;
+	BOOL parse_html = true;
 	node->getAttributeBOOL("allow_html", parse_html);
 	text_editor->setParseHTML(parse_html);
 	text_editor->setParseHighlights(TRUE);
