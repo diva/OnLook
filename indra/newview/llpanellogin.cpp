@@ -462,6 +462,7 @@ void LLPanelLogin::giveFocus()
 {
 	if( sInstance )
 	{
+		if (!sInstance->getVisible()) sInstance->setVisible(true);
 		// Grab focus and move cursor to first blank input field
 		std::string username = sInstance->getChild<LLUICtrl>("username_combo")->getValue().asString();
 		std::string pass = sInstance->getChild<LLUICtrl>("password_edit")->getValue().asString();
