@@ -913,13 +913,13 @@ const LLUUID SHClientTagMgr::getClientID(const LLVOAvatar* pAvatar) const
 bool mm_getMarkerColor(const LLUUID&, LLColor4&);
 bool SHClientTagMgr::getClientColor(const LLVOAvatar* pAvatar, bool check_status, LLColor4& color) const
 {
+	if (mm_getMarkerColor(pAvatar->getID(), color)) return true;
 	static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
 	static const LLCachedControl<bool> ascent_show_self_tag_color("AscentShowSelfTagColor");
 	static const LLCachedControl<bool> ascent_show_others_tag_color("AscentShowOthersTagColor");
 
 	if(check_status && ascent_use_status_colors && !pAvatar->isSelf())
 	{
-		if (mm_getMarkerColor(pAvatar->getID(), color)) return true;
 		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(pAvatar->getPositionGlobal());
 		if(LLMuteList::getInstance()->isLinden(pAvatar->getFullname()))
 		{
