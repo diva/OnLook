@@ -556,7 +556,7 @@ void LLFloaterIMPanel::draw()
 {	
 	LLViewerRegion* region = gAgent.getRegion();
 	
-	bool enable_connect = (region && !region->getCapability("ChatSessionRequest").empty())
+	bool enable_connect = region
 					  && mSessionInitialized
 					  && LLVoiceClient::getInstance()->voiceEnabled()
 					  && mCallBackEnabled;
