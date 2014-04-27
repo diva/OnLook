@@ -103,11 +103,15 @@ const S32 CIRCLE_STEPS = 100;
 
 const F64 COARSEUPDATE_MAX_Z = 1020.0f;
 
+std::map<LLUUID, LLVector3d>	LLNetMap::mClosestAgentsToCursor; // <exodus/>
+static std::map<LLUUID, LLVector3d> mClosestAgentsAtLastClick; // <exodus/>
+
 LLNetMap::LLNetMap(const std::string& name) :
 	LLPanel(name),
 	mScale(128.f),
 	mObjectMapTPM(1.f),
 	mObjectMapPixels(255.f),
+	mPickRadius(gSavedSettings, "ExodusMinimapAreaEffect"), // <exodus/>
 	mTargetPan(0.f, 0.f),
 	mCurPan(0.f, 0.f),
 	mStartPan(0.f, 0.f),
@@ -215,6 +219,13 @@ std::size_t hash_value(const LLUUID& uuid)
 	return (std::size_t)uuid.getCRC32();
 }
 boost::unordered_map<const LLUUID,LLColor4> mm_MarkerColors;
+bool mm_getMarkerColor(const LLUUID& id, LLColor4& color)
+{
+	boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(id);
+	if (it == mm_MarkerColors.end()) return false;
+	color = it->second;
+	return true;
+}
 
 void LLNetMap::mm_setcolor(LLUUID key,LLColor4 col)
 {
@@ -222,6 +233,10 @@ void LLNetMap::mm_setcolor(LLUUID key,LLColor4 col)
 }
 void LLNetMap::draw()
 {
+	LLViewerRegion* region = gAgent.getRegion();
+
+	if (region == NULL) return;
+
  	static LLFrameTimer map_timer;
 	static LLUIColor map_track_color = gTrackColor;
 	static const LLCachedControl<LLColor4> map_frustum_color(gColors, "NetMapFrustum", LLColor4::white);
@@ -262,18 +277,15 @@ void LLNetMap::draw()
 
 	gGL.loadIdentity();
 	gGL.loadUIIdentity();
-
 	gGL.scalef(scale.mV[0], scale.mV[1], scale.mV[2]);
 	gGL.translatef(offset.mV[0], offset.mV[1], offset.mV[2]);
-
 	{
 		LLLocalClipRect clip(getLocalRect());
 		{
 			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-
 			gGL.matrixMode(LLRender::MM_MODELVIEW);
 
-			// Draw background rectangle
+			// Draw background rectangle.
 			if(isBackgroundVisible())
 			{
 				LLColor4 background_color = isBackgroundOpaque() ? getBackgroundColor().mV : getTransparentColor().mV;
@@ -282,23 +294,22 @@ void LLNetMap::draw()
 			}
 		}
 
-		// region 0,0 is in the middle
+		// Region 0,0 is in the middle.
 		S32 center_sw_left = getRect().getWidth() / 2 + llfloor(mCurPan.mV[VX]);
 		S32 center_sw_bottom = getRect().getHeight() / 2 + llfloor(mCurPan.mV[VY]);
 
 		gGL.pushMatrix();
-
 		gGL.translatef( (F32) center_sw_left, (F32) center_sw_bottom, 0.f);
 
 		static LLCachedControl<bool> rotate_map("MiniMapRotate", true);
 		if (rotate_map)
 		{
-			// rotate subsequent draws to agent rotation
+			// Rotate subsequent draws to agent rotation.
 			rotation = atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] );
 			gGL.rotatef( rotation * RAD_TO_DEG, 0.f, 0.f, 1.f);
 		}
 
-		// figure out where agent is
+		// Figure out where agent is.
 		static const LLCachedControl<LLColor4> this_region_color(gColors, "NetMapThisRegion");
 		static const LLCachedControl<LLColor4> live_region_color(gColors, "NetMapLiveRegion");
 		static const LLCachedControl<LLColor4> dead_region_color(gColors, "NetMapDeadRegion");
@@ -311,13 +322,14 @@ void LLNetMap::draw()
 			 iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
+
 			// Find x and y position relative to camera's center.
 			LLVector3 origin_agent = regionp->getOriginAgent();
 			LLVector3 rel_region_pos = origin_agent - gAgentCamera.getCameraPositionAgent();
 			F32 relative_x = (rel_region_pos.mV[0] / region_width) * mScale;
 			F32 relative_y = (rel_region_pos.mV[1] / region_width) * mScale;
 
-			// background region rectangle
+			// Background region rectangle.
 			F32 bottom =	relative_y;
 			F32 left =		relative_x;
 // <FS:CR> Aurora Sim
@@ -327,19 +339,9 @@ void LLNetMap::draw()
 			F32 right =		left + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
 // </FS:CR> Aurora Sim
 
-			if (regionp == gAgent.getRegion())
-			{
-				gGL.color4fv(this_region_color().mV);
-			}
-			else
-			{
-				gGL.color4fv(live_region_color().mV);
-			}
-
-			if (!regionp->isAlive())
-			{
-				gGL.color4fv(dead_region_color().mV);
-			}
+			if (regionp == region) gGL.color4fv(this_region_color().mV);
+			else if (!regionp->isAlive()) gGL.color4fv(dead_region_color().mV);
+			else gGL.color4fv(live_region_color().mV);
 
 // [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
 			static LLCachedControl<bool> s_fUseWorldMapTextures(gSavedSettings, "MiniMapWorldMapTextures");
@@ -445,7 +447,6 @@ void LLNetMap::draw()
 			gObjectList.renderObjectsForMap(*this);
 
 			mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
-		
 			map_timer.reset();
 		}
 
@@ -530,10 +531,15 @@ void LLNetMap::draw()
 		// Mouse pointer in local coordinates
 		S32 local_mouse_x;
 		S32 local_mouse_y;
-		//localMouse(&local_mouse_x, &local_mouse_y);
+
 		LLUI::getMousePositionLocal(this, &local_mouse_x, &local_mouse_y);
+
+		F32 min_pick_dist = mDotRadius * mPickRadius;
+
 		mClosestAgentToCursor.setNull();
-		F32 closest_dist_squared = F32_MAX; // value will be overridden in the loop
+		mClosestAgentsToCursor.clear();
+
+		F32 closest_dist_squared = F32_MAX;
 		F32 min_pick_dist_squared = (mDotRadius * MIN_PICK_SCALE) * (mDotRadius * MIN_PICK_SCALE);
 
 		LLVector3 pos_map;
@@ -564,38 +570,45 @@ void LLNetMap::draw()
 			{
 				pos_map.mV[VZ] = 16000.f;
 			}
-			if(LLMuteList::getInstance()->isMuted(uuid))
-			{
-				static const LLCachedControl<LLColor4> muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
-				color = muted_color;
-			}
 
-			LLViewerRegion* avatar_region = LLWorld::getInstance()->getRegionFromPosGlobal(positions[i]);
-			LLUUID estate_owner = avatar_region ? avatar_region->getOwner() : LLUUID::null;
+			if (dist_vec(LLVector2(pos_map.mV[VX], pos_map.mV[VY]), LLVector2(local_mouse_x, local_mouse_y)) < min_pick_dist)
+			{
+				mClosestAgentsToCursor[uuid] = positions[i];
+				static const LLCachedControl<LLColor4> map_avatar_rollover_color(gSavedSettings, "ExodusMapRolloverColor", LLColor4::cyan);
+				color = map_avatar_rollover_color;
+			}
+			else
+			{
 
-			// MOYMOD Minimap custom av colors.
-			boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(uuid);
-			if(it != mm_MarkerColors.end())
-			{
-				color = it->second;
-			}
-			//Lindens are always more Linden than your friend, make that take precedence
-			else if (LLMuteList::getInstance()->isLinden(uuid))
-			{
-				static const LLCachedControl<LLColor4> linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
-				color = linden_color;
-			}
-			//check if they are an estate owner at their current position
-			else if (estate_owner.notNull() && uuid == estate_owner)
-			{
-				static const LLCachedControl<LLColor4> em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
-				color = em_color;
-			}
-			//without these dots, SL would suck.
-			else if (show_friends && LLAvatarActions::isFriend(uuid))
-			{
-				static const LLCachedControl<LLColor4> friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
-				color = friend_color;
+				if(LLMuteList::getInstance()->isMuted(uuid))
+				{
+					static const LLCachedControl<LLColor4> muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
+					color = muted_color;
+				}
+
+				LLViewerRegion* avatar_region = LLWorld::getInstance()->getRegionFromPosGlobal(positions[i]);
+				const LLUUID estate_owner = avatar_region ? avatar_region->getOwner() : LLUUID::null;
+
+				// MOYMOD Minimap custom av colors.
+				if (mm_getMarkerColor(uuid, color)) {}
+				//Lindens are always more Linden than your friend, make that take precedence
+				else if (LLMuteList::getInstance()->isLinden(uuid))
+				{
+					static const LLCachedControl<LLColor4> linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+					color = linden_color;
+				}
+				//check if they are an estate owner at their current position
+				else if (estate_owner.notNull() && uuid == estate_owner)
+				{
+					static const LLCachedControl<LLColor4> em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+					color = em_color;
+				}
+				//without these dots, SL would suck.
+				else if (show_friends && LLAvatarActions::isFriend(uuid))
+				{
+					static const LLCachedControl<LLColor4> friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+					color = friend_color;
+				}
 			}
 
 			LLWorldMapView::drawAvatar(
@@ -603,23 +616,12 @@ void LLNetMap::draw()
 				color,
 				pos_map.mV[VZ], mDotRadius);
 
-			F32 dist_to_cursor_squared = dist_vec_squared(LLVector2(pos_map.mV[VX], pos_map.mV[VY]),
-															LLVector2(local_mouse_x,local_mouse_y));
-			if(dist_to_cursor_squared < min_pick_dist_squared)
-			{
-				if (dist_to_cursor_squared < closest_dist_squared)
-				{
-					closest_dist_squared = dist_to_cursor_squared;
-					mClosestAgentToCursor = uuid;
-					mClosestAgentPosition = positions[i];
-				}
-			}
-
 			if (!gmSelected.empty())
 			if (uuid.notNull())
 			{
 				bool selected = false;
 				uuid_vec_t::iterator sel_iter = gmSelected.begin();
+
 				for (; sel_iter != gmSelected.end(); sel_iter++)
 				{
 					if(*sel_iter == uuid)
@@ -628,6 +630,7 @@ void LLNetMap::draw()
 						break;
 					}
 				}
+
 				if (selected)
 				{
 					if( (pos_map.mV[VX] < 0) ||
@@ -637,12 +640,18 @@ void LLNetMap::draw()
 					{
 						S32 x = llround( pos_map.mV[VX] );
 						S32 y = llround( pos_map.mV[VY] );
+
 						LLWorldMapView::drawTrackingCircle( getRect(), x, y, color, 1, 10);
-					} else
-					{
-						LLWorldMapView::drawTrackingDot(pos_map.mV[VX],pos_map.mV[VY],color,0.f);
 					}
+					else LLWorldMapView::drawTrackingDot(pos_map.mV[VX],pos_map.mV[VY],color,0.f);
 				}
+			}
+
+			F32 dist_to_cursor_squared = dist_vec_squared(LLVector2(pos_map.mV[VX], pos_map.mV[VY]), LLVector2(local_mouse_x,local_mouse_y));
+			if (dist_to_cursor_squared < min_pick_dist_squared && dist_to_cursor_squared < closest_dist_squared)
+			{
+				closest_dist_squared = dist_to_cursor_squared;
+				mClosestAgentToCursor = uuid;
 			}
 		}
 
@@ -658,24 +667,31 @@ void LLNetMap::draw()
 			{
 				drawTracking( LLAvatarTracker::instance().getGlobalPos(), map_track_color );
 			} 
-			else if ( LLTracker::TRACKING_LANDMARK == tracking_status 
-					|| LLTracker::TRACKING_LOCATION == tracking_status )
+			else if ( LLTracker::TRACKING_LANDMARK == tracking_status ||
+					LLTracker::TRACKING_LOCATION == tracking_status )
 			{
 				drawTracking( LLTracker::getTrackedPositionGlobal(), map_track_color );
 			}
 		}
 
-		// Draw dot for self avatar position
-		LLVector3d pos_global = gAgent.getPositionGlobal();
-		pos_map = globalPosToView(pos_global);
+		pos_map = globalPosToView(gAgent.getPositionGlobal());
 		S32 dot_width = llround(mDotRadius * 2.f);
 		LLUIImagePtr you = LLWorldMapView::sAvatarYouLargeImage;
+
 		if (you)
 		{
 			you->draw(llround(pos_map.mV[VX] - mDotRadius),
 					  llround(pos_map.mV[VY] - mDotRadius),
 					  dot_width,
 					  dot_width);
+
+			F32	dist_to_cursor_squared = dist_vec_squared(LLVector2(pos_map.mV[VX], pos_map.mV[VY]),
+										  LLVector2(local_mouse_x,local_mouse_y));
+
+			if (dist_to_cursor_squared < min_pick_dist_squared && dist_to_cursor_squared < closest_dist_squared)
+			{
+				mClosestAgentToCursor = gAgent.getID();
+			}
 		}
 
 		// Draw chat range ring(s)
@@ -721,18 +737,25 @@ void LLNetMap::draw()
 		else
 		{
 			gGL.color4fv((map_frustum_rotating_color()).mV);
-			
+
 			// If we don't rotate the map, we have to rotate the frustum.
 			gGL.pushMatrix();
 				gGL.translatef( ctr_x, ctr_y, 0 );
 				gGL.rotatef( atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] ) * RAD_TO_DEG, 0.f, 0.f, -1.f);
 				gGL.begin( LLRender::TRIANGLES  );
-					gGL.vertex2f( 0, 0 );
+					gGL.vertex2f( 0.f, 0.f );
 					gGL.vertex2f( -half_width_pixels, far_clip_pixels );
 					gGL.vertex2f(  half_width_pixels, far_clip_pixels );
 				gGL.end();
 			gGL.popMatrix();
 		}
+
+		// <exodus> Draw mouse radius
+		static const LLCachedControl<LLColor4> map_avatar_rollover_color("ExodusMapRolloverCircleColor");
+		gGL.color4fv((map_avatar_rollover_color()).mV);
+		// Todo: Detect if over the window and don't render a circle?
+		gl_circle_2d(local_mouse_x, local_mouse_y, min_pick_dist, 32, true);
+		// </exodus>
 	}
 	
 	gGL.popMatrix();
@@ -764,9 +787,7 @@ void LLNetMap::reshape(S32 width, S32 height, BOOL called_from_parent)
 
 LLVector3 LLNetMap::globalPosToView(const LLVector3d& global_pos)
 {
-	LLVector3d camera_position = gAgentCamera.getCameraPositionGlobal();
-
-	LLVector3d relative_pos_global = global_pos - camera_position;
+	LLVector3d relative_pos_global = global_pos - gAgentCamera.getCameraPositionGlobal();
 	LLVector3 pos_local;
 	pos_local.setVec(relative_pos_global);  // convert to floats from doubles
 
@@ -862,6 +883,13 @@ LLVector3d LLNetMap::viewPosToGlobal( S32 x, S32 y )
 
 BOOL LLNetMap::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
+	// <exodus>
+	if (gKeyboard->currentMask(TRUE) & MASK_SHIFT)
+	{
+		mPickRadius = llclamp(mPickRadius + (2.5f * clicks), 1.f, 64.f);
+		return true;
+	}
+	// </exodus>
 	// note that clicks are reversed from what you'd think: i.e. > 0  means zoom out, < 0 means zoom in
 	F32 new_scale = mScale * pow(MAP_SCALE_ZOOM_FACTOR, -clicks);
 	F32 old_scale = mScale;
@@ -881,7 +909,7 @@ BOOL LLNetMap::handleScrollWheel(S32 x, S32 y, S32 clicks)
 	return TRUE;
 }
 
-BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rect_screen )
+BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& tool_tip, LLRect* sticky_rect_screen )
 {
 	if (gDisconnected)
 	{
@@ -898,41 +926,64 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 		sticky_rect.mRight = sticky_rect.mLeft + 2 * SLOP;
 		sticky_rect.mTop = sticky_rect.mBottom + 2 * SLOP;
 
-		msg.assign("");
-		std::string fullname;
-		if(mClosestAgentToCursor.notNull() && LLAvatarNameCache::getPNSName(mClosestAgentToCursor, fullname))
+		tool_tip.assign("");
+
+		if (region->mMapAvatarIDs.count())
 		{
-			//msg.append(fullname);
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
-			msg.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname) );
-// [/RLVa:KB]
-			msg.append("\n");
-
-			LLVector3d mypos = gAgent.getPositionGlobal();
-			LLVector3d position = mClosestAgentPosition;
-
-			if ( LLFloaterAvatarList::instanceExists() )
+			if (mClosestAgentsToCursor.size())
 			{
-				if (LLAvatarListEntry *ent = LLFloaterAvatarList::getInstance()->getAvatarEntry(mClosestAgentToCursor))
-					position = ent->getPosition();
-			}
-			LLVector3d delta = position - mypos;
-			F32 distance = (F32)delta.magVec();
+				bool single_agent(mClosestAgentsToCursor.size() == 1); // Singu note: For old look, only add the count if we have more than one
+				if (!single_agent)
+					tool_tip.append(llformat("Agents under cursor (%d/%d)\n", mClosestAgentsToCursor.size(), region->mMapAvatarIDs.count() + 1));
 
-			msg.append( llformat("\n(Distance: %.02fm)\n\n",distance) );
+				LLVector3d myPosition = gAgent.getPositionGlobal();
+
+				std::map<LLUUID, LLVector3d>::iterator current = mClosestAgentsToCursor.begin();
+				std::map<LLUUID, LLVector3d>::iterator end = mClosestAgentsToCursor.end();
+				for (; current != end; ++current)
+				{
+					LLUUID targetUUID = (*current).first;
+					LLVector3d targetPosition = (*current).second;
+
+					std::string fullName;
+					if (targetUUID.notNull() && LLAvatarNameCache::getPNSName(targetUUID, fullName))
+					{
+						//tool_tip.append(fullName);
+// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
+						tool_tip.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullName : RlvStrings::getAnonym(fullName) );
+// [/RLVa:KB]
+
+						// <singu> Use the radar for positioning, when possible.
+						if (LLFloaterAvatarList::instanceExists())
+						{
+							if (LLAvatarListEntry* ent = LLFloaterAvatarList::getInstance()->getAvatarEntry(targetUUID))
+								targetPosition = ent->getPosition();
+						}
+						// </singu>
+
+						LLVector3d delta = targetPosition - myPosition;
+						F32 distance = (F32)delta.magVec();
+						if (single_agent)
+							tool_tip.append( llformat("\n\n(Distance: %.02fm)\n",distance) );
+						else
+							tool_tip.append(llformat(" (%.02fm)\n", distance));
+					}
+				}
+				tool_tip.append("\n");
+			}
 		}
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-0.2.0b
-		msg.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? region->getName() : RlvStrings::getString(RLV_STRING_HIDDEN) );
+		tool_tip.append((!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC) ? region->getName() : RlvStrings::getString(RLV_STRING_HIDDEN)));
 // [/RLVa:KB]
-		//msg.append( region->getName() );
+		//tool_tip.append("\n\n" + region->getName());
 
-		msg.append("\n" + region->getHost().getHostName());
-		msg.append("\n" + region->getHost().getString());
-		msg.append("\n" + getToolTip());
+		tool_tip.append("\n" + region->getHost().getHostName());
+		tool_tip.append("\n" + region->getHost().getString());
+		tool_tip.append("\n" + getToolTip());
 	}
 	else
 	{
-		return LLPanel::handleToolTip(x, y, msg, sticky_rect_screen);
+		return LLPanel::handleToolTip(x, y, tool_tip, sticky_rect_screen);
 	}
 	*sticky_rect_screen = sticky_rect;
 	return TRUE;
@@ -1283,9 +1334,11 @@ bool LLNetMap::OverlayToggle::handleEvent(LLPointer<LLEvent> event, const LLSD& 
 
 BOOL LLNetMap::handleRightMouseDown(S32 x, S32 y, MASK mask)
 {
+	mClosestAgentsAtLastClick = mClosestAgentsToCursor;
 	mClosestAgentAtLastRightClick = mClosestAgentToCursor;
 	if (mPopupMenu)
 	{
+		// Singu TODO: It'd be spectacular to address multiple avatars from here.
 		mPopupMenu->buildDrawLabels();
 		mPopupMenu->updateParent(LLMenuGL::sMenuContainer);
 		LLMenuGL::showPopup(this, mPopupMenu, x, y);
@@ -1404,58 +1457,50 @@ bool LLNetMap::LLScaleMap::handleEvent(LLPointer<LLEvent> event, const LLSD& use
 }
 
 //moymod - minimap color shit
-bool LLNetMap::mmsetred::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+void markMassAgents(const LLColor4& color)
 {
-	LLNetMap *self = mPtr;
-	//if(self->mClosestAgentAtLastRightClick){
-		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(1.0,0.0,0.0,1.0));
-	//}
+	std::map<LLUUID, LLVector3d>::iterator current = mClosestAgentsAtLastClick.begin();
+	std::map<LLUUID, LLVector3d>::iterator end = mClosestAgentsAtLastClick.end();
+	for(; current != end; ++current) LLNetMap::mm_setcolor((*current).first, color);
+}
+
+bool LLNetMap::mmsetred::handleEvent(LLPointer<LLEvent>, const LLSD&)
+{
+	markMassAgents(LLColor4::red); return true;
+}
+bool LLNetMap::mmsetgreen::handleEvent(LLPointer<LLEvent>, const LLSD&)
+{
+	markMassAgents(LLColor4::green); return true;
+}
+bool LLNetMap::mmsetblue::handleEvent(LLPointer<LLEvent>, const LLSD&)
+{
+	markMassAgents(LLColor4::blue); return true;
+}
+bool LLNetMap::mmsetyellow::handleEvent(LLPointer<LLEvent>, const LLSD&)
+{
+	markMassAgents(LLColor4::yellow); return true;
+}
+bool LLNetMap::mmsetcustom::handleEvent(LLPointer<LLEvent>, const LLSD&)
+{
+	markMassAgents(gSavedSettings.getColor4("MoyMiniMapCustomColor")); return true;
+}
+bool LLNetMap::mmsetunmark::handleEvent(LLPointer<LLEvent>, const LLSD&)
+{
+	std::map<LLUUID, LLVector3d>::iterator it = mClosestAgentsAtLastClick.begin();
+	std::map<LLUUID, LLVector3d>::iterator end = mClosestAgentsAtLastClick.end();
+	for(; it!= end; ++it) mm_MarkerColors.erase((*it).first);
 	return true;
 }
-bool LLNetMap::mmsetgreen::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+bool LLNetMap::mmenableunmark::handleEvent(LLPointer<LLEvent>, const LLSD& userdata)
 {
-	LLNetMap *self = mPtr;
-	//if(self->mClosestAgentAtLastRightClick){
-		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(0.0,1.0,0.0,1.0));
-	//}
+	bool enabled(false);
+	std::map<LLUUID, LLVector3d>::iterator it = mClosestAgentsAtLastClick.begin();
+	std::map<LLUUID, LLVector3d>::iterator end = mClosestAgentsAtLastClick.end();
+	for(; it != end && !enabled; ++it) enabled = mm_MarkerColors.find((*it).first) != mm_MarkerColors.end();
+	mPtr->findControl(userdata["control"].asString())->setValue(enabled);
 	return true;
 }
-bool LLNetMap::mmsetblue::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	//if(self->mClosestAgentAtLastRightClick){
-		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(0.0,0.0,1.0,1.0));
-	//}
-	return true;
-}
-bool LLNetMap::mmsetyellow::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	//if(self->mClosestAgentAtLastRightClick){
-		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(1.0,1.0,0.0,1.0));
-	//}
-	return true;
-}
-bool LLNetMap::mmsetcustom::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	//if(self->mClosestAgentAtLastRightClick){
-		mm_setcolor(self->mClosestAgentAtLastRightClick,gSavedSettings.getColor4("MoyMiniMapCustomColor"));
-	//}
-	return true;
-}
-bool LLNetMap::mmsetunmark::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	mm_MarkerColors.erase(mPtr->mClosestAgentAtLastRightClick);
-	return true;
-}
-bool LLNetMap::mmenableunmark::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	BOOL enabled = mPtr->mClosestAgentAtLastRightClick.notNull() && mm_MarkerColors.find(mPtr->mClosestAgentAtLastRightClick) != mm_MarkerColors.end();
-	self->findControl(userdata["control"].asString())->setValue(enabled);
-	return true;
-}
+
 bool LLNetMap::LLCenterMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
 	EMiniMapCenter center = (EMiniMapCenter)userdata.asInteger();

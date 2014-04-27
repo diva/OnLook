@@ -67,6 +67,7 @@
 #include "llfloatermute.h"
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
+#include "llfloaterregionrestarting.h"
 #include "llfloaterteleporthistory.h"
 #include "llgroupactions.h"
 #include "llhudeffecttrail.h"
@@ -6434,7 +6435,6 @@ bool handle_special_notification(std::string notificationID, LLSD& llsdBlock)
 	std::string regionMaturity = LLViewerRegion::accessToString(regionAccess);
 	LLStringUtil::toLower(regionMaturity);
 	llsdBlock["REGIONMATURITY"] = regionMaturity;
-	
 	bool returnValue = false;
 	LLNotificationPtr maturityLevelNotification;
 	std::string notifySuffix = "_Notify";
@@ -6583,6 +6583,34 @@ void home_position_set()
 	gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, FALSE);
 }
 
+void update_region_restart(const LLSD& llsdBlock)
+{
+	U32 seconds;
+	if (llsdBlock.has("MINUTES"))
+	{
+		seconds = 60U * static_cast<U32>(llsdBlock["MINUTES"].asInteger());
+	}
+	else
+	{
+		seconds = static_cast<U32>(llsdBlock["SECONDS"].asInteger());
+	}
+
+	LLFloaterRegionRestarting* restarting_floater = LLFloaterRegionRestarting::findInstance();
+
+	if (restarting_floater)
+	{
+		restarting_floater->updateTime(seconds);
+		restarting_floater->center();
+	}
+	else
+	{
+		LLSD params;
+		params["NAME"] = llsdBlock["NAME"];
+		params["SECONDS"] = (LLSD::Integer)seconds;
+		LLFloaterRegionRestarting::showInstance(params);
+	}
+}
+
 bool attempt_standard_notification(LLMessageSystem* msgsystem)
 {
 	// if we have additional alert data
@@ -6654,6 +6682,12 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 		{
 			LLViewerStats::getInstance()->incStat(LLViewerStats::ST_KILLED_COUNT);
 		}
+		else if (notificationID == "RegionRestartMinutes" || notificationID == "RegionRestartSeconds")
+		{
+			update_region_restart(llsdBlock);
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
+			return true; // Floater is enough.
+		}
 
 		LLNotificationsUtil::add(notificationID, llsdBlock);
 		return true;
@@ -6712,7 +6746,6 @@ bool handle_not_age_verified_alert(const std::string &pAlertName)
 bool handle_special_alerts(const std::string &pAlertName)
 {
 	bool isHandled = false;
-
 	if (LLStringUtil::compareStrings(pAlertName, "NotAgeVerified") == 0)
 	{
 		
@@ -6763,17 +6796,27 @@ void process_alert_core(const std::string& message, BOOL modal)
 			S32 mins = 0;
 			LLStringUtil::convertToS32(text.substr(18), mins);
 			args["MINUTES"] = llformat("%d",mins);
-			LLNotificationsUtil::add("RegionRestartMinutes", args);
+			update_region_restart(args);
+			//LLNotificationsUtil::add("RegionRestartMinutes", args); // Floater is enough.
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 		}
 		else if (text.substr(0,17) == "RESTART_X_SECONDS")
 		{
 			S32 secs = 0;
 			LLStringUtil::convertToS32(text.substr(18), secs);
 			args["SECONDS"] = llformat("%d",secs);
-			LLNotificationsUtil::add("RegionRestartSeconds", args);
+			update_region_restart(args);
+			//LLNotificationsUtil::add("RegionRestartSeconds", args); // Floater is enough.
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 		}
 		else
 		{
+			// *NOTE: If the text from the server ever changes this line will need to be adjusted.
+			if (text.substr(0, 25) == "Region restart cancelled.")
+			{
+				LLFloaterRegionRestarting::hideInstance();
+			}
+
 			std::string new_msg =LLNotificationTemplates::instance().getGlobalString(text);
 // [RLVa:KB] - Checked: 2012-02-07 (RLVa-1.4.5) | Added: RLVa-1.4.5
 			if ( (new_msg == text) && (rlv_handler_t::isEnabled()) )
@@ -6872,6 +6915,32 @@ void mean_name_callback(const LLUUID &id, const std::string& full_name, bool is_
 	}
 }
 
+void chat_mean_collision(const LLUUID& id, const LLAvatarName& avname, const EMeanCollisionType& type, const F32& mag)
+{
+	LLStringUtil::format_map_t args;
+	if (type == MEAN_BUMP)
+		args["ACT"] = LLTrans::getString("bump");
+	else if (type == MEAN_LLPUSHOBJECT)
+		args["ACT"] = LLTrans::getString("llpushobject");
+	else if (type == MEAN_SELECTED_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("selected_object_collide");
+	else if (type == MEAN_SCRIPTED_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("scripted_object_collide");
+	else if (type == MEAN_PHYSICAL_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("physical_object_collide");
+	else
+		return; // How did we get here? I used to know you so well.
+	std::string name;
+	LLAvatarNameCache::getPNSName(avname, name);
+	args["NAME"] = name;
+	args["MAG"] = llformat("%f", mag);
+	LLChat chat(LLTrans::getString("BumpedYou", args));
+	chat.mFromName = name;
+	chat.mURL = llformat("secondlife:///app/agent/%s/about", id.asString().c_str());
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	LLFloaterChat::addChat(chat);
+}
+
 void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **user_data)
 {
 	if (gAgent.inPrelude())
@@ -6901,6 +6970,8 @@ void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **use
 		msgsystem->getU8Fast(_PREHASH_MeanCollision, _PREHASH_Type, u8type);
 
 		type = (EMeanCollisionType)u8type;
+		static const LLCachedControl<bool> chat_collision("AnnounceBumps");
+		if (chat_collision) LLAvatarNameCache::get(perp, boost::bind(chat_mean_collision, _1, _2, type, mag));
 
 		BOOL b_found = FALSE;
 

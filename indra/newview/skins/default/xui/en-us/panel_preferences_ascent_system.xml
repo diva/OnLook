@@ -87,6 +87,7 @@
       <check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" follows="top" initial_value="true" label="Disable Point At And Beam" tool_tip="Don't point at or show your edit beam when selecting an object." name="disable_point_at_and_beams_check"/>
       <check_box bottom_delta="-20" control_name="PrivateLookAt" follows="top" initial_value="false" label="Do not Look At objects and/or avatars" tool_tip="Disables headturns and lookat beacons, causing your avatar to look straight ahead (unless scripted to do otherwise)." name="private_look_at_check"/>
       <check_box bottom_delta="-20" control_name="AscentShowLookAt" follows="top" initial_value="false" label="Show others' LookAt beacons" tool_tip="Shows you where others are looking." name="show_look_at_check"/>
+      <check_box bottom_delta="-20" control_name="AnnounceBumps" follows="top" label="Announce in chat when people bump you" name="announce_bumps"/>
       <check_box bottom_delta="-20" control_name="SGDetachBridge" follows="top" initial_value="false" label="Auto detach LSL Bridge" tool_tip="Automatically detach LSL Bridge of Phoenix or Firestorm viewer." name="detach_bridge"/>
       <check_box bottom_delta="-20" control_name="QuietSnapshotsToDisk" follows="top" initial_value="false" label="Quiet Snapshots to Disk" tool_tip="Doesn't make a camera sound nor alert everyone when you take a snapshot to your computer." name="quiet_snapshots_check"/>
       <check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" follows="top" initial_value="false" label="On standing up, revoke perms for the object your avatar was sitting on" tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately." name="revoke_perms_on_stand_up_check"/>
@@ -95,6 +96,8 @@
       <check_box bottom_delta="-20" left="10" follows="top" initial_value="false" label="Display Total Script Count changes:" name="totalscriptjumps" control_name="AscentDisplayTotalScriptJumps" tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
       <spinner bottom_delta="0" decimal_digits="0" follows="top" height="16" increment="1" left_delta="210" max_val="9999" min_val="1" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff" tool_tip="Threshold for the script jump message [Default: 100]"/>
       <check_box bottom_delta="-20" left="10" follows="top" label="Restrained Love API Support (RLVa)" name="RestrainedLove" control_name="RestrainedLove" tool_tip="Allows scripts to take greater control of the viewer, if you wear compliant objects."/>
+      <text name="EmergencyTeleportDesc" left="14" bottom_delta="-12" follows="top">Drop a landmark below to autoteleport there in the last 20 seconds before region restarts</text>
+      <drop_target control_name="EmergencyTeleportLandmark" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_drop" width="430"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Building" name="Building">

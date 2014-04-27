@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="toolbar">
-	<string name="Redock Windows">
-		Rétablir les fenêtres
-	</string>
-	<layout_stack name="toolbar_stack">
+    <string name="Redock Windows">établir les fenêtres</string>
+    <layout_stack name="toolbar_stack">
     <layout_panel name="panel2">
-      <button label="" name="chat_btn" tool_tip="Affiche la barre de chat.(Entrée)"/>
+      <button name="chat_btn" tool_tip="Affiche la barre de chat.(Entrée)"/>
     </layout_panel>
     <layout_panel name="panel4">
       <flyout_button label="Communiquer" name="communicate_btn" tool_tip="Communiquez (valable pour les amis et groupes."/>
@@ -31,5 +29,87 @@
     <layout_panel name="panel13">
       <button label="Inventaire" name="inventory_btn" tool_tip="Vos objets (Ctrl-I)"/>
     </layout_panel>
-	</layout_stack>
+    <layout_panel name="panelim">
+      <button label="Communiquer" name="communicate_im_btn"/>
+    </layout_panel>
+	<layout_panel name="panelfriends">
+      <button label="Amis" name="friends_btn"/>
+    </layout_panel>
+    <layout_panel name="panelgroups">
+      <button label="Groupes" name="groups_btn"/>
+    </layout_panel>
+	<layout_panel name="panelgrouptitles">
+      <button label="Titres GR" name="group_titles_btn"/>
+    </layout_panel>
+	<layout_panel name="panelchathistory">
+      <button label="Chat local" name="chat_history_btn"/>
+    </layout_panel>
+    <layout_panel name="panelactivespeakers">
+      <button label="Int. Actifs" name="active_speakers_btn"/>
+    </layout_panel>
+    <layout_panel name="panelmutelist">
+      <button label="Liste des mutes" name="mute_list_btn"/>
+    </layout_panel>
+    <layout_panel name="panelbeacons">
+      <button label="Balises" name="beacons_btn"/>
+    </layout_panel>
+    <layout_panel name="panelcameracontrols">
+      <button label="Ctrl Camera" name="camera_controls_btn"/>
+    </layout_panel>
+    <layout_panel name="panelmessagelog">
+      <button label="Ctrl déplacements" name="movement_controls_btn"/>
+    </layout_panel>
+    <layout_panel name="panelsit">
+      <button label="S'assoir" label_selected="Stand" name="sit_btn"/>
+    </layout_panel>
+    <layout_panel name="panelrun">
+      <button label="Courir" label_selected="Stop Running" name="run_btn"/>
+    </layout_panel>
+    <layout_panel name="panelmediafilter">
+      <button label="Filtre médias" name="media_filter_btn"/>
+    </layout_panel>
+    <layout_panel name="panelappearance">
+      <button label="Apparence" name="appearance_btn"/>
+    </layout_panel>
+    <layout_panel name="panelinspect">
+      <button label="Inspecter" name="inspect_btn"/>
+    </layout_panel>
+    <layout_panel name="panelbuycurrency">
+      <button label="Acheter [CURRENCY]" name="buy_currency_btn"/>
+    </layout_panel>
+    <layout_panel name="panelbuyland">
+      <button label="Achat terrain" name="buy_land_btn"/>
+    </layout_panel>
+    <layout_panel name="panelmyland">
+      <button label="Mon terrain" name="my_land_btn"/>
+    </layout_panel>
+    <layout_panel name="panelaboutland">
+      <button label="A propos du terrain" name="about_land_btn"/>
+    </layout_panel>
+    <layout_panel name="panelteleporthistory">
+      <button label="Hist. TP" name="teleport_history_btn"/>
+    </layout_panel>
+    <layout_panel name="panelstats">
+      <button label="Statistiques" name="stats_btn"/>
+    </layout_panel>
+    <layout_panel name="paneloutfit">
+      <button label="Créer un ensemble" name="make_outfit_btn"/>
+    </layout_panel>
+    <layout_panel name="paneloutfits">
+      <button label="Ensembles" name="outfits_btn"/>
+    </layout_panel>
+    <layout_panel name="panelfavs">
+      <button label="Favoris" name="favs_btn"/>
+    </layout_panel>
+    <layout_panel name="panelhelptutorial">
+      <button label="Tuto" name="tutorial_btn"/>
+    </layout_panel>
+    <layout_panel name="panelabout">
+      <button label="A propos de [SHORT_APP_NAME]" name="about_btn"/>
+    </layout_panel>
+    <layout_panel name="paneltoolbarprefs">
+      <button label="Changer les boutons" name="change_buttons_btn"/>
+    </layout_panel>
+  </layout_stack>
 </panel>
+

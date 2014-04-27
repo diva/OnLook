@@ -646,6 +646,8 @@ void LLFloaterAvatarList::updateAvatarSorting()
 	}
 }
 
+bool mm_getMarkerColor(const LLUUID&, LLColor4&);
+
 /**
  * Redraws the avatar list
  * Only does anything if the avatar list is visible.
@@ -738,7 +740,8 @@ void LLFloaterAvatarList::refreshAvatarList()
 		LLColor4 color = sDefaultListText;
 
 		//Lindens are always more Linden than your friend, make that take precedence
-		if (LLMuteList::getInstance()->isLinden(av_id))
+		if (mm_getMarkerColor(av_id, color)) {}
+		else if (LLMuteList::getInstance()->isLinden(av_id))
 		{
 			static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor", LLColor4(0.f,0.f,1.f,1.f));
 			color = ascent_linden_color;

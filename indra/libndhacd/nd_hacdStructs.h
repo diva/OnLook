@@ -21,7 +21,7 @@
 
 #include "nd_hacdDefines.h"
 #include "hacdHACD.h"
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 #include <vector>
 
 struct LLCDHull;

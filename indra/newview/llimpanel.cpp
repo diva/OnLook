@@ -1002,10 +1002,10 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 
 void show_log_browser(const std::string& name, const std::string& id)
 {
-#if LL_WINDOWS // Singu TODO: Other platforms?
+#if LL_WINDOWS || LL_DARWIN // Singu TODO: Linux?
 	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
 	{
-		gViewerWindow->getWindow()->ShellEx("\"" + LLLogChat::makeLogFileName(name) + "\"");
+		gViewerWindow->getWindow()->ShellEx(LLLogChat::makeLogFileName(name));
 		return;
 	}
 #endif

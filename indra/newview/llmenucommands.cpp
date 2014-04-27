@@ -102,7 +102,6 @@
 #include "llmakeoutfitdialog.h"
 #include "llmoveview.h" // LLFloaterMove
 #include "lltextureview.h"
-#include "lltoolbar.h"
 #include "lltoolgrab.h"
 #include "lltoolmgr.h"
 #include "lluictrlfactory.h"
@@ -211,7 +210,6 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater("sound_explorer", boost::bind(LLFloaterExploreSounds::toggle), boost::bind(LLFloaterExploreSounds::visible));
 		registerFloater("test", boost::bind(LLFloaterTest::show, (void*)NULL));
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
-		registerFloater("toolbar", boost::bind(toggle_control, "ShowToolBar"), boost::bind(&LLToolBar::getVisible, gToolBar));
 		registerFloater("WaterSettings", boost::bind(LLFloaterWater::show), boost::bind(LLFloaterWater::isOpen));
 		registerFloater("web", boost::bind(LLFloaterWebContent::showInstance, "dict web", LLFloaterWebContent::Params()));
 		registerFloater("Windlight", boost::bind(LLFloaterWindLight::show), boost::bind(LLFloaterWindLight::isOpen));

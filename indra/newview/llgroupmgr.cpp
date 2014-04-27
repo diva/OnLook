@@ -47,6 +47,7 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llfloaterdirectory.h"
+#include "llfloatergroupinfo.h"
 #include "llgroupactions.h"
 #include "llnotificationsutil.h"
 #include "lluictrlfactory.h"
@@ -1448,7 +1449,8 @@ void LLGroupMgr::processCreateGroupReply(LLMessageSystem* msg, void ** data)
 
 		gAgent.mGroups.push_back(gd);
 
-		LLGroupActions::closeGroup(LLUUID::null);
+		if (LLFloaterGroupInfo* flooter = LLFloaterGroupInfo::getInstance(LLUUID::null))
+			flooter->onClose(false);
 		LLGroupActions::showTab(group_id, "roles_tab");
 	}
 	else

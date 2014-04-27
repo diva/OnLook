@@ -91,6 +91,17 @@
 		  <key>Value</key>
 		  <integer>1</integer>
 		</map>
+    <key>AlchemyRegionRestartShake</key>
+    <map>
+      <key>Comment</key>
+      <string>Shake the screen when the region restart floater is displayed</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
 		<key>AscentPowerfulWizard</key>
 		<map>
 			<key>Comment</key>
@@ -741,6 +752,51 @@
 			<key>Value</key>
 			<boolean>0</boolean>
 		</map>
+    <key>ExodusMapRolloverCircleColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color setting of circle for rollovers on the minimap.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <key>Value</key>
+      <array>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>0.05</real>
+      </array>
+    </map>
+    <key>ExodusMapRolloverColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color setting for rollovers on the minimap.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <key>Value</key>
+      <array>
+        <real>0.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
+    <key>ExodusMinimapAreaEffect</key>
+    <map>
+      <key>Comment</key>
+      <string>Radius of the area of affect for the minimap, adjusted by shift scrolling over the minimap.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>3.5</real>
+    </map>
     <key>OBJExportNotifyFailed</key>
     <map>
       <key>Comment</key>

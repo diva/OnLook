@@ -36,7 +36,7 @@
 
 #define LLCONVEXDECOMPINTER_STATIC 1
 
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 #include "lluploadfloaterobservers.h"
 #include "aistatemachinethread.h"
 
@@ -324,7 +324,7 @@ public:
 	void lockAndLoadMeshLOD(const LLVolumeParams& mesh_params, S32 lod);
 	void loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod);
 	bool fetchMeshHeader(const LLVolumeParams& mesh_params, U32& count);
-	void fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count);
+	bool fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count);
 	bool headerReceived(const LLVolumeParams& mesh_params, U8* data, S32 data_size);
 	bool lodReceived(const LLVolumeParams& mesh_params, S32 lod, U8* data, S32 data_size);
 	bool skinInfoReceived(const LLUUID& mesh_id, U8* data, S32 data_size);
@@ -405,10 +405,11 @@ public:
 #endif
 	void init(instance_list& data, LLVector3& scale, bool upload_textures, bool upload_skin, bool upload_joints, bool do_upload,
 		LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer);
+	~LLMeshUploadThread();
 
 	void postRequest(std::string& url, AIMeshUpload* state_machine);
 
-	/*virtual*/ bool run();
+	virtual bool run();
 	void preStart();
 
 	void generateHulls();
@@ -504,8 +505,7 @@ public:
 
 	void uploadModel(std::vector<LLModelInstance>& data, LLVector3& scale, bool upload_textures,
 					 bool upload_skin, bool upload_joints, std::string upload_url, bool do_upload = true,
-					 LLHandle<LLWholeModelFeeObserver> fee_observer= (LLHandle<LLWholeModelFeeObserver>()),
-					 LLHandle<LLWholeModelUploadObserver> upload_observer = (LLHandle<LLWholeModelUploadObserver>()));
+					 LLHandle<LLWholeModelFeeObserver> fee_observer= (LLHandle<LLWholeModelFeeObserver>()), LLHandle<LLWholeModelUploadObserver> upload_observer = (LLHandle<LLWholeModelUploadObserver>()));
 
 	S32 getMeshSize(const LLUUID& mesh_id, S32 lod);
 

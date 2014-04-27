@@ -102,13 +102,6 @@ LLFloaterChat::~LLFloaterChat()
 	// Children all cleaned up by default view destructor.
 }
 
-void LLFloaterChat::setVisible(BOOL visible)
-{
-	LLFloater::setVisible( visible );
-
-	gSavedSettings.setBOOL("ShowChatHistory", visible);
-}
-
 void LLFloaterChat::draw()
 {
 	// enable say and shout only when text available
@@ -138,6 +131,11 @@ BOOL LLFloaterChat::postBuild()
 	mToggleActiveSpeakersBtn.connect(this,"toggle_active_speakers_btn");
 	mChatPanel.connect(this,"chat_panel");
 	return TRUE;
+}
+
+void LLFloaterChat::onOpen()
+{
+	gSavedSettings.setBOOL("ShowChatHistory", true);
 }
 
 // public virtual

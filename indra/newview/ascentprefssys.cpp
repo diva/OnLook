@@ -252,12 +252,14 @@ void LLPrefsAscentSys::refreshValues()
     mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
     mShowLookAt					= gSavedSettings.getBOOL("AscentShowLookAt");
 	mQuietSnapshotsToDisk		= gSavedSettings.getBOOL("QuietSnapshotsToDisk");
+	mAnnounceBumps				= gSavedSettings.getBOOL("AnnounceBumps");
 	mDetachBridge				= gSavedSettings.getBOOL("SGDetachBridge");
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
 	mDisableClickSitOtherOwner	= gSavedSettings.getBOOL("DisableClickSitOtherOwner");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
     mNumScriptDiff              = gSavedSettings.getF32("Ascentnumscriptdiff");
+	mLandmark			= gSavedPerAccountSettings.getString("EmergencyTeleportLandmark");
 
 	//Build -------------------------------------------------------------------------------
 	mAlpha						= gSavedSettings.getF32("EmeraldBuildPrefs_Alpha");
@@ -408,12 +410,14 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("PrivateLookAt",                 mPrivateLookAt);
     gSavedSettings.setBOOL("AscentShowLookAt",              mShowLookAt);
     gSavedSettings.setBOOL("QuietSnapshotsToDisk",			mQuietSnapshotsToDisk);
+    gSavedSettings.setBOOL("AnnounceBumps",    			mAnnounceBumps);
     gSavedSettings.setBOOL("SGDetachBridge",    			mDetachBridge);
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
 	gSavedSettings.setBOOL("DisableClickSitOtherOwner",     mDisableClickSitOtherOwner);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
     gSavedSettings.setF32("Ascentnumscriptdiff",            mNumScriptDiff);
+	gSavedPerAccountSettings.setString("EmergencyTeleportLandmark",      mLandmark);
 
 	//Build -------------------------------------------------------------------------------
 	gSavedSettings.setF32("EmeraldBuildPrefs_Alpha",        mAlpha);

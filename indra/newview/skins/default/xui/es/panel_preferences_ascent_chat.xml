@@ -71,7 +71,7 @@
 			<check_box label="Colocar los Botones en la misma línea del nombre en los IMs (Sólo afecta en Nuevos MIs)" name="im_concise_butt"/>
 			<check_box label="Botones en chat de grupo en la línea del nombre del grupo (Afecta nuevos chats de grupo)" name="group_concise_butt"/>
 			<check_box label="Botones en la misma línea de título de conferencia (Afecta nuevas conferencias de Chat)" name="conf_concise_butt"/>
-      <check_box label="Botón Historial abre editor externo (Solo en Windows)" name="legacy_log_launch"/>
+      <check_box label="Botón Historial abre editor externo (Solo en Windows y Mac)" name="legacy_log_launch"/>
 			<check_box label="Deshabilitar apertura atajo de Comunicación fuera de la lista de amigos" name="only_comm"/>
 			<check_box label="Mensajes de acción en Itálica (/me)" name="italicize_actions"/>
 		</panel>

@@ -1,5 +1,5 @@
 /** 
- * @file LLConvexDecomposition.cpp
+ * @file llconvexdecomposition.cpp
  * @brief LLConvexDecomposition interface definition
  *
  * $LicenseInfo:firstyear=2011&license=viewerlgpl$

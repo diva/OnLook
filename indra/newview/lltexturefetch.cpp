@@ -1496,7 +1496,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				HTTP_CASE(HTTP_INTERNAL_ERROR_CURL_OTHER)
 				HTTP_CASE(HTTP_INTERNAL_ERROR_OTHER)
 				default:
-					LL_DEBUGS("TexDebug") << mID << " status = " << mGetStatus << " (??)" << " Failcount = " << mHTTPFailCount << llendl; break; 
+					LL_DEBUGS("TexDebug") << mID << " status = " << mGetStatus << " (?)" << " Failcount = " << mHTTPFailCount << llendl; break;
 				}
 				
 				if (mGetStatus == HTTP_NOT_FOUND || mGetStatus == HTTP_INTERNAL_ERROR_CURL_TIMEOUT || mGetStatus == HTTP_INTERNAL_ERROR_LOW_SPEED)

@@ -94,7 +94,7 @@
       <check_box bottom_delta="-24" left="10" control_name="UseConciseIMButtons" follows="top" height="16" label="Buttons on the same line as name for IMs (Affects new IMs)" name="im_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseGroupChatButtons" follows="top" height="16" label="Buttons on group chat name line (Affects new group chats)" name="group_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseConferenceButtons" follows="top" height="16" label="Buttons on conference title line (Affects new conferences)" name="conf_concise_butt"/>
-      <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacyLogLaunch" label="Log button opens external text editor (Windows only)" name="legacy_log_launch"/>
+      <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacyLogLaunch" label="Log button opens external text editor (Windows and Mac only)" name="legacy_log_launch"/>
       <check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Disallow communicate shortcut opening detached friends list" control_name="CommunicateSpecificShortcut" name="only_comm"/>
       <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruItalicizeActions" label="Italicize action messages (/me)" name="italicize_actions"/>
   </panel>

@@ -352,6 +352,15 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 	<string name="ScriptReturnObjects">Return objects on your behalf</string>
 	<string name="UnknownScriptPermission">(unknown)!</string>
 
+	<!-- Bumps in chat -->
+	<string name="BumpedYou">[NAME] [ACT] with magnitude [MAG]</string>
+	<!-- [ACT]s -->
+	<string name="bump">bumped you</string>
+	<string name="llpushobject">pushed you with a script</string>
+	<string name="selected_object_collide">hit you with an object</string>
+	<string name="scripted_object_collide">hit you with a scripted object</string>
+	<string name="physical_object_collide">hit you with a physical object</string>
+
 
 	<!-- Sim Access labels -->
 	<string name="SIM_ACCESS_PG">PG</string>
@@ -3058,10 +3067,10 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 <!-- *** END OF OpenSimulator & Aurora-Sim syntax section *** -->
 
 	<!-- Strings needed by drop targets -->
-	<string name="CurrentlyNotSet">Currently not set</string>
-	<string name="CurrentlySetTo">Currently set to: [ITEM]</string>
+	<string name="CurrentlyNotSet">Item currently not set</string>
+	<string name="CurrentlySetTo">Item currently set to: [ITEM]</string>
 	<string name="CurrentlySetToAnItemNotOnThisAccount">Currently set to an item not on this account</string>
-	<string name="NotLoggedIn">Not logged in</string>
+	<string name="NotLoggedIn">Not logged in, item display unavailable</string>
 
     <!-- Non-standard LLChat strings -->
     <string name="ScriptCounting">Counting scripts, please wait...</string>

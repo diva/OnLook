@@ -39,7 +39,7 @@
     </layout_panel>
     <layout_panel name="panelgrouptitles" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleGroupTitles">
       <button bottom="0" height="24" label="Group Titles" image_overlay="icn_toolbar_group_titles.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" name="group_titles_btn" width="50" follows="left|right">
-        <button.commit_callback function="ShowFloater" parameter="group_titles"/>
+        <button.commit_callback function="ShowFloater" parameter="group titles"/>
       </button>
     </layout_panel>
     <layout_panel name="panelchathistory" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleChatHistory">
@@ -401,7 +401,7 @@
     </layout_panel>
     <layout_panel name="panelpreferences" height="24" width="50" user_resize="false" visibility_control="ToolbarVisiblePreferences">
       <button bottom="0" height="24" label="Preferences" name="preferences_btn" tool_tip="Ctrl-P" image_overlay="icn_toolbar_preferences.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
-        <button.commit_callback function="ShowFloater" parameter="Preferences"/>
+        <button.commit_callback function="ShowFloater" parameter="preferences"/>
       </button>
     </layout_panel>
     <layout_panel name="panelautoreplace" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleAutoReplace">

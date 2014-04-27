@@ -21,7 +21,7 @@
 
 
 #include "ndConvexDecomposition.h"
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 #include "nd_hacdStructs.h"
 
 namespace ndStructTracer

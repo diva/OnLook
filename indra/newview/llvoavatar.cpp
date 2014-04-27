@@ -910,8 +910,10 @@ const LLUUID SHClientTagMgr::getClientID(const LLVOAvatar* pAvatar) const
 	}
 	return tag.asUUID();
 }
+bool mm_getMarkerColor(const LLUUID&, LLColor4&);
 bool SHClientTagMgr::getClientColor(const LLVOAvatar* pAvatar, bool check_status, LLColor4& color) const
 {
+	if (mm_getMarkerColor(pAvatar->getID(), color)) return true;
 	static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
 	static const LLCachedControl<bool> ascent_show_self_tag_color("AscentShowSelfTagColor");
 	static const LLCachedControl<bool> ascent_show_others_tag_color("AscentShowOthersTagColor");

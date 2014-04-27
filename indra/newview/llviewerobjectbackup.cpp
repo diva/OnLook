@@ -851,16 +851,18 @@ void LLObjectBackup::importObject_continued(AIFilePicker* filepicker)
 	llifstream import_file(file_name);
 	LLSDSerialize::fromXML(mLLSD, import_file);
 	import_file.close();
+	if (!mLLSD.has("data"))
+	{
+		LLNotificationsUtil::add("InvalidObjectParams");
+		close();
+		return;
+	}
 	show(false);
 
 	mAgentPos = gAgent.getPositionAgent();
 	mAgentRot = LLQuaternion(gAgent.getAtAxis(), gAgent.getLeftAxis(), gAgent.getUpAxis());
 
 	// Get the texture map
-	
-	LLSD::map_const_iterator prim_it;
-	LLSD::array_const_iterator prim_arr_it;
-		
 	mCurObject = 1;
 	mCurPrim = 1;
 	mObjects = mLLSD["data"].size();
@@ -868,11 +870,11 @@ void LLObjectBackup::importObject_continued(AIFilePicker* filepicker)
 	mRezCount = 0;
 	updateImportNumbers();
 
-	for (prim_arr_it = mLLSD["data"].beginArray(); prim_arr_it != mLLSD["data"].endArray(); prim_arr_it++)
+	for (LLSD::array_const_iterator prim_arr_it = mLLSD["data"].beginArray(); prim_arr_it != mLLSD["data"].endArray(); prim_arr_it++)
 	{
 		LLSD llsd2 = (*prim_arr_it)["group_body"];
 
-		for (prim_it = llsd2.beginMap(); prim_it != llsd2.endMap(); prim_it++)
+		for (LLSD::map_const_iterator prim_it = llsd2.beginMap(); prim_it != llsd2.endMap(); prim_it++)
 		{
 			LLSD prim_llsd = llsd2[prim_it->first];
 			LLSD::array_iterator text_it;

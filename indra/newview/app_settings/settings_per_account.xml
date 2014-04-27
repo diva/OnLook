@@ -723,6 +723,16 @@
       <key>Value</key>
       <string></string>
     </map>
-
+    <key>EmergencyTeleportLandmark</key>
+    <map>
+      <key>Comment</key>
+      <string>UUID of the landmark to teleport to in the last twenty seconds before a region will restart, empty is none.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string/>
+    </map>
   </map>
 </llsd>

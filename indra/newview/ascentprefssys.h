@@ -103,12 +103,14 @@ private:
 	bool mPrivateLookAt;
 	bool mShowLookAt;
 	bool mQuietSnapshotsToDisk;
+	bool mAnnounceBumps;
 	bool mDetachBridge;
 	bool mRevokePermsOnStandUp;
 	bool mDisableClickSit;
 	bool mDisableClickSitOtherOwner;
 	bool mDisplayScriptJumps;
 	F32 mNumScriptDiff;
+	std::string mLandmark;
 
 	//Build -------------------------------------------------------------------------------
 	F32 mAlpha;
