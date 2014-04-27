@@ -554,12 +554,7 @@ void LLFloaterIMPanel::onClickMuteVoice()
 // virtual
 void LLFloaterIMPanel::draw()
 {	
-	LLViewerRegion* region = gAgent.getRegion();
-	
-	bool enable_connect = region
-					  && mSessionInitialized
-					  && LLVoiceClient::getInstance()->voiceEnabled()
-					  && mCallBackEnabled;
+	bool enable_connect = mSessionInitialized && LLVoiceClient::getInstance()->voiceEnabled() && mCallBackEnabled;
 
 	// hide/show start call and end call buttons
 	mEndCallBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
