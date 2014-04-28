@@ -1507,8 +1507,6 @@ bool LLAppViewer::cleanup()
 		llinfos << "HUD Objects cleaned up" << llendflush;
 	}
 
-	LLKeyframeDataCache::clear();
-	
  	// End TransferManager before deleting systems it depends on (Audio, VFS, AssetStorage)
 #if 0 // this seems to get us stuck in an infinite loop...
 	gTransferManager.cleanup();
