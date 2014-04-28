@@ -1,148 +1,149 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<rlva_strings>
-  <strings>
-		<!-- Primarily used when @showloc restricted -->
-		<string name="hidden_generic">
-			(Oculto)
-		</string>
-		<string name="hidden_parcel">
-			(Parcela Oculta)
-		</string>
-		<string name="hidden_region">
-			(Región oculta)
-		</string>
-		<!-- Received/sent IMs will be replaced by the matching string when @recvim/sendim restricted -->
-		<string name="blocked_recvim">
-			*** MI bloqueado por tu visor
-		</string>
-		<string name="blocked_sendim">
-			*** MI bloqueado por el visor del remitente
-		</string>
-		<!-- Shown as notifications -->
-		<string name="blocked_generic">
-			No se puede realizar la acción debido a las restricciones RLV
-		</string>
-		<string name="blocked_permattach">
-			El intento de anexar el '[OBJECT]' fué denegado debido a las restricciones RLV
-		</string>
-		<string name="blocked_startim">
-			No se puede iniciar sesión de MI con [RECIPIENT] debido a las restricciones RLV
-		</string>
-		<string name="blocked_startconf">
-			No se puede iniciar una conferencia debido a las restricciones RLV
-		</string>
-		<string name="blocked_teleport">
-			No se puede iniciar el Teleporte debido a las restricciones RLV
-		</string>
-		<string name="blocked_viewxxx">
-			No se puede abrir [TYPE] debido a las restricciones RLV
-		</string>
-		<!-- Sent as "Busy" messages to the remote party -->
-		<string name="blocked_recvim_remote">
-			El residente al que le has enviado el mensaje está impedido momentáneamente de leer tus Mensajes Instantáneos, por favor, inténtalo más tarde.
-		</string>
-		<string name="blocked_tplure_remote">
-			El residente al que has invitado está impedido para aceptar ofertas de Teleporte, por favor, inténtalo más tarde.
-		</string>
-		<!-- Shown in local chat when dropping inventory onto a nearby agent (moved to strings.xml since it needs to be accesible by LLTrans) -->
-		<!--
-		<string name="inventory_item_offered_rlv">
-			Ítem de inventario ofrecido a [NAME]
-		</string>
-		-->
-	</strings>
-	<!-- Generic names used to replace resident names when @shownames restricted -->
-	<anonyms>
-		<anonym>
-			Un residente
-		</anonym>
-		<anonym>
-			Este residente
-		</anonym>
-		<anonym>
-			Ese residente
-		</anonym>
-		<anonym>
-			Un individuo
-		</anonym>
-		<anonym>
-			Este individuo
-		</anonym>
-		<anonym>
-			Ese individuo
-		</anonym>
-		<anonym>
-			Una persona
-		</anonym>
-		<anonym>
-			Esta persona
-		</anonym>
-		<anonym>
-			Esa persona
-		</anonym>
-		<anonym>
-			Un desconocido
-		</anonym>
-		<anonym>
-			Este desconocido
-		</anonym>
-		<anonym>
-			Ese desconocido
-		</anonym>
-		<anonym>
-			Un ser
-		</anonym>
-		<anonym>
-			Este ser
-		</anonym>
-		<anonym>
-			Ese ser
-		</anonym>
-		<anonym>
-			Un agente
-		</anonym>
-		<anonym>
-			Este agente
-		</anonym>
-		<anonym>
-			Ese agente
-		</anonym>
-		<anonym>
-			Un espíritu
-		</anonym>
-		<anonym>
-			Este espíritu
-		</anonym>
-		<anonym>
-			Ese espíritu
-		</anonym>
-		<anonym>
-			Alguien
-		</anonym>
-		<anonym>
-			Algunas personas
-		</anonym>
-		<anonym>
-			Alguien
-		</anonym>
-		<anonym>
-			Alguien misterioso
-		</anonym>
-		<anonym>
-			Un ser desconocido
-		</anonym>
-		<anonym>
-			Alguien no identicado
-		</anonym>
-		<anonym>
-			Una Persona desconocida
-		</anonym>
-	</anonyms>
+<llsd>
+<map>
 
-	<behaviour-notifications>
-		<!-- 
-		<notification behaviour="defaultwear" type="add">Text goes here</notification>
-		<notification behaviour="defaultwear" type="rem">Text goes here</notification>
-		-->
-	</behaviour-notifications>
-</rlva_strings>
+	<key>strings</key>
+	<map>
+		<!-- Primarily used when @showloc restricted -->
+		<key>hidden_generic</key>
+		<map>
+			<key>value</key>
+			<string>(Oculto)</string>
+		</map>
+		<key>hidden_parcel</key>
+		<map>
+			<key>value</key>
+			<string>(Parcela Oculta)</string>
+		</map>
+		<key>hidden_region</key>
+		<map>
+			<key>value</key>
+			<string>(Región oculta)</string>
+		</map>
+			
+		<!-- Received/sent IMs will be replaced by the matching string when @recvim/sendim restricted -->
+		<key>blocked_recvim</key>
+		<map>
+			<key>value</key>
+			<string>*** MI bloqueado por tu visor</string>
+			<key>description</key>
+			<string>Se muestra en lugar del mensaje original cuando un MI entrante es bloqueado</string>
+			<key>label</key>
+			<string>MI Entrante bloqueado (local)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+		<key>blocked_sendim</key>
+		<map>
+			<key>value</key>
+			<string>*** MI bloqueado por el visor del remitente</string>
+			<key>description</key>
+			<string>Se muestra (y envía al participante remoto) cuando un IM saliente es bloqueado</string>
+			<key>label</key>
+			<string>IM Saliente bloqueado (local + remoto)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+			
+		<!-- Shown as notifications -->
+		<key>blocked_generic</key>
+		<map>
+			<key>value</key>
+			<string>No se puede realizar la acción debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_permattach</key>
+		<map>
+			<key>value</key>
+			<string>El intento de anexar el '[OBJECT]' fué denegado debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_permteleport</key>
+		<map>
+			<key>value</key>
+			<string>al [OBJECT]' le fue denegado el permiso para teleportarte debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_startim</key>
+		<map>
+			<key>value</key>
+			<string>No se puede iniciar sesión de MI con [RECIPIENT] debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_startconf</key>
+		<map>
+			<key>value</key>			
+			<string>No se puede iniciar una conferencia debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_teleport</key>
+		<map>
+			<key>value</key>
+			<string>No se puede iniciar el Teleporte debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_viewxxx</key>
+		<map>
+			<key>value</key>
+			<string>No se puede abrir [TYPE] debido a las restricciones RLV</string>
+		</map>
+		<key>blocked_wireframe</key>
+		<map>
+			<key>value</key>
+			<string>No se puede habilitar el modo wireframe debido a las restricciones RLV</string>
+		</map>
+
+		<!-- Sent as "Busy" messages to the remote party -->
+		<key>blocked_recvim_remote</key>
+		<map>
+			<key>value</key>
+			<string>El residente al que le has enviado el mensaje está impedido momentáneamente de leer tus Mensajes Instantáneos, por favor, inténtalo más tarde.</string>
+			<key>description</key>
+			<string>Se envía al participante remoto cuando su IM fue bloqueado</string>
+			<key>label</key>
+			<string>MI entrante bloqueado (remoto)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+		<key>blocked_tplurerequest_remote</key>
+		<map>
+			<key>value</key>
+			<string>El residente al que has invitado está impedido de aceptar. Por favor, inténtalo más tarde.</string>
+			<key>description</key>
+			<string>Se envía al participante remoto cuando su oferta o petición de teleporte fue bloqueada</string>
+			<key>label</key>
+			<string>Oferta/Petición de Teleporte bloqueada (remoto)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+	</map>
+		
+	<!-- Generic names used to replace resident names when @shownames restricted -->
+	<key>anonyms</key>
+	<array>
+		<string>Un residente</string>
+		<string>Este residente</string>
+		<string>Ese residente</string>
+		<string>Un individuo</string>
+		<string>Este individuo</string>
+		<string>Ese individuo</string>
+		<string>Una persona</string>
+		<string>Esta persona</string>
+		<string>Esa persona</string>
+		<string>Un desconocido</string>
+		<string>Este desconocido</string>
+		<string>Ese desconocido</string>
+		<string>Un ser</string>
+		<string>Este ser</string>
+		<string>Ese ser</string>
+		<string>Un agente</string>
+		<string>Este agente</string>
+		<string>Ese agente</string>
+		<string>Un espíritu</string>
+		<string>Este espíritu</string>
+		<string>Ese espíritu</string>
+		<string>Alguien</string>
+		<string>Algunas personas</string>
+		<string>Alguien</string>
+		<string>Alguien misterioso</string>
+		<string>Un ser desconocido</string>
+		<string>Alguien no identificado</string>
+		<string>Una Persona desconocida</string>
+	</array>
+
+</map>
+</llsd>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="region_restarting" title="Reinicio de Región">
+    <string name="RegionName">
+        La región ([NAME]) en que estás 
+se reiniciará enseguida.
+
+Si permaneces en esta región, serás desconectado.
+    </string>
+    <string name="RestartSeconds"> 
+        Segundos remanentes para el reinicio: 
+[SECONDS]
+    </string>
+    <panel name="layout_panel_1">
+        <text name="region_name">
+            La región ([NAME]) en que estás 
+(-El nombre de región más largo-) se reiniciará enseguida.
+
+Si permaneces en esta región, serás desconectado.
+        </text>
+        <text name="restart_seconds">
+            Segundos remanentes para el reinicio:
+32767
+        </text>
+    </panel>
+</floater>
+

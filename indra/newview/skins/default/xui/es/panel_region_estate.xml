@@ -40,7 +40,7 @@
 		Residentes autorizados:
 	</text>
 	<button label="?" name="allow_resident_help"/>
-	
+
     <!-- Estate Managers buttons -->
 	<button label="Añadir..." name="add_estate_manager_btn"/>
 	<button label="Quitar..." name="remove_estate_manager_btn"/>

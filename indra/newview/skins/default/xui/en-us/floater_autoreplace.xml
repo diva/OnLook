@@ -186,6 +186,7 @@
    mouse_opaque="false"
    name="divisor3"/>
   <text
+   name="keyword"
    type="string"
    follows="left|top"
    height="16"
@@ -206,6 +207,7 @@
    width="150"
    />
   <text
+   name="replacement"
    type="string"
    follows="left|top"
    height="16"
