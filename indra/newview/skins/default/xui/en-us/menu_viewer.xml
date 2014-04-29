@@ -5,17 +5,17 @@
 	<menu bottom="273" create_jump_keys="true" drop_shadow="true" enabled="true"
 	    height="263" label="File" left="0" mouse_opaque="false" name="File"
 	    opaque="true" tear_off="true" width="243">
-    <menu_item_call enabled="true" label="Image ([UPLOADFEE])..."
+    <menu_item_call enabled="true" label="Upload Image ([UPLOADFEE])..."
         mouse_opaque="true" name="Upload Image" shortcut="control|U" >
 		<on_click function="File.UploadImage" userdata="" />
 		<on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Sound ([UPLOADFEE])..." name="Upload Sound"
+    <menu_item_call label="Upload Sound ([UPLOADFEE])..." name="Upload Sound"
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadSound" userdata="" />
         <on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Animation ([UPLOADFEE])..." name="Upload Animation"
+    <menu_item_call label="Upload Animation ([UPLOADFEE])..." name="Upload Animation"
         mouse_opaque="true" enabled="true"  >
         <on_click function="File.UploadAnim" userdata="" />
         <on_enable function="File.EnableUpload" />
@@ -25,11 +25,11 @@
         <on_click function="File.UploadModel" userdata="" />
         <on_enable function="File.EnableUploadModel" />
     </menu_item_call>
-    <menu_item_call label="Bulk ([UPLOADFEE] per file)..." name="Bulk Upload"
+    <menu_item_call label="Bulk Upload ([UPLOADFEE] per file)..." name="Bulk Upload"
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadBulk" userdata="" />
     </menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Import XML" mouse_opaque="true" name="Import">
+	<menu_item_call enabled="false" hidden="false" label="Import Object XML" mouse_opaque="true" name="Import">
 		<on_click function="Object.Import" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
