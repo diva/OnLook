@@ -694,6 +694,8 @@ class CygwinSetup(WindowsSetup):
             project_name=self.project_name,
             word_size=self.word_size,
             )
+        if self.word_size == 64:
+            args["generator"] += r' Win64'
         #if simple:
         #    return 'cmake %(opts)s "%(dir)s"' % args
         return ('cmake -G "%(generator)s" '
