@@ -48,7 +48,6 @@ public:
 
 protected:
 	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
-	void onCommitCmdLine(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitComboBox(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitTexturePicker(LLUICtrl* ctrl);
 

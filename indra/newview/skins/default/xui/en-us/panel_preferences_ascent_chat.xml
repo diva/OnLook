@@ -131,27 +131,27 @@ The following wildcards are available to enhance your autoresponses: #n for user
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Spam" name="Spam">
       <check_box control_name="AntiSpamEnabled" label="Enable Antispam" name="enable_as" width="256" left="3"/>
       <button height="23" label="Reset antispam queues" label_selected="Reset antispam queues" name="reset_antispam" width="230" bottom_delta="0" left="260"/>
-      <check_box control_name="_NACL_AntiSpamGlobalQueue" label="No messagetype-specific spam queues" name="spammsg_checkbox" width="256" left="6" bottom_delta="-20"/>
-      <spinner control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="1" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive" name="antispamtime" width="390" left="10" bottom_delta="-10"/>
-      <spinner control_name="_NACL_AntiSpamAmount" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Antispam amount:" label_width="330" tool_tip="Higher is less sensitive" name="antispamamount" width="390"/>
-      <spinner control_name="_NACL_AntiSpamSoundMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound plays:" label_width="330" tool_tip="Higher is less sensitive" left="10" name="antispamsoundmulti" width="390"/>
-      <spinner control_name="_NACL_AntiSpamSoundPreloadMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound preloads:" label_width="330" tool_tip="Higher is less sensitive" name="antispamsoundpreloadmulti" width="390"/>
-      <spinner control_name="_NACL_AntiSpamNewlines" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Amount of newlines to instablock message:" label_width="330" tool_tip="Higher is less sensitive" name="antispamnewlines" width="390"/>
-      <check_box control_name="AntiSpamNotify" height="16" label="Notify when spam is blocked" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked." left="6" bottom_delta="-22"/>
+      <check_box enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamGlobalQueue" label="No messagetype-specific spam queues" name="spammsg_checkbox" width="256" left="6" bottom_delta="-20"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="1" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive" name="antispamtime" width="390" left="10" bottom_delta="-10"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamAmount" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Antispam amount:" label_width="330" tool_tip="Higher is less sensitive" name="antispamamount" width="390"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamSoundMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound plays:" label_width="330" tool_tip="Higher is less sensitive" left="10" name="antispamsoundmulti" width="390"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamSoundPreloadMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound preloads:" label_width="330" tool_tip="Higher is less sensitive" name="antispamsoundpreloadmulti" width="390"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamNewlines" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Amount of newlines to instablock message:" label_width="330" tool_tip="Higher is less sensitive" name="antispamnewlines" width="390"/>
+      <check_box enabled_control="AntiSpamEnabled" control_name="AntiSpamNotify" height="16" label="Notify when spam is blocked" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked." left="6" bottom_delta="-22"/>
 	  <check_box control_name="_NACL_Antispam" height="16" label="Disable -all- dialogs (resets on login)" name="antispam_checkbox" left="3"/>
-	  <text name="Block All Dialogs From" left="10" bottom_delta="-10">Block All Dialogs From</text>
-      <check_box control_name="AntiSpamAlerts" height="16" label="Alerts" name="Alerts" left="14" bottom_delta="-23"/>
-      <check_box control_name="AntiSpamFriendshipOffers" height="16" label="Friendship Offers" name="Friendship Offers" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamGroupInvites" height="16" label="All Group Invites" name="Group Invites" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamGroupFeeInvites" height="16" label="Group Fee Invites" name="Group Fee Invites" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamItemOffers" height="16" label="Item Offers" name="Item Offers" left="14"/>
-      <check_box control_name="AntiSpamScripts" height="16" label="Scripts" name="Scripts" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
-      <text name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
-      <check_box control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
-      <check_box control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
+      <text disabled_control="_NACL_Antispam" name="Block All Dialogs From" left="10" bottom_delta="-10">Block All Dialogs From</text>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamAlerts" height="16" label="Alerts" name="Alerts" left="14" bottom_delta="-23"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamFriendshipOffers" height="16" label="Friendship Offers" name="Friendship Offers" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamGroupInvites" height="16" label="All Group Invites" name="Group Invites" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="AntiSpamGroupInvites" control_name="AntiSpamGroupFeeInvites" height="16" label="Group Fee Invites" name="Group Fee Invites" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamItemOffers" height="16" label="Item Offers" name="Item Offers" left="14"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamScripts" height="16" label="Scripts" name="Scripts" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
+      <text disabled_control="_NACL_Antispam" name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
       <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3" bottom_delta="-20"/>
     </panel>
 

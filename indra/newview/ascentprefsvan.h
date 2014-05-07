@@ -48,8 +48,6 @@ public:
 
 protected:
 	void onCommitClientTag(LLUICtrl* ctrl);
-	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
-	void onCommitTextModified(LLUICtrl* ctrl, const LLSD& value);
 	static void onManualClientUpdate();
 
 private:
