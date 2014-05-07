@@ -6600,7 +6600,8 @@ void update_region_restart(const LLSD& llsdBlock)
 	if (restarting_floater)
 	{
 		restarting_floater->updateTime(seconds);
-		restarting_floater->center();
+		if (!restarting_floater->isMinimized())
+			restarting_floater->center();
 	}
 	else
 	{
@@ -6608,6 +6609,8 @@ void update_region_restart(const LLSD& llsdBlock)
 		params["NAME"] = llsdBlock["NAME"];
 		params["SECONDS"] = (LLSD::Integer)seconds;
 		LLFloaterRegionRestarting::showInstance(params);
+		if (gSavedSettings.getBOOL("LiruRegionRestartMinimized"))
+			LLFloaterRegionRestarting::findInstance()->setMinimized(true);
 	}
 }
 

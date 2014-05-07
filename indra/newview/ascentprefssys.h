@@ -108,7 +108,9 @@ private:
 	bool mDisableClickSit;
 	bool mDisableClickSitOtherOwner;
 	bool mDisplayScriptJumps;
+	bool mRestartMinimized;
 	F32 mNumScriptDiff;
+	std::string mRestartSound;
 	std::string mLandmark;
 
 	//Build -------------------------------------------------------------------------------

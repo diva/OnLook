@@ -74,6 +74,7 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 	getChild<LLUICtrl>("SinguCmdLineURL")->setCommitCallback(lineEditorControl);
 
 	//Security ----------------------------------------------------------------------------
+	getChild<LLUICtrl>("UISndRestart")->setCommitCallback(lineEditorControl);
 
 	//Build -------------------------------------------------------------------------------
 	getChild<LLUICtrl>("next_owner_copy")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
@@ -194,6 +195,8 @@ void LLPrefsAscentSys::refreshValues()
 	mDisableClickSitOtherOwner	= gSavedSettings.getBOOL("DisableClickSitOtherOwner");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
     mNumScriptDiff              = gSavedSettings.getF32("Ascentnumscriptdiff");
+	mRestartMinimized		= gSavedSettings.getBOOL("LiruRegionRestartMinimized");
+	mRestartSound			= gSavedSettings.getString("UISndRestart");
 	mLandmark			= gSavedPerAccountSettings.getString("EmergencyTeleportLandmark");
 
 	//Build -------------------------------------------------------------------------------
@@ -242,6 +245,9 @@ void LLPrefsAscentSys::refresh()
     childSetValue("AscentCmdLineTP2",           mCmdLineTP2);
     childSetValue("SinguCmdLineAway",           mCmdLineAway);
 	childSetValue("SinguCmdLineURL",            mCmdLineURL);
+
+	//Security ----------------------------------------------------------------------------
+	getChildView("UISndRestart")->setValue(mRestartSound);
 
 	//Build -------------------------------------------------------------------------------
 	childSetValue("alpha",               mAlpha);
@@ -320,6 +326,8 @@ void LLPrefsAscentSys::cancel()
 	gSavedSettings.setBOOL("DisableClickSitOtherOwner",     mDisableClickSitOtherOwner);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
     gSavedSettings.setF32("Ascentnumscriptdiff",            mNumScriptDiff);
+	gSavedSettings.setBOOL("LiruRegionRestartMinimized", mRestartMinimized);
+	gSavedSettings.setString("UISndRestart", mRestartSound);
 	gSavedPerAccountSettings.setString("EmergencyTeleportLandmark",      mLandmark);
 
 	//Build -------------------------------------------------------------------------------

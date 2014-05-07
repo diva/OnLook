@@ -96,8 +96,11 @@
       <check_box bottom_delta="-20" left="10" follows="top" initial_value="false" label="Display Total Script Count changes:" name="totalscriptjumps" control_name="AscentDisplayTotalScriptJumps" tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
       <spinner bottom_delta="0" decimal_digits="0" follows="top" height="16" increment="1" left_delta="210" max_val="9999" min_val="1" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff" tool_tip="Threshold for the script jump message [Default: 100]"/>
       <check_box bottom_delta="-20" left="10" follows="top" label="Restrained Love API Support (RLVa)" name="RestrainedLove" control_name="RestrainedLove" tool_tip="Allows scripts to take greater control of the viewer, if you wear compliant objects."/>
+      <check_box bottom_delta="-20" left="10" follows="top" label="Auto-minimize region restart notice" name="region_restart_minimized" control_name="LiruRegionRestartMinimized" tool_tip="Useful for sim owners and people who need to pack up before leaving"/>
       <text name="EmergencyTeleportDesc" left="14" bottom_delta="-12" follows="top">Drop a landmark below to autoteleport there in the last 20 seconds before region restarts</text>
       <drop_target control_name="EmergencyTeleportLandmark" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_drop" width="430"/>
+      <text bottom_delta="-26" follows="top" name="UISndRestartText">Sound played when regions will restart:</text>
+      <line_editor bottom_delta="-6" left_delta="222" follows="top" width="209" height="16" name="UISndRestart" tool_tip="Empty for no sound to play"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Building" name="Building">
