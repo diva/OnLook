@@ -3916,15 +3916,20 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 	}
 
 	//build matrix palette
-	static const size_t kMaxJoints = 64;
-
-	LLMatrix4a mp[kMaxJoints];
+	LLMatrix4a mp[JOINT_COUNT];
 	LLMatrix4* mat = (LLMatrix4*) mp;
-	
-	U32 maxJoints = llmin(skin->mJointNames.size(), kMaxJoints);
-	for (U32 j = 0; j < maxJoints; ++j)
+
+	U32 count = llmin((U32) skin->mJointNames.size(), (U32) JOINT_COUNT);
+
+	llassert_always(count);
+
+	for (U32 j = 0; j < count; ++j)
 	{
 		LLJoint* joint = avatar->getJoint(skin->mJointNames[j]);
+		if(!joint)
+		{
+			joint = avatar->getJoint("mRoot");
+		}
 		if (joint)
 		{
 			mat[j] = skin->mInvBindMatrix[j];
@@ -3973,17 +3978,17 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 					scale += wght[k];
 				}
 
-				wght *= 1.f/scale;
+				if(scale > 0.f)
+					wght *= 1.f/scale;
+				else
+					wght = LLVector4(F32_MAX,F32_MAX,F32_MAX,F32_MAX);
 
 				for (U32 k = 0; k < 4; k++)
 				{
 					F32 w = wght[k];
-
 					LLMatrix4a src;
-					// Ensure ref'd bone is in our clamped array of mats
-					llassert(idx[k] < kMaxJoints);
-					// clamp k to kMaxJoints to avoid reading garbage off stack in release
-					src.setMul(mp[idx[(k < kMaxJoints) ? k : 0]], w);
+					src.setMul(mp[idx[k]], w);
+
 					final_mat.add(src);
 				}
 
