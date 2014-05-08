@@ -635,7 +635,7 @@ LLWindowWin32::LLWindowWin32(LLWindowCallbacks* callbacks,
 	LLCoordScreen windowPos(x,y);
 	LLCoordScreen windowSize(window_rect.right - window_rect.left,
 							 window_rect.bottom - window_rect.top);
-	if (!switchContext(mFullscreen, windowSize, TRUE, &windowPos))
+	if (!switchContext(mFullscreen, windowSize, vsync_mode, &windowPos))
 	{
 		return;
 	}
@@ -1654,21 +1654,21 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 	{
 		if (vsync_mode == 0)
 		{
-			LL_DEBUGS("Window") << "Disabling vertical sync" << LL_ENDL;
+			LL_INFOS("Window") << "Disabling vertical sync" << LL_ENDL;
 			wglSwapIntervalEXT(0);
 		}
 		else if(vsync_mode == -1)
 		{
-			LL_DEBUGS("Window") << "Enabling adaptive vertical sync" << LL_ENDL;
+			LL_INFOS("Window") << "Enabling adaptive vertical sync" << LL_ENDL;
 			if(wglSwapIntervalEXT(-1) == 0)
 			{
-				LL_DEBUGS("Window") << "Failed to enable adaptive vertical sync. Disabling vsync." << LL_ENDL;
+				LL_INFOS("Window") << "Failed to enable adaptive vertical sync. Disabling vsync." << LL_ENDL;
 				wglSwapIntervalEXT(0);
 			}
 		}
 		else
 		{
-			LL_DEBUGS("Window") << "Enabling vertical sync" << LL_ENDL;
+			LL_INFOS("Window") << "Enabling vertical sync" << LL_ENDL;
 			wglSwapIntervalEXT(1);
 		}
 	}

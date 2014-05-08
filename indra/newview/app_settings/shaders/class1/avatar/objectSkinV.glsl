@@ -65,7 +65,7 @@ mat4 getObjectSkinnedTransform()
 	ret[0] = vec4(mat[0].xyz, 0);
 	ret[1] = vec4(mat[1].xyz, 0);
 	ret[2] = vec4(mat[2].xyz, 0);
-	ret[3] = vec4(trans, scale);
+	ret[3] = vec4(trans, sum);
 				
 	return ret;
 }

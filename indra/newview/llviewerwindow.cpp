@@ -5512,7 +5512,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 			mWindow->setSize(size);
 		}
 
-		if (fsaa == old_fsaa && vsync_mode == mWindow->getFSAASamples())
+		if (fsaa == old_fsaa && vsync_mode == mWindow->getVsyncMode())
 		{
 			return TRUE;
 		}
