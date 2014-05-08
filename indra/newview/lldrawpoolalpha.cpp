@@ -446,7 +446,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 					llassert_always(!LLGLSLShader::sCurBoundShaderPtr);
 
 					bool fullbright = depth_only || params.mFullbright;
-					if(fullbright == light_enabled || !initialized_lighting)
+					if(fullbright == !!light_enabled || !initialized_lighting)
 					{
 						light_enabled = !fullbright;
 						initialized_lighting = true;
@@ -536,7 +536,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 					if (params.mTexture.notNull())
 					{
 						params.mTexture->addTextureStats(params.mVSize);
-						if (mat)
+						if (use_shaders && mat && current_shader)
 						{
 							current_shader->bindTexture(LLShaderMgr::DIFFUSE_MAP, params.mTexture);
 						}
