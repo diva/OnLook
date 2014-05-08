@@ -259,7 +259,7 @@ extern void toggle_debug_menus(void*);
 // LLDebugText
 //
 
-extern std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
+//extern std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
 
 class LLDebugText
 {
@@ -356,7 +356,7 @@ public:
 						LLViewerTexture* imagep = obj->getTEImage(te);
 						if(imagep && imagep != (LLViewerTexture*)LLViewerFetchedTexture::sDefaultImagep.get())
 						{
-							LLGLuint tex = imagep->getTexName();
+							/*LLGLuint tex = imagep->getTexName();
 							std::map<LLGLuint, std::list<std::pair<std::string,std::string> > >::iterator it = sTextureMaskMap.find(tex);
 							if(it != sTextureMaskMap.end())
 							{
@@ -365,7 +365,7 @@ public:
 								{
 									addText(xpos, ypos, llformat(" %s: %s", it2->first.c_str(), it2->second.c_str())); ypos += y_inc;
 								}
-							}
+							}*/
 							static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
 							static const LLCachedControl<F32> auto_mask_max_rmse("SHAutoMaskMaxRMSE",.09f);
 							addText(xpos, ypos, llformat("Mask: %s", imagep->getIsAlphaMask(use_rmse_auto_mask ? auto_mask_max_rmse : -1.f) ? "TRUE":"FALSE")); ypos += y_inc;

@@ -1776,7 +1776,7 @@ void LLImageGL::calcAlphaChannelOffsetAndStride()
 	}
 }
 
-std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
+//std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
 void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 {
 	if(!mNeedsAlphaAndPickMask || !mCanMask)
@@ -1897,7 +1897,7 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 
 	mMaskRMSE = sqrt(sum)/255.0;
 	
-	std::list<std::pair<std::string,std::string> > &data = sTextureMaskMap[getTexName()];
+	/*std::list<std::pair<std::string,std::string> > &data = sTextureMaskMap[getTexName()];
 	data.clear();
 	data.push_back(std::make_pair("RMSE", llformat("%f",mMaskRMSE)));
 	data.push_back(std::make_pair(" sum", llformat("%lf",sum)));
@@ -1908,7 +1908,7 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 	data.push_back(std::make_pair(" stride", llformat("%i",S32(mAlphaOffset))));
 	data.push_back(std::make_pair(" split", llformat("%u|%u|%u",lowerhalftotal,midrangetotal,upperhalftotal)));
 	data.push_back(std::make_pair(" alphatotal", llformat("%u",alphatotal)));
-	data.push_back(std::make_pair(" alphatotal/48", llformat("%u",length/48)));
+	data.push_back(std::make_pair(" alphatotal/48", llformat("%u",length/48)));*/
 	
 }
 
