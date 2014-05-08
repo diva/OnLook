@@ -1654,7 +1654,7 @@ LLViewerWindow::LLViewerWindow(
 		vsync_mode,
 		!gNoRender,
 		ignore_pixel_depth,
-		gSavedSettings.getBOOL("RenderUseFBO") ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
+		LLRenderTarget::sUseFBO ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
 
 	if (!LLViewerShaderMgr::sInitialized)
 	{ //immediately initialize shaders
@@ -5500,7 +5500,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 		return TRUE;
 	}
 
-	U32 fsaa = gSavedSettings.getU32("RenderFSAASamples");
+	U32 fsaa = LLRenderTarget::sUseFBO ? 0 : gSavedSettings.getU32("RenderFSAASamples"); //don't use window level anti-aliasing if FBOs are enabled
 	U32 old_fsaa = mWindow->getFSAASamples();
 
 	// going from windowed to windowed
