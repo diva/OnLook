@@ -865,11 +865,20 @@ void LLPanelDisplay::apply()
 {
 	U32 fsaa_value = childGetValue("fsaa").asInteger();
 	S32 vsync_value = childGetValue("vsync").asInteger();
+	bool fbo_value = childGetValue("fbo").asBoolean();
+
+	LLWindow* window = gViewerWindow->getWindow();
 
 	if(vsync_value == -1 && !gGLManager.mHasAdaptiveVsync)
 		vsync_value = 0;
 
-	bool apply_fsaa_change = !gSavedSettings.getBOOL("RenderUseFBO") && (mFSAASamples != fsaa_value);
+	bool apply_fsaa_change = fbo_value ? false : (mFSAASamples != fsaa_value);
+
+	if(!apply_fsaa_change && (bool)mUseFBO != fbo_value)
+	{
+		apply_fsaa_change = fsaa_value != 0 || mFSAASamples != 0 ;
+	}
+
 	bool apply_vsync_change = vsync_value != mVsyncMode;
 
 	gSavedSettings.setU32("RenderFSAASamples", fsaa_value);
@@ -889,7 +898,6 @@ void LLPanelDisplay::apply()
 	if(apply_fsaa_change || apply_vsync_change)
 	{
 		bool logged_in = (LLStartUp::getStartupState() >= STATE_STARTED);
-		LLWindow* window = gViewerWindow->getWindow();
 		LLCoordScreen size;
 		window->getSize(&size);
 		LLGLState::checkStates();

@@ -452,7 +452,7 @@ U16 LLFace::getGeometryAvatar(
 						LLStrider<LLVector3> &normals,
 						LLStrider<LLVector2> &tex_coords,
 						LLStrider<F32>		 &vertex_weights,
-						LLStrider<LLVector4> &clothing_weights)
+						LLStrider<LLVector4a> &clothing_weights)
 {
 	if (mVertexBuffer.notNull())
 	{
@@ -1143,11 +1143,11 @@ void LLFace::cacheFaceInVRAM(const LLVolumeFace& vf)
 
 	if (vf.mWeights)
 	{
-		LLStrider<LLVector4> f_wght;
+		LLStrider<LLVector4a> f_wght;
 		buff->getWeight4Strider(f_wght);
 		for (U32 i = 0; i < (U32)vf.mNumVertices; ++i)
 		{
-			(*f_wght++).set(vf.mWeights[i].getF32ptr());
+			(*f_wght++) = vf.mWeights[i];
 		}
 	}
 
@@ -1253,7 +1253,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	LLStrider<LLColor4U> colors;
 	LLStrider<LLVector3> tangent;
 	LLStrider<U16> indicesp;
-	LLStrider<LLVector4> wght;
+	LLStrider<LLVector4a> wght;
 
 	BOOL full_rebuild = force_rebuild || mDrawablep->isState(LLDrawable::REBUILD_VOLUME);
 	
@@ -2126,8 +2126,10 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		{
 			LLFastTimer t(FTM_FACE_GEOM_WEIGHTS);
 			mVertexBuffer->getWeight4Strider(wght, mGeomIndex, mGeomCount, map_range);
-			F32* weights = (F32*) wght.get();
-			LLVector4a::memcpyNonAliased16(weights, (F32*) vf.mWeights, num_vertices*4*sizeof(F32));
+			for(S32 i=0;i<num_vertices;++i)
+			{
+				*(wght++) = vf.mWeights[i];
+			}
 			if (map_range)
 			{
 				mVertexBuffer->flush();

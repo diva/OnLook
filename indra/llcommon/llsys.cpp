@@ -1288,7 +1288,7 @@ public:
             LL_CONT << "slowest framerate for last " << int(prevSize * MEM_INFO_THROTTLE)
                     << " seconds ";
         }
-        LL_CONT << std::fixed << std::setprecision(1) << framerate << '\n'
+        LL_CONT << std::fixed << std::setprecision(1) << framerate << std::setprecision(6) << '\n'
                 << LLMemoryInfo() << LL_ENDL;
 
         return false;
