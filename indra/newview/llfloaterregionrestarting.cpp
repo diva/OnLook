@@ -116,7 +116,7 @@ void LLFloaterRegionRestarting::draw()
 	LLFloater::draw();
 
         static const LLCachedControl<bool> alchemyRegionShake(gSavedSettings, "AlchemyRegionRestartShake", true);
-        if (!alchemyRegionShake)
+        if (!alchemyRegionShake || isMinimized()) // If we're minimized, leave the user alone
                 return;
 
 	const F32 SHAKE_INTERVAL = 0.025;

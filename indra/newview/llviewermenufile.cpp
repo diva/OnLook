@@ -870,6 +870,13 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		asset_type = LLAssetType::AT_ANIMATION;
 		filename = src_filename;
 	}
+	else if(exten == "lsl" || exten == "gesture" || exten == "notecard")
+	{
+		if (exten == "lsl") asset_type = LLAssetType::AT_LSL_TEXT;
+		else if (exten == "gesture") asset_type = LLAssetType::AT_GESTURE;
+		else if (exten == "notecard") asset_type = LLAssetType::AT_NOTECARD;
+		filename = src_filename;
+	}
 	// </edit>
 	else
 	{

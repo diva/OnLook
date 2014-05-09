@@ -30,10 +30,15 @@
 #ifndef LL_LLVIEWEROBJECTBACKUP_H
 #define LL_LLVIEWEROBJECTBACKUP_H
 
+#include "boost/unordered_map.hpp"
+#include "boost/unordered_set.hpp"
+
 #include "llviewerinventory.h"
 
 enum export_states {
 	EXPORT_INIT,
+	EXPORT_CHECK_PERMS,
+	EXPORT_FETCH_PHYSICS,
 	EXPORT_STRUCTURE,
 	EXPORT_TEXTURES,
 	EXPORT_LLSD,
@@ -48,17 +53,17 @@ public:
 
 	// Floater stuff
 	virtual void show(bool exporting);
-	virtual void draw();
 	virtual void onClose(bool app_quitting);
 
 	// Static accessor
 	static LLObjectBackup* getInstance();
+	static bool instanceExists()				{ return sInstance != NULL; }
 
 	// Export idle callback
 	static void exportWorker(void *userdata);
 
 	// Import entry point
-	void importObject(bool upload=FALSE);
+	void importObject(bool upload = false);
 	void importObject_continued(AIFilePicker* filepicker);
 
 	// Export entry point
@@ -72,7 +77,7 @@ public:
 	void uploadNextAsset();
 
 	// Folder public geter
-	std::string getfolder() { return mFolder; };
+	std::string getfolder() { return mFolder; }
 
 	// Prim updated callback
 	void primUpdate(LLViewerObject* object);
@@ -87,8 +92,11 @@ public:
 	static const U32 TEXTURE_IS_NULL = 0x08;
 	static const U32 TEXTURE_SAVED_FAILED = 0x10;
 
-	// Is ready for next texture?
-	bool mNextTextureReady;
+	// Set when the region supports the extra physics flags
+	bool mGotExtraPhysics;
+
+	// Are we ready to check for next texture?
+	bool mCheckNextTexture;
 
 	// Export state machine
 	enum export_states mExportState; 
@@ -96,23 +104,24 @@ public:
 	// Export result flags for textures.
 	U32 mNonExportedTextures;
 
+	static void setDefaultTextures();
+
 	// Is exporting these objects allowed
 	bool validatePerms(const LLPermissions* item_permissions);
 
 private:
-	// Static singleton stuff
-	LLObjectBackup();	
-	static LLObjectBackup* sInstance;
+	LLObjectBackup();
 
 	// Update the floater with status numbers
 	void updateImportNumbers();
 	void updateExportNumbers();
 
 	// Permissions stuff.
-	LLUUID validateTextureID(LLUUID asset_id);
+	LLUUID validateTextureID(const LLUUID& asset_id);
 
 	// Convert a selection list of objects to LLSD
-	LLSD primsToLLSD(LLViewerObject::child_list_t child_list, bool is_attachment);
+	LLSD primsToLLSD(LLViewerObject::child_list_t child_list,
+					 bool is_attachment);
 
 	// Start the import process
 	void importFirstObject();
@@ -126,18 +135,17 @@ private:
 	// Apply LLSD to object
 	void xmlToPrim(LLSD prim_llsd, LLViewerObject* pobject);
 
-	// Rez a prim at a given position (note not agent offset X/Y screen for raycast)
+	// Rez a prim at a given position
 	void rezAgentOffset(LLVector3 offset);	
 
 	// Get an offset from the agent based on rotation and current pos
 	LLVector3 offsetAgent(LLVector3 offset);
 
+private:
+	static LLObjectBackup* sInstance;
+
 	// Are we active flag
 	bool mRunning;
-
-	// File and folder name control 
-	std::string mFileName;
-	std::string mFolder;
 
 	// True if we need to rebase the assets
 	bool mRetexture;
@@ -151,26 +159,6 @@ private:
 	// No prims rezed
 	U32 mRezCount;
 
-	// Rebase map
-	std::map<LLUUID,LLUUID> mAssetMap;
-
-	// Export texture list
-	std::list<LLUUID> mTexturesList;
-
-	// Import object tracking
-	std::vector<LLViewerObject*> mToSelect;
-	std::vector<LLViewerObject*>::iterator mProcessIter;
-
-	// Working LLSD holders
-	LLUUID mCurrentAsset;
-	LLSD mLLSD;
-	LLSD mThisGroup;
-	LLUUID mExpectingUpdate;
-
-	// Working llsd itterators for objects and linksets
-	LLSD::map_const_iterator mPrimImportIter;
-	LLSD::array_const_iterator mGroupPrimImportIter;
-
 	// Root pos and rotation and central root pos for link set
 	LLVector3 mRootPos;
 	LLQuaternion mRootRot;
@@ -180,6 +168,31 @@ private:
 	// Agent inital pos and rot when starting import
 	LLVector3 mAgentPos;
 	LLQuaternion mAgentRot;
+	// Rebase map
+	boost::unordered_map<LLUUID, LLUUID> mAssetMap;
+
+	// Export texture list
+	typedef boost::unordered_set<LLUUID> textures_set_t;
+	textures_set_t mTexturesList;
+	textures_set_t mBadPermsTexturesList;
+
+	// Import object tracking
+	std::vector<LLViewerObject*> mToSelect;
+	std::vector<LLViewerObject*>::iterator mProcessIter;
+
+	// File and folder name control
+	std::string mFileName;
+	std::string mFolder;
+
+	// Working LLSD holders
+	LLUUID mCurrentAsset;
+	LLUUID mExpectingUpdate;
+	LLSD mLLSD;
+	LLSD mThisGroup;
+
+	// Working llsd itterators for objects and linksets
+	LLSD::map_const_iterator mPrimImportIter;
+	LLSD::array_const_iterator mGroupPrimImportIter;
 };
 
 #endif

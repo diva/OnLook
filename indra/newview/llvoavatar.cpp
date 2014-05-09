@@ -8819,6 +8819,100 @@ void LLVOAvatar::updateLODRiggedAttachments( void )
 	updateLOD();
 	rebuildRiggedAttachments();
 }
+
+void LLVOAvatar::updateSoftwareSkinnedVertices(const LLMeshSkinInfo* skin, const LLVector4a* weight, const LLVolumeFace& vol_face, LLVertexBuffer *buffer)
+{
+	//perform software vertex skinning for this face
+	LLStrider<LLVector3> position;
+	LLStrider<LLVector3> normal;
+
+	bool has_normal = buffer->hasDataType(LLVertexBuffer::TYPE_NORMAL);
+	buffer->getVertexStrider(position);
+
+	if (has_normal)
+	{
+		buffer->getNormalStrider(normal);
+	}
+
+	LLVector4a* pos = (LLVector4a*) position.get();
+
+	LLVector4a* norm = has_normal ? (LLVector4a*) normal.get() : NULL;
+	
+	//build matrix palette
+	LLMatrix4a mp[JOINT_COUNT];
+	LLMatrix4* mat = (LLMatrix4*) mp;
+
+	U32 count = llmin((U32) skin->mJointNames.size(), (U32) JOINT_COUNT);
+
+	llassert_always(count);
+
+	for (U32 j = 0; j < count; ++j)
+	{
+		LLJoint* joint = getJoint(skin->mJointNames[j]);
+		if(!joint)
+		{
+			joint = getJoint("mRoot");
+		}
+		if (joint)
+		{
+			mat[j] = skin->mInvBindMatrix[j];
+			mat[j] *= joint->getWorldMatrix();
+		}
+	}
+
+	LLMatrix4a bind_shape_matrix;
+	bind_shape_matrix.loadu(skin->mBindShapeMatrix);
+
+	for (U32 j = 0; j < (U32)buffer->getNumVerts(); ++j)
+	{
+		LLMatrix4a final_mat;
+		final_mat.clear();
+
+		S32 idx[4];
+
+		LLVector4 wght;
+
+		F32 scale = 0.f;
+		for (U32 k = 0; k < 4; k++)
+		{
+			F32 w = weight[j][k];
+
+			idx[k] = (S32) floorf(w);
+			wght[k] = w - floorf(w);
+			scale += wght[k];
+		}
+
+		if(scale > 0.f)
+			wght *= 1.f/scale;
+		else
+			wght = LLVector4(F32_MAX,F32_MAX,F32_MAX,F32_MAX);
+
+		for (U32 k = 0; k < 4; k++)
+		{
+			F32 w = wght[k];
+			LLMatrix4a src;
+			src.setMul(mp[idx[k]], w);
+
+			final_mat.add(src);
+		}
+		
+		LLVector4a& v = vol_face.mPositions[j];
+		LLVector4a t;
+		LLVector4a dst;
+		bind_shape_matrix.affineTransform(v, t);
+		final_mat.affineTransform(t, dst);
+		pos[j] = dst;
+
+		if (norm)
+		{
+			LLVector4a& n = vol_face.mNormals[j];
+			bind_shape_matrix.rotate(n, t);
+			final_mat.rotate(t, dst);
+			dst.normalize3fast();
+			norm[j] = dst;
+		}
+	}
+}
 U32 LLVOAvatar::getPartitionType() const
 { 
 	// Avatars merely exist as drawables in the bridge partition

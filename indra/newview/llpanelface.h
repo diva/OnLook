@@ -145,9 +145,7 @@ protected:
 	void 	onCommitNormalTexture(const LLSD& data);
 	void 	onCancelNormalTexture(const LLSD& data);
 	void 	onSelectNormalTexture(const LLSD& data);
-	void 	onCommitColor(const LLSD& data);
 	void 	onCommitShinyColor(const LLSD& data);
-	void 	onCommitAlpha(const LLSD& data);
 	void 	onCancelColor(const LLSD& data);
 	void 	onSelectColor(const LLSD& data);
 
@@ -165,39 +163,27 @@ protected:
 
 	// Callback funcs for individual controls
 	//
-	static void 	onCommitTextureInfo(	LLUICtrl* ctrl, void* userdata);
+	void			onCommitTextureInfo();
 
-	static void		onCommitMaterialBumpyScaleX(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialBumpyScaleY(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialBumpyRot(		LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialBumpyOffsetX(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialBumpyOffsetY(	LLUICtrl* ctrl, void* userdata);
+	void			onCommitMaterialBumpyScaleX(const LLSD& value);
+	void			onCommitMaterialBumpyScaleY(const LLSD& value);
+	void			onCommitMaterialBumpyRot(const LLSD& value);
 
-	static void		onCommitMaterialShinyScaleX(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialShinyScaleY(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialShinyRot(		LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialShinyOffsetX(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialShinyOffsetY(	LLUICtrl* ctrl, void* userdata);
+	void			onCommitMaterialShinyScaleX(const LLSD& value);
+	void			onCommitMaterialShinyScaleY(const LLSD& value);
+	void			onCommitMaterialShinyRot(const LLSD& value);
 
-	static void		onCommitMaterialGloss(			LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialEnv(				LLUICtrl* ctrl, void* userdata);
-	static void		onCommitMaterialMaskCutoff(	LLUICtrl* ctrl, void* userdata);
 
-	static void		onCommitMaterialsMedia(	LLUICtrl* ctrl, void* userdata);
+	void			onCommitMaterialsMedia();
 	void			onCommitMaterialType();
-	static void		onCommitBump(			LLUICtrl* ctrl, void* userdata);
-	static void		onCommitTexGen(			LLUICtrl* ctrl, void* userdata);
-	static void		onCommitShiny(			LLUICtrl* ctrl, void* userdata);
-	static void		onCommitAlphaMode(		LLUICtrl* ctrl, void* userdata);
-	static void		onCommitFullbright(		LLUICtrl* ctrl, void* userdata);
-	static void     onCommitGlow(           LLUICtrl* ctrl, void *userdata);
-	static void		onCommitPlanarAlign(	LLUICtrl* ctrl, void* userdata);
-	static void		onCommitRepeatsPerMeter(	LLUICtrl* ctrl, void* userinfo);
-	static void		onClickAutoFix(void*);
+	void			onCommitAlphaMode();
+	void			onCommitPlanarAlign();
+	void			onCommitRepeatsPerMeter(LLUICtrl* repeats_ctrl);
+	void			onClickAutoFix();
 
 	static F32      valueGlow(LLViewerObject* object, S32 face);
-	static void		onClickCopy(void*);
-	static void		onClickPaste(void*);
+	void			onClickCopy();
+	void			onClickPaste();
 	// <FS:CR> Build tool enhancements
 	void		onClickMapsSync();
 	void		alignMaterialsProperties();
@@ -212,22 +198,7 @@ private:
 	//
 	LLUUID	getCurrentNormalMap();
 	LLUUID	getCurrentSpecularMap();
-	U32		getCurrentShininess();
-	U32		getCurrentBumpiness();
 	U8			getCurrentDiffuseAlphaMode();
-	U8			getCurrentAlphaMaskCutoff();
-	U8			getCurrentEnvIntensity();
-	U8			getCurrentGlossiness();
-	F32		getCurrentBumpyRot();
-	F32		getCurrentBumpyScaleU();
-	F32		getCurrentBumpyScaleV();
-	F32		getCurrentBumpyOffsetU();
-	F32		getCurrentBumpyOffsetV();
-	F32		getCurrentShinyRot();
-	F32		getCurrentShinyScaleU();
-	F32		getCurrentShinyScaleV();
-	F32		getCurrentShinyOffsetU();
-	F32		getCurrentShinyOffsetV();
 
 	// Update visibility of controls to match current UI mode
 	// (e.g. materials vs media editing)
@@ -381,6 +352,69 @@ private:
 		identical = LLSelectMgr::getInstance()->getSelection()->getSelectedTEValue( &GetTEValFunc, data_value );
 		data_to_return = data_value;
 	}
+
+// <alchemy>
+	friend struct LLPanelFaceSetTEFunctor; // Must access some of these
+	// UI Widgets
+	LLView* mMediaInfo;
+	LLView* mMediaAdd;
+	LLView* mMediaDelete;
+	LLView* mLabelGlossy;
+	LLView* mLabelEnvironment;
+	LLView* mLabelShinyColor;
+	LLView* mLabelAlphaMode;
+	LLView* mLabelMaskCutoff;
+	LLView* mLabelBumpy;
+	LLView* mLabelShiny;
+	LLView* mLabelColor;
+	LLView* mLabelGlow;
+	LLView* mLabelTexGen;
+	LLComboBox* mComboShiny;
+	LLComboBox* mComboBumpy;
+	LLComboBox* mComboAlpha;
+	LLSpinCtrl* mCtrlTexScaleU;
+	LLUICtrl* mCtrlFlipTexScaleU;
+	LLSpinCtrl* mCtrlTexScaleV;
+	LLUICtrl* mCtrlFlipTexScaleV;
+	LLSpinCtrl* mCtrlTexRot;
+	LLUICtrl* mCtrlRpt;
+	LLUICtrl* mCtrlPlanar;
+	LLSpinCtrl* mCtrlTexOffsetU;
+	LLSpinCtrl* mCtrlTexOffsetV;
+	LLUICtrl* mBumpyScaleU;
+	LLUICtrl* mBumpyScaleV;
+	LLUICtrl* mBumpyRot;
+	LLUICtrl* mBumpyOffsetU;
+	LLUICtrl* mBumpyOffsetV;
+	LLUICtrl* mShinyScaleU;
+	LLUICtrl* mShinyScaleV;
+	LLUICtrl* mShinyRot;
+	LLUICtrl* mShinyOffsetU;
+	LLUICtrl* mShinyOffsetV;
+	LLUICtrl* mGlossyCtrl;
+	LLUICtrl* mEnvironmentCtrl;
+	LLUICtrl* mCtrlMaskCutoff;
+	LLUICtrl* mCtrlAlign;
+	LLUICtrl* mCtrlMapsSync;
+	LLUICtrl* mCtrlCopy;
+	LLUICtrl* mCtrlPaste;
+	LLTextureCtrl*	mTextureCtrl;
+	LLTextureCtrl*	mShinyTextureCtrl;
+	LLTextureCtrl*	mBumpyTextureCtrl;
+	LLColorSwatchCtrl*	mColorSwatch;
+	LLColorSwatchCtrl*	mShinyColorSwatch;
+
+	LLComboBox*		mComboTexGen;
+	LLComboBox*		mComboMatMedia;
+	LLComboBox*		mComboMatType;
+
+	LLCheckBoxCtrl*	mCheckFullbright;
+
+	LLTextBox*		mLabelColorTransp;
+	LLSpinCtrl*		mCtrlColorTransp;		// transparency = 1 - alpha
+
+	LLSpinCtrl*     mCtrlGlow;
+// </alchemy>
 
 	// Update vis and enabling of specific subsets of controls based on material params
 	// (e.g. hide the spec controls if no spec texture is applied)

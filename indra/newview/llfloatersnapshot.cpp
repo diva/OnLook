@@ -109,7 +109,7 @@ F32 FALL_TIME = 0.6f;
 S32 BORDER_WIDTH = 6;
 
 const S32 MAX_POSTCARD_DATASIZE = 1024 * 1024; // one megabyte
-const S32 MAX_TEXTURE_SIZE = 512 ; //max upload texture size 512 * 512
+const S32 MAX_TEXTURE_SIZE = 1024; //max upload texture size 1024 * 1024
 
 static std::string snapshotKeepAspectName();
 
@@ -1185,7 +1185,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::generateFormatt
 	if (mSnapshotType == SNAPSHOT_TEXTURE)
 	{
 		// 'scaled' must be a power of two.
-		scaled->biasedScaleToPowerOfTwo(mWidth, mHeight, 512);
+		scaled->biasedScaleToPowerOfTwo(mWidth, mHeight, 1024);
 	}
 	else
 	{
@@ -2488,8 +2488,7 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 	LLSpinCtrl* width_spinner = view->getChild<LLSpinCtrl>("snapshot_width");
 	LLSpinCtrl* height_spinner = view->getChild<LLSpinCtrl>("snapshot_height");
 
-	if (gSavedSettings.getS32("LastSnapshotType") == LLSnapshotLivePreview::SNAPSHOT_TEXTURE ||
-		gSavedSettings.getBOOL("RenderUIInSnapshot") ||
+	if (	gSavedSettings.getBOOL("RenderUIInSnapshot") ||
 		gSavedSettings.getBOOL("RenderHUDInSnapshot"))
 	{
 		// Disable without making label gray.

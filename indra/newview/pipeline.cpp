@@ -428,6 +428,9 @@ void LLPipeline::init()
 {
 	refreshCachedSettings();
 
+	bool can_defer = LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred");
+	LLRenderTarget::sUseFBO				= gSavedSettings.getBOOL("RenderUseFBO") || (gSavedSettings.getBOOL("RenderDeferred") && can_defer);
+
 	gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
 	gOctreeReserveCapacity = llmin(gSavedSettings.getU32("OctreeReserveNodeCapacity"),U32(512));
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");

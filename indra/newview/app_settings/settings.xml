@@ -904,6 +904,19 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruRegionRestartMinimized</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to spawn the region restart notice minimized (Useful for sim owners and people who need to pack up before leaving)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
     <key>LiruScriptErrorsStealFocus</key>
     <map>
       <key>Comment</key>
@@ -2428,6 +2441,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>AllowSelectAvatar</key>
+    <map>
+      <key>Comment</key>
+      <string>Allow selecting an avatar that you have modify rights on (via tag) while in edit mode to reposition them</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>AllowTapTapHoldRun</key>
     <map>

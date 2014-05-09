@@ -5,9 +5,9 @@
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="General" name="User Interface">
       <check_box left="10" bottom_delta="-25" control_name="DoubleClickTeleport" follows="top" initial_value="false"
         label="Enable teleporting via double-click in-world" tool_tip="Double-clicking on an object/person will teleport you to that location." name="double_click_teleport_check"/>
-	<check_box left="20" bottom_delta="-18" control_name="OptionRotateCamAfterLocalTP" follows="top" initial_value="false"
+      <check_box enabled_control="DoubleClickTeleport" left="20" bottom_delta="-18" control_name="OptionRotateCamAfterLocalTP" follows="top" initial_value="false"
 		label="Reset camera after teleporting" tool_tip="Centers the camera behind you after a local teleport." name="center_after_teleport_check"/>
-      <check_box bottom_delta="-18" control_name="OptionOffsetTPByAgentHeight" follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+      <check_box enabled_control="DoubleClickTeleport" bottom_delta="-18" control_name="OptionOffsetTPByAgentHeight" follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Offset TP target by half agent height" tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for." name="offset_teleport_check"/>
       <check_box left="10" follows="top" bottom_delta="-18" control_name="ClearBeaconAfterTeleport" name="clear_beacon_after_tp" label="Clear red destination beacon after teleporting"/>
       <check_box left="10" follows="top" bottom_delta="-18" control_name="LiruFlyAfterTeleport" name="fly_after_tp" label="Always fly after teleports" tool_tip="Avoid those falls from great heights by automatically flying after teleporting in."/>
@@ -32,11 +32,11 @@
         label="Automatically fetch the inventory in the background after login" tool_tip="Inventory will preload when you log in, so you don't have to wait for it to load when doing an initial search." name="fetch_inventory_on_login_check"/>
       <check_box bottom_delta="-18" control_name="WindEnabled" follows="left|top" initial_value="false" label="Enable Wind Effects" name="enable_wind"/>
       <check_box bottom_delta="-18" control_name="CloudsEnabled" follows="left|top" initial_value="true" label="Enable Clouds" name="enable_clouds"/>
-      <check_box bottom_delta="-18" left_delta="10" control_name="SkyUseClassicClouds" follows="top" initial_value="true" label="Enable Classic Clouds" name="enable_classic_clouds"/>
+      <check_box enabled_control="CloudsEnabled" bottom_delta="-18" left_delta="10" control_name="SkyUseClassicClouds" follows="top" initial_value="true" label="Enable Classic Clouds" name="enable_classic_clouds"/>
       <check_box bottom_delta="-18" left_delta="-10" control_name="SpeedRez" follows="top" initial_value="false" label="Enable speed-rezzing via draw distance stepping" name="speed_rez_check" tool_tip="When active, this will progressively increase your draw distance, which allows closer objects/people to rez first."/>
-      <spinner bottom_delta="-16" left="30" control_name="SpeedRezInterval" decimal_digits="0" follows="top" height="16" width="230"
+      <spinner enabled_control="SpeedRez" bottom_delta="-16" left="30" control_name="SpeedRezInterval" decimal_digits="0" follows="top" height="16" width="230"
         label="Draw distance stepping interval:" label_width="180" max_val="60" min_val="5" initial_val="20" increment="5" name="speed_rez_interval" />
-      <text bottom_delta="0" left_delta="235" follows="left|top" height="16" name="speed_rez_seconds">seconds</text>
+      <text enabled_control="SpeedRez" bottom_delta="0" left_delta="235" follows="left|top" height="16" name="speed_rez_seconds">seconds</text>
       <check_box bottom_delta="-18" control_name="LiruUseContextMenus" follows="top" left="10" name="use_context_menus" label="Use context menus instead of pie menus"/>
       <check_box bottom_delta="-18" control_name="UseWebProfiles" follows="top" left="10" name="use_web_profiles" label="Use web profiles instead of legacy v1 profiles" tool_tip="May not be available on certain grids"/>
       <check_box bottom_delta="-18" control_name="UseWebSearch" follows="top" left="10" name="use_web_search" label="Use web-based search instead of legacy v1 search" tool_tip="May not be available on certain grids"/>
@@ -44,42 +44,42 @@
 
     <panel border="true" bottom="-580" height="525" label="Command Line" left="1" name="Command Line" width="418">
       <check_box bottom="-25" left="10" follows="top" initial_value="false" label="Enable usage of chat bar as a command line" name="chat_cmd_toggle" control_name="AscentCmdLine"/>
-      <text bottom_delta="-22" follows="top" height="16" left_delta="10" name="cmd_line_text_2">Teleport within sim (usage: cmd x y z)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLinePos" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" left_delta="0" name="cmd_line_text_3">Teleport to ground (usage: cmd)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineGround" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_4" width="512">Teleport to altitude (usage: cmd z)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineHeight" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_5" width="512">Teleport home (usage: cmd)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineTeleportHome" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_6">Rez a platform (usage: cmd 0 - 30)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineRezPlatform" width="200"/>
-      <slider bottom_delta="-22" name="AscentPlatformSize" control_name="AscentPlatformSize" decimal_digits="1" follows="top" height="18" increment="0.5"
+      <text enabled_control="AscentCmdLine" bottom_delta="-22" follows="top" height="16" left_delta="10" name="cmd_line_text_2">Teleport within sim (usage: cmd x y z)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLinePos" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" left_delta="0" name="cmd_line_text_3">Teleport to ground (usage: cmd)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineGround" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_4" width="512">Teleport to altitude (usage: cmd z)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineHeight" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_5" width="512">Teleport home (usage: cmd)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineTeleportHome" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_6">Rez a platform (usage: cmd 0 - 30)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineRezPlatform" width="200"/>
+      <slider enabled_control="AscentCmdLine" bottom_delta="-22" name="AscentPlatformSize" control_name="AscentPlatformSize" decimal_digits="1" follows="top" height="18" increment="0.5"
         initial_val="5" label="Default width:" label_width="75" max_val="30" min_val="5" width="205" tool_tip="How big do you want the platform to be?"/>
-      <text bottom_delta="-20" follows="top" height="16" name="cmd_line_text_8">Calc. expressions (usage: cmd 2 + 2)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineCalc" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_15">Clear the chat history (usage: cmd)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="Clears the Chat History to prevent lag effects from chat spammers." name="AscentCmdLineClearChat" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_16">Open url/slurl (usage: cmd slurl)</text>
-      <line_editor bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineURL" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-20" follows="top" height="16" name="cmd_line_text_8">Calc. expressions (usage: cmd 2 + 2)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineCalc" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_15">Clear the chat history (usage: cmd)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="Clears the Chat History to prevent lag effects from chat spammers." name="AscentCmdLineClearChat" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_16">Open url/slurl (usage: cmd slurl)</text>
+      <line_editor enabled_control="AscentCmdLine" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineURL" width="200"/>
       <!-- Column Split -->
-      <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="333"
+      <view_border enabled_control="AscentCmdLine" bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="333"
         left="230" name="CmdDivisor" width="0"/>
-      <text bottom_delta="315" follows="top" height="16" left_delta="10" name="cmd_line_text_9">Change Draw Distance (usage: cmd meters)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineDrawDistance" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_10">Teleport to cam position (usage: cmd)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdTeleportToCam" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_11">Get avatar name from key (usage: cmd key)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineKeyToName" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_12">Offer teleport to avatar (usage: cmd key)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineOfferTp" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_7">Teleport to sim x (usage: cmd simname)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineMapTo" width="200"/>
-      <check_box bottom_delta="-24" follows="top" initial_value="false" label="Use same position between sims" name="map_to_keep_pos" control_name="AscentMapToKeepPos"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_13">Teleport to avatar (usage: cmd name)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open." name="AscentCmdLineTP2" width="200"/>
-      <text bottom_delta="-18" follows="top" height="16" name="cmd_line_text_14">Toggle Fake Away Status (usage: cmd)</text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineAway" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="315" follows="top" height="16" left_delta="10" name="cmd_line_text_9">Change Draw Distance (usage: cmd meters)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineDrawDistance" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_10">Teleport to cam position (usage: cmd)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdTeleportToCam" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_11">Get avatar name from key (usage: cmd key)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineKeyToName" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_12">Offer teleport to avatar (usage: cmd key)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineOfferTp" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_7">Teleport to sim x (usage: cmd simname)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineMapTo" width="200"/>
+      <check_box enabled_control="AscentCmdLine" bottom_delta="-24" follows="top" initial_value="false" label="Use same position between sims" name="map_to_keep_pos" control_name="AscentMapToKeepPos"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_13">Teleport to avatar (usage: cmd name)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open." name="AscentCmdLineTP2" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_14">Toggle Fake Away Status (usage: cmd)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineAway" width="200"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Security" name="Security">
@@ -92,12 +92,15 @@
       <check_box bottom_delta="-20" control_name="QuietSnapshotsToDisk" follows="top" initial_value="false" label="Quiet Snapshots to Disk" tool_tip="Doesn't make a camera sound nor alert everyone when you take a snapshot to your computer." name="quiet_snapshots_check"/>
       <check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" follows="top" initial_value="false" label="On standing up, revoke perms for the object your avatar was sitting on" tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately." name="revoke_perms_on_stand_up_check"/>
       <check_box bottom_delta="-20" control_name="DisableClickSit" follows="top" initial_value="false" label="Disable click-to-sit on objects" tool_tip="Some griefer tools rely on forcing or tricking you to click on an object that will make you sit, giving the object automatic permissions to trigger animations amongst other things. This will disable llSitTarget - It does mean that you will need to select 'Sit' on poseballs and furniture." name="disable_click_sit_check"/>
-      <check_box bottom_delta="0" left_delta="170" control_name="DisableClickSitOtherOwner" follows="top" label="you don't own" tool_tip="Disables click to sit on objects you don't own (If used with the group check, only one is needed)" name="disable_click_sit_own_check"/>
+      <check_box disabled_control="DisableClickSit" bottom_delta="0" left_delta="170" control_name="DisableClickSitOtherOwner" follows="top" label="you don't own" tool_tip="Disables click to sit on objects you don't own (If used with the group check, only one is needed)" name="disable_click_sit_own_check"/>
       <check_box bottom_delta="-20" left="10" follows="top" initial_value="false" label="Display Total Script Count changes:" name="totalscriptjumps" control_name="AscentDisplayTotalScriptJumps" tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
       <spinner bottom_delta="0" decimal_digits="0" follows="top" height="16" increment="1" left_delta="210" max_val="9999" min_val="1" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff" tool_tip="Threshold for the script jump message [Default: 100]"/>
       <check_box bottom_delta="-20" left="10" follows="top" label="Restrained Love API Support (RLVa)" name="RestrainedLove" control_name="RestrainedLove" tool_tip="Allows scripts to take greater control of the viewer, if you wear compliant objects."/>
+      <check_box bottom_delta="-20" left="10" follows="top" label="Auto-minimize region restart notice" name="region_restart_minimized" control_name="LiruRegionRestartMinimized" tool_tip="Useful for sim owners and people who need to pack up before leaving"/>
       <text name="EmergencyTeleportDesc" left="14" bottom_delta="-12" follows="top">Drop a landmark below to autoteleport there in the last 20 seconds before region restarts</text>
       <drop_target control_name="EmergencyTeleportLandmark" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_drop" width="430"/>
+      <text bottom_delta="-26" follows="top" name="UISndRestartText">Sound played when regions will restart:</text>
+      <line_editor bottom_delta="-6" left_delta="222" follows="top" width="209" height="16" name="UISndRestart" tool_tip="Empty for no sound to play"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Building" name="Building">
