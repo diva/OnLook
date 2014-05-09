@@ -54,6 +54,11 @@ if (WINDOWS)
   # Remove default /Zm1000 flag that cmake inserts
   string (REPLACE "/Zm1000" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+  if (MSVC11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm140")
+  endif (MSVC11)
+
+
   # Don't build DLLs.
   set(BUILD_SHARED_LIBS OFF)
 
