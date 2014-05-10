@@ -121,7 +121,7 @@ BOOL LLPrefsVoice::postBuild()
 	getChild<LLUICtrl>("set_voice_hotkey_button")->setCommitCallback(boost::bind(LLVoiceSetKeyDialog::start, this));
 	getChild<LLUICtrl>("set_voice_middlemouse_button")->setCommitCallback(boost::bind(&LLView::setValue, getChildView("modifier_combo"), "MiddleMouse"));
 
-	getChild<LLUICtrl>("set_voice_middlemouse_button")->setEnabled(!gSavedSettings.getBOOL("CmdLineDisableVoice") && gSavedSettings.getBOOL("EnableVoiceChat"));
+	getChildView("enable_voice_check")->setValue(!gSavedSettings.getBOOL("CmdLineDisableVoice") && gSavedSettings.getBOOL("EnableVoiceChat"));
 
 	if (LLCheckBoxCtrl* check = findChild<LLCheckBoxCtrl>("enable_multivoice_check"))
 	{
