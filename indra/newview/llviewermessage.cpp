@@ -2294,9 +2294,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	}
 
 	// These bools are here because they would make mess of logic down below in IM_NOTHING_SPECIAL.
-	bool is_autorespond = !is_muted && (is_friend || !gSavedPerAccountSettings.getBOOL("AutoresponseAnyoneFriendsOnly")) && gSavedPerAccountSettings.getBOOL("AutoresponseAnyone");
+	bool autorespond_status = gAgent.getAFK() || !gSavedPerAccountSettings.getBOOL("AutoresponseOnlyIfAway") || gSavedSettings.getBOOL("FakeAway");
+	bool is_autorespond = !is_muted && autorespond_status && (is_friend || !gSavedPerAccountSettings.getBOOL("AutoresponseAnyoneFriendsOnly")) && gSavedPerAccountSettings.getBOOL("AutoresponseAnyone");
 	bool is_autorespond_muted = is_muted && gSavedPerAccountSettings.getBOOL("AutoresponseMuted");
-	bool is_autorespond_nonfriends = !is_friend && !is_muted && gSavedPerAccountSettings.getBOOL("AutoresponseNonFriends");
+	bool is_autorespond_nonfriends = !is_friend && !is_muted && autorespond_status && gSavedPerAccountSettings.getBOOL("AutoresponseNonFriends");
 
 	LLSD args;
 	switch(dialog)
