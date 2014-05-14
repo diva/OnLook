@@ -8,6 +8,7 @@
 	<check_box bottom="-65" height="16" initial_value="false" label="Include IM in chat console" name="include_im_in_chat_console"/>
 	<check_box bottom="-85" height="16" initial_value="false" label="Show timestamps in IM" name="show_timestamps_check"/>
     <check_box bottom="-105" height="16" initial_value="false" label="Show online Friend notifications" name="friends_online_notify_checkbox"/>
+    <check_box follows="top|left" bottom_delta="-20" height="16" label="Block incoming conference chats" control_name="LiruBlockConferences" name="block_conferences_checkbox"/>
 	<text bottom="-218" height="10" left="12" name="text_box4">Logging Options:</text>
 	<check_box bottom="-225" height="16" initial_value="false" label="Save a log of IM on my computer" left="148" name="log_instant_messages" />
 	<check_box bottom="-245" height="16" initial_value="false" label="Show timestamps in IM log" left="168" name="log_instant_messages_timestamp"/>
