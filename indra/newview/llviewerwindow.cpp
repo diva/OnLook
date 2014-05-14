@@ -1641,10 +1641,6 @@ LLViewerWindow::LLViewerWindow(
 	resetSnapshotLoc();
 
 	S32 vsync_mode = gSavedSettings.getS32("SHRenderVsyncMode");
-	if(vsync_mode == -1 && !gGLManager.mHasAdaptiveVsync)
-	{
-		vsync_mode = 0; //Disable vsync if adaptive is desired yet isn't supported.
-	}
 
 	// create window
 	mWindow = LLWindowManager::createWindow(this,
