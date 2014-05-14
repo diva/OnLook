@@ -754,7 +754,6 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 		LL_DEBUGS("Window") << "Enabling vertical sync" << LL_ENDL;
 		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
 	}
-#endif
 #endif // SDL_GL_SWAP_CONTROL
 #endif // SDL_VERSION_ATLEAST(1,3,0)
 
