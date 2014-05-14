@@ -2,31 +2,25 @@
  * @file llviewerjoystick.cpp
  * @brief Joystick / NDOF device functionality.
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -56,9 +50,6 @@
 #define RX_I	4
 #define RY_I	5
 #define RZ_I	3
-
-// flycam translations in build mode should be reduced
-const F32 BUILDMODE_FLYCAM_T_SCALE = 3.f;
 
 // minimum time after setting away state before coming back
 const F32 MIN_AFK_TIME = 2.f;
@@ -163,7 +154,7 @@ LLViewerJoystick::LLViewerJoystick()
 	memset(mBtn, 0, sizeof(mBtn));
 
 	// factor in bandwidth? bandwidth = gViewerStats->mKBitStat
-	mPerfScale = 4000.f / gSysCPU.getMHz();
+	mPerfScale = 4000.f / gSysCPU.getMHz(); // hmm.  why?
 }
 
 // -----------------------------------------------------------------------------
@@ -283,7 +274,7 @@ void LLViewerJoystick::terminate()
 
 	ndof_libcleanup();
 	llinfos << "Terminated connection with NDOF device." << llendl;
-
+	mDriverState = JDS_UNINITIALIZED;
 #endif
 }
 
@@ -421,14 +412,41 @@ void LLViewerJoystick::agentFly(F32 inc)
 }
 
 // -----------------------------------------------------------------------------
-void LLViewerJoystick::agentRotate(F32 pitch_inc, F32 yaw_inc)
+void LLViewerJoystick::agentPitch(F32 pitch_inc)
 {
-	LLQuaternion new_rot;
-	pitch_inc = gAgent.clampPitchToLimits(-pitch_inc);
-	const LLQuaternion qx(pitch_inc, gAgent.getLeftAxis());
-	const LLQuaternion qy(-yaw_inc, gAgent.getReferenceUpVector());
-	new_rot.setQuat(qx * qy);
-	gAgent.rotate(new_rot);
+	if (pitch_inc < 0)
+	{
+		gAgent.setControlFlags(AGENT_CONTROL_PITCH_POS);
+	}
+	else if (pitch_inc > 0)
+	{
+		gAgent.setControlFlags(AGENT_CONTROL_PITCH_NEG);
+	}
+
+	gAgent.pitch(-pitch_inc);
+}
+
+// -----------------------------------------------------------------------------
+void LLViewerJoystick::agentYaw(F32 yaw_inc)
+{
+	// Cannot steer some vehicles in mouselook if the script grabs the controls
+	if (gAgentCamera.cameraMouselook() && !gSavedSettings.getBOOL("JoystickMouselookYaw"))
+	{
+		gAgent.rotate(-yaw_inc, gAgent.getReferenceUpVector());
+	}
+	else
+	{
+		if (yaw_inc < 0)
+		{
+			gAgent.setControlFlags(AGENT_CONTROL_YAW_POS);
+		}
+		else if (yaw_inc > 0)
+		{
+			gAgent.setControlFlags(AGENT_CONTROL_YAW_NEG);
+		}
+
+		gAgent.yaw(-yaw_inc);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -765,11 +783,13 @@ void LLViewerJoystick::moveAvatar(bool reset)
 		{
 			if (gAgent.getFlying())
 			{
-				agentRotate(eff_rx, eff_ry);
+				agentPitch(eff_rx);
+				agentYaw(eff_ry);
 			}
 			else
 			{
-				agentRotate(eff_rx, 2.f * eff_ry);
+				agentPitch(eff_rx);
+				agentYaw(2.f * eff_ry);
 			}
 		}
 	}
@@ -778,7 +798,8 @@ void LLViewerJoystick::moveAvatar(bool reset)
 		agentSlide(sDelta[X_I]);		// move sideways
 		agentFly(sDelta[Y_I]);			// up/down & crouch
 		agentPush(sDelta[Z_I]);			// forward/back
-		agentRotate(sDelta[RX_I], sDelta[RY_I]);	// pitch & turn
+		agentPitch(sDelta[RX_I]);		// pitch
+		agentYaw(sDelta[RY_I]);			// turn
 	}
 }
 
@@ -874,14 +895,15 @@ void LLViewerJoystick::moveFlycam(bool reset)
 			cur_delta[i] = llmin(cur_delta[i]+dead_zone[i], 0.f);
 		}
 
-		// we need smaller camera movements in build mode
+		// We may want to scale camera movements up or down in build mode.
 		// NOTE: this needs to remain after the deadzone calculation, otherwise
 		// we have issues with flycam "jumping" when the build dialog is opened/closed  -Nyx
 		if (in_build_mode)
 		{
 			if (i == X_I || i == Y_I || i == Z_I)
 			{
-				cur_delta[i] /= BUILDMODE_FLYCAM_T_SCALE;
+				static LLCachedControl<F32> build_mode_scale(gSavedSettings,"FlycamBuildModeScale", 1.0);
+				cur_delta[i] *= build_mode_scale;
 			}
 		}
 
@@ -976,9 +998,8 @@ bool LLViewerJoystick::toggleFlycam()
 	}
 	else 
 	{
-		// we are in build mode, exiting from the flycam mode: since we are 
-		// going to keep the flycam POV for the main camera until the avatar
-		// moves, we need to track this situation.
+		// Exiting from the flycam mode: since we are going to keep the flycam POV for
+		// the main camera until the avatar moves, we need to track this situation.
 		setCameraNeedsUpdate(false);
 		setNeedsReset(true);
 	}

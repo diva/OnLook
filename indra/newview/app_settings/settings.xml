@@ -8410,6 +8410,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>FlycamBuildModeScale</key>
+    <map>
+      <key>Comment</key>
+      <string>Scale factor to apply to flycam movements when in build mode.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.3333333</real>
+    </map>
     <key>FlycamFeathering</key>
     <map>
       <key>Comment</key>
