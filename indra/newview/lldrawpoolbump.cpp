@@ -349,14 +349,7 @@ void LLDrawPoolBump::beginShiny(bool invisible)
 	
 	if (getVertexShaderLevel() > 0)
 	{
-		if (LLPipeline::sUnderWaterRender)
-		{
-			shader = &gObjectShinyWaterProgram;
-		}
-		else
-		{
-			shader = &gObjectShinyProgram;
-		}
+		shader = &gObjectSimpleProgram[LLPipeline::sUnderWaterRender<<SHD_WATER_BIT | 1<<SHD_SHINY_BIT];
 		shader->bind();
 	}
 	else
@@ -516,20 +509,13 @@ void LLDrawPoolBump::beginFullbrightShiny()
 
 	// Second pass: environment map
 	
-	if (LLPipeline::sUnderWaterRender)
+	if(!LLPipeline::sUnderWaterRender && LLPipeline::sRenderDeferred)
 	{
-		shader = &gObjectFullbrightShinyWaterProgram;
+		shader = &gDeferredFullbrightShinyProgram;
 	}
 	else
 	{
-		if (LLPipeline::sRenderDeferred)
-		{
-			shader = &gDeferredFullbrightShinyProgram;
-		}
-		else
-		{
-			shader = &gObjectFullbrightShinyProgram;
-		}
+		shader = &gObjectFullbrightProgram[LLPipeline::sUnderWaterRender<<SHD_WATER_BIT | 1<<SHD_SHINY_BIT];
 	}
 
 	LLCubeMap* cube_map = gSky.mVOSkyp ? gSky.mVOSkyp->getCubeMap() : NULL;

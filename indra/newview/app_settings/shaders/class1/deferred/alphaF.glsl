@@ -465,15 +465,21 @@ void main()
 		discard;
 	}
 #endif
-#ifdef FOR_IMPOSTOR
+/*#ifdef FOR_IMPOSTOR
 	// Insure we don't pollute depth with invis pixels in impostor rendering
 	//
 	if (final_alpha < 0.01)
 	{
 		discard;
 	}
-#endif
+#endif*/
 
+	//Always do this.
+	if (final_alpha < 0.004)
+	{
+		discard;
+	}
+	
 	vec4 pos = vec4(vary_position, 1.0);
 	
 	float shadow = 1.0;
@@ -549,7 +555,7 @@ void main()
 
 
 #ifdef FOR_IMPOSTOR
-	vec4 color = vec4(diff.rgb,final_alpha);
+	vec4 color = vec4(diff.rgb,final_alpha); //Impostor needs alpha.
 #else
 
 	vec4 gamma_diff = diff;	

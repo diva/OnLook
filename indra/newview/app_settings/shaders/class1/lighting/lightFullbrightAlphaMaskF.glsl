@@ -40,14 +40,12 @@ VARYING vec2 vary_texcoord0;
 
 void fullbright_lighting()
 {
-	vec4 color = diffuseLookup(vary_texcoord0.xy);
+	vec4 color = diffuseLookup(vary_texcoord0.xy)  * vertex_color; //Shader is used on alpha faces too. Need alpha component.
 	
 	if (color.a < minimum_alpha)
 	{
 		discard;
 	}
-
-	color.rgb *= vertex_color.rgb;
 
 	color.rgb = pow(color.rgb, vec3(texture_gamma));
 	color.rgb = fullbrightAtmosTransport(color.rgb);

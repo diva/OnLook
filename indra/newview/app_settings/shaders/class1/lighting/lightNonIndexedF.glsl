@@ -41,6 +41,11 @@ void default_lighting()
 {
 	vec4 color = texture2D(diffuseMap,vary_texcoord0.xy) * vertex_color;
 	
+	if(color.a < .004)
+	{
+		discard;
+	}
+
 	color.rgb = atmosLighting(color.rgb);
 
 	color.rgb = scaleSoftClip(color.rgb);

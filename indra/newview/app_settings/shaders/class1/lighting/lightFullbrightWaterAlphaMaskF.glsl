@@ -41,7 +41,7 @@ VARYING vec2 vary_texcoord0;
 
 void fullbright_lighting_water()
 {
-	vec4 color = diffuseLookup(vary_texcoord0.xy) * vertex_color;
+	vec4 color = diffuseLookup(vary_texcoord0.xy)  * vertex_color; //Shader is used on alpha faces too. Need alpha component.
 
 	if (color.a < minimum_alpha)
 	{

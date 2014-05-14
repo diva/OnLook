@@ -108,7 +108,7 @@ void LLDrawPoolGlow::render(S32 pass)
 	//should never get here without basic shaders enabled
 	llassert(shader_level > 0);
 	
-	LLGLSLShader* shader = LLPipeline::sUnderWaterRender ? &gObjectEmissiveWaterProgram : &gObjectEmissiveProgram;
+	LLGLSLShader* shader = &gObjectEmissiveProgram[LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
 	shader->bind();
 	if (LLPipeline::sRenderDeferred)
 	{
@@ -154,18 +154,7 @@ void LLDrawPoolSimple::beginRenderPass(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_SIMPLE);
 
-	if (LLPipeline::sImpostorRender)
-	{
-		simple_shader = &gObjectSimpleImpostorProgram;
-	}
-	else if (LLPipeline::sUnderWaterRender)
-	{
-		simple_shader = &gObjectSimpleWaterProgram;
-	}
-	else
-	{
-		simple_shader = &gObjectSimpleProgram;
-	}
+	simple_shader = &gObjectSimpleProgram[LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
 
 	if (mVertexShaderLevel > 0)
 	{
@@ -251,14 +240,7 @@ void LLDrawPoolAlphaMask::beginRenderPass(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_ALPHA_MASK);
 
-	if (LLPipeline::sUnderWaterRender)
-	{
-		simple_shader = &gObjectSimpleWaterAlphaMaskProgram;
-	}
-	else
-	{
-		simple_shader = &gObjectSimpleAlphaMaskProgram;
-	}
+	simple_shader = &gObjectSimpleProgram[1<<SHD_ALPHA_MASK_BIT | LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
 
 	if (mVertexShaderLevel > 0)
 	{
@@ -324,14 +306,7 @@ void LLDrawPoolFullbrightAlphaMask::beginRenderPass(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_ALPHA_MASK);
 
-	if (LLPipeline::sUnderWaterRender)
-	{
-		simple_shader = &gObjectFullbrightWaterAlphaMaskProgram;
-	}
-	else
-	{
-		simple_shader = &gObjectFullbrightAlphaMaskProgram;
-	}
+	simple_shader = &gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT | LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
 
 	if (mVertexShaderLevel > 0)
 	{
@@ -460,11 +435,7 @@ void LLDrawPoolGrass::beginRenderPass(S32 pass)
 
 	if (LLPipeline::sUnderWaterRender)
 	{
-		simple_shader = &gObjectAlphaMaskNonIndexedWaterProgram;
-	}
-	else
-	{
-		simple_shader = &gObjectAlphaMaskNonIndexedProgram;
+		simple_shader = &gObjectSimpleProgram[1<<SHD_ALPHA_MASK_BIT | LLPipeline::sUnderWaterRender<<SHD_WATER_BIT | 1<<SHD_NO_INDEX_BIT];
 	}
 
 	if (mVertexShaderLevel > 0)
@@ -592,14 +563,7 @@ void LLDrawPoolFullbright::beginRenderPass(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_FULLBRIGHT);
 	
-	if (LLPipeline::sUnderWaterRender)
-	{
-		fullbright_shader = &gObjectFullbrightWaterProgram;
-	}
-	else
-	{
-		fullbright_shader = &gObjectFullbrightProgram;
-	}
+	fullbright_shader = &gObjectFullbrightProgram[LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
 }
 
 void LLDrawPoolFullbright::endRenderPass(S32 pass)
@@ -662,12 +626,11 @@ void LLDrawPoolFullbrightAlphaMask::beginPostDeferredPass(S32 pass)
 	
 	if (LLPipeline::sRenderingHUDs || !LLPipeline::sRenderDeferred)
 	{
-		gObjectFullbrightAlphaMaskProgram.bind();
-		gObjectFullbrightAlphaMaskProgram.uniform1f(LLShaderMgr::TEXTURE_GAMMA, 1.0f);
+		gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT].bind();
+		gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT].uniform1f(LLShaderMgr::TEXTURE_GAMMA, 1.0f);
 	} 
 	else 
 	{	
-
 		if (LLPipeline::sUnderWaterRender)
 		{
 			gDeferredFullbrightAlphaMaskWaterProgram.bind();
@@ -696,7 +659,7 @@ void LLDrawPoolFullbrightAlphaMask::endPostDeferredPass(S32 pass)
 {
 	if (LLPipeline::sRenderingHUDs || !LLPipeline::sRenderDeferred)
 	{
-		gObjectFullbrightAlphaMaskProgram.unbind();
+		gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT].unbind();
 	}
 	else
 	{
