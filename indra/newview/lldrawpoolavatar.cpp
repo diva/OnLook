@@ -1878,6 +1878,8 @@ void LLDrawPoolAvatar::addRiggedFace(LLFace* facep, U32 type)
 	facep->setRiggedIndex(type, mRiggedFace[type].size());
 	facep->setPool(this);
 	mRiggedFace[type].push_back(facep);
+
+	facep->mShinyInAlpha = type == RIGGED_DEFERRED_SIMPLE || type == RIGGED_DEFERRED_BUMP || type == RIGGED_FULLBRIGHT_SHINY || type == RIGGED_SHINY;
 }
 
 void LLDrawPoolAvatar::removeRiggedFace(LLFace* facep)

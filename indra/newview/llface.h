@@ -263,6 +263,8 @@ public:
 	LLMatrix4*	mNormalMapMatrix;
 	LLDrawInfo* mDrawInfo;
 
+	bool		mShinyInAlpha;
+
 private:
 	LLPointer<LLVertexBuffer> mVertexBuffer;
 	
