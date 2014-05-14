@@ -79,6 +79,11 @@ protected:
 	void agentPitch(F32 pitch_inc);
 	void agentYaw(F32 yaw_inc);
     void agentJump();
+	// <CV:David>
+	void cursorSlide(F32 inc);
+	void cursorPush(F32 inc);
+	void cursorZoom(F32 inc);
+	// </CV:David>
 	void resetDeltas(S32 axis[]);
 #if LIB_NDOF
 	static NDOF_HotPlugResult HotPlugAddCallback(NDOF_Device *dev);
