@@ -68,8 +68,8 @@ LLDrawPoolTerrain::LLDrawPoolTerrain(LLViewerTexture *texturep) :
 	LLFacePool(POOL_TERRAIN),
 	mTexturep(texturep)
 {
-	U32 format = GL_ALPHA8;
-	U32 int_format = GL_ALPHA;
+	U32 format = GL_ALPHA;
+	U32 int_format = GL_ALPHA8;
 
 	// Hack!
 	sDetailScale = 1.f/gSavedSettings.getF32("RenderTerrainScale");
@@ -77,7 +77,7 @@ LLDrawPoolTerrain::LLDrawPoolTerrain(LLViewerTexture *texturep) :
 	mAlphaRampImagep = LLViewerTextureManager::getFetchedTextureFromFile("alpha_gradient.tga", 
 													TRUE, LLGLTexture::BOOST_UI, 
 													LLViewerTexture::FETCHED_TEXTURE,
-													format, int_format,
+													int_format, format,
 													LLUUID("e97cf410-8e61-7005-ec06-629eba4cd1fb"));
 
 	//gGL.getTexUnit(0)->bind(mAlphaRampImagep.get());
@@ -86,7 +86,7 @@ LLDrawPoolTerrain::LLDrawPoolTerrain(LLViewerTexture *texturep) :
 	m2DAlphaRampImagep = LLViewerTextureManager::getFetchedTextureFromFile("alpha_gradient_2d.j2c", 
 													TRUE, LLGLTexture::BOOST_UI, 
 													LLViewerTexture::FETCHED_TEXTURE,
-													format, int_format,
+													int_format, format,
 													LLUUID("38b86f85-2575-52a9-a531-23108d8da837"));
 
 	//gGL.getTexUnit(0)->bind(m2DAlphaRampImagep.get());
