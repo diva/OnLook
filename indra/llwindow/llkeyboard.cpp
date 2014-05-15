@@ -57,6 +57,7 @@ LLKeyboard::LLKeyboard() : mCallbacks(NULL), mNumpadDistinct(ND_NUMLOCK_OFF)
 		mKeyUp[i]    = FALSE;
 		mKeyDown[i]  = FALSE;
 		mKeyRepeated[i] = FALSE;
+		mControllerKeys[i] = FALSE;
 	}
 
 	mInsertMode = LL_KIM_INSERT;
