@@ -4288,7 +4288,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 			draw_vec[idx]->mTextureList.resize(index+1);
 			draw_vec[idx]->mTextureList[index] = tex;
 		}
-		draw_vec[idx]->validate();
+		//draw_vec[idx]->validate();
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[0]);
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[1]);
 	}
@@ -4372,7 +4372,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 			draw_info->mTextureList[index] = tex;
 		}
 
-		draw_info->validate();
+		//draw_info->validate();
 	}
 }
 
@@ -6350,6 +6350,11 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 			indices_index += facep->getIndicesCount();
 						
 			++face_iter;
+		}
+
+		if(index_offset > 0)
+		{
+			buffer->validateRange(0,  index_offset - 1, indices_index, 0);
 		}
 
 		buffer->flush();
