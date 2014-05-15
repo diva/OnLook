@@ -722,11 +722,37 @@ void LLViewerJoystick::moveAvatar(bool reset)
 	}
 
 	bool is_zero = true;
+	static bool button_held = false;
 
 	if (mBtn[sType == XBOX ? XBOX_L_STICK_CLICK : 1] == 1)
 	{
-		agentJump();
+		// If AutomaticFly is enabled, then button1 merely causes a
+		// jump (as the up/down axis already controls flying) if on the
+		// ground, or cease flight if already flying.
+		// If AutomaticFly is disabled, then button1 toggles flying.
+		if (gSavedSettings.getBOOL("AutomaticFly"))
+		{
+			if (!gAgent.getFlying())
+			{
+				gAgent.moveUp(1);
+			}
+			else if (!button_held)
+			{
+				button_held = true;
+				gAgent.setFlying(FALSE);
+			}
+		}
+		else if (!button_held)
+		{
+			button_held = true;
+			gAgent.setFlying(!gAgent.getFlying());
+		}
+
 		is_zero = false;
+	}
+	else
+	{
+		button_held = false;
 	}
 
 	F32 axis_scale[] =
