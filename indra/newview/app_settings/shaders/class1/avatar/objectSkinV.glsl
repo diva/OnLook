@@ -22,8 +22,6 @@
  * $/LicenseInfo$
  */
 
-#define FLT_MAX     3.402823466e+38
-
 ATTRIBUTE vec4 weight4;  
 
 uniform mat3 matrixPalette[52];
