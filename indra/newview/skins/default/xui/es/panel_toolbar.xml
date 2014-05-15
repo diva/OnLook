@@ -7,35 +7,173 @@
 	<string name="IM">1 MI</string>
 	<panel bottom="0" filename="panel_bg_toolbar.xml" height="28" left="0" width="1024"/>
 	<layout_stack name="toolbar_stack">
-		<layout_panel name="panel1">
-			<icon image_name="spacer24.tga" width="2" height="2" follows="left|right" color="0,0,0,0" left="0" />
-		</layout_panel>
+		<layout_panel name="panel1"/>
 		<layout_panel name="panel2" >
 			<button label="" name="chat_btn" tool_tip="Mostrar Barra de Chat. (Intro)"/>
 		</layout_panel>
-		<layout_panel name="panel3" >
-			<icon image_name="spacer24.tga" width="2" height="2" follows="left|right" color="0,0,0,0"/>
-		</layout_panel>
+		<layout_panel name="panel3"/>
 		<layout_panel name="panel4">
 		  <flyout_button label="Comunicación" name="communicate_btn" tool_tip="Comunícate con tus amigos o grupos.(Ctrl-T)" />
 		</layout_panel>
-		<layout_panel name="panel5">
-			<icon image_name="spacer24.tga" width="2" height="2" follows="left|right" auto_resize="false" color="0,0,0,0"/>
-	  </layout_panel>
+		<layout_panel name="panel5"/>
+		<layout_panel name="panelim">
+			<button label="Comunicación" name="communicate_im_btn" tool_tip="Comunícate con tus amigos o grupos.(Ctrl-T)"/>
+		</layout_panel>
+		<layout_panel name="panelfriends">
+			<button label="Amigos" name="friends_btn" tool_tip="Abrir tu lista de Amigos. (Ctrl-Mayús-F)"/>
+		</layout_panel>
+		<layout_panel name="panelgroups">
+			<button label="Grupos" name="groups_btn" tool_tip="Abrir tu lista de Grupos. (Ctrl-Mayús-G)"/>
+		</layout_panel>
+		<layout_panel name="panelgrouptitles">
+			<button label="Títulos Grupos" name="group_titles_btn"/>
+		</layout_panel>
+		<layout_panel name="panelchathistory">
+			<button label="Chat Local" name="chat_history_btn" tool_tip="Abrir Chat Local. (Ctrl-H)"/>
+		</layout_panel>
+		<layout_panel name="panelactivespeakers">
+			<button label="Participantes Activos" name="active_speakers_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmutelist">
+			<button label="Ignorados" name="mute_list_btn"/>
+		</layout_panel>
+		<layout_panel name="panelassetblacklist">
+			<button label="Lista Negra Asset" name="assetblack_list_btn"/>
+		</layout_panel>
+		<layout_panel name="panelvoiceeffect">
+			<button label="Efectos de Voz" name="voice_effects_btn"/>
+		</layout_panel>
+		<layout_panel name="panelgestures">
+			<button label="Gestos" name="gestures_btn" tool_tip="Ctrl-G"/>
+		</layout_panel>
+		<layout_panel name="panelbeacons">
+			<button label="Balizas" name="beacons_btn"/>
+		</layout_panel>
 		<layout_panel name="panel6">
 			<button label="Radar" name="radar_list_btn" tool_tip="Ver lista de avatares cercanos.(Ctrl-Shift-A)"/>
+		</layout_panel>
+		<layout_panel name="panelcameracontrols">
+			<button label="Controles Cámara" name="camera_controls_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmessagelog">
+			<button label="Controles Movimiento" name="movement_controls_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmouselook">
+			<button label="Vista Subjetiva" name="mouselook_btn"/>
 		</layout_panel>
 		<layout_panel name="panel7">
 			<button label="Volar" label_selected="Stop Flying" name="fly_btn" tool_tip="Despegar(F o Inicio). Usa E/C o AvPág/RePág para ascender o descender"/>
 		</layout_panel>
+		<layout_panel name="panelsit">
+			<button label="Sentarse" label_selected="Pararse" name="sit_btn"/>
+		</layout_panel>
+		<layout_panel name="panelrun">
+			<button label="Correr" label_selected="Dejar de Correr" name="run_btn" tool_tip="Activar modo Correr (Ctrl-R)"/>
+		</layout_panel>
+		<layout_panel name="panelvelocity">
+			<button label="Velocidad" name="run_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmeanevents">
+			<button label="Golpes" name="bumps_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmediaticker">
+			<button label="Info de Audio" name="media_ticker_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmediafilter">
+			<button label="Filtro de Media" name="media_filter_btn"/>
+		</layout_panel>
 		<layout_panel name="panel8">
 			<button label="Foto" name="snapshot_btn" tool_tip="Guardar una captura de pantalla al disco o al inventario.(Ctrl-Shift-S para abrir el flotante, Ctrl-`(~) toma la captura sin el flotante)"/>
+		</layout_panel>
+		<layout_panel name="panelappearance">
+			<button label="Apariencia" name="appearance_btn"/>
 		</layout_panel>
 		<layout_panel name="panel9">
 			<button label="Buscar" name="directory_btn" tool_tip="Buscar lugares, eventos, personas, y más.(Ctrl-F)"/>
 		</layout_panel>
+		<layout_panel name="panelweb">
+			<button label="Navegador Web" name="web_browser_btn"/>
+		</layout_panel>
+		<layout_panel name="panelao">
+			<button label="Config. AO" name="ao_btn"/>
+		</layout_panel>
+		<layout_panel name="paneldebugsettings">
+			<button label="Config. Depurador" name="debug_settings_btn"/>
+		</layout_panel>
+		<layout_panel name="paneldebugavatar">
+			<button label="Depurar Avatar" name="debug_avatar_btn"/>
+		</layout_panel>
+		<layout_panel name="panelanimsexplorer">
+			<button label="Explorar Animaciones" name="anims_explorer_btn"/>
+		</layout_panel>
+		<layout_panel name="panelsoundexplorer">
+			<button label="Explorar Sonidos" name="sound_explorer_btn"/>
+		</layout_panel>
+		<layout_panel name="panelareasearch">
+			<button label="Búsq. en Área" name="areasearch_btn"/>
+		</layout_panel>
+		<layout_panel name="panelinspect">
+			<button label="Examinar" name="inspect_btn"/>
+		</layout_panel>
+		<layout_panel name="panelpathingchars">
+			<button label="Personajes" name="pathing_characters_btn"/>
+		</layout_panel>
+		<layout_panel name="panelpathinglinksets">
+			<button label="Conj. Enlaces" name="pathing_linksets_btn"/>
+		</layout_panel>
 		<layout_panel name="panel10">
 			<button label="Construir" name="build_btn" tool_tip="Crear nuevos objetos. (B)"/>
+		</layout_panel>
+		<layout_panel name="panelgridoptions">
+			<button label="Opc. de Grilla" name="grid_options_btn"/>
+		</layout_panel>
+		<layout_panel name="panellocalassets">
+			<button label="Texturas Locales" name="local_textures_btn"/>
+		</layout_panel>
+		<layout_panel name="panelpermprefs">
+			<button label="Permisos" name="perm_prefs_btn"/>
+		</layout_panel>
+		<layout_panel name="panelscripterrors">
+			<button label="Errores de Scripts" name="script_errors_btn"/>
+		</layout_panel>
+		<layout_panel name="panelenvsettings">
+			<button label="Editor Entorno" name="env_editor_btn"/>
+		</layout_panel>
+		<layout_panel name="paneldaycycle">
+			<button label="Editor Ciclo Diario" name="day_cycle_editor_btn"/>
+		</layout_panel>
+		<layout_panel name="panelwindlight">
+			<button label="Windlight" name="windlight_btn"/>
+		</layout_panel>
+		<layout_panel name="panelwatersettings">
+			<button label="Editor Agua" name="water_editor_btn"/>
+		</layout_panel>
+		<layout_panel name="panelpostprocess">
+			<button label="FX PostProcesado" name="post_process_btn"/>
+		</layout_panel>
+		<layout_panel name="panelbuycurrency">
+			<button label="Comprar [CURRENCY]" name="buy_currency_btn"/>
+		</layout_panel>
+		<layout_panel name="panelbuyland">
+			<button label="Comprar Terreno" name="buy_land_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmyland">
+			<button label="Mi Terreno" name="my_land_btn"/>
+		</layout_panel>
+		<layout_panel name="panelaboutland">
+			<button label="Acerca del Terreno" name="about_land_btn"/>
+		</layout_panel>
+		<layout_panel name="panelscriptinfo">
+			<button label="Info de Scripts" name="script_info_btn"/>
+		</layout_panel>
+		<layout_panel name="panelaboutregion">
+			<button label="Región/Estado" name="about_region_btn"/>
+		</layout_panel>
+		<layout_panel name="panelgodtools">
+			<button label="Herramientas de Dios" name="god_tools_btn"/>
+		</layout_panel>
+		<layout_panel name="panelteleporthistory">
+			<button label="Historial de TP" name="teleport_history_btn"/>
 		</layout_panel>
 		<layout_panel name="panel11">
 			<button label="Mapa" name="map_btn" tool_tip="Mapa del Mundo. (Ctrl-M)"/>
@@ -43,8 +181,105 @@
 		<layout_panel name="panel12">
 			<button label="MiniMapa" name="radar_btn" tool_tip="Mapa del área a tu alrededor. (Ctrl-Shift-M)"/>
 		</layout_panel>
+		<!-- [RLVa:LF] -->
+		<layout_panel name="panelrlvrestrictions">
+			<button label="Restricciones" name="rlv_restrictions_btn"/>
+		</layout_panel>
+		<layout_panel name="panelrlvlocks">
+			<button label="Bloqueos RLVa" name="rlv_locks_btn"/>
+		</layout_panel>
+		<layout_panel name="panelrlvstrings">
+			<button label="Cadenas RLVa" name="rlv_strings_btn"/>
+		</layout_panel>
+		<!-- [/RLVa:LF] -->
+		<layout_panel name="panelmemleak">
+			<button label="Pérdida de Memoria" name="memleak_btn"/>
+		</layout_panel>
+		<layout_panel name="panelmessagelog">
+			<button label="Registro Mensajes" name="message_log_btn"/>
+		</layout_panel>
+		<layout_panel name="panelstats">
+			<button label="Estadísticas" name="stats_btn"/>
+		</layout_panel>
+		<layout_panel name="panelnotificationsconsole">
+			<button label="Consola Notificaciones" name="notifications_console_btn"/>
+		</layout_panel>
+		<layout_panel name="paneldebugconsole">
+			<button label="Consola Depuración" name="debug_console_btn"/>
+		</layout_panel>
+		<layout_panel name="panelregiondebug">
+			<button label="Consola Región" name="region_console_btn"/>
+		</layout_panel>
+		<layout_panel name="panelfasttimers">
+			<button label="Temporizadores" name="fast_timers_btn"/>
+		</layout_panel>
+		<layout_panel name="panelframeconsole">
+			<button label="Consola Cuadros" name="frame_console_btn"/>
+		</layout_panel>
+		<layout_panel name="panelhttpconsole">
+			<button label="Consola HTTP" name="http_console_btn"/>
+		</layout_panel>
+		<layout_panel name="paneltextureconsole">
+			<button label="Consola Texturas" name="texture_console_btn"/>
+		</layout_panel>
+		<layout_panel name="paneltexturecategoryconsole">
+			<button label="Consola Cat. Texturas" name="texture_category_console_btn"/>
+		</layout_panel>
+		<layout_panel name="paneltexturesizeconsole">
+			<button label="Consola Tam. Texturas" name="texture_size_console_btn"/>
+		</layout_panel>
 		<layout_panel name="panel13">
 			<button label="Inventario" name="inventory_btn" tool_tip="Tus items. (Ctrl-I)"/>
+		</layout_panel>
+		<layout_panel name="paneloutfit">
+			<button label="Hacer Vestuario" name="make_outfit_btn"/>
+		</layout_panel>
+		<layout_panel name="paneloutfits">
+			<button label="Vestuarios" name="outfits_btn" />
+		</layout_panel>
+		<layout_panel name="panelfavs">
+			<button label="Favoritos" name="favs_btn"/>
+		</layout_panel>
+		<layout_panel name="paneloutbox">
+			<button label="Buzón de Salida" name="outbox_btn"/>
+		</layout_panel>
+		<layout_panel name="panelpreferences">
+			<button label="Preferencias" name="preferences_btn" tool_tip="Ctrl-P"/>
+		</layout_panel>
+		<layout_panel name="panelautoreplace">
+			<button label="Reemplazo Automático" name="auto_replace_btn"/>
+		</layout_panel>
+		<layout_panel name="paneldisplayname">
+			<button label="Nombre a Mostrar" name="display_name_btn"/>
+		</layout_panel>
+		<layout_panel name="paneltest">
+			<button label="Prueba Flotantes" name="floater_test_btn"/>
+		</layout_panel>
+		<layout_panel name="paneleditui">
+			<button label="Editar UI" name="edit_ui_btn"/>
+		</layout_panel>
+		<layout_panel name="panelfonttest">
+			<button label="Prueba Fuentes" name="font_test_btn"/>
+		</layout_panel>
+		<layout_panel name="panellagmeter">
+			<button label="Medidor de Lag" name="lag_meter_btn"/>
+		</layout_panel>
+		<layout_panel name="panelreportabuse">
+			<button label="Denunciar Abuso" name="lag_meter_btn"/>
+		</layout_panel>
+		<!-- Singu TODO: Re-implement f1 help.
+		<layout_panel name="panelhelp">
+			<button label="Ayuda" name="help_btn"/>
+		</layout_panel>
+		-->
+		<layout_panel name="panelhelptutorial">
+			<button label="Tutorial" name="tutorial_btn"/>
+		</layout_panel>
+		<layout_panel name="panelabout">
+			<button label="Acerca de [SHORT_APP_NAME]" name="about_btn"/>
+		</layout_panel>
+		<layout_panel name="paneltoolbarprefs">
+			<button label="Conf. Botones" name="change_buttons_btn"/>
 		</layout_panel>
 	</layout_stack>
 </panel>

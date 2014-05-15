@@ -13,8 +13,11 @@
 	</scroll_list>
 	<button label="Añadir..." name="autoreplace_add_entry"/>
 	<button label="Eliminar" name="autoreplace_delete_entry"/>
-	<button label="Guardar entrada" name="autoreplace_save_entry" tool_tip="Guarda esta entrada."/>
-	<button label="Guardar cambios" name="autoreplace_save_changes" tool_tip="Guarda todos los cambios."/>
+	<text name="keyword" width="65">Palabra Clave:</text>
+	<text name="replacement">Reemplazo:</text>
+	<line_editor name="autoreplace_replacement" width="270"/>
+	<button label="Guardar entrada" name="autoreplace_save_entry" tool_tip="Guarda esta entrada." right="-8" width="109"/>
+	<button label="Guardar cambios" name="autoreplace_save_changes" tool_tip="Guarda todos los cambios." width="112"/>
 	<button label="Cancelar" name="autoreplace_cancel" tool_tip="Descarta todos los cambios."/>
 </floater>
 <!--

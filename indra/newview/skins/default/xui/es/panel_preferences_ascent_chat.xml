@@ -67,7 +67,42 @@
 			<check_box label="Foco en nuevo mensaje instantáneo" name="chat_steal_focus"/>
 			<check_box label="Mostrar barra de chat local en ventana flotante (Requiere reiniciar)" tool_tip="Mostrar o no la barra de entrada de texto inferior en la barra flotante de chat." name="show_local_chat_floater_bar"/>
 			<check_box label="Usar botones horizontales para la ventana de contactos (Requiere Reiniciar)" tool_tip="Habilitado, los botones en los paneles de Amigos y Grupos se colocarán en la parte inferior del panel, ordendados horizontalmente, en vez de verticales a la derecha." name="horiz_butt"/>
-			<check_box label="Usar Nombres antiguos en la lista de participantes (Afecta a nuevos participantes)" tool_tip="Permite una mejor moderación de chats mostrando solo los nombres de usuario" name="legacy_speaker_names"/>
+			<text name="namesystems_text_box">Formato de nombres en las listas de:</text>
+			<text name="friends_namesystem_text_box">Amigos:</text>
+				<combo_box name="friends_namesystem_combobox" width="230">
+					<combo_item name="Old Names">Nombres Antiguos</combo_item>
+					<combo_item name="Display Names (with Username)">Nombre a Mostrar (c/Nombre de Usuario)</combo_item>
+					<combo_item name="Display Names only">Solamente Nombre a Mostrar</combo_item>
+					<combo_item name="Old Names (with Display Names)">Nombres Antiguos  (c/Nombre a Mostrar)</combo_item>
+				</combo_box>
+			<text name="group_members_namesystem_text_box">Miembros de Grupos:</text>
+				<combo_box name="group_members_namesystem_combobox" width="230">
+					<combo_item name="Old Names">Nombres Antiguos</combo_item>
+					<combo_item name="Display Names (with Username)">Nombre a Mostrar (c/Nombre de Usuario)</combo_item>
+					<combo_item name="Display Names only">Solamente Nombre a Mostrar</combo_item>
+					<combo_item name="Old Names (with Display Names)">Nombres Antiguos  (c/Nombre a Mostrar)</combo_item>
+				</combo_box>
+			<text name="land_management_namesystem_text_box">Administradores de Tierras:</text>
+					<combo_box name="land_management_namesystem_combobox" width="230">
+					<combo_item name="Old Names">Nombres Antiguos</combo_item>
+					<combo_item name="Display Names (with Username)">Nombre a Mostrar (c/Nombre de Usuario)</combo_item>
+					<combo_item name="Display Names only">Solamente Nombre a Mostrar</combo_item>
+					<combo_item name="Old Names (with Display Names)">Nombres Antiguos  (c/Nombre a Mostrar)</combo_item>
+				</combo_box>
+			<text name="radar_namesystem_text_box">Radar:</text>
+				<combo_box name="radar_namesystem_combobox" width="230">
+					<combo_item name="Old Names">Nombres Antiguos</combo_item>
+					<combo_item name="Display Names (with Username)">Nombre a Mostrar (c/Nombre de Usuario)</combo_item>
+					<combo_item name="Display Names only">Solamente Nombre a Mostrar</combo_item>
+					<combo_item name="Old Names (with Display Names)">Nombres Antiguos  (c/Nombre a Mostrar)</combo_item>
+				</combo_box>
+			<text name="speaker_namesystem_text_box">Participantes:</text>
+				<combo_box name="speaker_namesystem_combobox" width="230">
+					<combo_item name="Old Names">Nombres Antiguos</combo_item>
+					<combo_item name="Display Names (with Username)">Nombre a Mostrar (c/Nombre de Usuario)</combo_item>
+					<combo_item name="Display Names only">Solamente Nombre a Mostrar</combo_item>
+					<combo_item name="Old Names (with Display Names)">Nombres Antiguos  (c/Nombre a Mostrar)</combo_item>
+				</combo_box>
 			<check_box label="Colocar los Botones en la misma línea del nombre en los IMs (Sólo afecta en Nuevos MIs)" name="im_concise_butt"/>
 			<check_box label="Botones en chat de grupo en la línea del nombre del grupo (Afecta nuevos chats de grupo)" name="group_concise_butt"/>
 			<check_box label="Botones en la misma línea de título de conferencia (Afecta nuevas conferencias de Chat)" name="conf_concise_butt"/>
@@ -154,6 +189,9 @@ Puedes usar los siguientes comodines para personalizar tus respuestas: #n para n
 Para usar el corrector ortográfico, botón derecho sobre la palabra
 errónea (en rojo u otro color) y selecciona reemplazarla
 			</text>
+      <button bottom_delta="-30" left="12" follows="top" height="20" width="250" label="Preferencias Reemplazo Automático" name="autoreplace"/>
+      <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top" height="0" left="5" name="CmdDivisor" width="376"/>
+
 			<check_box label="Resaltar Mensajes que contengan los términos" name="KeywordsOn"/>
 			<text name="keyword_txt1">
 				(separados por comas)
@@ -161,8 +199,8 @@ errónea (en rojo u otro color) y selecciona reemplazarla
 			<text name="EmKeyw">
 				Se encuentre en:
 			</text>
-			<check_box label="Flotante de Chat Local" name="KeywordsInChat"/>
-			<check_box label="Flotante de Mensajes Instantáneos" name="KeywordsInIM"/>
+			<check_box label="Flotante de Chat Local" name="KeywordsInChat" left_delta="85"/>
+			<check_box label="Flotante de Mensajes Instantáneos" name="KeywordsInIM" left_delta="130"/>
 			<check_box label="Resaltar el Mensaje en este color:" name="KeywordsChangeColor"/>
 			<color_swatch name="KeywordsColor" tool_tip="Pulsa para abrir el selector de Colores"/>
 			<check_box label="Ejecutar este sonido de alerta: (UUID)" name="KeywordsPlaySound"/>

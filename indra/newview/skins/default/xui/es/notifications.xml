@@ -5539,6 +5539,11 @@ porque la parcela está llena.
 	</notification>
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->
+<!-- Singu Note: RLVa notifications come first here -->
+	<notification name="RLVChangeStrings">
+		Los cambios no surtirán efecto hasta reiniciar [APP_NAME].
+  </notification>
+
 <!-- Singu TODO: Migrate our special notifications to here -->	
 	<notification name="AntiSpamBlock">
 		AntiSpam: [SOURCE] ha sido bloqueado por espamear [TYPE]s [AMOUNT] veces en [TIME] segundos.

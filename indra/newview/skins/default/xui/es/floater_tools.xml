@@ -8,7 +8,7 @@
 	<button name="button edit" tool_tip="Editar"/>
 	<button name="button create" tool_tip="Crear"/>
 	<button name="button land" tool_tip="Terreno"/>
-
+	<button name="mini_button" label="" tool_tip="Conmutar Tamaño flotante de construcción"/>
 <!-- Focus panel -->
 
 	<check_box label="Zoom" name="radio zoom"/>
