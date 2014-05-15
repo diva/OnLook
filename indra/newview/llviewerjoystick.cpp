@@ -1202,6 +1202,27 @@ void LLViewerJoystick::scanJoystick()
 			(gKeyboard->*(esc_down ? &LLKeyboard::handleTranslatedKeyDown : &LLKeyboard::handleTranslatedKeyDown))(KEY_ESCAPE, mask);
 		}
 
+		// Alt
+		static bool alt_down = false;
+		if (!!mBtn[XBOX_A_KEY] != alt_down)
+		{
+			gKeyboard->setControllerKey(KEY_ALT, alt_down = mBtn[XBOX_A_KEY]);
+		}
+
+		// Ctrl
+		static bool ctrl_down = false;
+		if (!!mBtn[XBOX_X_KEY] != ctrl_down)
+		{
+			gKeyboard->setControllerKey(KEY_CONTROL, ctrl_down = mBtn[XBOX_X_KEY]);
+		}
+
+		// Shift
+		static bool shift_down = false;
+		if (!!mBtn[XBOX_B_KEY] != shift_down)
+		{
+			gKeyboard->setControllerKey(KEY_SHIFT, shift_down = mBtn[XBOX_B_KEY]);
+		}
+
 		// Mouse clicks ...
 		LLCoordGL coord;
 		LLUI::getMousePositionScreen(&coord.mX, &coord.mY);
