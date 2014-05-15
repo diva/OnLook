@@ -777,6 +777,11 @@ void LLGrassPartition::getGeometry(LLSpatialGroup* group)
 		}
 	}
 
+	if(vertex_count > 0)
+	{
+		buffer->validateRange(0,  vertex_count - 1, index_count, 0);
+	}
+
 	buffer->flush();
 	mFaceList.clear();
 }
