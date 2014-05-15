@@ -869,7 +869,7 @@ void LLViewerJoystick::moveAvatar(bool reset)
 	if (sControlCursor)
 	{
 		cursorSlide(sDelta[X_I]);    // left / right
-		cursorPush(sDelta[Z_I]);    // up / down
+		cursorPush(-sDelta[Z_I]);    // up / down
 		cursorZoom(sDelta[RX_I]);    // mousewheel
 		return;
 	}
