@@ -1053,7 +1053,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		gDeferredSkinnedDiffuseProgram.mFeatures.hasObjectSkinning = true;
 		gDeferredSkinnedDiffuseProgram.mShaderFiles.clear();
 		gDeferredSkinnedDiffuseProgram.mShaderFiles.push_back(make_pair("deferred/diffuseSkinnedV.glsl", GL_VERTEX_SHADER_ARB));
-		gDeferredSkinnedDiffuseProgram.mShaderFiles.push_back(make_pair("deferred/diffuseAlphaMaskF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gDeferredSkinnedDiffuseProgram.mShaderFiles.push_back(make_pair("deferred/diffuseF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gDeferredSkinnedDiffuseProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
 		success = gDeferredSkinnedDiffuseProgram.createShader(NULL, NULL);
 	}
