@@ -64,7 +64,7 @@
 		<menu_item_check label="Construir" name="Build"/>
 		<menu_item_check label="Flycam del Joystick" name="Joystick Flycam"/>
 		<menu_item_call label="Volver a Vista por Defecto" name="Reset View"/>
-		<menu_item_check label="Movimiento Restablece la Cámara" name="Motion Resets Camera" shortcut="alt|shift|R"/>
+		<menu_item_check label="Movimiento Restablece la Cámara" name="Motion Resets Camera"/>
 		<menu_item_call label="Restablecer Ángulo de Cámara a Predeterminado" name="Reset Camera Preset Angle"/>
 		<menu_item_call label="Mirar al último que habló" name="Look at Last Chatter"/>
 		<menu_item_check label="Barra de Herramientas" name="Toolbar"/>

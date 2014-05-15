@@ -26,7 +26,7 @@
   <check_box label="Filtro de Media" name="media_filter_btn"/>
   <check_box label="Foto" name="snapshot_btn"/>
   <check_box label="Apariencia" name="appearance_btn"/>
-  <check_box label="Buscar" name="directory_btn" follows="left|right" control_name="ToolbarVisibleSearch"/>
+  <check_box label="Buscar" name="directory_btn"/>
   <check_box label="Navegador Web" name="web_browser_btn"/>
   <check_box label="Configuración AO" name="ao_btn"/>
   <check_box label="Configuración del Depurador" name="debug_settings_btn"/>

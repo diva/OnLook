@@ -391,108 +391,108 @@ Asegurate que has ingresado el URI de inicio de sesión correcto. Un ejemplo de 
 	
   <!-- LSL Usage Hover Tips -->
 	<string name="LSLTipSleepTime">
-Sleeps script for [SLEEP_TIME] seconds.
+		Pausa el script por [SLEEP_TIME] segundos.
 	</string>
 
 	<string name="LSLTipText_llSin">
 float llSin(float theta)
-Returns the sine of theta (theta in radians)
+Devuelve el seno de theta (theta en radianes)
 	</string>
 	<string name="LSLTipText_llCos">
 float llCos(float theta)
-Returns the cosine of theta (theta in radians)
+Devuelve el coseno de theta (theta en radianes)
 	</string>
 	<string name="LSLTipText_llTan">
 float llTan(float theta)
-Returns the tangent of theta (theta in radians)
+Devuelve la tangente de theta (theta en radianes)
 	</string>
 	<string name="LSLTipText_llAtan2">
 float llAtan2(float y, float x)
-Returns the arctangent2 of y, x
+Devuelve el arcotangente2 de y, x
 	</string>
 	<string name="LSLTipText_llSqrt">
 float llSqrt(float val)
-Returns the square root of val, or returns 0 and triggers a Math Error for imaginary results
+Devuelve la raíz cuadrada de val, o devuelve 0 y desencadena un error para resultados imaginarios
 	</string>
 	<string name="LSLTipText_llPow">
 float llPow(float base, float exponent)
-Returns the base raised to the power exponent, or returns 0 and triggers Math Error for imaginary results
+Devuelve la base elevada a la potencia del exponente, o devuelve 0 y desencadena un error para resultados imaginarios
 	</string>
 	<string name="LSLTipText_llAbs">
 integer llAbs(integer val)
-Returns the positive version of val
+Devuelve el positivo de val
 	</string>
 	<string name="LSLTipText_llFabs">
 float llFabs(float val)
-Returns the positive version of val
+Devuelve el positivo de val
 	</string>
 	<string name="LSLTipText_llFrand">
 float llFrand(float mag)
-Returns a pseudo random number in the range [0,mag) or (mag,0]
+Devuelve un número seudo aleatoreo en el rango [0,mag) o (mag,0]
 	</string>
 	<string name="LSLTipText_llFloor">
 integer llFloor(float val)
-Returns largest integer value &lt;= val
+Devuelve el valor entero mas alto &lt;= val
 	</string>
 	<string name="LSLTipText_llCeil">
 integer llCeil(float val)
-Returns smallest integer value &gt;= val
+Devuelve el valor entero mas bajo &gt;= val
 	</string>
 	<string name="LSLTipText_llRound">
 integer llRound(float val)
-Returns val rounded to the nearest integer
+Devuelve val redondeada al entero más cercano
 	</string>
 	<string name="LSLTipText_llVecMag">
 float llVecMag(vector v)
-Returns the magnitude of v
+Devuelve la magnitud de v
 	</string>
 	<string name="LSLTipText_llVecNorm">
 vector llVecNorm(vector v)
-Returns the v normalized
+Devuelve v normalizado
 	</string>
 	<string name="LSLTipText_llVecDist">
 float llVecDist(vector v1, vector v2)
-Returns the 3D distance between v1 and v2
+Devuelve la distancia 3D entre v1 y v2
 	</string>
 	<string name="LSLTipText_llRot2Euler">
 vector llRot2Euler(rotation q)
-Returns the Euler representation (roll, pitch, yaw) of q
+Devuelve la representación de Euler (roll, pitch, yaw) de q
 	</string>
 	<string name="LSLTipText_llEuler2Rot">
 rotation llEuler2Rot(vector v)
-Returns the rotation representation of Euler Angles v
+Devuelve la representación de la rotación de ángulos de Euler en v
 	</string>
 	<string name="LSLTipText_llAxes2Rot">
 rotation llAxes2Rot(vector fwd, vector left, vector up)
-Returns the rotation defined by the coordinate axes
+Devuelve la rotación definida por los ejes de coordenadas
 	</string>
 	<string name="LSLTipText_llRot2Fwd">
 vector llRot2Fwd(rotation q)
-Returns the forward vector defined by q
+Devuelve el vector hacia adelante definido por q
 	</string>
 	<string name="LSLTipText_llRot2Left">
 vector llRot2Left(rotation q)
-Returns the left vector defined by q
+Devuelve el vector hacia la izquierda definido por q
 	</string>
 	<string name="LSLTipText_llRot2Up">
 vector llRot2Up(rotation q)
-Returns the up vector defined by q
+Devuelve el vector hacia arriba definido por q
 	</string>
 	<string name="LSLTipText_llRotBetween">
 rotation llRotBetween(vector v1, vector v2)
-Returns the rotation to rotate v1 to v2
+Devuelve la rotación pra rotar v1 en v2
 	</string>
 	<string name="LSLTipText_llWhisper">
 llWhisper(integer channel, string msg)
-Whispers the text of msg on channel
+Susurra el texto del mensaje en el canal
 	</string>
 	<string name="LSLTipText_llSay">
 llSay(integer channel, string msg)
-Says the text of msg on channel
+Dice el texto del mensaje en el canal
 	</string>
 	<string name="LSLTipText_llShout">
 llShout(integer channel, string msg)
-Shouts the text of msg on channel
+Grita el texto del mensaje en el canal
 	</string>
 	<string name="LSLTipText_llListen">
 integer llListen(integer channel, string name, key id, string msg)
@@ -560,7 +560,7 @@ Returns the link position of the triggered event for touches and collisions only
 	</string>
 	<string name="LSLTipText_llDie">
 llDie()
-Deletes the object
+Borra el objeto
 	</string>
 	<string name="LSLTipText_llGround">
 float llGround(vector offset)
