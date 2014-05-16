@@ -995,6 +995,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>UseRealisticMouselook</key>
+    <map>
+      <key>Comment</key>
+      <string>Use a realistic first person view, this prevents your camera from being the center of everything and your avatar always beeing locked below you, it allows your Avatar to move around freely in mouselook while your camera will follow it around. Prepare your seatbelts for an awesome shaky View! May break with certain super unrealistic animations.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LogShowHistoryLines</key>
     <map>
       <key>Comment</key>
@@ -3058,6 +3069,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>2</integer>
     </map>  
+    <key>AvatarRotateThresholdMouselook</key>
+    <map>
+      <key>Comment</key>
+      <string>Angle between avatar facing and camera facing at which avatar turns to face same direction as camera, when in mouselook (degrees)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>120</real>
+    </map>
     <key>AvatarBakedTextureUploadTimeout</key>
     <map>
       <key>Comment</key>

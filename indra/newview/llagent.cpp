@@ -1298,7 +1298,12 @@ F32 LLAgent::clampPitchToLimits(F32 angle)
 
 	F32 angle_from_skyward = acos( mFrameAgent.getAtAxis() * skyward );
 
-	if (isAgentAvatarValid() && gAgentAvatarp->isSitting())
+	if (gAgentCamera.cameraMouselook() && gSavedSettings.getBOOL("UseRealisticMouselook"))
+	{
+		look_down_limit = 160.f * DEG_TO_RAD;
+		look_up_limit = 20.f * DEG_TO_RAD;
+	}
+	else if (isAgentAvatarValid() && gAgentAvatarp->isSitting())
 	{
 		look_down_limit = 130.f * DEG_TO_RAD;
 	}

@@ -5,6 +5,7 @@
 	<slider_bar bottom="-26" follows="top" height="16" increment="0.25" initial_val="2" left="276" max_val="15" min_val="0" name="mouse_sensitivity" width="128"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Invert Mouse" left="148" name="invert_mouse"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Show Avatar in Mouselook" name="first_person_avatar_visible"/>
+	<check_box bottom_delta="-18" follows="top" height="16" control_name="UseRealisticMouselook" label="Use 'realistic' Camera behavior in Mouselook" name="UseRealisticMouselook"/>
 	<text bottom_delta="-18" follows="top" height="16" name="UI Hidden in mouselook:">UI Hidden in mouselook:</text>
 	<check_box bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookHidesFloaters" name="mouselook_hides_floaters" label="Floaters"/>
 	<check_box left_delta="80" bottom_delta="0" follows="top" height="16" control_name="LiruMouselookHidesNotices" name="mouselook_hides_notices" label="Notices"/>
