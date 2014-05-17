@@ -945,7 +945,7 @@ void LLGLSLShader::uniformMatrix3x4fv(U32 index, U32 count, GLboolean transpose,
 
 		if (mUniform[index] >= 0)
 		{
-			glUniformMatrix3x4fvARB(mUniform[index], count, transpose, v);
+			glUniformMatrix3x4fv(mUniform[index], count, transpose, v);
 		}
 	}
 }
