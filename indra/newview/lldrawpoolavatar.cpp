@@ -1547,41 +1547,35 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				
 				stop_glerror();
 
-				F32 mp[JOINT_COUNT*9];
-
-				F32 transp[JOINT_COUNT*3];
+				F32 mp[JOINT_COUNT*12];
 
 				for (U32 i = 0; i < count; ++i)
 				{
 					F32* m = (F32*) mat[i].mMatrix;
 
-					U32 idx = i*9;
+					U32 idx = i*12;
 
 					mp[idx+0] = m[0];
 					mp[idx+1] = m[1];
 					mp[idx+2] = m[2];
+					mp[idx+3] = m[12];
 
-					mp[idx+3] = m[4];
-					mp[idx+4] = m[5];
-					mp[idx+5] = m[6];
+					mp[idx+4] = m[4];
+					mp[idx+5] = m[5];
+					mp[idx+6] = m[6];
+					mp[idx+7] = m[13];
 
-					mp[idx+6] = m[8];
-					mp[idx+7] = m[9];
-					mp[idx+8] = m[10];
-
-					idx = i*3;
-
-					transp[idx+0] = m[12];
-					transp[idx+1] = m[13];
-					transp[idx+2] = m[14];
+					mp[idx+8] = m[8];
+					mp[idx+9] = m[9];
+					mp[idx+10] = m[10];
+					mp[idx+11] = m[14];
 				}
 
-				LLDrawPoolAvatar::sVertexProgram->uniformMatrix3fv(LLViewerShaderMgr::AVATAR_MATRIX, 
+				LLDrawPoolAvatar::sVertexProgram->uniformMatrix3x4fv(LLViewerShaderMgr::AVATAR_MATRIX, 
 					count,
 					FALSE,
 					(GLfloat*) mp);
 
-				LLDrawPoolAvatar::sVertexProgram->uniform3fv(LLShaderMgr::AVATAR_TRANSLATION, count, transp);
 				LLDrawPoolAvatar::sVertexProgram->uniform1f(LLShaderMgr::AVATAR_MAX_WEIGHT, F32(count-1));
 				
 				stop_glerror();
