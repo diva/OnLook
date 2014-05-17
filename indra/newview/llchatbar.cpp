@@ -44,6 +44,7 @@
 #include "llfocusmgr.h"
 
 #include "llagent.h"
+#include "llautoreplace.h"
 #include "llbutton.h"
 #include "llcombobox.h"
 #include "llcommandhandler.h"	// secondlife:///app/chat/ support
@@ -149,6 +150,7 @@ BOOL LLChatBar::postBuild()
 	mInputEditor = findChild<LLLineEditor>("Chat Editor");
 	if (mInputEditor)
 	{
+		mInputEditor->setAutoreplaceCallback(boost::bind(&LLAutoReplace::autoreplaceCallback, LLAutoReplace::getInstance(), _1, _2, _3, _4, _5));
 		mInputEditor->setKeystrokeCallback(boost::bind(&LLChatBar::onInputEditorKeystroke,this));
 		mInputEditor->setFocusLostCallback(boost::bind(&LLChatBar::onInputEditorFocusLost));
 		mInputEditor->setFocusReceivedCallback(boost::bind(&LLChatBar::onInputEditorGainFocus));

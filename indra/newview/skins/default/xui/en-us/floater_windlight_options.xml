@@ -351,7 +351,7 @@
 			     mouse_opaque="true" name="WLGlowB" show_text="true" value="1.0" width="200" />
 			<slider bottom_delta="-11" can_edit_text="false" control_name="WLGlowR"
 			     decimal_digits="2" follows="left" height="10" increment="0.01"
-			     initial_val="0.25" label="Size    " left="494" max_val="1.99" min_val="1"
+			     initial_val="0.25" label="Size    " left="494" max_val="1.99" min_val="0.01"
 			     mouse_opaque="true" name="WLGlowR" show_text="true" value="1.0" width="200" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-67" drop_shadow_visible="true" follows="left|top|right"

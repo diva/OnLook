@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ height="140"
+ width="360"
+ layout="topleft"
+ name="region_restarting"
+ help_topic="floater_region_restarting"
+ single_instance="true"
+ reuse_instance="false"
+ can_minimize="true"
+ title="Region Restarting">
+    <string name="RegionName">
+The region you are in now
+([NAME]) is about to restart.
+
+If you stay here, you'll be logged out.
+    </string>
+    <string name="RestartSeconds">
+     Seconds Until Restart:
+[SECONDS]
+    </string>
+     <panel
+     name="layout_panel_1"
+     height="140"
+     width="360"
+     follows="right|top"
+     bottom="-140"
+     left="0"
+     mouse_opaque="false"
+     background_visible="true"
+     bg_opaque_color="NotifyCautionBoxColor"
+     bg_alpha_color="NotifyCautionBoxColor">
+
+    <icon color="1.0 1.0 1.0 1.0"
+     tab_stop="false"
+     mouse_opaque="false"
+     name="icon"
+     width="32"
+     height="32"
+     bottom="-40"
+     left="8"
+     image_name="notify_caution_icon.tga"
+     follows="left|top">
+    </icon>
+
+    <text
+     type="string"
+     length="1"
+     follows="top|left"
+     layout="topleft"
+     name="region_name"
+     text_color="0 0 0 1"
+     font="SansSerifBold"
+     word_wrap="true"
+     height="100"
+     bottom="-110"
+     left="48"
+     width="320">
+The region you are in now
+(-The longest region name-) is about to restart.
+
+If you stay here, you'll be logged out.
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="top|left"
+     layout="topleft"
+     name="restart_seconds"
+     text_color="0 0 0 1"
+     font="SansSerifBold"
+     height="40"
+     bottom_delta="-25"
+     left="0"
+     halign="center"
+     width="360">
+Seconds Until Restart:
+     32767
+    </text>
+  </panel>
+</floater>
+

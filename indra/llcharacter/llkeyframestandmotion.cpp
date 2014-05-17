@@ -50,7 +50,7 @@ const F32 POSITION_THRESHOLD = 0.1f;
 // LLKeyframeStandMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLKeyframeStandMotion::LLKeyframeStandMotion(const LLUUID &id) : LLKeyframeMotion(id)
+LLKeyframeStandMotion::LLKeyframeStandMotion(LLUUID const& id, LLMotionController* controller) : LLKeyframeMotion(id, controller)
 {
 	mFlipFeet = FALSE;
 	mCharacter = NULL;

@@ -29,7 +29,6 @@ set(llcharacter_SOURCE_FILES
     lljointsolverrp3.cpp
     llkeyframefallmotion.cpp
     llkeyframemotion.cpp
-    llkeyframemotionparam.cpp
     llkeyframestandmotion.cpp
     llkeyframewalkmotion.cpp
     llmotion.cpp
@@ -57,7 +56,6 @@ set(llcharacter_HEADER_FILES
     lljointstate.h
     llkeyframefallmotion.h
     llkeyframemotion.h
-    llkeyframemotionparam.h
     llkeyframestandmotion.h
     llkeyframewalkmotion.h
     llmotion.h

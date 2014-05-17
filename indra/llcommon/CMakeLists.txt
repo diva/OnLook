@@ -20,6 +20,7 @@ set(llcommon_SOURCE_FILES
     aialert.cpp
     aifile.cpp
     aiframetimer.cpp
+    aisyncclient.cpp
     aithreadid.cpp
     imageids.cpp
     indra_constants.cpp
@@ -59,7 +60,6 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
-    llindraconfigfile.cpp
     llinitparam.cpp
     llinstancetracker.cpp
     llliveappconfig.cpp
@@ -112,6 +112,7 @@ set(llcommon_HEADER_FILES
     aifile.h
     aiframetimer.h
     airecursive.h
+    aisyncclient.h
     aithreadid.h
     aithreadsafe.h
     bitpack.h
@@ -184,7 +185,6 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
-    llindraconfigfile.h
     llinitparam.h
     llinstancetracker.h
     llkeythrottle.h

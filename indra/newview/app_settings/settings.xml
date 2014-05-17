@@ -738,7 +738,7 @@
     <key>LiruLegacyLogLaunch</key>
     <map>
       <key>Comment</key>
-      <string>When opening a chat log, open in an external text editor instead of a browser floater(Windows Only).</string>
+      <string>When opening a chat log, open in an external text editor instead of a browser floater(Windows and Mac Only).</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -834,6 +834,17 @@
       <key>Value</key>
       <boolean>0</boolean>
     </map>
+    <key>LiruMouselookHidesToolbar</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the toolbar will be hidden in mouselook</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
     <key>LiruMouselookMenu</key>
     <map>
       <key>Comment</key>
@@ -892,6 +903,19 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>LiruRegionRestartMinimized</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to spawn the region restart notice minimized (Useful for sim owners and people who need to pack up before leaving)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+      <key>IsCOA</key>
+      <integer>1</integer>
     </map>
     <key>LiruScriptErrorsStealFocus</key>
     <map>
@@ -1312,6 +1336,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>AnnounceBumps</key>
+    <map>
+      <key>Comment</key>
+      <string>Announce if someone bumps into you.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
     </map>
     <key>AnnounceSnapshots</key>
     <map>
@@ -2222,6 +2257,17 @@ This should be as low as possible, but too low may break functionality</string>
 	  <key>IsCOA</key>
 	  <integer>1</integer>
     </map>
+    <key>UISndRestart</key>
+    <map>
+      <key>Comment</key>
+      <string>Sound file for region restarting (uuid for sound asset)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>1e506d0c-4811-bdf3-5ec7-d624284c9040</string>
+    </map>
     <key>UISndSnapshot</key>
     <map>
       <key>Comment</key>
@@ -2395,6 +2441,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>AllowSelectAvatar</key>
+    <map>
+      <key>Comment</key>
+      <string>Allow selecting an avatar that you have modify rights on (via tag) while in edit mode to reposition them</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>AllowTapTapHoldRun</key>
     <map>
@@ -2688,6 +2745,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Enable texture auditting.</string>
       <key>Persist</key>
       <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AutoReplace</key>
+    <map>
+      <key>Comment</key>
+      <string>Replaces keywords with a configured word or phrase</string>
+      <key>Persist</key>
+      <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
@@ -7277,6 +7345,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>24</integer>
     </map>
+    <key>RadarColumnVoiceWidth</key>
+    <map>
+      <key>Comment</key>
+      <string>Width for radar's voice status column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>24</integer>
+    </map>
     <key>RadarColumnAgeWidth</key>
     <map>
       <key>Comment</key>
@@ -7353,6 +7432,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>RadarColumnVoiceHidden</key>
+    <map>
+      <key>Comment</key>
+      <string>Hide radar's voice status column</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
     </map>
     <key>RadarColumnAgeHidden</key>
     <map>
@@ -11123,22 +11213,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>PermissionsManagerRect</key>
-    <map>
-      <key>Comment</key>
-      <string>Rectangle for permissions manager window</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Rect</string>
-      <key>Value</key>
-      <array>
-        <integer>0</integer>
-        <integer>85</integer>
-        <integer>300</integer>
-        <integer>0</integer>
-      </array>
-    </map>
     <key>PickerContextOpacity</key>
     <map>
       <key>Comment</key>
@@ -14559,9 +14633,9 @@ This should be as low as possible, but too low may break functionality</string>
     <key>ShowChatHistory</key>
     <map>
       <key>Comment</key>
-      <string/>
+      <string>Open local chat window on login</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
@@ -14570,13 +14644,24 @@ This should be as low as possible, but too low may break functionality</string>
     <key>ShowCommunicate</key>
     <map>
       <key>Comment</key>
-      <string/>
+      <string>Open communicate window on login</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>ShowContacts</key>
+    <map>
+      <key>Comment</key>
+      <string>Open contacts window on login</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
     </map>
     <key>ShowConsoleWindow</key>
     <map>

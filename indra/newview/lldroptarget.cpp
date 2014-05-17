@@ -145,6 +145,11 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 	else
 	{
 		mControl = gSavedPerAccountSettings.getControl(control_name);
+		if (!mControl)
+		{
+			llerrs << "Could not find control \"" << control_name << "\" in gSavedPerAccountSettings" << llendl;
+			return; // Though this should never happen.
+		}
 		const LLUUID id(mControl->getValue().asString());
 		if (id.isNull())
 			text = LLTrans::getString("CurrentlyNotSet");

@@ -35,6 +35,7 @@
 
 #include "ascentkeyword.h"
 #include "llagent.h"
+#include "llautoreplace.h"
 #include "llavataractions.h"
 #include "llavatarnamecache.h"
 #include "llbutton.h"
@@ -60,7 +61,7 @@
 #include "llviewerwindow.h"
 #include "llvoicechannel.h"
 
-#include "boost/algorithm/string.hpp"
+#include <boost/lambda/lambda.hpp>
 
 // [RLVa:KB] - Checked: 2013-05-10 (RLVa-1.4.9)
 #include "rlvactions.h"
@@ -321,6 +322,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	case IM_SESSION_GROUP_START:
 	case IM_SESSION_INVITE:
 	case IM_SESSION_CONFERENCE_START:
+		mCommitCallbackRegistrar.add("FlipDing", boost::bind<void>(boost::lambda::_1 = !boost::lambda::_1, boost::ref(mDing)));
 		// determine whether it is group or conference session
 		if (gAgent.isInGroup(mSessionUUID))
 		{
@@ -465,6 +467,7 @@ BOOL LLFloaterIMPanel::postBuild()
 			LLAvatarNameCache::get(mOtherParticipantUUID, boost::bind(&LLFloaterIMPanel::onAvatarNameLookup, this, _2));
 
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
+		mInputEditor->setAutoreplaceCallback(boost::bind(&LLAutoReplace::autoreplaceCallback, LLAutoReplace::getInstance(), _1, _2, _3, _4, _5));
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
 		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
@@ -551,12 +554,7 @@ void LLFloaterIMPanel::onClickMuteVoice()
 // virtual
 void LLFloaterIMPanel::draw()
 {	
-	LLViewerRegion* region = gAgent.getRegion();
-	
-	bool enable_connect = (region && !region->getCapability("ChatSessionRequest").empty())
-					  && mSessionInitialized
-					  && LLVoiceClient::getInstance()->voiceEnabled()
-					  && mCallBackEnabled;
+	bool enable_connect = mSessionInitialized && LLVoiceClient::getInstance()->voiceEnabled() && mCallBackEnabled;
 
 	// hide/show start call and end call buttons
 	mEndCallBtn->setVisible(LLVoiceClient::getInstance()->voiceEnabled() && mVoiceChannel->getState() >= LLVoiceChannel::STATE_CALL_STARTED);
@@ -968,7 +966,7 @@ void copy_profile_uri(const LLUUID& id, bool group = false);
 
 void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
-	if (value.isUndefined())
+	if (value.isUndefined() || value.asInteger() == 0)
 	{
 		LLAvatarActions::showProfile(mOtherParticipantUUID);
 		return;
@@ -999,10 +997,10 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 
 void show_log_browser(const std::string& name, const std::string& id)
 {
-#if LL_WINDOWS // Singu TODO: Other platforms?
+#if LL_WINDOWS || LL_DARWIN // Singu TODO: Linux?
 	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
 	{
-		gViewerWindow->getWindow()->ShellEx("\"" + LLLogChat::makeLogFileName(name) + "\"");
+		gViewerWindow->getWindow()->ShellEx(LLLogChat::makeLogFileName(name));
 		return;
 	}
 #endif

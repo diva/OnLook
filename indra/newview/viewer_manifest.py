@@ -772,9 +772,9 @@ class LinuxManifest(ViewerManifest):
         self.run_command("""
                 find '%(dst)s' -type d -print0 | xargs -0 --no-run-if-empty chmod 755;
                 find '%(dst)s' -type f -perm 0700 -print0 | xargs -0 --no-run-if-empty chmod 0755;
-                find '%(dst)s' -type f -perm 0500 -print0 | xargs -0 --no-run-if-empty chmod 0555;
+                find '%(dst)s' -type f -perm 0500 -print0 | xargs -0 --no-run-if-empty chmod 0755;
                 find '%(dst)s' -type f -perm 0600 -print0 | xargs -0 --no-run-if-empty chmod 0644;
-                find '%(dst)s' -type f -perm 0400 -print0 | xargs -0 --no-run-if-empty chmod 0444;
+                find '%(dst)s' -type f -perm 0400 -print0 | xargs -0 --no-run-if-empty chmod 0644;
                 true""" %  {'dst':self.get_dst_prefix() })
         self.package_file = installer_name + '.tar.bz2'
 

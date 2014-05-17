@@ -37,6 +37,7 @@
 #include "aihttpview.h"
 #include "floaterao.h"
 #include "floaterlocalassetbrowse.h"
+#include "hbfloatergrouptitles.h"
 #include "jcfloaterareasearch.h"
 #include "llagentcamera.h"
 #include "llchatbar.h"
@@ -45,6 +46,7 @@
 #include "llfasttimerview.h"
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
+#include "llfloaterautoreplacesettings.h"
 #include "llfloateravatarlist.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterblacklist.h"
@@ -100,7 +102,6 @@
 #include "llmakeoutfitdialog.h"
 #include "llmoveview.h" // LLFloaterMove
 #include "lltextureview.h"
-#include "lltoolbar.h"
 #include "lltoolgrab.h"
 #include "lltoolmgr.h"
 #include "lluictrlfactory.h"
@@ -165,22 +166,27 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		}
 		registerConsole("velocity", gVelocityBar);
 		registerFloater("about", boost::bind(&LLFloaterAbout::show,(void*)NULL));
-		registerFloater("ao", boost::bind(LLFloaterAO::show, (void*)NULL));
 		registerFloater("always run", boost::bind(toggle_always_run), boost::bind(&LLAgent::getAlwaysRun, &gAgent));
+		registerFloater("anims_explorer", boost::bind(LLFloaterExploreAnimations::show));
+		registerFloater("ao", boost::bind(LLFloaterAO::show, (void*)NULL));
 		registerFloater("appearance", boost::bind(LLFloaterCustomize::show));
+		registerFloater("asset_blacklist", boost::bind(LLFloaterBlacklist::toggle), boost::bind(LLFloaterBlacklist::visible));
 		registerFloater("build", boost::bind(toggle_build));
 		registerFloater("buy currency", boost::bind(LLFloaterBuyCurrency::buyCurrency));
 		registerFloater("buy land", boost::bind(&LLViewerParcelMgr::startBuyLand, boost::bind(LLViewerParcelMgr::getInstance), false));
 		registerFloater("chatbar", boost::bind(handle_chat));
 		registerFloater("complaint reporter", boost::bind(LLFloaterReporter::showFromMenu, COMPLAINT_REPORT));
+		registerFloater("DayCycle", boost::bind(LLFloaterDayCycle::show), boost::bind(LLFloaterDayCycle::isOpen));
 		registerFloater("debug avatar", boost::bind(handle_debug_avatar_textures, (void*)NULL));
 		registerFloater("debug settings", boost::bind(handle_singleton_toggle<LLFloaterSettingsDebug>, (void*)NULL));
 		registerFloater("displayname", boost::bind(LLFloaterDisplayName::show));
 		registerFloater("edit ui", boost::bind(LLFloaterEditUI::show, (void*)NULL));
+		registerFloater("EnvSettings", boost::bind(LLFloaterEnvSettings::show), boost::bind(LLFloaterEnvSettings::isOpen));
 		registerFloater("fly", boost::bind(LLAgent::toggleFlying));
 		registerFloater("font test", boost::bind(LLFloaterFontTest::show, (void*)NULL));
 		registerFloater("god tools", boost::bind(LLFloaterGodTools::show, (void*)NULL));
-		registerFloater("grid options",	boost::bind(LLFloaterBuildOptions::show, (void*)NULL));
+		registerFloater("grid options", boost::bind(LLFloaterBuildOptions::show, (void*)NULL));
+		registerFloater("group titles", boost::bind(HBFloaterGroupTitles::toggle));
 		//Singu TODO: Re-implement f1 help.
 		//registerFloater("help f1", boost::bind(/*gViewerHtmlHelp.show*/));
 		registerFloater("help tutorial", boost::bind(LLFloaterHUD::showHUD));
@@ -194,29 +200,25 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater("mouselook", boost::bind(toggle_mouselook));
 		registerFloater("my land", boost::bind(LLFloaterLandHoldings::show, (void*)NULL));
 		registerFloater("outfit", boost::bind(show_outfit_dialog));
+		registerFloater("PostProcess", boost::bind(LLFloaterPostProcess::show));
 		registerFloater("preferences", boost::bind(LLFloaterPreference::show, (void*)NULL));
+		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
 		registerFloater("script errors", boost::bind(LLFloaterScriptDebug::show, LLUUID::null));
 		registerFloater("search", boost::bind(toggle_search_floater));
+		registerFloater("sit", boost::bind(toggle_sit));
 		registerFloater("snapshot", boost::bind(LLFloaterSnapshot::show, (void*)NULL));
+		registerFloater("sound_explorer", boost::bind(LLFloaterExploreSounds::toggle), boost::bind(LLFloaterExploreSounds::visible));
 		registerFloater("test", boost::bind(LLFloaterTest::show, (void*)NULL));
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
-		registerFloater("toolbar", boost::bind(toggle_control, "ShowToolBar"), boost::bind(&LLToolBar::getVisible, gToolBar));
-		registerFloater("web", boost::bind(LLFloaterWebContent::showInstance, "dict web", LLFloaterWebContent::Params()));
-		registerFloater("world map", boost::bind(LLFloaterWorldMap::toggle));
-		registerFloater("anims_explorer", boost::bind(LLFloaterExploreAnimations::show));
-		registerFloater("sound_explorer", boost::bind(LLFloaterExploreSounds::toggle), boost::bind(LLFloaterExploreSounds::visible));
-		registerFloater("asset_blacklist", boost::bind(LLFloaterBlacklist::toggle), boost::bind(LLFloaterBlacklist::visible));
-		registerFloater("DayCycle", boost::bind(LLFloaterDayCycle::show), boost::bind(LLFloaterDayCycle::isOpen));
-		registerFloater("EnvSettings", boost::bind(LLFloaterEnvSettings::show), boost::bind(LLFloaterEnvSettings::isOpen));
-		registerFloater("PostProcess", boost::bind(LLFloaterPostProcess::show));
-		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
 		registerFloater("WaterSettings", boost::bind(LLFloaterWater::show), boost::bind(LLFloaterWater::isOpen));
+		registerFloater("web", boost::bind(LLFloaterWebContent::showInstance, "dict web", LLFloaterWebContent::Params()));
 		registerFloater("Windlight", boost::bind(LLFloaterWindLight::show), boost::bind(LLFloaterWindLight::isOpen));
-		registerFloater<CommWrapper>					("im");
+		registerFloater("world map", boost::bind(LLFloaterWorldMap::toggle));
 		registerFloater<LLFloaterLand>					("about land");
 		registerFloater<LLFloaterRegionInfo>			("about region");
 		registerFloater<LLFloaterActiveSpeakers>		("active speakers");
 		registerFloater<JCFloaterAreaSearch>			("areasearch");
+		registerFloater<LLFloaterAutoReplaceSettings>	("autoreplace");
 		registerFloater<LLFloaterBeacons>				("beacons");
 		registerFloater<LLFloaterCamera>				("camera controls");
 		registerFloater<LLFloaterChat>					("chat history");
@@ -224,6 +226,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterMyFriends>				("friends", 0);
 		registerFloater<LLFloaterGesture>				("gestures");
 		registerFloater<LLFloaterMyFriends>				("groups", 1);
+		registerFloater<CommWrapper>					("im");
 		registerFloater<LLFloaterLagMeter>				("lag meter");
 		registerFloater<SLFloaterMediaFilter>			("media filter");
 		registerFloater<LLFloaterMap>					("mini map");
@@ -231,14 +234,14 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterMute>					("mute list");
 		registerFloater<LLFloaterNotificationConsole>	("notifications console");
 		registerFloater<LLFloaterOutbox>				("outbox");
+		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
+		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
 		registerFloater<LLFloaterPerms>					("perm prefs");
 		registerFloater<LLFloaterAvatarList>			("radar");
 		registerFloater<LLFloaterScriptLimits>			("script info");
 		registerFloater<LLFloaterStats>					("stat bar");
 		registerFloater<LLFloaterTeleportHistory>		("teleport history");
 		registerFloater<LLFloaterVoiceEffect>			("voice effect");
-		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
-		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
 		// [RLVa:LF]
 		registerFloater<RlvFloaterBehaviours>("rlv restrictions");
 		registerFloater<RlvFloaterLocks>("rlv locks");
@@ -248,7 +251,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 	template <typename T>
 	void registerConsole(const std::string& name, T* console)
 	{
-		registerFloater(name, boost::bind(&T::setVisible, console, boost::bind(&T::getVisible, console)), boost::bind(&T::getVisible, console));
+		registerFloater(name, boost::bind(&T::setVisible, console, !boost::bind(&T::getVisible, console)), boost::bind(&T::getVisible, console));
 	}
 	void registerFloater(const std::string& name, boost::function<void ()> show, boost::function<bool ()> visible = NULL)
 	{

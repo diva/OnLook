@@ -145,18 +145,106 @@ using namespace LLAvatarAppearanceDefines;
 //-----------------------------------------------------------------------------
 // Global constants
 //-----------------------------------------------------------------------------
-const LLUUID ANIM_AGENT_BODY_NOISE = LLUUID("9aa8b0a6-0c6f-9518-c7c3-4f41f2c001ad"); //"body_noise"
-const LLUUID ANIM_AGENT_BREATHE_ROT	= LLUUID("4c5a103e-b830-2f1c-16bc-224aa0ad5bc8");  //"breathe_rot"
-const LLUUID ANIM_AGENT_EDITING	= LLUUID("2a8eba1d-a7f8-5596-d44a-b4977bf8c8bb");  //"editing"
-const LLUUID ANIM_AGENT_EYE	= LLUUID("5c780ea8-1cd1-c463-a128-48c023f6fbea");  //"eye"
-const LLUUID ANIM_AGENT_FLY_ADJUST = LLUUID("db95561f-f1b0-9f9a-7224-b12f71af126e");  //"fly_adjust"
-const LLUUID ANIM_AGENT_HAND_MOTION	= LLUUID("ce986325-0ba7-6e6e-cc24-b17c4b795578");  //"hand_motion"
-const LLUUID ANIM_AGENT_HEAD_ROT = LLUUID("e6e8d1dd-e643-fff7-b238-c6b4b056a68d");  //"head_rot"
-const LLUUID ANIM_AGENT_PELVIS_FIX = LLUUID("0c5dd2a2-514d-8893-d44d-05beffad208b");  //"pelvis_fix"
-const LLUUID ANIM_AGENT_TARGET = LLUUID("0e4896cb-fba4-926c-f355-8720189d5b55");  //"target"
-const LLUUID ANIM_AGENT_WALK_ADJUST	= LLUUID("829bc85b-02fc-ec41-be2e-74cc6dd7215d");  //"walk_adjust"
-const LLUUID ANIM_AGENT_PHYSICS_MOTION = LLUUID("7360e029-3cb8-ebc4-863e-212df440d987");  //"physics_motion"
+const LLUUID ANIM_AGENT_BODY_NOISE_ID = LLUUID("9aa8b0a6-0c6f-9518-c7c3-4f41f2c001ad"); //"body_noise"
+const LLUUID ANIM_AGENT_BREATHE_ROT_ID	= LLUUID("4c5a103e-b830-2f1c-16bc-224aa0ad5bc8");  //"breathe_rot"
+const LLUUID ANIM_AGENT_PHYSICS_MOTION_ID = LLUUID("7360e029-3cb8-ebc4-863e-212df440d987");  //"physics_motion"
+const LLUUID ANIM_AGENT_EDITING_ID	= LLUUID("2a8eba1d-a7f8-5596-d44a-b4977bf8c8bb");  //"editing"
+const LLUUID ANIM_AGENT_EYE_ID	= LLUUID("5c780ea8-1cd1-c463-a128-48c023f6fbea");  //"eye"
+const LLUUID ANIM_AGENT_FLY_ADJUST_ID = LLUUID("db95561f-f1b0-9f9a-7224-b12f71af126e");  //"fly_adjust"
+const LLUUID ANIM_AGENT_HAND_MOTION_ID	= LLUUID("ce986325-0ba7-6e6e-cc24-b17c4b795578");  //"hand_motion"
+const LLUUID ANIM_AGENT_HEAD_ROT_ID = LLUUID("e6e8d1dd-e643-fff7-b238-c6b4b056a68d");  //"head_rot"
+const LLUUID ANIM_AGENT_PELVIS_FIX_ID = LLUUID("0c5dd2a2-514d-8893-d44d-05beffad208b");  //"pelvis_fix"
+const LLUUID ANIM_AGENT_TARGET_ID = LLUUID("0e4896cb-fba4-926c-f355-8720189d5b55");  //"target"
+const LLUUID ANIM_AGENT_WALK_ADJUST_ID	= LLUUID("829bc85b-02fc-ec41-be2e-74cc6dd7215d");  //"walk_adjust"
 
+//<singu>
+// This must be in the same order as ANIM_AGENT_BODY_NOISE through ANIM_AGENT_WALK_ADJUST (see llmotion.h)!
+static LLUUID const* lookup[] = {
+	&ANIM_AGENT_BODY_NOISE_ID,
+	&ANIM_AGENT_BREATHE_ROT_ID,
+	&ANIM_AGENT_PHYSICS_MOTION_ID,
+	&ANIM_AGENT_EDITING_ID,
+	&ANIM_AGENT_EYE_ID,
+	&ANIM_AGENT_FLY_ADJUST_ID,
+	&ANIM_AGENT_HAND_MOTION_ID,
+	&ANIM_AGENT_HEAD_ROT_ID,
+	&ANIM_AGENT_PELVIS_FIX_ID,
+	&ANIM_AGENT_TARGET_ID,
+	&ANIM_AGENT_WALK_ADJUST_ID
+};
+
+LLUUID const& mask2ID(U32 bit)
+{
+	int const lookupsize = sizeof(lookup) / sizeof(LLUUID const*);
+	int i = lookupsize - 1;
+	U32 mask = 1 << i;
+	for(;;)
+	{
+	  if (bit == mask)
+	  {
+		return *lookup[i];
+	  }
+	  --i;
+	  mask >>= 1;
+	  llassert_always(i >= 0);
+	}
+}
+
+#ifdef CWDEBUG
+static char const* strlookup[] = {
+	"ANIM_AGENT_BODY_NOISE",
+	"ANIM_AGENT_BREATHE_ROT",
+	"ANIM_AGENT_PHYSICS_MOTION",
+	"ANIM_AGENT_EDITING",
+	"ANIM_AGENT_EYE",
+	"ANIM_AGENT_FLY_ADJUST",
+	"ANIM_AGENT_HAND_MOTION",
+	"ANIM_AGENT_HEAD_ROT",
+	"ANIM_AGENT_PELVIS_FIX",
+	"ANIM_AGENT_TARGET",
+	"ANIM_AGENT_WALK_ADJUST"
+};
+
+char const* mask2str(U32 bit)
+{
+	int const lookupsize = sizeof(lookup) / sizeof(LLUUID const*);
+	int i = lookupsize - 1;
+	U32 mask = 1 << i;
+	do
+	{
+	  if (bit == mask)
+	  {
+		return strlookup[i];
+	  }
+	  --i;
+	  mask >>= 1;
+	}
+	while(i >= 0);
+	return "<unknown>";
+}
+#endif
+
+// stopMotion(ANIM_AGENT_WALK_ADJUST) is called every frame, and for every avatar on the radar.
+// That can be like 1000 times per second, so... speed that up a bit and lets not lookup the same LLUUID 1000 times
+// per second in a std::map. Added the rest of the animations while I was at it.
+void LLVOAvatar::startMotion(U32 bit, F32 time_offset)
+{
+	if (!isMotionActive(bit))
+	{
+		mMotionController.disable_syncing();		// Don't attempt to synchronize AIMaskedMotion.
+		startMotion(mask2ID(bit), time_offset);
+		mMotionController.enable_syncing();
+	}
+}
+
+void LLVOAvatar::stopMotion(U32 bit, BOOL stop_immediate)
+{
+	if (isMotionActive(bit))
+	{
+		stopMotion(mask2ID(bit), stop_immediate);
+	}
+}
+//</singu>
 
 //-----------------------------------------------------------------------------
 // Constants
@@ -257,12 +345,12 @@ struct LLTextureMaskData
 // class LLBodyNoiseMotion
 //-----------------------------------------------------------------------------
 class LLBodyNoiseMotion :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLBodyNoiseMotion(const LLUUID &id)
-		: LLMotion(id)
+	LLBodyNoiseMotion(LLUUID const& id, LLMotionController* controller)
+		: AIMaskedMotion(id, controller, ANIM_AGENT_BODY_NOISE)
 	{
 		mName = "body_noise";
 		mTorsoState = new LLJointState;
@@ -277,7 +365,7 @@ public:
 	//-------------------------------------------------------------------------
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLBodyNoiseMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLBodyNoiseMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -320,11 +408,6 @@ public:
 		return STATUS_SUCCESS;
 	}
 
-	// called when a motion is activated
-	// must return TRUE to indicate success, or else
-	// it will be deactivated
-	virtual BOOL onActivate() { return TRUE; }
-
 	// called per time step
 	// must return TRUE while it is active, and
 	// must return FALSE when the motion is completed.
@@ -348,9 +431,6 @@ public:
 		return TRUE;
 	}
 
-	// called when a motion is deactivated
-	virtual void onDeactivate() {}
-
 private:
 	//-------------------------------------------------------------------------
 	// joint states to be animated
@@ -362,12 +442,12 @@ private:
 // class LLBreatheMotionRot
 //-----------------------------------------------------------------------------
 class LLBreatheMotionRot :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLBreatheMotionRot(const LLUUID &id) :
-		LLMotion(id),
+	LLBreatheMotionRot(LLUUID const& id, LLMotionController* controller) :
+		AIMaskedMotion(id, controller, ANIM_AGENT_BREATHE_ROT),
 		mBreatheRate(1.f),
 		mCharacter(NULL)
 	{
@@ -384,7 +464,7 @@ public:
 	//-------------------------------------------------------------------------
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLBreatheMotionRot(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLBreatheMotionRot(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -437,11 +517,6 @@ public:
 		}
 	}
 
-	// called when a motion is activated
-	// must return TRUE to indicate success, or else
-	// it will be deactivated
-	virtual BOOL onActivate() { return TRUE; }
-
 	// called per time step
 	// must return TRUE while it is active, and
 	// must return FALSE when the motion is completed.
@@ -456,9 +531,6 @@ public:
 		return TRUE;
 	}
 
-	// called when a motion is deactivated
-	virtual void onDeactivate() {}
-
 private:
 	//-------------------------------------------------------------------------
 	// joint states to be animated
@@ -472,12 +544,12 @@ private:
 // class LLPelvisFixMotion
 //-----------------------------------------------------------------------------
 class LLPelvisFixMotion :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLPelvisFixMotion(const LLUUID &id)
-		: LLMotion(id), mCharacter(NULL)
+	LLPelvisFixMotion(LLUUID const& id, LLMotionController* controller)
+		: AIMaskedMotion(id, controller, ANIM_AGENT_PELVIS_FIX), mCharacter(NULL)
 	{
 		mName = "pelvis_fix";
 
@@ -493,7 +565,7 @@ public:
 	//-------------------------------------------------------------------------
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID& id) { return new LLPelvisFixMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLPelvisFixMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -538,11 +610,6 @@ public:
 		return STATUS_SUCCESS;
 	}
 
-	// called when a motion is activated
-	// must return TRUE to indicate success, or else
-	// it will be deactivated
-	virtual BOOL onActivate() { return TRUE; }
-
 	// called per time step
 	// must return TRUE while it is active, and
 	// must return FALSE when the motion is completed.
@@ -552,9 +619,6 @@ public:
 
 		return TRUE;
 	}
-
-	// called when a motion is deactivated
-	virtual void onDeactivate() {}
 
 private:
 	//-------------------------------------------------------------------------
@@ -846,8 +910,10 @@ const LLUUID SHClientTagMgr::getClientID(const LLVOAvatar* pAvatar) const
 	}
 	return tag.asUUID();
 }
+bool mm_getMarkerColor(const LLUUID&, LLColor4&);
 bool SHClientTagMgr::getClientColor(const LLVOAvatar* pAvatar, bool check_status, LLColor4& color) const
 {
+	if (mm_getMarkerColor(pAvatar->getID(), color)) return true;
 	static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
 	static const LLCachedControl<bool> ascent_show_self_tag_color("AscentShowSelfTagColor");
 	static const LLCachedControl<bool> ascent_show_others_tag_color("AscentShowOthersTagColor");
@@ -1438,17 +1504,17 @@ void LLVOAvatar::deleteCachedImages(bool clearAll)
 //------------------------------------------------------------------------
 void LLVOAvatar::initClass()
 {
-	gAnimLibrary.animStateSetString(ANIM_AGENT_BODY_NOISE,"body_noise");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_BREATHE_ROT,"breathe_rot");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_PHYSICS_MOTION,"physics_motion");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_EDITING,"editing");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_EYE,"eye");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_FLY_ADJUST,"fly_adjust");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_HAND_MOTION,"hand_motion");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_HEAD_ROT,"head_rot");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_PELVIS_FIX,"pelvis_fix");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_TARGET,"target");
-	gAnimLibrary.animStateSetString(ANIM_AGENT_WALK_ADJUST,"walk_adjust");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_BODY_NOISE_ID,"body_noise");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_BREATHE_ROT_ID,"breathe_rot");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_PHYSICS_MOTION_ID,"physics_motion");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_EDITING_ID,"editing");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_EYE_ID,"eye");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_FLY_ADJUST_ID,"fly_adjust");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_HAND_MOTION_ID,"hand_motion");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_HEAD_ROT_ID,"head_rot");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_PELVIS_FIX_ID,"pelvis_fix");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_TARGET_ID,"target");
+	gAnimLibrary.animStateSetString(ANIM_AGENT_WALK_ADJUST_ID,"walk_adjust");
 
 	SHClientTagMgr::instance();	//Instantiate. Parse. Will fetch a new tag file if AscentUpdateTagsOnLoad is true.
 }
@@ -1506,19 +1572,19 @@ void LLVOAvatar::initInstance(void)
 		registerMotion( ANIM_AGENT_WALK_NEW,				LLKeyframeWalkMotion::create ); //v2
 	
 		// motions without a start/stop bit
-		registerMotion( ANIM_AGENT_BODY_NOISE,				LLBodyNoiseMotion::create );
-		registerMotion( ANIM_AGENT_BREATHE_ROT,				LLBreatheMotionRot::create );
-		registerMotion( ANIM_AGENT_PHYSICS_MOTION,			LLPhysicsMotionController::create );
-		registerMotion( ANIM_AGENT_EDITING,					LLEditingMotion::create	);
-		registerMotion( ANIM_AGENT_EYE,						LLEyeMotion::create	);
-		registerMotion( ANIM_AGENT_FLY_ADJUST,				LLFlyAdjustMotion::create );
-		registerMotion( ANIM_AGENT_HAND_MOTION,				LLHandMotion::create );
-		registerMotion( ANIM_AGENT_HEAD_ROT,				LLHeadRotMotion::create );
-		registerMotion( ANIM_AGENT_PELVIS_FIX,				LLPelvisFixMotion::create );
-		registerMotion( ANIM_AGENT_SIT_FEMALE,				LLKeyframeMotion::create );
-		registerMotion( ANIM_AGENT_TARGET,					LLTargetingMotion::create );
-		registerMotion( ANIM_AGENT_WALK_ADJUST,				LLWalkAdjustMotion::create );
+		registerMotion( ANIM_AGENT_BODY_NOISE_ID,			LLBodyNoiseMotion::create );
+		registerMotion( ANIM_AGENT_BREATHE_ROT_ID,			LLBreatheMotionRot::create );
+		registerMotion( ANIM_AGENT_PHYSICS_MOTION_ID,		LLPhysicsMotionController::create );
+		registerMotion( ANIM_AGENT_EDITING_ID,				LLEditingMotion::create	);
+		registerMotion( ANIM_AGENT_EYE_ID,					LLEyeMotion::create	);
+		registerMotion( ANIM_AGENT_FLY_ADJUST_ID,			LLFlyAdjustMotion::create );
+		registerMotion( ANIM_AGENT_HAND_MOTION_ID,			LLHandMotion::create );
+		registerMotion( ANIM_AGENT_HEAD_ROT_ID,				LLHeadRotMotion::create );
+		registerMotion( ANIM_AGENT_PELVIS_FIX_ID,			LLPelvisFixMotion::create );
+		registerMotion( ANIM_AGENT_TARGET_ID,				LLTargetingMotion::create );
+		registerMotion( ANIM_AGENT_WALK_ADJUST_ID,			LLWalkAdjustMotion::create );
 
+		registerMotion( ANIM_AGENT_SIT_FEMALE,				LLKeyframeMotion::create );
 	}
 
 	LLAvatarAppearance::initInstance();
@@ -3748,6 +3814,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 
 	if (LLVOAvatar::sShowAnimationDebug)
 	{
+		addDebugText(llformat("at=%.1f", mMotionController.getAnimTime()));
 		for (LLMotionController::motion_list_t::iterator iter = mMotionController.getActiveMotions().begin();
 			 iter != mMotionController.getActiveMotions().end(); ++iter)
 		{
@@ -3766,6 +3833,14 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 					output = llformat("%s - %d",
 							  motionp->getName().c_str(),
 							  (U32)motionp->getPriority());
+				}
+				if (motionp->server())
+				{
+#ifdef SHOW_ASSERT
+					output += llformat(" rt=%.1f r=%d s=0x%xl", motionp->getRuntime(), motionp->mReadyEvents, motionp->server());
+#else
+					output += llformat(" rt=%.1f s=0x%xl", motionp->getRuntime(), motionp->server());
+#endif
 				}
 				addDebugText(output);
 			}
@@ -3884,7 +3959,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		getOffObject();
 		//<edit>
 		//Singu note: this appears to be a safety catch:
-		// when getParent() is NULL and we're note playing ANIM_AGENT_SIT_GROUND_CONSTRAINED then we aren't sitting!
+		// when getParent() is NULL and we're not playing ANIM_AGENT_SIT_GROUND_CONSTRAINED then we aren't sitting!
 		// The previous call existed in an attempt to fix this inconsistent state by standing up from an object.
 		// However, since getParent() is NULL that function would crash!
 		// Since we never got crash reports regarding to this, that apparently never happened, except, I discovered
@@ -5437,6 +5512,7 @@ void LLVOAvatar::processAnimationStateChanges()
 	}
 	
 	// clear all current animations
+	BOOL const AOEnabled = gSavedSettings.getBOOL("AOEnabled");					// Singu note: put this outside the loop.
 	AnimIterator anim_it;
 	for (anim_it = mPlayingAnimations.begin(); anim_it != mPlayingAnimations.end();)
 	{
@@ -5446,9 +5522,9 @@ void LLVOAvatar::processAnimationStateChanges()
 		if (found_anim == mSignaledAnimations.end())
 		{
 
-			if (isSelf())
+			if (AOEnabled && isSelf())
 			{
-				if ((gSavedSettings.getBOOL("AOEnabled")) && LLFloaterAO::stopMotion(anim_it->first, FALSE)) // if the AO replaced this anim serverside then stop it serverside
+				if (LLFloaterAO::stopMotion(anim_it->first, FALSE)) // if the AO replaced this anim serverside then stop it serverside
 				{
 //					return TRUE; //no local stop needed
 				}
@@ -5478,7 +5554,7 @@ void LLVOAvatar::processAnimationStateChanges()
 			// </edit>
 			if (processSingleAnimationStateChange(anim_it->first, TRUE))
 			{
-				if (isSelf() && gSavedSettings.getBOOL("AOEnabled")) // AO is only for ME
+				if (AOEnabled && isSelf()) // AO is only for ME
 				{
 					LLFloaterAO::startMotion(anim_it->first, 0,FALSE); // AO overrides the anim if needed
 				}

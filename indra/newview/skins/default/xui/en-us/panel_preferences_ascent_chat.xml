@@ -94,7 +94,7 @@
       <check_box bottom_delta="-24" left="10" control_name="UseConciseIMButtons" follows="top" height="16" label="Buttons on the same line as name for IMs (Affects new IMs)" name="im_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseGroupChatButtons" follows="top" height="16" label="Buttons on group chat name line (Affects new group chats)" name="group_concise_butt"/>
       <check_box bottom_delta="-20" control_name="UseConciseConferenceButtons" follows="top" height="16" label="Buttons on conference title line (Affects new conferences)" name="conf_concise_butt"/>
-      <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacyLogLaunch" label="Log button opens external text editor (Windows only)" name="legacy_log_launch"/>
+      <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruLegacyLogLaunch" label="Log button opens external text editor (Windows and Mac only)" name="legacy_log_launch"/>
       <check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Disallow communicate shortcut opening detached friends list" control_name="CommunicateSpecificShortcut" name="only_comm"/>
       <check_box bottom_delta="-20" follows="top" height="16" control_name="LiruItalicizeActions" label="Italicize action messages (/me)" name="italicize_actions"/>
   </panel>
@@ -131,27 +131,27 @@ The following wildcards are available to enhance your autoresponses: #n for user
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Spam" name="Spam">
       <check_box control_name="AntiSpamEnabled" label="Enable Antispam" name="enable_as" width="256" left="3"/>
       <button height="23" label="Reset antispam queues" label_selected="Reset antispam queues" name="reset_antispam" width="230" bottom_delta="0" left="260"/>
-      <check_box control_name="_NACL_AntiSpamGlobalQueue" label="No messagetype-specific spam queues" name="spammsg_checkbox" width="256" left="6" bottom_delta="-20"/>
-      <spinner control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="1" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive" name="antispamtime" width="390" left="10" bottom_delta="-10"/>
-      <spinner control_name="_NACL_AntiSpamAmount" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Antispam amount:" label_width="330" tool_tip="Higher is less sensitive" name="antispamamount" width="390"/>
-      <spinner control_name="_NACL_AntiSpamSoundMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound plays:" label_width="330" tool_tip="Higher is less sensitive" left="10" name="antispamsoundmulti" width="390"/>
-      <spinner control_name="_NACL_AntiSpamSoundPreloadMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound preloads:" label_width="330" tool_tip="Higher is less sensitive" name="antispamsoundpreloadmulti" width="390"/>
-      <spinner control_name="_NACL_AntiSpamNewlines" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Amount of newlines to instablock message:" label_width="330" tool_tip="Higher is less sensitive" name="antispamnewlines" width="390"/>
-      <check_box control_name="AntiSpamNotify" height="16" label="Notify when spam is blocked" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked." left="6" bottom_delta="-22"/>
+      <check_box enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamGlobalQueue" label="No messagetype-specific spam queues" name="spammsg_checkbox" width="256" left="6" bottom_delta="-20"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="1" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive" name="antispamtime" width="390" left="10" bottom_delta="-10"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamAmount" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Antispam amount:" label_width="330" tool_tip="Higher is less sensitive" name="antispamamount" width="390"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamSoundMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound plays:" label_width="330" tool_tip="Higher is less sensitive" left="10" name="antispamsoundmulti" width="390"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamSoundPreloadMulti" decimal_digits="0" increment="1" min_val="1" max_val="99999" label="Amount multiplier for sound preloads:" label_width="330" tool_tip="Higher is less sensitive" name="antispamsoundpreloadmulti" width="390"/>
+      <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamNewlines" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Amount of newlines to instablock message:" label_width="330" tool_tip="Higher is less sensitive" name="antispamnewlines" width="390"/>
+      <check_box enabled_control="AntiSpamEnabled" control_name="AntiSpamNotify" height="16" label="Notify when spam is blocked" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked." left="6" bottom_delta="-22"/>
 	  <check_box control_name="_NACL_Antispam" height="16" label="Disable -all- dialogs (resets on login)" name="antispam_checkbox" left="3"/>
-	  <text name="Block All Dialogs From" left="10" bottom_delta="-10">Block All Dialogs From</text>
-      <check_box control_name="AntiSpamAlerts" height="16" label="Alerts" name="Alerts" left="14" bottom_delta="-23"/>
-      <check_box control_name="AntiSpamFriendshipOffers" height="16" label="Friendship Offers" name="Friendship Offers" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamGroupInvites" height="16" label="All Group Invites" name="Group Invites" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamGroupFeeInvites" height="16" label="Group Fee Invites" name="Group Fee Invites" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamItemOffers" height="16" label="Item Offers" name="Item Offers" left="14"/>
-      <check_box control_name="AntiSpamScripts" height="16" label="Scripts" name="Scripts" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
-      <check_box control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
-      <text name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
-      <check_box control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
-      <check_box control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
+      <text disabled_control="_NACL_Antispam" name="Block All Dialogs From" left="10" bottom_delta="-10">Block All Dialogs From</text>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamAlerts" height="16" label="Alerts" name="Alerts" left="14" bottom_delta="-23"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamFriendshipOffers" height="16" label="Friendship Offers" name="Friendship Offers" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamGroupInvites" height="16" label="All Group Invites" name="Group Invites" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="AntiSpamGroupInvites" control_name="AntiSpamGroupFeeInvites" height="16" label="Group Fee Invites" name="Group Fee Invites" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamItemOffers" height="16" label="Item Offers" name="Item Offers" left="14"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamScripts" height="16" label="Scripts" name="Scripts" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamTeleports" height="16" label="Teleport Offers" name="Teleport Offers" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamGroupNotices" height="16" label="Group Notices" name="Group Notices" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
+      <text disabled_control="_NACL_Antispam" name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
       <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3" bottom_delta="-20"/>
     </panel>
 
@@ -172,16 +172,17 @@ To use spellcheck, right-click a misspelled word
 (red or otherwise) and select its replacement
       </text>
 
-      <view_border bevel_style="none" border_thickness="1" bottom_delta="-16" follows="top" height="0" left="5" name="CmdDivisor" width="356"/>
+      <button bottom_delta="-26" left="12" follows="top" height="20" width="250" label="Autoreplace Preferences" name="autoreplace"/>
+      <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top" height="0" left="5" name="CmdDivisor" width="376"/>
 
       <check_box bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="16"
         label="Highlight messages if any of them contain the terms" name="KeywordsOn" width="270"/>
       <text bottom_delta="-20" follows="top" height="20" left="12" name="keyword_txt1">(separated by commas)</text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" left_delta="5" max_length="500" name="KeywordsList" width="300"/>
-      <text bottom_delta="-24" follows="top" height="20" left_delta="15" name="EmKeyw">Is found within:</text>
-      <check_box bottom_delta="3" follows="top" height="16" left_delta="100" label="Local Chat Floater" name="KeywordsInChat"/>
-      <check_box bottom_delta="-15" follows="left|top" height="16" label="Instant Message Floater" name="KeywordsInIM"/>
-      <check_box bottom_delta="-24" follows="top" height="16" label="Highlight the message in this color:" left_delta="-110" name="KeywordsChangeColor"/>
+      <text bottom_delta="-24" follows="top" height="20" left_delta="0" name="EmKeyw">Is found within:</text>
+      <check_box bottom_delta="3" follows="top" height="16" left_delta="80" label="Local Chat Floater" name="KeywordsInChat"/>
+      <check_box bottom_delta="0" left_delta="120" follows="left|top" height="16" label="Instant Message Floater" name="KeywordsInIM"/>
+      <check_box bottom_delta="-24" follows="top" height="16" label="Highlight the message in this color:" left_delta="-195" name="KeywordsChangeColor"/>
       <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom_delta="-16" can_apply_immediately="true" color="1, 1, 1, 1" follows="left|top" height="35" left_delta="210" name="KeywordsColor" tool_tip="Click to open Color Picker" width="50"/>
       <check_box bottom_delta="-10" follows="top" height="16" left_delta="-210" label="Play this sound alert: (UUID)" name="KeywordsPlaySound"/>
       <line_editor bottom_delta="-20" follows="left|top" bevel_style="in" border_style="line" border_thickness="1" height="20" left_delta="-5" max_length="36" name="KeywordsSound" width="300"/>

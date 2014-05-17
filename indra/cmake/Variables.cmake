@@ -97,24 +97,54 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(DARWIN 1)
 
-  if(${CMAKE_GENERATOR} MATCHES "Xcode")
-    #SDK Compiler and Deployment targets for XCode
-    if (${XCODE_VERSION} VERSION_LESS 4.0.0)
-      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
-      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
-    else (${XCODE_VERSION} VERSION_LESS 4.0.0)
-      set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
-      set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-    endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
-  else(${CMAKE_GENERATOR} MATCHES "Xcode")
-    set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
-  endif(${CMAKE_GENERATOR} MATCHES "Xcode")
+  execute_process(
+    COMMAND sh -c "xcodebuild -version | grep Xcode  | cut -d ' ' -f2 | cut -d'.' -f1-2"
+    OUTPUT_VARIABLE XCODE_VERSION )
+  string(REGEX REPLACE "(\r?\n)+$" "" XCODE_VERSION "${XCODE_VERSION}")
+  
+#   # To support a different SDK update these Xcode settings:
+#   if (XCODE_VERSION GREATER 4.9) # (Which would be 5.0+)
+#     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.8)
+# 	set(CMAKE_OSX_SYSROOT macosx10.9)
+#   else (XCODE_VERION GREATER 4.9)
+#     if (XCODE_VERSION GREATER 4.5)
+#         set(CMAKE_OSX_DEPLOYMENT_TARGET 10.7)
+#         set(CMAKE_OSX_SYSROOT macosx10.8)
+#     else (XCODE_VERSION GREATER 4.5)
+#         if (XCODE_VERSION GREATER 4.2)
+#           set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+#           set(CMAKE_OSX_SYSROOT macosx10.7)
+#         else (XCODE_VERSION GREATER 4.2)
+#           set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+#           set(CMAKE_OSX_SYSROOT macosx10.7)
+#         endif (XCODE_VERSION GREATER 4.2)
+#     endif (XCODE_VERSION GREATER 4.5)
+#   endif (XCODE_VERSION GREATER 4.9)
 
-  set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
+  # Hardcode SDK we build against until we can test and allow newer ones
+  # as autodetected in the code above
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
+  set(CMAKE_OSX_SYSROOT macosx10.6)
+
+  # Support for Unix Makefiles generator
+  if (CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    execute_process(COMMAND xcodebuild -version -sdk "${CMAKE_OSX_SYSROOT}" Path | head -n 1 OUTPUT_VARIABLE CMAKE_OSX_SYSROOT)
+    string(REGEX REPLACE "(\r?\n)+$" "" CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}")
+  endif (CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+      
+  # LLVM-GCC has been removed in Xcode5
+  if (XCODE_VERSION GREATER 4.9)
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvm.clang.1_0")
+  else (XCODE_VERSION GREATER 4.9)
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
+  endif (XCODE_VERSION GREATER 4.9)
 
   set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT dwarf-with-dsym)
 
+  message(STATUS "Xcode version: ${XCODE_VERSION}")
+  message(STATUS "OSX sysroot: ${CMAKE_OSX_SYSROOT}")
+  message(STATUS "OSX deployment target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+  
   # Build only for i386 by default, system default on MacOSX 10.6 is x86_64
   set(CMAKE_OSX_ARCHITECTURES i386)
   set(ARCH i386)

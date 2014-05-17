@@ -10,6 +10,10 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 //
+
+#ifndef LL_LLFLOATERAVATARLIST_H
+#define LL_LLFLOATERAVATARLIST_H
+
 #include "llavatarname.h"
 #include "llavatarpropertiesprocessor.h"
 #include "llfloater.h"
@@ -76,7 +80,7 @@ enum ACTIVITY_TYPE
 	 * Update world position.
 	 * Affects age.
 	 */	
-	void setPosition(LLVector3d position, bool this_sim, bool drawn, bool chatrange, bool shoutrange);
+	void setPosition(const LLVector3d& position, bool this_sim, bool drawn, bool chatrange, bool shoutrange);
 
 	const LLVector3d& getPosition() const { return mPosition; }
 
@@ -86,7 +90,7 @@ enum ACTIVITY_TYPE
 	 * This is only used for determining whether the avatar is still around.
 	 * @see getEntryAgeSeconds
 	 */
-	bool getAlive();
+	bool getAlive() const;
 
 	/**
 	 * @brief Returns the age of this entry in seconds
@@ -107,14 +111,14 @@ enum ACTIVITY_TYPE
 	void setActivity(ACTIVITY_TYPE activity);
 
 	/**
-	 * @brief Returns the activity type
+	 * @brief Returns the activity type, updates mActivityType if necessary
 	 */
 	const ACTIVITY_TYPE getActivity();
 
 	/**
 	 * @brief Sets the 'focus' status on this entry (camera focused on this avatar)
 	 */
-	void setFocus(BOOL value) { mFocused = value; }
+	void setFocus(bool value) { mFocused = value; }
 
 	bool isFocused() const { return mFocused; }
 
@@ -130,7 +134,7 @@ enum ACTIVITY_TYPE
 	bool isInList() const { return mIsInList; }
 	/**
 	 * @brief Returns whether the item is dead and shouldn't appear in the list
-	 * @returns TRUE if dead
+	 * @returns true if dead
 	 */
 	bool isDead() const;
 
@@ -207,7 +211,6 @@ public:
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void draw();
-	static void createInstance(bool visible);
 	/**
 	 * @brief Toggles interface visibility
 	 * There is only one instance of the avatar scanner at any time.
@@ -234,20 +237,20 @@ public:
 	 * @brief Returns the entry for an avatar, if preset
 	 * @returns Pointer to avatar entry, NULL if not found.
 	 */
-	LLAvatarListEntry* getAvatarEntry(LLUUID avatar);
+	LLAvatarListEntry* getAvatarEntry(const LLUUID& avatar) const;
 
 	/**
 	 * @brief Returns a string with the selected names in the list
 	 */
-	std::string getSelectedNames(const std::string& separator = ", ");
-	std::string getSelectedName();
-	LLUUID getSelectedID();
-	uuid_vec_t getSelectedIDs();
+	std::string getSelectedNames(const std::string& separator = ", ") const;
+	std::string getSelectedName() const;
+	LLUUID getSelectedID() const;
+	uuid_vec_t getSelectedIDs() const;
 
-	static void lookAtAvatar(LLUUID &uuid);
+	static bool lookAtAvatar(const LLUUID& uuid);
 
 	static void sound_trigger_hook(LLMessageSystem* msg,void **);
-	void sendKeys();
+	void sendKeys() const;
 
 	typedef boost::shared_ptr<LLAvatarListEntry> LLAvatarListEntryPtr;
 	typedef std::vector< LLAvatarListEntryPtr > av_list_t;
@@ -264,6 +267,7 @@ public:
 		LIST_POSITION,
 		LIST_ALTITUDE,
 		LIST_ACTIVITY,
+		LIST_VOICE,
 		LIST_AGE,
 		LIST_TIME,
 		LIST_CLIENT,
@@ -285,16 +289,16 @@ public:
 	 * @brief Focus camera on previous avatar
 	 * @param marked_only Whether to choose only marked avatars
 	 */
-	void focusOnPrev(BOOL marked_only);
+	void focusOnPrev(bool marked_only);
 
 	/**
 	 * @brief Focus camera on next avatar
 	 * @param marked_only Whether to choose only marked avatars
 	 */
-	void focusOnNext(BOOL marked_only);
+	void focusOnNext(bool marked_only);
 
 	void refreshTracker();
-	void trackAvatar(const LLAvatarListEntry* entry);
+	void trackAvatar(const LLAvatarListEntry* entry) const;
 
 	/**
 	 * @brief Handler for the "refresh" button click.
@@ -321,7 +325,8 @@ public:
 	void onClickEject();
 	void onClickEjectFromEstate();
 	void onClickBanFromEstate();
-	void onAvatarSortingChanged();
+
+	void onAvatarSortingChanged() { mDirtyAvatarSorting = true; }
 
 	/**
 	 * @brief Called via notification feedback.
@@ -335,7 +340,7 @@ public:
 
 	static void callbackIdle(void *userdata);
 
-	void doCommand(avlist_command_t cmd, bool single = false);
+	void doCommand(avlist_command_t cmd, bool single = false) const;
 
 	/**
 	 * @brief Cleanup avatar list, removing dead entries from it.
@@ -355,7 +360,7 @@ private:
 	bool		mDirtyAvatarSorting;
 
 	/**
-	 * @brief TRUE when Updating
+	 * @brief true when Updating
 	 */
 	const LLCachedControl<bool> mUpdate;
 
@@ -373,3 +378,5 @@ private:
 	 */
 	LLUUID mFocusedAvatar;
 };
+
+#endif

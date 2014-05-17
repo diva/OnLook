@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel border="true" bottom="-409" height="408" label="Voice Chat" left="102" name="chat" width="517">
-	<text bottom_delta="-20" follows="left|top" left_delta="12" name="voice_unavailable">Voice Chat Is Not Available</text>
-	<check_box bottom_delta="0" follows="top" height="16" initial_value="false" label="Enable voice chat" left="8" name="enable_voice_check"/>
-	<check_box bottom_delta="-18" follows="top" height="16" name="enable_multivoice_check"/>
+  <text visibility_control="CmdLineDisableVoice" bottom_delta="-14" follows="left|top" left_delta="12" name="voice_unavailable">Voice Chat Is Not Available</text>
+  <check_box control_name="local_enable" invisibility_control="CmdLineDisableVoice" bottom_delta="-6" follows="top" height="16" initial_value="false" label="Enable voice chat" left="8" name="enable_voice_check"/>
+  <check_box bottom_delta="-18" follows="top" height="16" name="enable_multivoice_check"/>
 	<string value="Allow multiple instances of [APP_NAME] to use voice simultaneously (requires restart)" name="multivoice_label"/>
-	<radio_group bottom_delta="-66" draw_border="false" follows="top" height="60" left_delta="20" name="ear_location" width="364">
+  <radio_group enabled_control="local_enable" bottom_delta="-66" draw_border="false" follows="top" height="60" left_delta="20" name="ear_location" width="364">
 		<radio_item bottom="-19" height="16" left="3" name="0">Hear Voice Chat from camera position.</radio_item>
 		<radio_item bottom="-35" height="16" name="1">Hear Voice Chat from avatar position.</radio_item>
     <radio_item bottom="-51" height="16" name="3">Hear Voice Chat equally from everyone.</radio_item>
   </radio_group>
-	<text bottom_delta="-20" follows="top" height="16" name="push_to_talk_heading">Push To Talk</text>
-	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Use Push-to-Talk in toggle mode" name="push_to_talk_toggle_check" tool_tip="When enabled, press the push-to-talk trigger to switch your microphone on and off. When disabled, the microphone is off unless the trigger is being held down."/>
-	<text bottom_delta="-20" follows="top" height="16" left_delta="4" name="push_to_talk_label">Push-to-Talk trigger:</text>
-	<line_editor bottom_delta="-20" follows="top" height="19" name="modifier_combo" width="280"/>
-	<button bottom_delta="-25" follows="top" height="20" label="Set Key" name="set_voice_hotkey_button" width="115"/>
-	<button bottom_delta="0" follows="top" height="20" label="Middle Mouse Button" left_delta="120" name="set_voice_middlemouse_button" width="160"/>
-	<check_box bottom_delta="-24" follows="top" height="16" initial_value="false" label="Enable lip sync animation" left="28" name="enable_lip_sync_check"/>
-	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Only accept voice calls from people on My Friends list" name="voice_call_friends_only_check"/>
-	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Switch off microphone when ending IM calls" name="auto_disengage_mic_check"/>
-	<button control_name="ShowDeviceSettings" toggle="true" bottom_delta="-40" follows="top" height="20" label="Device Settings" mouse_opaque="true" name="device_settings_btn" width="155" tool_tip="Running the Device Settings will temporarily disconnect you from Voice Chat, and changes you make will be immediately applied."/>
-	<panel visibility_control="ShowDeviceSettings" name="device_settings_panel" filename="panel_sound_devices.xml" follows="all"/>
+  <text enabled_control="local_enable" bottom_delta="-20" follows="top" height="16" name="push_to_talk_heading">Push To Talk</text>
+  <check_box enabled_control="local_enable" bottom_delta="-20" follows="top" height="16" initial_value="false" label="Use Push-to-Talk in toggle mode" name="push_to_talk_toggle_check" tool_tip="When enabled, press the push-to-talk trigger to switch your microphone on and off. When disabled, the microphone is off unless the trigger is being held down."/>
+  <text enabled_control="local_enable" bottom_delta="-20" follows="top" height="16" left_delta="4" name="push_to_talk_label">Push-to-Talk trigger:</text>
+  <line_editor enabled_control="local_enable" bottom_delta="-20" follows="top" height="19" name="modifier_combo" width="280"/>
+  <button enabled_control="local_enable" bottom_delta="-25" follows="top" height="20" label="Set Key" name="set_voice_hotkey_button" width="115"/>
+  <button enabled_control="local_enable" bottom_delta="0" follows="top" height="20" label="Middle Mouse Button" left_delta="120" name="set_voice_middlemouse_button" width="160"/>
+  <check_box enabled_control="local_enable" bottom_delta="-24" follows="top" height="16" initial_value="false" label="Enable lip sync animation" left="28" name="enable_lip_sync_check"/>
+  <check_box enabled_control="local_enable" bottom_delta="-20" follows="top" height="16" initial_value="false" label="Only accept voice calls from people on My Friends list" name="voice_call_friends_only_check"/>
+  <check_box enabled_control="local_enable" bottom_delta="-18" follows="top" height="16" initial_value="false" label="Switch off microphone when ending IM calls" name="auto_disengage_mic_check"/>
+  <button enabled_control="local_enable" control_name="ShowDeviceSettings" toggle="true" bottom_delta="-40" follows="top" height="20" label="Device Settings" mouse_opaque="true" name="device_settings_btn" width="155" tool_tip="Running the Device Settings will temporarily disconnect you from Voice Chat, and changes you make will be immediately applied."/>
+  <panel enabled_control="local_enable" visibility_control="ShowDeviceSettings" name="device_settings_panel" filename="panel_sound_devices.xml" follows="all"/>
 </panel>

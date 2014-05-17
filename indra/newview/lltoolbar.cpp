@@ -58,24 +58,30 @@
 
 #if LL_DARWIN
 
-	#include "llresizehandle.h"
-	#include "llviewerwindow.h"
+#include "llresizehandle.h"
+#include "llviewerwindow.h"
 
-	// This class draws like an LLResizeHandle but has no interactivity.
-	// It's just there to provide a cue to the user that the lower right corner of the window functions as a resize handle.
-	class LLFakeResizeHandle : public LLResizeHandle
+// This class draws like an LLResizeHandle but has no interactivity.
+// It's just there to provide a cue to the user that the lower right corner of the window functions as a resize handle.
+class LLFakeResizeHandle : public LLResizeHandle
+{
+public:
+	LLFakeResizeHandle(const LLResizeHandle::Params& p) : LLResizeHandle(p) {}
+
+	virtual BOOL handleHover(S32 x, S32 y, MASK mask) { return false; }
+	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask) { return false; }
+	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask) { return false; }
+	virtual void reshape(S32 width, S32 height, BOOL called_from_parent)
 	{
-	public:
-		LLFakeResizeHandle(const LLResizeHandle::Params& p)
-			: LLResizeHandle(p)
-		{	
-		}
+		// Only when running in windowed mode on the Mac, leave room for a resize widget on the right edge of the bar.
+		if (gViewerWindow->getWindow()->getFullscreen())
+			return setVisible(false);
 
-		virtual BOOL	handleHover(S32 x, S32 y, MASK mask)   { return FALSE; };
-		virtual BOOL	handleMouseDown(S32 x, S32 y, MASK mask)  { return FALSE; };
-		virtual BOOL	handleMouseUp(S32 x, S32 y, MASK mask)   { return FALSE; };
-
-	};
+		setVisible(true);
+		const F32 wide(gViewerWindow->getWindowWidth() + 2);
+		setRect(LLRect(wide - RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT, wide, 0));
+	}
+};
 
 #endif // LL_DARWIN
 
@@ -98,9 +104,6 @@ void show_floater(const std::string& floater_name);
 
 LLToolBar::LLToolBar()
 :	LLLayoutPanel()
-#if LL_DARWIN
-	, mResizeHandle(NULL)
-#endif // LL_DARWIN
 {
 	setIsChrome(TRUE);
 	setFocusRoot(TRUE);
@@ -130,21 +133,15 @@ BOOL LLToolBar::postBuild()
 	}
 
 #if LL_DARWIN
-	if(mResizeHandle == NULL)
-	{
-		LLResizeHandle::Params p;
-		p.rect(LLRect(0, 0, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT));
-		p.name(std::string(""));
-		p.min_width(RESIZE_HANDLE_WIDTH);
-		p.min_height(RESIZE_HANDLE_HEIGHT);
-		p.corner(LLResizeHandle::RIGHT_BOTTOM);
-		mResizeHandle = new LLFakeResizeHandle(p);		this->addChildInBack(mResizeHandle);
-		LLLayoutStack* toolbar_stack = getChild<LLLayoutStack>("toolbar_stack");
-		toolbar_stack->reshape(toolbar_stack->getRect().getWidth() - RESIZE_HANDLE_WIDTH, toolbar_stack->getRect().getHeight());
-	}
+	LLResizeHandle::Params p;
+	p.rect(LLRect(0, 0, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT));
+	p.name(std::string(""));
+	p.min_width(RESIZE_HANDLE_WIDTH);
+	p.min_height(RESIZE_HANDLE_HEIGHT);
+	p.corner(LLResizeHandle::RIGHT_BOTTOM);
+	addChildInBack(new LLFakeResizeHandle(p));
+	reshape(getRect().getWidth(), getRect().getHeight());
 #endif // LL_DARWIN
-
-	layoutButtons();
 
 	return TRUE;
 }
@@ -161,18 +158,18 @@ BOOL LLToolBar::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 									 EAcceptance* accept,
 									 std::string& tooltip_msg)
 {
-	LLButton* inventory_btn = getChild<LLButton>("inventory_btn");
+	LLButton* inventory_btn = mInventoryBtn;
 	if (!inventory_btn || !inventory_btn->getVisible()) return FALSE;
 
 	LLInventoryView* active_inventory = LLInventoryView::getActiveInventory();
 
 	if (active_inventory && active_inventory->getVisible())
 	{
-		mInventoryAutoOpen = FALSE;
+		mInventoryAutoOpenTimer.stop();
 	}
 	else if (inventory_btn->getRect().pointInRect(x, y))
 	{
-		if (mInventoryAutoOpen)
+		if (mInventoryAutoOpenTimer.getStarted())
 		{
 			if (!(active_inventory && active_inventory->getVisible()) && 
 			mInventoryAutoOpenTimer.getElapsedTimeF32() > sInventoryAutoOpenTime)
@@ -182,71 +179,35 @@ BOOL LLToolBar::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 		}
 		else
 		{
-			mInventoryAutoOpen = TRUE;
-			mInventoryAutoOpenTimer.reset();
+			mInventoryAutoOpenTimer.start();
 		}
 	}
 
 	return LLPanel::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
 }
 
-void LLToolBar::layoutButtons()
-{
-#if LL_DARWIN
-	const S32 FUDGE_WIDTH_OF_SCREEN = 4;                                    
-	S32 width = gViewerWindow->getWindowWidth() + FUDGE_WIDTH_OF_SCREEN;   
-	S32 pad = 2;
-
-	// this function may be called before postBuild(), in which case mResizeHandle won't have been set up yet.
-	if(mResizeHandle != NULL)
-	{
-		if(!gViewerWindow->getWindow()->getFullscreen())
-		{
-			// Only when running in windowed mode on the Mac, leave room for a resize widget on the right edge of the bar.
-			width -= RESIZE_HANDLE_WIDTH;
-
-			LLRect r;
-			r.mLeft = width - pad;
-			r.mBottom = 0;
-			r.mRight = r.mLeft + RESIZE_HANDLE_WIDTH;
-			r.mTop = r.mBottom + RESIZE_HANDLE_HEIGHT;
-			mResizeHandle->setRect(r);
-			mResizeHandle->setVisible(TRUE);
-		}
-		else
-		{
-			mResizeHandle->setVisible(FALSE);
-		}
-	}
-#endif // LL_DARWIN
-}
-
-
-// virtual
-void LLToolBar::reshape(S32 width, S32 height, BOOL called_from_parent)
-{
-	LLPanel::reshape(width, height, called_from_parent);
-
-	layoutButtons();
-}
-
 
 // Per-frame updates of visibility
 void LLToolBar::refresh()
 {
-	if(!isAgentAvatarValid())
-		return;
+	static const LLCachedControl<bool> show_toolbar("ShowToolBar", true);
+	bool show = show_toolbar;
+	if (show && gAgentCamera.cameraMouselook())
+	{
+		static const LLCachedControl<bool> hidden("LiruMouselookHidesToolbar");
+		show = !hidden;
+	}
+	setVisible(show);
+	if (!show) return; // Everything below this point manipulates visible UI, anyway
 
-	static LLCachedControl<bool> show("ShowToolBar", true);
-	BOOL mouselook = gAgentCamera.cameraMouselook();
-	setVisible(show && !mouselook);
+	updateCommunicateList();
 
-	static LLCachedControl<bool> continue_flying_on_unsit("LiruContinueFlyingOnUnsit");
-	bool sitting = !continue_flying_on_unsit && gAgentAvatarp && gAgentAvatarp->isSitting();
+	if (!isAgentAvatarValid()) return;
 
-	mFlyBtn->setEnabled((gAgent.canFly() || gAgent.getFlying()) && !sitting );
-	static LLCachedControl<bool> ascent_build_always_enabled("AscentBuildAlwaysEnabled", true);
-	mBuildBtn->setEnabled((LLViewerParcelMgr::getInstance()->allowAgentBuild() || ascent_build_always_enabled));
+	static const LLCachedControl<bool> continue_flying_on_unsit("LiruContinueFlyingOnUnsit");
+	mFlyBtn->setEnabled((gAgent.canFly() || gAgent.getFlying()) && (continue_flying_on_unsit || !gAgentAvatarp->isSitting()));
+	static const LLCachedControl<bool> ascent_build_always_enabled("AscentBuildAlwaysEnabled", true);
+	mBuildBtn->setEnabled(ascent_build_always_enabled || LLViewerParcelMgr::getInstance()->allowAgentBuild());
 
 	// Check to see if we're in build mode
 	// And not just clicking on a scripted object
@@ -268,11 +229,6 @@ void LLToolBar::refresh()
 		mInventoryBtn->setEnabled(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWINV));
 	}
 // [/RLVa:KB]
-
-	if (isInVisibleChain() && mCommunicateBtn->getVisible())
-	{
-		updateCommunicateList();
-	}
 }
 
 void bold_if_equal(const LLFloater* f1, const LLFloater* f2, LLScrollListItem* itemp)
@@ -283,11 +239,13 @@ void bold_if_equal(const LLFloater* f1, const LLFloater* f2, LLScrollListItem* i
 
 void LLToolBar::updateCommunicateList()
 {
+	if (!mCommunicateBtn->getVisible()) return;
+
 	LLSD selected = mCommunicateBtn->getValue();
 
 	mCommunicateBtn->removeall();
 
-	LLFloater* frontmost_floater = LLFloaterChatterBox::getInstance()->getActiveFloater();
+	const LLFloater* frontmost_floater = LLFloaterChatterBox::getInstance()->getActiveFloater();
 	bold_if_equal(LLFloaterMyFriends::getInstance(), frontmost_floater, mCommunicateBtn->add(LLFloaterMyFriends::getInstance()->getShortTitle(), LLSD("contacts"), ADD_TOP));
 	bold_if_equal(LLFloaterChat::getInstance(), frontmost_floater, mCommunicateBtn->add(LLFloaterChat::getInstance()->getShortTitle(), LLSD("local chat"), ADD_TOP));
 	mCommunicateBtn->addSeparator(ADD_TOP);
@@ -300,11 +258,11 @@ void LLToolBar::updateCommunicateList()
 	{
 		if (LLFloaterIMPanel* im_floaterp = (LLFloaterIMPanel*)floater_handle_it->get())
 		{
-			S32 count = im_floaterp->getNumUnreadMessages();
+			const S32 count = im_floaterp->getNumUnreadMessages();
 			std::string floater_title;
 			if (count > 0) floater_title = "*";
 			floater_title.append(im_floaterp->getShortTitle());
-			static LLCachedControl<bool> show_counts("ShowUnreadIMsCounts", true);
+			static const LLCachedControl<bool> show_counts("ShowUnreadIMsCounts", true);
 			if (show_counts && count > 0)
 			{
 				floater_title += " - ";
@@ -323,7 +281,8 @@ void LLToolBar::updateCommunicateList()
 		}
 	}
 
-	mCommunicateBtn->setToggleState(gSavedSettings.getBOOL("ShowCommunicate"));
+	static const LLCachedControl<bool> show_comm("ShowCommunicate", true);
+	mCommunicateBtn->setToggleState(show_comm);
 	if (!selected.isUndefined()) mCommunicateBtn->setValue(selected);
 }
 

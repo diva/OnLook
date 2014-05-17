@@ -9,6 +9,7 @@
 	<check_box bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookHidesFloaters" name="mouselook_hides_floaters" label="Floaters"/>
 	<check_box left_delta="80" bottom_delta="0" follows="top" height="16" control_name="LiruMouselookHidesNotices" name="mouselook_hides_notices" label="Notices"/>
 	<check_box left="148" bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookHidesMenubar" name="mouselook_hides_menubar" label="Menubar"/>
+	<check_box left_delta="80" bottom_delta="0" follows="top" height="16" control_name="LiruMouselookHidesToolbar" name="mouselook_hides_toolbar" label="Toolbar"/>
 	<text bottom_delta="-30" follows="top" height="10" left="10" name=" Movement Options:">Movement Options:</text>
 	<check_box bottom_delta="-6" follows="top" height="16" label="Fly/land on holding up/down" left="148" name="automatic_fly"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Allow crouch toggle by holding shift" name="crouch_toggle" control_name="SGShiftCrouchToggle"/>

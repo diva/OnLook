@@ -49,7 +49,7 @@ S32 LLEditingMotion::sHandPosePriority = 3;
 // LLEditingMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLEditingMotion::LLEditingMotion( const LLUUID &id) : LLMotion(id)
+LLEditingMotion::LLEditingMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_EDITING)
 {
 	mCharacter = NULL;
 
@@ -155,7 +155,7 @@ BOOL LLEditingMotion::onActivate()
 	mShoulderJoint.setRotation(	mShoulderState->getJoint()->getRotation() );
 	mElbowJoint.setRotation(	mElbowState->getJoint()->getRotation() );
 
-	return TRUE;
+	return AIMaskedMotion::onActivate();
 }
 
 //-----------------------------------------------------------------------------
@@ -255,13 +255,5 @@ BOOL LLEditingMotion::onUpdate(F32 time, U8* joint_mask)
 	mCharacter->setAnimationData("Hand Pose Priority", &sHandPosePriority);
 	return result;
 }
-
-//-----------------------------------------------------------------------------
-// LLEditingMotion::onDeactivate()
-//-----------------------------------------------------------------------------
-void LLEditingMotion::onDeactivate()
-{
-}
-
 
 // End

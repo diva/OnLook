@@ -12,6 +12,7 @@
 	<string name="unavailable_text_label">Text chat is not available for this call.</string>
 	<string name="inventory_item_offered">Inventory item offered</string>
     <flyout_button bottom="-20" follows="right|top" halign="center" height="20" label="Profile" left="280" name="instant_message_flyout" width="80" list_position="below">
+      <flyout_button_item label="Profile" name="profile_item" value="0"/>
       <flyout_button_item label="History" name="history_btn" value="1"/>
       <flyout_button_item label="Offer Teleport" name="profile_tele_btn" value="2"/>
       <flyout_button_item label="Request Teleport" name="request_teleport_item" value="3"/>

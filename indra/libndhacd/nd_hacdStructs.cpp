@@ -17,7 +17,6 @@
  */
 
 #include "nd_hacdStructs.h"
-#include "LLConvexDecomposition.h"
 
 void DecompHull::clear()
 {

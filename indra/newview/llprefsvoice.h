@@ -49,9 +49,7 @@ public:
 	void setKey(KEY key);
 
 private:
-	static void onCommitEnableVoiceChat(LLUICtrl* ctrl, void* user_data);
-	static void onClickSetKey(void* user_data);
-	static void onClickSetMiddleMouse(void* user_data);
+	void onCommitEnableVoiceChat(const LLSD& value);
 };
 
 #endif // LLPREFSVOICE_H

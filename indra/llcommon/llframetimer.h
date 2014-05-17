@@ -47,6 +47,10 @@ public:
 	// Create an LLFrameTimer and start it. After creation it is running and in the state expired (hasExpired will return true).
 	LLFrameTimer(void) : mExpiry(0), mRunning(true), mPaused(false) { if (!sGlobalMutex) global_initialization(); setAge(0.0); }
 
+	//<singu>
+	void copy(LLFrameTimer const& timer) { mStartTime = timer.mStartTime; mExpiry = timer.mExpiry; mRunning = timer.mRunning; mPaused = timer.mPaused; }
+	//</singu>
+
 	// Atomic reads of static variables.
 
 	// Return the number of seconds since the start of the application.
@@ -142,6 +146,9 @@ public:
 	bool hasExpired() const							{ return getElapsedSeconds() >= mExpiry; }
 	F32  getElapsedTimeF32() const					{ llassert(mRunning); return mPaused ? (F32)mStartTime : (F32)(getElapsedSeconds() - mStartTime); }
 	bool getStarted() const							{ return mRunning; }
+	//<singu>
+	F64 getStartTime() const						{ llassert(!mPaused); return mStartTime; }
+	//</singu>
 
 	// return the seconds since epoch when this timer will expire.
 	F64 expiresAt() const;

@@ -19,7 +19,7 @@
 #ifndef ND_HACD_CONVEXDECOMP_H
 #define ND_HACD_CONVEXDECOMP_H
 
-#include "LLConvexDecomposition.h"
+#include "llconvexdecomposition.h"
 
 #include <map>
 #include <vector>

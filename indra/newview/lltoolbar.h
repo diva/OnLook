@@ -41,10 +41,6 @@
 // "Constants" loaded from settings.xml at start time
 extern S32 TOOL_BAR_HEIGHT;
 
-#if LL_DARWIN
-	class LLFakeResizeHandle;
-#endif // LL_DARWIN
-
 class LLFlyoutButton;
 
 class LLToolBar
@@ -62,11 +58,6 @@ public:
 									 EAcceptance* accept,
 									 std::string& tooltip_msg);
 
-	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-
-	// Move buttons to appropriate locations based on rect.
-	void layoutButtons();
-
 	// Per-frame refresh call
 	void refresh();
 
@@ -79,12 +70,8 @@ private:
 	void updateCommunicateList();
 
 private:
-	BOOL		mInventoryAutoOpen;
 	LLFrameTimer mInventoryAutoOpenTimer;
 	S32			mNumUnreadIMs;
-#if LL_DARWIN
-	LLFakeResizeHandle *mResizeHandle;
-#endif // LL_DARWIN
 
 	CachedUICtrl<LLFlyoutButton> mCommunicateBtn;
 	CachedUICtrl<LLButton> mFlyBtn;

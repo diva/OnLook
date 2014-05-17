@@ -50,7 +50,6 @@
 #include "llviewerstats.h"
 #include "llviewerregion.h"
 #include "sgversion.h"
-#include "llviewerbuild.h"
 #include "lluictrlfactory.h"
 #include "lluri.h"
 #include "llweb.h"
@@ -141,7 +140,7 @@ LLFloaterAbout::LLFloaterAbout()
 		+ " (64 bit)"
 #endif
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
-		gVersionMajor, gVersionMinor, gVersionPatch, LL_VIEWER_BUILD,
+		gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild,
 		__DATE__, __TIME__,
 		gVersionChannel));
 	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));

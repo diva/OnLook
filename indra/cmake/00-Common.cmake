@@ -54,6 +54,11 @@ if (WINDOWS)
   # Remove default /Zm1000 flag that cmake inserts
   string (REPLACE "/Zm1000" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
+  if (MSVC11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm140")
+  endif (MSVC11)
+
+
   # Don't build DLLs.
   set(BUILD_SHARED_LIBS OFF)
 
@@ -246,28 +251,26 @@ endif (LINUX)
 
 
 if (DARWIN)
-  add_definitions(-DLL_DARWIN=1 -D_XOPEN_SOURCE)
-  set(CMAKE_CXX_LINK_FLAGS "-Wl,-headerpad_max_install_names,-search_paths_first")
+  add_definitions(-DLL_DARWIN=1)
+  set(CMAKE_CXX_LINK_FLAGS "-Wl,-no_compact_unwind -Wl,-headerpad_max_install_names,-search_paths_first")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
-
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mlong-branch")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mlong-branch")
-    # NOTE: it's critical that the optimization flag is put in front.
-    # NOTE: it's critical to have both CXX_FLAGS and C_FLAGS covered.
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-  elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # NOTE: it's critical that the optimization flag is put in front.
-    # NOTE: it's critical to have both CXX_FLAGS and C_FLAGS covered.
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -msse3")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -msse3")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -msse3")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O3 -msse3")
-  endif()
+  set(DARWIN_extra_cstar_flags "-g")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DARWIN_extra_cstar_flags} -ftemplate-depth=256")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  ${DARWIN_extra_cstar_flags}")
+  # NOTE: it's critical that the optimization flag is put in front.
+  # NOTE: it's critical to have both CXX_FLAGS and C_FLAGS covered.
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O0 ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O0 ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+  set(CMAKE_XCODE_ATTRIBUTE_CLANG_X86_VECTOR_INSTRUCTIONS SSE3)
+  set(CMAKE_XCODE_ATTRIBUTE_GCC_OPTIMIZATION_LEVEL -O3)
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -msse3 ${CMAKE_CXX_FLAGS_RELEASE}")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -msse3 ${CMAKE_C_FLAGS_RELEASE}")
+  if (XCODE_VERSION GREATER 4.2)
+    set(ENABLE_SIGNING TRUE)
+    set(SIGNING_IDENTITY "Developer ID Application: Linden Research, Inc.")
+  endif (XCODE_VERSION GREATER 4.2)
 endif (DARWIN)
+
 
 
 if (LINUX OR DARWIN)
@@ -277,13 +280,11 @@ if (LINUX OR DARWIN)
     set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     add_definitions(-DLL_CLANG=1)
-    set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-tautological-compare -Wno-char-subscripts -Wno-gnu -Wno-logical-op-parentheses -Wno-non-virtual-dtor")
-    set(UNIX_WARNINGS "${UNIX_WARNINGS} -Woverloaded-virtual -Wno-parentheses-equality -Wno-reorder -Wno-unused-function -Wno-unused-value -Wno-unused-variable")
+    set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-tautological-compare -Wno-char-subscripts -Wno-gnu -Wno-logical-op-parentheses -Wno-logical-not-parentheses -Wno-non-virtual-dtor -Wno-deprecated")
+    set(UNIX_WARNINGS "${UNIX_WARNINGS} -Woverloaded-virtual -Wno-parentheses-equality -Wno-reorder -Wno-unused-function -Wno-unused-value -Wno-unused-variable -Wno-unused-private-field -Wno-parentheses")
     set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     add_definitions(-DLL_ICC=1)
-    set(UNIX_WARNINGS "-wd327 -wd597 -wd858")
-    set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")
   endif ()
   
   if (NOT DISABLE_FATAL_WARNINGS)

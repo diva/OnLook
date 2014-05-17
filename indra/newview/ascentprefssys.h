@@ -48,7 +48,6 @@ public:
 
 protected:
 	void onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value);
-	void onCommitCmdLine(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitComboBox(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitTexturePicker(LLUICtrl* ctrl);
 
@@ -103,12 +102,16 @@ private:
 	bool mPrivateLookAt;
 	bool mShowLookAt;
 	bool mQuietSnapshotsToDisk;
+	bool mAnnounceBumps;
 	bool mDetachBridge;
 	bool mRevokePermsOnStandUp;
 	bool mDisableClickSit;
 	bool mDisableClickSitOtherOwner;
 	bool mDisplayScriptJumps;
+	bool mRestartMinimized;
 	F32 mNumScriptDiff;
+	std::string mRestartSound;
+	std::string mLandmark;
 
 	//Build -------------------------------------------------------------------------------
 	F32 mAlpha;
