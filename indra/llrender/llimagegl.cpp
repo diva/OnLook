@@ -1088,35 +1088,96 @@ static LLFastTimer::DeclareTimer FTM_SET_MANUAL_IMAGE("setManualImage");
 void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void *pixels, bool allow_compression)
 {
 	LLFastTimer t(FTM_SET_MANUAL_IMAGE);
+	std::vector<U32> scratch;
 	if (LLRender::sGLCoreProfile)
 	{
-		if (pixformat == GL_ALPHA) 
-		{ //GL_ALPHA is deprecated, convert to RGBA
-			const GLint mask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
-			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
-			pixformat = GL_RED;
-			intformat = GL_R8;
+#ifdef GL_ARB_texture_swizzle
+		if(gGLManager.mHasTextureSwizzle)
+		{
+			if (pixformat == GL_ALPHA)
+			{ //GL_ALPHA is deprecated, convert to RGBA
+				const GLint mask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
+				pixformat = GL_RED;
+				intformat = GL_R8;
+			}
+
+			if (pixformat == GL_LUMINANCE)
+			{ //GL_LUMINANCE is deprecated, convert to GL_RGBA
+				const GLint mask[] = {GL_RED, GL_RED, GL_RED, GL_ONE};
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
+				pixformat = GL_RED;
+				intformat = GL_R8;
+			}
+
+			if (pixformat == GL_LUMINANCE_ALPHA)
+			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
+				const GLint mask[] = {GL_RED, GL_RED, GL_RED, GL_GREEN};
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
+				pixformat = GL_RG;
+				intformat = GL_RG8;
+			}
 		}
+		else
+#endif
+		{
+			if (pixformat == GL_ALPHA && pixtype == GL_UNSIGNED_BYTE)
+			{ //GL_ALPHA is deprecated, convert to RGBA
+				scratch.resize(width*height);
+				pixels = &scratch[0];
 
-		if (pixformat == GL_LUMINANCE) 
-		{ //GL_LUMINANCE is deprecated, convert to GL_RGBA
-			const GLint mask[] = {GL_RED, GL_RED, GL_RED, GL_ONE};
-			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
-			pixformat = GL_RED;
-			intformat = GL_R8;
+				U32 pixel_count = (U32) (width*height);
+				for (U32 i = 0; i < pixel_count; i++)
+				{
+					U8* pix = (U8*) &scratch[i];
+					pix[0] = pix[1] = pix[2] = 0;
+					pix[3] = ((U8*) pixels)[i];
+				}
+
+				pixformat = GL_RGBA;
+				intformat = GL_RGBA8;
+			}
+
+			if (pixformat == GL_LUMINANCE_ALPHA && pixtype == GL_UNSIGNED_BYTE)
+			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
+				scratch.resize(width*height);
+				pixels = &scratch[0];
+
+				U32 pixel_count = (U32) (width*height);
+				for (U32 i = 0; i < pixel_count; i++)
+				{
+					U8 lum = ((U8*) pixels)[i*2+0];
+					U8 alpha = ((U8*) pixels)[i*2+1];
+
+					U8* pix = (U8*) &scratch[i];
+					pix[0] = pix[1] = pix[2] = lum;
+					pix[3] = alpha;
+				}
+
+				pixformat = GL_RGBA;
+				intformat = GL_RGBA8;
+			}
+
+			if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE)
+			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGB
+				scratch.resize(width*height);
+				pixels = &scratch[0];
+
+				U32 pixel_count = (U32) (width*height);
+				for (U32 i = 0; i < pixel_count; i++)
+				{
+					U8 lum = ((U8*) pixels)[i];
+
+					U8* pix = (U8*) &scratch[i];
+					pix[0] = pix[1] = pix[2] = lum;
+					pix[3] = 255;
+				}
+
+				pixformat = GL_RGBA;
+				intformat = GL_RGB8;
+			}
 		}
-
-		if (pixformat == GL_LUMINANCE_ALPHA) 
-		{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
-			const GLint mask[] = {GL_RED, GL_RED, GL_RED, GL_GREEN};
-			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
-			pixformat = GL_RG;
-			intformat = GL_RG8;
-		}
-
-
 	}
-
 	if (LLImageGL::sCompressTextures && allow_compression)
 	{
 		switch (intformat)

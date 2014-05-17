@@ -114,6 +114,7 @@ public:
 	BOOL mHasDebugOutput;
 
 	BOOL mHasAdaptiveVsync;
+	BOOL mHasTextureSwizzle;
 
 	// Vendor-specific extensions
 	BOOL mIsATI;

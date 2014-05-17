@@ -972,6 +972,10 @@ void LLGLManager::initExtensions()
 	mHasAdaptiveVsync = ExtensionExists("GLX_EXT_swap_control_tear", gGLHExts.mSysExts);
 #endif
 
+#ifdef GL_ARB_texture_swizzle
+	mHasTextureSwizzle = ExtensionExists("GL_ARB_texture_swizzle", gGLHExts.mSysExts);
+#endif
+
 #if LL_LINUX || LL_SOLARIS
 	llinfos << "initExtensions() checking shell variables to adjust features..." << llendl;
 	// Our extension support for the Linux Client is very young with some
@@ -997,6 +1001,7 @@ void LLGLManager::initExtensions()
 		mHasVertexShader = FALSE;
 		mHasFragmentShader = FALSE;
 		mHasAdaptiveVsync = FALSE;
+		mHasTextureSwizzle = FALSE;
 		LL_WARNS("RenderInit") << "GL extension support DISABLED via LL_GL_NOEXT" << LL_ENDL;
 	}
 	else if (getenv("LL_GL_BASICEXT"))	/* Flawfinder: ignore */
