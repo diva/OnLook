@@ -991,7 +991,7 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
 
 		if(facep->getGeomCount() > 0)
 		{
-			buffer->validateRange(facep->getGeomIndex(),  facep->getGeomCount() - 1, facep->getIndicesCount(), 0);
+			buffer->validateRange(facep->getGeomIndex(),  facep->getGeomIndex() + facep->getGeomCount() - 1, facep->getIndicesCount(), facep->getIndicesStart());
 		}
 	}
 
