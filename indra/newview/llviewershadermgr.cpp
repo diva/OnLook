@@ -2026,25 +2026,16 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 
 			if(no_index && !mask)
 			{
-				llinfos << "Skipping Simple" << name << llendl;
-				llinfos << "Skipping Fullbright" << name << llendl;
-				llinfos << "Skipping Emissive" << name << llendl;
 				continue;	//all non-indexed shaders here have alphamasks;
 			}
 
 			if(skin && (!no_index || mVertexShaderLevel[SHADER_AVATAR] < 1))
 			{
-				llinfos << "Skipping Simple" << name << llendl;
-				llinfos << "Skipping Fullbright" << name << llendl;
-				llinfos << "Skipping Emissive" << name << llendl;
 				continue;	//Skins are always non-indexed.
 			}
 
 			if(shiny && mask && !skin && !no_index)
 			{
-				llinfos << "Skipping Simple" << name << llendl;
-				llinfos << "Skipping Fullbright" << name << llendl;
-				llinfos << "Skipping Emissive" << name << llendl;
 				continue;	//non-skinned indexed shiny does not support alphamasking
 			}
 
@@ -2062,8 +2053,6 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			features.disableTextureIndex = no_index;
 			features.hasObjectSkinning = skin;
 			features.isShiny = shiny;
-
-			llinfos << "Compiling Simple" << name << llendl;
 
 			gObjectSimpleProgram[i].mName = std::string("Simple") + name + " Shader";
 			gObjectSimpleProgram[i].mFeatures = features;
@@ -2091,8 +2080,6 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 			features.isFullbright = true;
 			features.hasGamma |= (shiny && fog);
 			
-			llinfos << "Compiling Fullbright" << name << llendl;
-
 			gObjectFullbrightProgram[i].mName = std::string("Fullbright") + name + " Shader";
 			gObjectFullbrightProgram[i].mFeatures = features;
 			gObjectFullbrightProgram[i].mShaderFiles.clear();
@@ -2114,8 +2101,6 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 
 			if(!shiny)
 			{
-				llinfos << "Compiling Emissive" << name << llendl;
-
 				gObjectEmissiveProgram[i].mName = std::string("Emissive") + name + " Shader";
 				gObjectEmissiveProgram[i].mFeatures = features;
 				gObjectEmissiveProgram[i].mShaderFiles.clear();
@@ -2126,10 +2111,6 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 					gObjectEmissiveProgram[i].mShaderGroup = LLGLSLShader::SG_WATER;
 				if(!(success = gObjectEmissiveProgram[i].createShader(NULL, NULL)))
 					break;
-			}
-			else
-			{
-				llinfos << "Skipping Emissive" << name << llendl;
 			}
 		}
 	}
