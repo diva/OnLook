@@ -82,7 +82,7 @@ BOOL LLFloaterPerms::postBuild()
 		bool export_support = LFSimFeatureHandler::instance().simSupportsExport();
 		const U32 next_owner_perms = getNextOwnerPerms();
 		childSetEnabled("everyone_export", export_support && (next_owner_perms & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
-		if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
+		if (gHippoGridManager->getCurrentGrid()->isSecondLife())
 			childSetVisible("everyone_export", false);
 
 		if (!(next_owner_perms & PERM_COPY))
