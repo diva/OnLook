@@ -128,7 +128,7 @@ BOOL	LLPanelFace::postBuild()
 	mMediaDelete = getChildView("delete_media");
 
 	// Label caching
-	mLabelGlossy = getChildView("label glossy");
+	mLabelGlossy = getChildView("label glossiness");
 	mLabelEnvironment = getChildView("label environment");
 	mLabelShinyColor = getChildView("label shinycolor");
 	mLabelAlphaMode = getChildView("label alphamode");
@@ -170,8 +170,8 @@ BOOL	LLPanelFace::postBuild()
 	mCtrlCopy = getChild<LLUICtrl>("copytextures");
 	mCtrlPaste = getChild<LLUICtrl>("pastetextures");
 
-	mComboShiny->setCommitCallback(boost::bind(&LLPanelFace::sendShiny, this, boost::bind(&LLSD::asInteger, _2)));
-	mComboBumpy->setCommitCallback(boost::bind(&LLPanelFace::sendBump, this, boost::bind(&LLSD::asInteger, _2)));
+	mComboShiny->setCommitCallback(boost::bind(&LLPanelFace::sendShiny, this, boost::bind(&LLComboBox::getCurrentIndex, mComboShiny)));
+	mComboBumpy->setCommitCallback(boost::bind(&LLPanelFace::sendBump, this, boost::bind(&LLComboBox::getCurrentIndex, mComboBumpy)));
 	mComboAlpha->setCommitCallback(boost::bind(&LLPanelFace::onCommitAlphaMode, this));
 	mCtrlTexScaleU->setCommitCallback(boost::bind(&LLPanelFace::onCommitTextureInfo, this));
 	mCtrlFlipTexScaleU->setCommitCallback(boost::bind(&LLPanelFace::onCommitFlip, this, true));
