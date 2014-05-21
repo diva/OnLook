@@ -37,14 +37,49 @@
 
 // <singu> For emergency teleports
 #include "llinventorymodel.h"
+#include "lllandmarklist.h"
+#include "llviewerregion.h"
+#include "llworldmap.h"
 void emergency_teleport()
 {
 	static const LLCachedControl<std::string> landmark(gSavedPerAccountSettings, "EmergencyTeleportLandmark");
 	if (landmark().empty()) return;
-	const LLUUID id(landmark);
+	LLUUID id(landmark);
 	if (id.isNull()) return;
-	if (LLViewerInventoryItem* item = gInventory.getItem(id))
-		gAgent.teleportViaLandmark(item->getAssetUUID());
+	bool use_backup = false;
+	LLViewerInventoryItem* item = gInventory.getItem(id);
+	if (item)
+	{
+		if (LLLandmark* lm = gLandmarkList.getAsset(item->getAssetUUID()))
+		{
+			if (LLViewerRegion* region = gAgent.getRegion())
+				use_backup = !lm->getRegionID(id) || id == region->getRegionID(); // LM's Region id null or same as current region
+			if (!use_backup)
+			{
+				LLVector3d pos_global;
+				if (lm->getGlobalPos(pos_global))
+				{
+					if (LLSimInfo* sim_info = LLWorldMap::instance().simInfoFromPosGlobal(pos_global))
+					{
+						use_backup = sim_info->isDown();
+					}
+				}
+				else use_backup = true; // No coords, this will fail!
+			}
+		}
+		else use_backup = true;
+	}
+	else use_backup = true;
+
+	if (use_backup) // Something is wrong with the first provided landmark, fallback.
+	{
+		static const LLCachedControl<std::string> landmark(gSavedPerAccountSettings, "EmergencyTeleportLandmarkBackup");
+		if (landmark().empty()) return;
+		if (!id.set(landmark)) return;
+		if (!(item = gInventory.getItem(id))) return;
+	}
+
+	gAgent.teleportViaLandmark(item->getAssetUUID());
 }
 // </singu>
 

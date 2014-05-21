@@ -99,6 +99,8 @@
       <check_box bottom_delta="-20" left="10" follows="top" label="Auto-minimize region restart notice" name="region_restart_minimized" control_name="LiruRegionRestartMinimized" tool_tip="Useful for sim owners and people who need to pack up before leaving"/>
       <text name="EmergencyTeleportDesc" left="14" bottom_delta="-12" follows="top">Drop a landmark below to autoteleport there in the last 20 seconds before region restarts</text>
       <drop_target control_name="EmergencyTeleportLandmark" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_drop" width="430"/>
+      <text name="EmergencyTeleportBackupDesc" halign="center" width="432" left="14" bottom_delta="-26" follows="top">Drop a backup landmark to autoteleport to below, should you already be at the above</text>
+      <drop_target control_name="EmergencyTeleportLandmarkBackup" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_backup_drop" width="430"/>
       <text bottom_delta="-26" follows="top" name="UISndRestartText">Sound played when regions will restart:</text>
       <line_editor bottom_delta="-6" left_delta="222" follows="top" width="209" height="16" name="UISndRestart" tool_tip="Empty for no sound to play"/>
     </panel>

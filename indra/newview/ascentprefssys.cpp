@@ -198,6 +198,7 @@ void LLPrefsAscentSys::refreshValues()
 	mRestartMinimized		= gSavedSettings.getBOOL("LiruRegionRestartMinimized");
 	mRestartSound			= gSavedSettings.getString("UISndRestart");
 	mLandmark			= gSavedPerAccountSettings.getString("EmergencyTeleportLandmark");
+	mLandmarkBackup			= gSavedPerAccountSettings.getString("EmergencyTeleportLandmarkBackup");
 
 	//Build -------------------------------------------------------------------------------
 	mAlpha						= gSavedSettings.getF32("EmeraldBuildPrefs_Alpha");
@@ -329,6 +330,7 @@ void LLPrefsAscentSys::cancel()
 	gSavedSettings.setBOOL("LiruRegionRestartMinimized", mRestartMinimized);
 	gSavedSettings.setString("UISndRestart", mRestartSound);
 	gSavedPerAccountSettings.setString("EmergencyTeleportLandmark",      mLandmark);
+	gSavedPerAccountSettings.setString("EmergencyTeleportLandmarkBackup",      mLandmarkBackup);
 
 	//Build -------------------------------------------------------------------------------
 	gSavedSettings.setF32("EmeraldBuildPrefs_Alpha",        mAlpha);
