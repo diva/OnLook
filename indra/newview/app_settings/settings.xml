@@ -779,6 +779,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>LiruLegacyScrollToEnd</key>
+    <map>
+      <key>Comment</key>
+      <string>Automatically scroll to the end of a chat's history when the chat regains focus.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruLocalTime</key>
     <map>
       <key>Comment</key>

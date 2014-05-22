@@ -86,6 +86,7 @@ public:
 
 	void	onInputEditorKeystroke();
 	static void	onInputEditorFocusLost();
+	static void	onInputEditorGainFocus();
 
 	void onCommitGesture(LLUICtrl* ctrl);
 
