@@ -468,7 +468,6 @@ BOOL LLFloaterIMPanel::postBuild()
 
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setAutoreplaceCallback(boost::bind(&LLAutoReplace::autoreplaceCallback, LLAutoReplace::getInstance(), _1, _2, _3, _4, _5));
-		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
 		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
 		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
 		mInputEditor->setCommitCallback( boost::bind(&LLFloaterIMPanel::onSendMsg,this) );
@@ -1026,11 +1025,6 @@ void LLFloaterIMPanel::onClickHistory()
 void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 {
 	childSetVisible("active_speakers_panel", !value);
-}
-
-void LLFloaterIMPanel::onInputEditorFocusReceived()
-{
-	mHistoryEditor->setCursorAndScrollToEnd();
 }
 
 void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
