@@ -5,6 +5,13 @@
      name="toolbox floater" rect_control="ToolboxRect" sound_flags="0" title=""
      short_title="Build" width="272">
 
+    <floater.string name="status_selectcount">
+        Primitives: [OBJ_COUNT], LI: [LAND_IMPACT]
+    </floater.string>
+    <floater.string
+     name="status_remaining_capacity">
+        Remaining capacity [LAND_CAPACITY].
+    </floater.string>
 <!-- Main floater tabs -->
 
 	<button bottom="-34" follows="left|top" font="SansSerif" halign="center" height="32"
@@ -401,10 +408,13 @@
          mouse_opaque="true" name="link_num_obj_count" v_pad="0" width="143">
 		[DESC] [NUM]
 	</text>
+    <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+       bottom="-170" left="118" drop_shadow_visible="true" follows="left|top"
+       halign="right" height="16" mouse_opaque="true" name="selection_empty" width="143">Nothing selected.</text>
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
        bottom="-170" left="118" drop_shadow_visible="true" follows="left|top"
-       font="SansSerifSmall" h_pad="0" halign="right" height="16"
-       mouse_opaque="true" name="prim_count" v_pad="0" width="143"/>
+       font="SansSerifSmall" halign="right" height="16" font-style="UNDERLINE"
+       mouse_opaque="true" name="selection_count" v_pad="0" width="143"/>
 
 <!-- Sub-tabs -->
 
@@ -1477,10 +1487,4 @@
 	<string name="grid_attachment_text">
 		Attachment
 	</string>
-  <string name="status_selectprimequiv">
-    , Cost: [SEL_WEIGHT]
-  </string>
-  <string name="status_selectcount">
-    Primitives: [COUNT][PE_STRING]
-  </string>
 </floater>

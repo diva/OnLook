@@ -452,6 +452,5 @@
 	<string name="grid_world_text">Welt</string>
 	<string name="grid_reference_text">Referenz</string>
 	<string name="grid_attachment_text">Anhänge</string>
-  <string name="status_selectprimequiv">, Kosten: [SEL_WEIGHT]</string>
-  <string name="status_selectcount">Prims: [COUNT][PE_STRING]</string>
+  <string name="status_selectcount">Prims: [OBJ_COUNT], Kosten: [LAND_IMPACT]</string>
 </floater>

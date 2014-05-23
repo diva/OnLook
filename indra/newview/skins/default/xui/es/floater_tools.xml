@@ -106,7 +106,6 @@
 	<text name="link_num_obj_count">
 		[DESC] [NUM]
 	</text>
-	<text name="prim_count"/>
 
 <!-- Sub-tabs -->
 
@@ -645,10 +644,7 @@ name="button abandon land"/>
 	<string name="grid_attachment_text">
 		Añadido
 	</string>
-  <string name="status_selectprimequiv">
-    , Peso: [SEL_WEIGHT]
-  </string>
   <string name="status_selectcount">
-    Primitivas: [COUNT][PE_STRING]
+    Primitivas: [OBJ_COUNT], Peso: [LAND_IMPACT]
   </string>
 </floater>

@@ -240,6 +240,7 @@ set(viewer_SOURCE_FILES
     llfloaternamedesc.cpp
     llfloaternotificationsconsole.cpp
     llfloaterobjectiminfo.cpp
+    llfloaterobjectweights.cpp
     llfloateropenobject.cpp
     llfloateroutbox.cpp
     llfloaterparcel.cpp
@@ -762,6 +763,7 @@ set(viewer_HEADER_FILES
     llfloaternamedesc.h
     llfloaternotificationsconsole.h
     llfloaterobjectiminfo.h
+    llfloaterobjectweights.h
     llfloateropenobject.h
     llfloateroutbox.h
     llfloaterparcel.h

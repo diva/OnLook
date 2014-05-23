@@ -648,6 +648,6 @@
 		Anexo
 	</string>
 	<string name="status_selectcount">
-		primitivas: [COUNT][PE_STRING]
+		primitivas: [COUNT], LI: [LAND_IMPACT]
 	</string>
 </floater>

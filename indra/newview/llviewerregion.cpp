@@ -1737,7 +1737,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("RemoteParcelRequest");
 	capabilityNames.append("RenderMaterials");
 	capabilityNames.append("RequestTextureDownload");
-	//capabilityNames.append("ResourceCostSelected"); //Object weights (llfloaterobjectweights.cpp)
+	capabilityNames.append("ResourceCostSelected");
 	capabilityNames.append("RetrieveNavMeshSrc");
 	capabilityNames.append("SearchStatRequest");
 	capabilityNames.append("SearchStatTracking");
