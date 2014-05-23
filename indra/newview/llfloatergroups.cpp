@@ -231,21 +231,20 @@ BOOL LLPanelGroups::postBuild()
 
 void LLPanelGroups::enableButtons()
 {
-	LLCtrlListInterface *group_list = childGetListInterface("group list");
+	getChildView("Create")->setEnabled(gAgent.mGroups.count() < gHippoLimits->getMaxAgentGroups());
+	LLScrollListCtrl* group_list = getChild<LLScrollListCtrl>("group list");
+	if (!group_list) return;
 	LLUUID group_id;
-	if (group_list)
+	if (group_list->getNumSelected() == 1)
 	{
 		group_id = group_list->getCurrentID();
-	}
-
-	if(group_id != gAgent.getGroupID())
-	{
-		getChildView("Activate")->setEnabled(TRUE);
+		getChildView("Activate")->setEnabled(group_id != gAgent.getGroupID());
 	}
 	else
 	{
 		getChildView("Activate")->setEnabled(FALSE);
 	}
+
 	if (group_id.notNull())
 	{
 		getChildView("Info")->setEnabled(TRUE);
@@ -258,7 +257,6 @@ void LLPanelGroups::enableButtons()
 		getChildView("IM")->setEnabled(FALSE);
 		getChildView("Leave")->setEnabled(FALSE);
 	}
-	getChildView("Create")->setEnabled(gAgent.mGroups.count() < gHippoLimits->getMaxAgentGroups());
 	getChildView("Invite...")->setEnabled(group_id.notNull() && gAgent.hasPowerInGroup(group_id, GP_MEMBER_INVITE));
 }
 

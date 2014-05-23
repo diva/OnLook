@@ -3214,6 +3214,11 @@ void LLScrollListCtrl::setFocus(BOOL b)
 		selectFirstItem();
 		//onCommit(); // SJB: selectFirstItem() will call onCommit() if appropriate
 	}
+
+	// Singu Note: Edit menu handler, y'know for Ctrl-A and such!
+	if (b) gEditMenuHandler = this;
+	else if (gEditMenuHandler == this) gEditMenuHandler = NULL;
+
 	LLUICtrl::setFocus(b);
 }
 
