@@ -101,6 +101,8 @@ private:
 	bool mDisablePointAtAndBeam;
 	bool mPrivateLookAt;
 	bool mShowLookAt;
+	S32  mLookAtNames;
+	bool mLookAtLines;
 	bool mQuietSnapshotsToDisk;
 	bool mAnnounceBumps;
 	bool mDetachBridge;

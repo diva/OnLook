@@ -58,6 +58,17 @@
 		  <key>Value</key>
 		  <integer>1</integer>
 		</map>
+		<key>LookAtNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>For name on lookat crosshairs. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only, 3 = Old Style (Display Name), less than 0 for off</string>
+		  <key>Persist</key>
+		  <integer>1</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>0</integer>
+		</map>
 		<key>PhoenixNameSystem</key>
 		<map>
 		  <key>Comment</key>
@@ -91,6 +102,17 @@
 		  <key>Value</key>
 		  <integer>1</integer>
 		</map>
+    <key>AlchemyLookAtLines</key>
+    <map>
+      <key>Comment</key>
+      <string>Render a line from Look At beacon to the originating avatar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>AlchemyRegionRestartShake</key>
     <map>
       <key>Comment</key>

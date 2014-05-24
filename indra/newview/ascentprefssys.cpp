@@ -187,6 +187,8 @@ void LLPrefsAscentSys::refreshValues()
     mDisablePointAtAndBeam		= gSavedSettings.getBOOL("DisablePointAtAndBeam");
     mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
     mShowLookAt					= gSavedSettings.getBOOL("AscentShowLookAt");
+	mLookAtNames				= gSavedSettings.getS32("LookAtNameSystem");
+	mLookAtLines				= gSavedSettings.getBOOL("AlchemyLookAtLines");
 	mQuietSnapshotsToDisk		= gSavedSettings.getBOOL("QuietSnapshotsToDisk");
 	mAnnounceBumps				= gSavedSettings.getBOOL("AnnounceBumps");
 	mDetachBridge				= gSavedSettings.getBOOL("SGDetachBridge");
@@ -230,7 +232,7 @@ void LLPrefsAscentSys::refresh()
 		ctrl->setValue(mPowerUser);
 	}
 
-    //Security ----------------------------------------------------------------------------
+	//Command Line ----------------------------------------------------------------------------
     childSetValue("AscentCmdLinePos",           mCmdLinePos);
     childSetValue("AscentCmdLineGround",        mCmdLineGround);
     childSetValue("AscentCmdLineHeight",        mCmdLineHeight);
@@ -249,6 +251,9 @@ void LLPrefsAscentSys::refresh()
 
 	//Security ----------------------------------------------------------------------------
 	getChildView("UISndRestart")->setValue(mRestartSound);
+
+	if (LLComboBox* combo = getChild<LLComboBox>("lookat_namesystem_combobox"))
+		combo->setValue(mLookAtNames);
 
 	//Build -------------------------------------------------------------------------------
 	childSetValue("alpha",               mAlpha);
@@ -319,6 +324,8 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("DisablePointAtAndBeam",         mDisablePointAtAndBeam);
     gSavedSettings.setBOOL("PrivateLookAt",                 mPrivateLookAt);
     gSavedSettings.setBOOL("AscentShowLookAt",              mShowLookAt);
+	gSavedSettings.setS32("LookAtNameSystem",               mLookAtNames);
+	gSavedSettings.setBOOL("AlchemyLookAtLines",            mLookAtLines);
     gSavedSettings.setBOOL("QuietSnapshotsToDisk",			mQuietSnapshotsToDisk);
     gSavedSettings.setBOOL("AnnounceBumps",    			mAnnounceBumps);
     gSavedSettings.setBOOL("SGDetachBridge",    			mDetachBridge);
