@@ -52,6 +52,13 @@ if (DARWIN)
    )
 endif (DARWIN)
 
+if (LINUX)
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/wrapper.sh.in
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/wrapper.sh
+   )
+endif (LINUX)
+
 # Compose the version.
 set(viewer_VERSION "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}")
 if (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
