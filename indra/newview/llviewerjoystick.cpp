@@ -1326,8 +1326,8 @@ void LLViewerJoystick::setSNDefaults()
 		Debug setting				InternalMapping,Jostick Axis (see above)	*/
 	gSavedSettings.setS32("JoystickAxis0", 1); // z (at)
 	gSavedSettings.setS32("JoystickAxis1", 0); // x (slide)
-	gSavedSettings.setS32("JoystickAxis2", xbox ? -1 : 2); // y (up)
-	gSavedSettings.setS32("JoystickAxis3", xbox ? 2 : 4); // roll
+	gSavedSettings.setS32("JoystickAxis2", 2); // y (up)
+	gSavedSettings.setS32("JoystickAxis3", xbox ? -1 : 4); // roll
 	gSavedSettings.setS32("JoystickAxis4", xbox ? 4 : 3); // pitch
 	gSavedSettings.setS32("JoystickAxis5", xbox ? 3 : 5); // yaw
 	gSavedSettings.setS32("JoystickAxis6", -1);
