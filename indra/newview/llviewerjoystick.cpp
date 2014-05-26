@@ -276,7 +276,7 @@ void LLViewerJoystick::init(bool autoenable)
 				gSavedSettings.setString("JoystickInitialized", "SpaceNavigator");
 			}
 		}
-		else if (isJoystickInitialized() && getDescription().find("Xbox") != std::string::npos)
+		else if (getDescription().find("Xbox") != std::string::npos)
 		{
 			sType = XBOX;
 			// It's an Xbox controller, we have defaults for it.
