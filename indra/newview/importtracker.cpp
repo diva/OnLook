@@ -246,12 +246,28 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 				{
 					flags |= PERM_MODIFY;
 				}
-				if ( gSavedSettings.getBOOL("NextOwnerTransfer") )
+				bool next_owner_trans;
+				if ( next_owner_trans = gSavedSettings.getBOOL("NextOwnerTransfer") )
 				{
 					flags |= PERM_TRANSFER;
 				}
 				msg->addU32Fast(_PREHASH_Mask, flags);
 				msg->sendReliable(gAgent.getRegion()->getHost());
+				if (!next_owner_trans) // Workaround transfer being true by default.
+				{
+					msg->newMessageFast(_PREHASH_ObjectPermissions);
+					msg->nextBlockFast(_PREHASH_AgentData);
+					msg->addUUIDFast(_PREHASH_AgentID, gAgentID);
+					msg->addUUIDFast(_PREHASH_SessionID, gAgentSessionID);
+					msg->nextBlockFast(_PREHASH_HeaderData);
+					msg->addBOOLFast(_PREHASH_Override, false);
+					msg->nextBlockFast(_PREHASH_ObjectData);
+					msg->addU32Fast(_PREHASH_ObjectLocalID, (U32)newid);
+					msg->addU8Fast(_PREHASH_Field,	PERM_NEXT_OWNER);
+					msg->addU8Fast(_PREHASH_Set, PERM_SET_FALSE);
+					msg->addU32Fast(_PREHASH_Mask, PERM_TRANSFER);
+					msg->sendReliable(gAgent.getRegion()->getHost());
+				}
 				//llinfos << "LGG SENDING CUBE TEXTURE.." << llendl;
 			}
 		break;
