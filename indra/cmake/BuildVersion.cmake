@@ -56,6 +56,7 @@ if (LINUX)
    configure_file(
        ${CMAKE_SOURCE_DIR}/newview/linux_tools/wrapper.sh.in
        ${CMAKE_SOURCE_DIR}/newview/linux_tools/wrapper.sh
+       @ONLY
    )
 endif (LINUX)
 
