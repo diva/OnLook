@@ -64,7 +64,7 @@ if [ -n "$ASCENDED_DEVELOPER" ]; then
 	elif [ "$ASCENDED_DEVELOPER" = "2" ]; then
 		export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
 	elif [ "$ASCENDED_DEVELOPER" = "3" ]; then
-		export LL_WRAPPER='strace -f -ff -o singularity.strace'
+		export LL_WRAPPER='strace -f -ff -o @VIEWER_BRANDING_ID@.strace'
 	fi
 fi
 
@@ -142,7 +142,7 @@ if [ -n "$LL_TCMALLOC" ]; then
     fi
 fi
 
-export VIEWER_BINARY='singularity-do-not-run-directly'
+export VIEWER_BINARY='@VIEWER_BRANDING_ID@-do-not-run-directly'
 BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)' | sed -e 's/  / /g')
 if [ "${BINARY_TYPE}" == "ELF 64-bit LSB executable" ]; then
 	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$LD_LIBRARY_PATH"'

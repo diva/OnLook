@@ -166,6 +166,8 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mBoundingSphereRadius = 0.0f ;
 
 	mHasMedia = FALSE ;
+
+	mShinyInAlpha = false;
 }
 
 void LLFace::destroy()
@@ -1298,53 +1300,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (rebuild_color)	// FALSE if tep == NULL
 	{ //decide if shiny goes in alpha channel of color
 
-		static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
-		if (tep && 
-			((!alt_batching && getPoolType() != LLDrawPool::POOL_ALPHA) ||
-			(alt_batching && getPoolType() != LLDrawPool::POOL_ALPHA &&
-			getPoolType() != LLDrawPool::POOL_ALPHA_MASK &&
-			getPoolType() != LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK &&					// <--- alpha channel MUST contain transparency, not shiny
-			(getPoolType() != LLDrawPool::POOL_SIMPLE || LLPipeline::sRenderDeferred))))	// Impostor pass for simple uses alpha masking. Need to be opaque.
+		if(mShinyInAlpha)
 		{
-			LLMaterial* mat = tep->getMaterialParams().get();
-						
-			bool shiny_in_alpha = alt_batching ? true : false;
-			
-			if(alt_batching)
-			{
-			if (LLPipeline::sRenderDeferred)
-			{ //store shiny in alpha if we don't have a specular map
-				if  (getPoolType() == LLDrawPool::POOL_MATERIALS && mat->getSpecularID().notNull())
-				{
-					shiny_in_alpha = false;
-				}
-			}
-			}
-			else
-			{
-			if (LLPipeline::sRenderDeferred)
-			{
-				if  (!mat || mat->getSpecularID().isNull())
-				{
-					shiny_in_alpha = true;
-				}
-			}
-			else
-			{
-				if (!mat || mat->getDiffuseAlphaMode() != LLMaterial::DIFFUSE_ALPHA_MODE_MASK)
-				{
-					shiny_in_alpha = true;
-				}
-			}
-			}
-
-			if(getPoolType() == LLDrawPool::POOL_FULLBRIGHT)
-			{
-				color.mV[3] = 1.f; //Simple fullbright reads alpha for fog contrib, not shiny/transparency, so since opaque, force to 1.
-			}
-			else if (shiny_in_alpha)
-			{
-				GLfloat alpha[4] =
+			GLfloat alpha[4] =
 				{
 					0.00f,
 					0.25f,
@@ -1352,9 +1310,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 					0.75f
 				};
 			
-				llassert(tep->getShiny() <= 3);
-				color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
-			}
+			llassert(tep->getShiny() <= 3);
+
+			color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
 		}
 	}
 

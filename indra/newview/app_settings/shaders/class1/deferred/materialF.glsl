@@ -537,6 +537,10 @@ void main()
 #endif
 
 #if (DIFFUSE_ALPHA_MODE == DIFFUSE_ALPHA_MODE_BLEND)
+	if(diffcol.a < .01)
+	{
+		discard;
+	}
 	vec3 gamma_diff = diffcol.rgb;
 	diffcol.rgb = srgb_to_linear(diffcol.rgb);
 #endif

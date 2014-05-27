@@ -4149,6 +4149,13 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		return;
 	}
 
+	if(!facep->mShinyInAlpha)
+		facep->mShinyInAlpha =	(type == LLRenderPass::PASS_FULLBRIGHT_SHINY) || 
+								(type == LLRenderPass::PASS_INVISI_SHINY) || 
+								(type == LLRenderPass::PASS_SHINY) || 
+								(LLPipeline::sRenderDeferred && type == LLRenderPass::PASS_BUMP) ||
+								(LLPipeline::sRenderDeferred && type == LLRenderPass::PASS_SIMPLE);
+
 	//add face to drawmap
 	LLSpatialGroup::drawmap_elem_t& draw_vec = group->mDrawMap[type];	
 
@@ -4206,8 +4213,9 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	U32 pool_type = facep->getPoolType();
 
 	bool cmp_bump = (type == LLRenderPass::PASS_BUMP) || (type == LLRenderPass::PASS_POST_BUMP);
-	bool cmp_mat =	(!alt_batching) || LLPipeline::sRenderDeferred && /*facep->getTextureEntry()->getColor().mV[3] >= 0.999f &&*/
-					((pool_type == LLDrawPool::POOL_MATERIALS) || (pool_type == LLDrawPool::POOL_ALPHA));
+	bool cmp_mat =	(!alt_batching) || LLPipeline::sRenderDeferred &&
+					((pool_type == LLDrawPool::POOL_MATERIALS) || (pool_type == LLDrawPool::POOL_ALPHA)) || 
+					pool_type == LLDrawPool::POOL_ALPHA_MASK || pool_type == LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK;
 	bool cmp_shiny = (!alt_batching) ? !!mat : (mat && cmp_mat);
 	bool cmp_fullbright = !alt_batching || cmp_shiny || pool_type == LLDrawPool::POOL_ALPHA;
 
@@ -4287,7 +4295,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 			draw_vec[idx]->mTextureList.resize(index+1);
 			draw_vec[idx]->mTextureList[index] = tex;
 		}
-		draw_vec[idx]->validate();
+		//draw_vec[idx]->validate();
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[0]);
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[1]);
 	}
@@ -4371,7 +4379,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 			draw_info->mTextureList[index] = tex;
 		}
 
-		draw_info->validate();
+		//draw_info->validate();
 	}
 }
 
@@ -5871,7 +5879,8 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 				//for debugging, set last time face was updated vs moved
 				facep->updateRebuildFlags();
 
-				if (!LLPipeline::sDelayVBUpdate)
+				//Singu Note: Moved to after registerFace calls, as those update LLFace::mShinyInAlpha, which is needed before updating the vertex buffer.
+				/*if (!LLPipeline::sDelayVBUpdate)
 				{ //copy face geometry into vertex buffer
 					LLDrawable* drawablep = facep->getDrawable();
 					LLVOVolume* vobj = drawablep->getVOVolume();
@@ -5896,11 +5905,10 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 					{
 						vobj->updateRelativeXform(false);
 					}
-				}
+				}*/
 			}
 
-			index_offset += facep->getGeomCount();
-			indices_index += facep->getIndicesCount();
+			facep->mShinyInAlpha = false;
 
 			static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
 
@@ -6316,8 +6324,44 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 				registerFace(group, facep, LLRenderPass::PASS_GLOW);
 			}
 			}
+
+			//Singu Note: LLFace::mShinyInAlpha has been updated by now. We're good to go.
+			if (!LLPipeline::sDelayVBUpdate)
+			{ //copy face geometry into vertex buffer
+				LLDrawable* drawablep = facep->getDrawable();
+				LLVOVolume* vobj = drawablep->getVOVolume();
+				LLVolume* volume = vobj->getVolume();
+
+				if (drawablep->isState(LLDrawable::ANIMATED_CHILD))
+				{
+					vobj->updateRelativeXform(true);
+				}
+
+				U32 te_idx = facep->getTEOffset();
+
+				llassert(!facep->isState(LLFace::RIGGED));
+
+				if (!facep->getGeometryVolume(*volume, te_idx, 
+					vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), index_offset,true))
+				{
+					llwarns << "Failed to get geometry for face!" << llendl;
+				}
+
+				if (drawablep->isState(LLDrawable::ANIMATED_CHILD))
+				{
+					vobj->updateRelativeXform(false);
+				}
+			}
+
+			index_offset += facep->getGeomCount();
+			indices_index += facep->getIndicesCount();
 						
 			++face_iter;
+		}
+
+		if(index_offset > 0)
+		{
+			buffer->validateRange(0,  index_offset - 1, indices_index, 0);
 		}
 
 		buffer->flush();

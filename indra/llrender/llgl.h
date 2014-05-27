@@ -114,6 +114,7 @@ public:
 	BOOL mHasDebugOutput;
 
 	BOOL mHasAdaptiveVsync;
+	BOOL mHasTextureSwizzle;
 
 	// Vendor-specific extensions
 	BOOL mIsATI;
@@ -151,6 +152,8 @@ public:
 	S32 mVRAM; // VRAM in MB
 	S32 mGLMaxVertexRange;
 	S32 mGLMaxIndexRange;
+
+	S32 mGLMaxVertexUniformComponents;
 	
 	void getPixelFormat(); // Get the best pixel format
 

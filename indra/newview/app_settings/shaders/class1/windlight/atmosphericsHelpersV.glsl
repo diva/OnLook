@@ -23,7 +23,7 @@
  * $/LicenseInfo$
  */
  
-uniform vec4 sunlight_color_copy;
+uniform vec3 sunlight_color_copy;
 uniform vec4 light_ambient;
 
 vec3 atmosAmbient(vec3 light)

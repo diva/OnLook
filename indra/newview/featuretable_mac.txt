@@ -296,6 +296,11 @@ RenderObjectBump			0	0
 list OpenGLPre15
 RenderVBOEnable				1	0
 
+list OpenGLPre21
+RenderAvatarVP				0	0
+RenderAvatarCloth			0	0
+RenderDeferred				0	0
+
 list TexUnit8orLess
 RenderDeferredSSAO			0	0
 
@@ -521,3 +526,7 @@ Disregard128DefaultDrawDistance	1	0
 list NVIDIA_GeForce_Go_7400
 Disregard128DefaultDrawDistance	1	0
 
+list VertexUniformsLT1024
+RenderAvatarVP					0	0
+RenderAvatarCloth				0	0
+RenderDeferred					0	0

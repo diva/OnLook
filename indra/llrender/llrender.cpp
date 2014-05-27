@@ -1169,7 +1169,7 @@ void LLRender::syncLightState()
 		shader->uniform3fv(LLShaderMgr::LIGHT_DIFFUSE, 8, diffuse[0].mV);
 		shader->uniform4fv(LLShaderMgr::LIGHT_AMBIENT, 1, mAmbientLightColor.mV);
 		//HACK -- duplicate sunlight color for compatibility with drivers that can't deal with multiple shader objects referencing the same uniform
-		shader->uniform4fv(LLShaderMgr::SUNLIGHT_COLOR, 1, diffuse[0].mV);
+		shader->uniform3fv(LLShaderMgr::SUNLIGHT_COLOR, 1, diffuse[0].mV);
 	}
 }
 
@@ -2199,7 +2199,15 @@ void LLRender::texCoord2fv(const GLfloat* tc)
 
 void LLRender::color4ub(const GLubyte& r, const GLubyte& g, const GLubyte& b, const GLubyte& a)
 {
-	mColorsp[mCount] = LLColor4U(r,g,b,a);
+	if (!LLGLSLShader::sCurBoundShaderPtr ||
+		LLGLSLShader::sCurBoundShaderPtr->mAttributeMask & LLVertexBuffer::MAP_COLOR)
+	{
+		mColorsp[mCount] = LLColor4U(r,g,b,a);
+	}
+	else
+	{ //not using shaders or shader reads color from a uniform
+		diffuseColor4ub(r,g,b,a);
+	}
 }
 void LLRender::color4ubv(const GLubyte* c)
 {

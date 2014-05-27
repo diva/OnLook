@@ -634,13 +634,17 @@ void LLFeatureManager::applyBaseMasks()
 	{
 		maskFeatures("Intel");
 	}
-	if (gGLManager.mGLVersion < 1.5f)
-	{
-		maskFeatures("OpenGLPre15");
-	}
 	if (gGLManager.mGLVersion < 3.f)
 	{
 		maskFeatures("OpenGLPre30");
+		if(gGLManager.mGLVersion < 2.1f || glUniformMatrix3x4fv == NULL) //glUniformMatrix3x4fv is part of glsl 1.20 spec.
+		{
+			maskFeatures("OpenGLPre21");
+			if (gGLManager.mGLVersion < 1.5f)
+			{
+				maskFeatures("OpenGLPre15");
+			}
+		}
 	}
 	if (gGLManager.mNumTextureImageUnits <= 8)
 	{
@@ -649,6 +653,10 @@ void LLFeatureManager::applyBaseMasks()
 	if (gGLManager.mHasMapBufferRange)
 	{
 		maskFeatures("MapBufferRange");
+	}
+	if (gGLManager.mGLMaxVertexUniformComponents < 1024)
+	{
+		maskFeatures("VertexUniformsLT1024");
 	}
 
 	// now mask by gpu string

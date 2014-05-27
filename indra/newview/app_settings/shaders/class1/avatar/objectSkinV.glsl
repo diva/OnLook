@@ -22,15 +22,10 @@
  * $/LicenseInfo$
  */
 
-#define FLT_MAX     3.402823466e+38
-
 ATTRIBUTE vec4 weight4;  
 
-uniform mat3 matrixPalette[52];
-uniform vec3 translationPalette[52];
+uniform mat3x4 matrixPalette[52];
 uniform float maxWeight;
-
-
 
 mat4 getObjectSkinnedTransform()
 {
@@ -49,22 +44,21 @@ mat4 getObjectSkinnedTransform()
 	int i3 = int(index.z);
 	int i4 = int(index.w);
 
+	mat3 mat = mat3(matrixPalette[i1])*w.x;
+		 mat += mat3(matrixPalette[i2])*w.y;
+		 mat += mat3(matrixPalette[i3])*w.z;
+		 mat += mat3(matrixPalette[i4])*w.w;
 
-	mat3 mat  = matrixPalette[i1]*w.x;
-		 mat += matrixPalette[i2]*w.y;
-		 mat += matrixPalette[i3]*w.z;
-		 mat += matrixPalette[i4]*w.w;
-
-	vec3 trans = translationPalette[i1]*w.x;
-	trans += translationPalette[i2]*w.y;
-	trans += translationPalette[i3]*w.z;
-	trans += translationPalette[i4]*w.w;
+	vec3 trans = vec3(matrixPalette[i1][0].w,matrixPalette[i1][1].w,matrixPalette[i1][2].w)*w.x;
+	trans += vec3(matrixPalette[i2][0].w,matrixPalette[i2][1].w,matrixPalette[i2][2].w)*w.y;
+	trans += vec3(matrixPalette[i3][0].w,matrixPalette[i3][1].w,matrixPalette[i3][2].w)*w.z;
+	trans += vec3(matrixPalette[i4][0].w,matrixPalette[i4][1].w,matrixPalette[i4][2].w)*w.w;
 
 	mat4 ret;
 
-	ret[0] = vec4(mat[0].xyz, 0);
-	ret[1] = vec4(mat[1].xyz, 0);
-	ret[2] = vec4(mat[2].xyz, 0);
+	ret[0] = vec4(mat[0], 0);
+	ret[1] = vec4(mat[1], 0);
+	ret[2] = vec4(mat[2], 0);
 	ret[3] = vec4(trans, sum);
 				
 	return ret;

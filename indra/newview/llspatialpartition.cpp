@@ -2777,7 +2777,7 @@ void renderComplexityDisplay(LLDrawable* drawablep)
 	// don't highlight objects below the threshold
 	if (cost > gSavedSettings.getS32("RenderComplexityThreshold"))
 	{
-		glColor4f(color[0],color[1],color[2],0.5f);
+		gGL.diffuseColor4f(color[0],color[1],color[2],0.5f);
 
 
 		S32 num_faces = drawablep->getNumFaces();
@@ -4462,7 +4462,7 @@ LLDrawInfo::LLDrawInfo(U16 start, U16 end, U32 count, U32 offset,
 	mAlphaMaskCutoff(0.5f),
 	mDiffuseAlphaMode(0)
 {
-	mVertexBuffer->validateRange(mStart, mEnd, mCount, mOffset);
+	//mVertexBuffer->validateRange(mStart, mEnd, mCount, mOffset);
 
 	mDebugColor = (rand() << 16) + rand();
 }

@@ -988,6 +988,11 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
 			//for alpha sorting
 			facep->setDrawInfo(info);
 		}
+
+		if(facep->getGeomCount() > 0)
+		{
+			buffer->validateRange(facep->getGeomIndex(),  facep->getGeomIndex() + facep->getGeomCount() - 1, facep->getIndicesCount(), facep->getIndicesStart());
+		}
 	}
 
 	mFaceList.clear();

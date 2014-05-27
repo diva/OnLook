@@ -235,6 +235,8 @@ S32 LLImageGL::dataFormatBits(S32 dataformat)
 	  case GL_ALPHA:							return 8;
 	  case GL_COLOR_INDEX:						return 8;
 	  case GL_LUMINANCE_ALPHA:					return 16;
+	  case GL_RED:								return 8;
+	  case GL_RG:								return 16;
 	  case GL_RGB:								return 24;
 	  case GL_RGB8:								return 24;
 	  case GL_RGBA:								return 32;
@@ -271,6 +273,8 @@ S32 LLImageGL::dataFormatComponents(S32 dataformat)
 	  case GL_ALPHA:							return 1;
 	  case GL_COLOR_INDEX:						return 1;
 	  case GL_LUMINANCE_ALPHA:					return 2;
+	  case GL_RED:								return 1;
+	  case GL_RG:								return 2;
 	  case GL_RGB:								return 3;
 	  case GL_RGBA:								return 4;
 	  case GL_BGRA:								return 4;		// Used for QuickTime media textures on the Mac
@@ -811,6 +815,12 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 						glPixelStorei(GL_UNPACK_SWAP_BYTES, 0);
 						stop_glerror();
 					}
+
+					if (LLRender::sGLCoreProfile)
+					{
+						glGenerateMipmap(mTarget);
+					}	
+					stop_glerror();
 				}
 			}
 			else
@@ -1078,91 +1088,108 @@ static LLFastTimer::DeclareTimer FTM_SET_MANUAL_IMAGE("setManualImage");
 void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void *pixels, bool allow_compression)
 {
 	LLFastTimer t(FTM_SET_MANUAL_IMAGE);
-	bool use_scratch = false;
-	U32* scratch = NULL;
+	std::vector<U32> scratch;
 	if (LLRender::sGLCoreProfile)
 	{
-		if (pixformat == GL_ALPHA && pixtype == GL_UNSIGNED_BYTE) 
-		{ //GL_ALPHA is deprecated, convert to RGBA
-			use_scratch = true;
-			scratch = new U32[width*height];
+#ifdef GL_ARB_texture_swizzle
+		if(gGLManager.mHasTextureSwizzle)
+		{
+			if (pixformat == GL_ALPHA)
+			{ //GL_ALPHA is deprecated, convert to RGBA
+				const GLint mask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
+				pixformat = GL_RED;
+				intformat = GL_R8;
+			}
 
-			U32 pixel_count = (U32) (width*height);
-			for (U32 i = 0; i < pixel_count; i++)
-			{
-				U8* pix = (U8*) &scratch[i];
-				pix[0] = pix[1] = pix[2] = 0;
-				pix[3] = ((U8*) pixels)[i];
-			}				
-			
-			pixformat = GL_RGBA;
-			intformat = GL_RGBA8;
+			if (pixformat == GL_LUMINANCE)
+			{ //GL_LUMINANCE is deprecated, convert to GL_RGBA
+				const GLint mask[] = {GL_RED, GL_RED, GL_RED, GL_ONE};
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
+				pixformat = GL_RED;
+				intformat = GL_R8;
+			}
+
+			if (pixformat == GL_LUMINANCE_ALPHA)
+			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
+				const GLint mask[] = {GL_RED, GL_RED, GL_RED, GL_GREEN};
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mask);
+				pixformat = GL_RG;
+				intformat = GL_RG8;
+			}
 		}
+		else
+#endif
+		{
+			if (pixformat == GL_ALPHA && pixtype == GL_UNSIGNED_BYTE)
+			{ //GL_ALPHA is deprecated, convert to RGBA
+				scratch.resize(width*height);
+				pixels = &scratch[0];
 
-		if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE) 
-		{ //GL_LUMINANCE is deprecated, convert to GL_RGBA
-			use_scratch = true;
-			scratch = new U32[width*height];
+				U32 pixel_count = (U32) (width*height);
+				for (U32 i = 0; i < pixel_count; i++)
+				{
+					U8* pix = (U8*) &scratch[i];
+					pix[0] = pix[1] = pix[2] = 0;
+					pix[3] = ((U8*) pixels)[i];
+				}
 
-			U32 pixel_count = (U32) (width*height);
-			for (U32 i = 0; i < pixel_count; i++)
-			{
-				U8 lum = ((U8*) pixels)[i];
+				pixformat = GL_RGBA;
+				intformat = GL_RGBA8;
+			}
 
-				U8* pix = (U8*) &scratch[i];
-				pix[0] = pix[1] = pix[2] = lum;
-				pix[3] = 1.f;
-			}					
-			
-			pixformat = GL_RGBA;
-			intformat = GL_RGBA8;
-		}
+			if (pixformat == GL_LUMINANCE_ALPHA && pixtype == GL_UNSIGNED_BYTE)
+			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
+				scratch.resize(width*height);
+				pixels = &scratch[0];
 
+				U32 pixel_count = (U32) (width*height);
+				for (U32 i = 0; i < pixel_count; i++)
+				{
+					U8 lum = ((U8*) pixels)[i*2+0];
+					U8 alpha = ((U8*) pixels)[i*2+1];
 
-		if (pixformat == GL_LUMINANCE_ALPHA && pixtype == GL_UNSIGNED_BYTE) 
-		{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
-			use_scratch = true;
-			scratch = new U32[width*height];
+					U8* pix = (U8*) &scratch[i];
+					pix[0] = pix[1] = pix[2] = lum;
+					pix[3] = alpha;
+				}
 
-			U32 pixel_count = (U32) (width*height);
-			for (U32 i = 0; i < pixel_count; i++)
-			{
-				U8 lum = ((U8*) pixels)[i*2+0];
-				U8 alpha = ((U8*) pixels)[i*2+1];
+				pixformat = GL_RGBA;
+				intformat = GL_RGBA8;
+			}
 
-				U8* pix = (U8*) &scratch[i];
-				pix[0] = pix[1] = pix[2] = lum;
-				pix[3] = alpha;
-			}				
-			
-			pixformat = GL_RGBA;
-			intformat = GL_RGBA8;
-		}
+			if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE)
+			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGB
+				scratch.resize(width*height);
+				pixels = &scratch[0];
 
-		if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE) 
-		{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGB
-			use_scratch = true;
-			scratch = new U32[width*height];
+				U32 pixel_count = (U32) (width*height);
+				for (U32 i = 0; i < pixel_count; i++)
+				{
+					U8 lum = ((U8*) pixels)[i];
 
-			U32 pixel_count = (U32) (width*height);
-			for (U32 i = 0; i < pixel_count; i++)
-			{
-				U8 lum = ((U8*) pixels)[i];
-				
-				U8* pix = (U8*) &scratch[i];
-				pix[0] = pix[1] = pix[2] = lum;
-				pix[3] = 255;
-			}				
-			
-			pixformat = GL_RGBA;
-			intformat = GL_RGB8;
+					U8* pix = (U8*) &scratch[i];
+					pix[0] = pix[1] = pix[2] = lum;
+					pix[3] = 255;
+				}
+
+				pixformat = GL_RGBA;
+				intformat = GL_RGB8;
+			}
 		}
 	}
-
 	if (LLImageGL::sCompressTextures && allow_compression)
 	{
 		switch (intformat)
 		{
+			case GL_RED: 
+			case GL_R8:
+				intformat = GL_COMPRESSED_RED; 
+				break;
+			case GL_RG: 
+			case GL_RG8:
+				intformat = GL_COMPRESSED_RG; 
+				break;
 			case GL_RGB: 
 			case GL_RGB8:
 				intformat = GL_COMPRESSED_RGB; 
@@ -1190,13 +1217,8 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 	}
 
 	stop_glerror();
-	glTexImage2D(target, miplevel, intformat, width, height, 0, pixformat, pixtype, use_scratch ? scratch : pixels);
+	glTexImage2D(target, miplevel, intformat, width, height, 0, pixformat, pixtype, pixels);
 	stop_glerror();
-
-	if (use_scratch)
-	{
-		delete [] scratch;
-	}
 }
 
 //create an empty GL texture: just create a texture name
@@ -1776,7 +1798,7 @@ void LLImageGL::calcAlphaChannelOffsetAndStride()
 	}
 }
 
-std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
+//std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
 void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 {
 	if(!mNeedsAlphaAndPickMask || !mCanMask)
@@ -1897,7 +1919,7 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 
 	mMaskRMSE = sqrt(sum)/255.0;
 	
-	std::list<std::pair<std::string,std::string> > &data = sTextureMaskMap[getTexName()];
+	/*std::list<std::pair<std::string,std::string> > &data = sTextureMaskMap[getTexName()];
 	data.clear();
 	data.push_back(std::make_pair("RMSE", llformat("%f",mMaskRMSE)));
 	data.push_back(std::make_pair(" sum", llformat("%lf",sum)));
@@ -1908,7 +1930,7 @@ void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 	data.push_back(std::make_pair(" stride", llformat("%i",S32(mAlphaOffset))));
 	data.push_back(std::make_pair(" split", llformat("%u|%u|%u",lowerhalftotal,midrangetotal,upperhalftotal)));
 	data.push_back(std::make_pair(" alphatotal", llformat("%u",alphatotal)));
-	data.push_back(std::make_pair(" alphatotal/48", llformat("%u",length/48)));
+	data.push_back(std::make_pair(" alphatotal/48", llformat("%u",length/48)));*/
 	
 }
 

@@ -741,13 +741,13 @@ class LinuxManifest(ViewerManifest):
         self.path("featuretable_linux.txt")
 
     def wrapper_name(self):
-        return 'singularity'
+        return self.viewer_branding_id()
 
     def binary_name(self):
-        return 'singularity-do-not-run-directly'
+        return self.viewer_branding_id() + '-do-not-run-directly'
 
     def icon_name(self):
-        return "singularity_icon.png"
+        return self.viewer_branding_id() + "_icon.png"
 
     def package_finish(self):
         if 'installer_name' in self.args:

@@ -135,27 +135,13 @@ void LLDrawPoolAlpha::beginPostDeferredPass(S32 pass)
 		gPipeline.mDeferredDepth.copyContents(gPipeline.mDeferredScreen, 0, 0, gPipeline.mDeferredScreen.getWidth(), gPipeline.mDeferredScreen.getHeight(),
 							0, 0, gPipeline.mDeferredDepth.getWidth(), gPipeline.mDeferredDepth.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);	
 		gPipeline.mDeferredDepth.bindTarget();
-		simple_shader = fullbright_shader = &gObjectFullbrightAlphaMaskProgram;
-		gObjectFullbrightAlphaMaskProgram.bind();
-		gObjectFullbrightAlphaMaskProgram.setMinimumAlpha(0.33f);
+		simple_shader = fullbright_shader = &gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT];
+		fullbright_shader->bind();
+		fullbright_shader->setMinimumAlpha(0.33f);
 	}
 
-
-    if (LLPipeline::sRenderDeferred)
-    {
-		emissive_shader = &gDeferredEmissiveProgram;
-    }
-    else
-    {
-		if (LLPipeline::sUnderWaterRender)
-		{
-			emissive_shader = &gObjectEmissiveWaterProgram;
-		}
-		else
-		{
-			emissive_shader = &gObjectEmissiveProgram;
-		}
-    }
+	llassert_always(LLPipeline::sRenderDeferred);
+	emissive_shader = &gDeferredEmissiveProgram;
 
 	deferred_render = TRUE;
 
@@ -173,7 +159,7 @@ void LLDrawPoolAlpha::endPostDeferredPass(S32 pass)
 	{
 		gPipeline.mDeferredDepth.flush();
 		gPipeline.mScreen.bindTarget();
-		gObjectFullbrightAlphaMaskProgram.unbind();
+		gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT].unbind();
 	}
 
 	deferred_render = FALSE;
@@ -189,25 +175,10 @@ void LLDrawPoolAlpha::beginRenderPass(S32 pass)
 {
 	LLFastTimer t(FTM_RENDER_ALPHA);
 	
-	if (LLPipeline::sImpostorRender)
-	{
-		simple_shader = &gObjectSimpleImpostorProgram;
-		fullbright_shader = &gObjectFullbrightProgram;
-		emissive_shader = &gObjectEmissiveProgram;
-	}
-	else if (LLPipeline::sUnderWaterRender)
-	{
-		simple_shader = &gObjectSimpleWaterProgram;
-		fullbright_shader = &gObjectFullbrightWaterProgram;
-		emissive_shader = &gObjectEmissiveWaterProgram;
-	}
-	else
-	{
-		simple_shader = &gObjectSimpleProgram;
-		fullbright_shader = &gObjectFullbrightProgram;
-		emissive_shader = &gObjectEmissiveProgram;
-	}
-
+	simple_shader = &gObjectSimpleProgram[1<<SHD_ALPHA_MASK_BIT | LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
+	fullbright_shader = &gObjectFullbrightProgram[1<<SHD_ALPHA_MASK_BIT | LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
+	emissive_shader = &gObjectEmissiveProgram[1<<SHD_ALPHA_MASK_BIT | LLPipeline::sUnderWaterRender<<SHD_WATER_BIT];
+	
 	// Start out with no shaders.
 	current_shader = target_shader = NULL;
 
@@ -267,20 +238,14 @@ void LLDrawPoolAlpha::render(S32 pass)
 
 		if (mVertexShaderLevel > 0)
 		{
-			if (LLPipeline::sImpostorRender)
-			{
-				fullbright_shader->bind();
-				fullbright_shader->setMinimumAlpha(0.5f);
-				simple_shader->bind();
-				simple_shader->setMinimumAlpha(0.5f);
-			}				
-			else
-			{
-				fullbright_shader->bind();
-				fullbright_shader->setMinimumAlpha(0.f);
-				simple_shader->bind();
-				simple_shader->setMinimumAlpha(0.f);
-			}
+			float min_alpha = LLPipeline::sImpostorRender ? 0.5f : 0.004f;
+			
+			fullbright_shader->bind();
+			fullbright_shader->setMinimumAlpha(min_alpha);
+			simple_shader->bind();
+			simple_shader->setMinimumAlpha(min_alpha);
+			emissive_shader->bind();
+			emissive_shader->setMinimumAlpha(min_alpha);
 		}
 		else
 		{
@@ -536,7 +501,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 					if (params.mTexture.notNull())
 					{
 						params.mTexture->addTextureStats(params.mVSize);
-						if (mat)
+						if (use_shaders && mat && current_shader)
 						{
 							current_shader->bindTexture(LLShaderMgr::DIFFUSE_MAP, params.mTexture);
 						}

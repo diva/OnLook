@@ -32,6 +32,16 @@
 
 #define LL_DEFERRED_MULTI_LIGHT_COUNT 16
 
+enum
+{
+	SHD_ALPHA_MASK_BIT = 0,
+	SHD_WATER_BIT,
+	SHD_NO_INDEX_BIT,
+	SHD_SKIN_BIT,
+	SHD_SHINY_BIT,
+	SHD_COUNT
+};
+
 class LLViewerShaderMgr: public LLShaderMgr
 {
 public:
@@ -208,60 +218,23 @@ extern LLGLSLShader			gTwoTextureAddProgram;
 extern LLGLSLShader			gOneTextureNoColorProgram;
 
 //object shaders
-extern LLGLSLShader			gObjectSimpleProgram;
-extern LLGLSLShader			gObjectSimpleImpostorProgram;
+
+extern LLGLSLShaderArray<LLViewerShaderMgr::SHADER_OBJECT>	gObjectSimpleProgram[1<<SHD_COUNT];
+extern LLGLSLShaderArray<LLViewerShaderMgr::SHADER_OBJECT>	gObjectFullbrightProgram[1<<SHD_COUNT];
+extern LLGLSLShaderArray<LLViewerShaderMgr::SHADER_OBJECT>	gObjectEmissiveProgram[1<<SHD_SHINY_BIT];
 extern LLGLSLShader			gObjectPreviewProgram;
-extern LLGLSLShader			gObjectSimpleAlphaMaskProgram;
-extern LLGLSLShader			gObjectSimpleWaterProgram;
-extern LLGLSLShader			gObjectSimpleWaterAlphaMaskProgram;
-extern LLGLSLShader			gObjectSimpleNonIndexedProgram;
 extern LLGLSLShader			gObjectSimpleNonIndexedTexGenProgram;
 extern LLGLSLShader			gObjectSimpleNonIndexedTexGenWaterProgram;
-extern LLGLSLShader			gObjectSimpleNonIndexedWaterProgram;
-extern LLGLSLShader			gObjectAlphaMaskNonIndexedProgram;
-extern LLGLSLShader			gObjectAlphaMaskNonIndexedWaterProgram;
 extern LLGLSLShader			gObjectAlphaMaskNoColorProgram;
 extern LLGLSLShader			gObjectAlphaMaskNoColorWaterProgram;
-extern LLGLSLShader			gObjectFullbrightProgram;
-extern LLGLSLShader			gObjectFullbrightWaterProgram;
 extern LLGLSLShader			gObjectFullbrightNoColorProgram;
 extern LLGLSLShader			gObjectFullbrightNoColorWaterProgram;
-extern LLGLSLShader			gObjectEmissiveProgram;
-extern LLGLSLShader			gObjectEmissiveWaterProgram;
-extern LLGLSLShader			gObjectFullbrightAlphaMaskProgram;
-extern LLGLSLShader			gObjectFullbrightWaterAlphaMaskProgram;
-extern LLGLSLShader			gObjectFullbrightNonIndexedProgram;
-extern LLGLSLShader			gObjectFullbrightNonIndexedWaterProgram;
-extern LLGLSLShader			gObjectEmissiveNonIndexedProgram;
-extern LLGLSLShader			gObjectEmissiveNonIndexedWaterProgram;
 extern LLGLSLShader			gObjectBumpProgram;
 extern LLGLSLShader			gTreeProgram;
 extern LLGLSLShader			gTreeWaterProgram;
 
 extern LLGLSLShader			gObjectSimpleLODProgram;
 extern LLGLSLShader			gObjectFullbrightLODProgram;
-
-extern LLGLSLShader			gObjectFullbrightShinyProgram;
-extern LLGLSLShader			gObjectFullbrightShinyWaterProgram;
-extern LLGLSLShader			gObjectFullbrightShinyNonIndexedProgram;
-extern LLGLSLShader			gObjectFullbrightShinyNonIndexedWaterProgram;
-
-extern LLGLSLShader			gObjectShinyProgram;
-extern LLGLSLShader			gObjectShinyWaterProgram;
-extern LLGLSLShader			gObjectShinyNonIndexedProgram;
-extern LLGLSLShader			gObjectShinyNonIndexedWaterProgram;
-
-extern LLGLSLShader			gSkinnedObjectSimpleProgram;
-extern LLGLSLShader			gSkinnedObjectFullbrightProgram;
-extern LLGLSLShader			gSkinnedObjectEmissiveProgram;
-extern LLGLSLShader			gSkinnedObjectFullbrightShinyProgram;
-extern LLGLSLShader			gSkinnedObjectShinySimpleProgram;
-
-extern LLGLSLShader			gSkinnedObjectSimpleWaterProgram;
-extern LLGLSLShader			gSkinnedObjectFullbrightWaterProgram;
-extern LLGLSLShader			gSkinnedObjectEmissiveWaterProgram;
-extern LLGLSLShader			gSkinnedObjectFullbrightShinyWaterProgram;
-extern LLGLSLShader			gSkinnedObjectShinySimpleWaterProgram;
 
 //environment shaders
 extern LLGLSLShader			gTerrainProgram;

@@ -1652,7 +1652,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 	// Disable vertical sync for swap
 	if(wglSwapIntervalEXT)
 	{
-		if (vsync_mode == 0)
+		if (vsync_mode == 0 || (!gGLManager.mHasAdaptiveVsync && vsync_mode == -1))
 		{
 			LL_INFOS("Window") << "Disabling vertical sync" << LL_ENDL;
 			wglSwapIntervalEXT(0);
