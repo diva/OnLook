@@ -4,7 +4,7 @@
 		<radio_item name="external" tool_tip="Usar el navegador predeterminado del sistema parar abrir la ayuda, páginas web, etc. No se recomienda si el visor se está ejecutando a Pantalla completa.">
 			Usar navegador externo (Firefox, Safari, Opera, Internet Explorer)
 		</radio_item>
-		<radio_item name="internal" tool_tip="Usar el navegador incorporado para abrir la ayuda, páginas web, etc. El navegador se abrirá en una nueva ventana dentro de Singularity.">
+		<radio_item name="internal" tool_tip="Usar el navegador incorporado para abrir la ayuda, páginas web, etc. El navegador se abrirá en una nueva ventana dentro de [SHORT_APP_NAME].">
 			Usar navegador incorporado
 		</radio_item>
 	</radio_group>

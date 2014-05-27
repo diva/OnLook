@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Sistema" name="ascsys">
-	<tab_container label="Sistema Singularity" name="Ascent System">
+	<tab_container label="Sistema" name="Ascent System">
 		<!-- =========================== -->
 		<panel label="General" name="User Interface">
 			<check_box label="Habilitar Teleporte con doble click" tool_tip="Haciendo doble click en un objeto o persona te transportará hacia su ubicación." name="double_click_teleport_check"/>
@@ -16,7 +16,7 @@
 			<check_box label="Permitir siempre volar" tool_tip="Te permite volar en lugares donde no está permitido. Utilizalo bajo tu responsabilidad, que puedas no significa que debas." name="always_fly_check"/>
 			<check_box label="Deshabilitar la Distancia Mínima de la Cámara" tool_tip="Permite a la cámara acercarse a los objetos." name="disable_camera_zoom_check"/>
 			<check_box label="Habilitar la funcionalidad Super Usuario" tool_tip="Agrega funciones consideradas demasiado peligrosas para un uso normal. Estas características pueden causar estragos, o hacer daño si son mal utilizadas - Principalmente para ti o tus pertenencias. Si estás seguro, activa la casilla de verificación a continuación." name="power_user_check"/>
-			<check_box label="Confirmar funcionalidad Super Usuario" tool_tip="Confirmar la activación de Super Usuario. Activalo bajo tu propio riesgo, y utiliza cualquier característica habilitada en forma responsable. Los desarrolladores de Singularity no reemplazarán nada que hayas arruinado. Te recomendamos hacer una copia de seguridad de todo aquello que será víctima de dichos poderes. A diferencia del resto de los items a marcar, debes hacer click en Aplicar o en OK después de activar esta función." name="power_user_confirm_check"/>
+			<check_box label="Confirmar funcionalidad Super Usuario" tool_tip="Confirmar la activación de Super Usuario. Activalo bajo tu propio riesgo, y utiliza cualquier característica habilitada en forma responsable. Los desarrolladores de [SHORT_APP_NAME] no reemplazarán nada que hayas arruinado. Te recomendamos hacer una copia de seguridad de todo aquello que será víctima de dichos poderes. A diferencia del resto de los items a marcar, debes hacer click en Aplicar o en OK después de activar esta función." name="power_user_confirm_check"/>
 			<check_box label="Descargar automáticamente el inventario en segundo plano al iniciar sesión" tool_tip="El inventario será precargado cuando inicies sesión, de esta manera no tienes que esperar que cargue cuando hagas una búsqueda por primera vez." name="fetch_inventory_on_login_check"/>
 			<check_box label="Activar Efectos del Viento" name="enable_wind"/>
 			<check_box label="Activar Nubes" name="enable_clouds"/>

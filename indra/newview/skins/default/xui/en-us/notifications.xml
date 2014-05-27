@@ -3237,10 +3237,10 @@ Visit the [SECOND_LIFE] Public Issue Tracker, where you can report bugs and othe
    icon="alertmodal.tga"
    name="WebLaunchSinguIssue"
    type="alertmodal">
-Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+Visit the [SHORT_APP_NAME] Issue Tracker, to report bugs and issues with [SHORT_APP_NAME] Viewer.
 Please be sure that your report won't be a duplicate of an existing one.
     <usetemplate
-     ignoretext="When launching web browser to view Singularity Issue Tracker"
+     ignoretext="When launching web browser to view [SHORT_APP_NAME] Issue Tracker"
      name="okcancelignore"
      notext="Cancel"
      yestext="Go to page"/>

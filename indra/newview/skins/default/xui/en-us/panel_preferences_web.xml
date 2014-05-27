@@ -3,7 +3,7 @@
 	<radio_group bottom="-45" draw_border="false" height="40" left="12"
 	     name="use_external_browser" width="480">
 		<radio_item bottom="-20" height="20" name="external" width="480" tool_tip="Use the default system web browser for help, web links, etc. Not recommended if running full screen.">Use external web browser (Firefox, Safari, Internet Explorer)</radio_item>
-		<radio_item bottom="-40" height="20" name="internal" width="480" tool_tip="Use the built-in web browser for help, web links, etc. This browser opens as a new window inside Singularity.">Use built-in web browser</radio_item>
+		<radio_item bottom="-40" height="20" name="internal" width="480" tool_tip="Use the built-in web browser for help, web links, etc. This browser opens as a new window inside [SHORT_APP_NAME].">Use built-in web browser</radio_item>
 	</radio_group>
 	<text bottom_delta="-25" follows="top" height="10" left="15" name="cache_size_label_l">Browser cache:</text>
 	<button bottom_delta="-10" follows="top" height="22" label="Clear Now" left="140" name="clear_cache" scale_image="true" width="85"/>

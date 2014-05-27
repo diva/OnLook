@@ -1835,9 +1835,9 @@ Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar
 	</notification>
 	
 	<notification name="WebLaunchSinguIssue">
-		Visita Singularity Issue Tracker (Seguimiento de incidencias del Visor Singularity), donde podrás informar de errores y otros asuntos del visor Singularity.
+		Visita [SHORT_APP_NAME] Issue Tracker (Seguimiento de incidencias del Visor [SHORT_APP_NAME]), donde podrás informar de errores y otros asuntos del visor [SHORT_APP_NAME].
 Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente.		
-    <usetemplate ignoretext="Cuando se abra el navegador para ir al Issue Tracker de Singularity" name="okcancelignore" notext="Cancelar" yestext="Ir a la Página"/>
+    <usetemplate ignoretext="Cuando se abra el navegador para ir al Issue Tracker de [SHORT_APP_NAME]" name="okcancelignore" notext="Cancelar" yestext="Ir a la Página"/>
 	</notification>	
   
 	<notification name="WebLaunchPublicIssueHelp">

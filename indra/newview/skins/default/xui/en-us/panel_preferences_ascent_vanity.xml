@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="512" border="true" label="Vanity" name="ascvan">
-  <tab_container label="Singularity Vanity" bottom="0" height="440" width="497" name="Ascent Vanity" tab_min_width="0">
+  <tab_container label="Vanity" bottom="0" height="440" width="497" name="Ascent Vanity" tab_min_width="0">
     <panel border="true" left="1" bottom="-190" height="180" width="500" label="Main" name="General">
       <check_box bottom_delta="-25" control_name="AscentStoreSettingsPerAccount" follows="top" height="16" initial_value="true" label="Where applicable, save Vanity settings per-account." left="10" tool_tip="Saves settings per-account, allowing easier customization for alts." name="use_account_settings_check"/>
       <check_box bottom_delta="-20" control_name="AscentDisableTeleportScreens" follows="top" height="16" initial_value="true" label="Hide the Teleport progress screens" tool_tip="If checked, the viewer will hide the teleport progress screen, allowing you to continue to read IMs." name="disable_tp_screen_check"/>
@@ -17,7 +17,7 @@
     </panel>
     <panel border="true" left="1" bottom="-190" height="180" width="500" label="Tags/Colors" name="TagsColors">
       <!-- Client tag options -->
-      <check_box bottom_delta="-25" control_name="AscentBroadcastTag" follows="top" height="16" initial_value="true" label="Broadcast Client Tag:" left="10" tool_tip="Choose whether others see that you enjoy Singularity." name="show_my_tag_check"/>
+      <check_box bottom_delta="-25" control_name="AscentBroadcastTag" follows="top" height="16" initial_value="true" label="Broadcast Client Tag:" left="10" tool_tip="Choose whether others see that you enjoy [SHORT_APP_NAME]." name="show_my_tag_check"/>
       <combo_box follows="top" bottom_delta="-24" height="18" left_delta="24" max_chars="32" tool_tip="The client tag (And subsequent color) to broadcast. Overridden locally by Custom Tag/Color." name="tag_spoofing_combobox" width="130">
         <combo_item name="Singularity" value="f25263b7-6167-4f34-a4ef-af65213b2e39">Singularity</combo_item>
       </combo_box>
@@ -34,7 +34,7 @@
       <check_box bottom_delta="-8" control_name="AscentShowOthersTag" follows="top" height="16" initial_value="true" label="Display client tag for others" left_delta="-205" tool_tip="Enabling this will show client tag names on others' avatar names." name="show_other_tag_check"/>
       <check_box bottom_delta="-20" control_name="AscentShowOthersTagColor" follows="top" height="16" initial_value="true" label="Display client tag color for others" left_delta="0" tool_tip="Enabling this sets others' avatar name color to their client's color." name="show_client_tag_color_check"/>
       <check_box bottom_delta="-20" control_name="AscentShowIdleTime" follows="top" height="16" initial_value="true" label="Show Idle Time" tool_tip="Enabling this will show the amount of time an avatar has been idle." name="show_idle_time_check"/>
-      <check_box bottom_delta="-40" control_name="AscentUpdateTagsOnLoad" follows="top" height="16" initial_value="true" label="Automatically check website for updates to client definitions" left_delta="-230" tool_tip="Enabling this will allow Singularity to download fresh definitions when needed." name="update_tags_check"/>
+      <check_box bottom_delta="-40" control_name="AscentUpdateTagsOnLoad" follows="top" height="16" initial_value="true" label="Automatically check website for updates to client definitions" left_delta="-230" tool_tip="Enabling this will allow [SHORT_APP_NAME] to download fresh definitions when needed." name="update_tags_check"/>
       <button bottom_delta="0" control_name="ManualUpdate" name="update_clientdefs" follows="top" label="Manual Update" height="18" left_delta="340" width="110"/>
       <!-- End of Client Tag settings -->
       <text bottom_delta="-25" follows="top" height="10" left="20" name="effects_color_textbox">Color For My Effects:</text>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Graphiques" name="Display panel">
-	<check_box label="Lancer Singularity dans une fen&#xEA;tre (non pas, PAR la fen&#xEA;tre)" name="windowed mode"/>
+	<check_box label="Lancer [SHORT_APP_NAME] dans une fen&#xEA;tre (non pas, PAR la fen&#xEA;tre)" name="windowed mode"/>
 	<button left="330" width="165" label="Param&#xE8;tres recommand&#xE9;s" tool_tip="Reset to recommended graphics settings" name="Defaults"/>
 	<text_editor bottom="-56" height="40" left="25" name="FullScreenInfo" width="460">
 		D&#xE9;cocher cette option pour passer en mode plein &#xE9;cran.

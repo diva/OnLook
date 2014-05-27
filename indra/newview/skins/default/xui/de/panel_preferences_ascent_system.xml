@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="System" name="ascsys">
-  <tab_container label="Singularity System" name="Ascent System">
+  <tab_container label="System" name="Ascent System">
 
     <panel label="Generell" name="User Interface">
       <check_box label="Teleport mit Doppelklick erlauben" tool_tip="Doppelklick auf eine Person oder Ort teleportiert dich dorthin" name="double_click_teleport_check"/>
@@ -16,7 +16,7 @@
       <check_box label="Fliegen immer erlauben" tool_tip="Erlaubt dir in Flugverbotszonen zu fliegen. Benutzung auf eigene Gefahr - Es zu können heisst nicht, daß man es auch sollte." name="always_fly_check"/>
       <check_box label="Deaktiviert die Minimal-Distanz der Kamera zum Objekt" tool_tip="Erlaubt mit der Kamera ganz ganz nah zu zoomen." name="disable_camera_zoom_check"/>
       <check_box label="Power User Funktionen einschalten" tool_tip="Fügt Optionen hinzu, die normalerweise als zu gefährlich erachtet werden. Diese Optionen können schwerste Fehler verursachen wenn sie falsch benutzt werden - entweder an dir oder deinem Inventar. Wenn du dir wirklich sicher bist, aktiviere die Checkbox unten ebenfalls." name="power_user_check"/>
-      <check_box label="Power User Funktionen bestätigen" tool_tip="Bestätigt Power User Funktionen. Aktiviere dies auf eingene Gefahr und benutze alle Features die aktiviert werden verantwortungsvoll. Die Singularity Entwicker ersetzen nichts was durch die Benutzung dieser Funktionen zerstört wird. Wir empfehlen immer Backups von allem zu erstellen, um nicht Opfer dieser Funktionen zu werden. Im Gegensatz zu anderen Checkboxen, musst du erst Anwenden oder OK klicken um es zu aktivieren." name="power_user_confirm_check"/>
+      <check_box label="Power User Funktionen bestätigen" tool_tip="Bestätigt Power User Funktionen. Aktiviere dies auf eingene Gefahr und benutze alle Features die aktiviert werden verantwortungsvoll. Die [SHORT_APP_NAME] Entwicker ersetzen nichts was durch die Benutzung dieser Funktionen zerstört wird. Wir empfehlen immer Backups von allem zu erstellen, um nicht Opfer dieser Funktionen zu werden. Im Gegensatz zu anderen Checkboxen, musst du erst Anwenden oder OK klicken um es zu aktivieren." name="power_user_confirm_check"/>
       <check_box label="Lade das Inventar automatisch im Hintergrund nach dem Login" tool_tip="Inventar wird vorgeladen beim Einloggen, damit du nicht zu lang darauf warten musst wenn du die erste Suche machst." name="fetch_inventory_on_login_check"/>
       <check_box label="Aktiviere Wind Effekte" name="enable_wind"/>
       <check_box label="Aktiviere Wolken" name="enable_clouds"/>

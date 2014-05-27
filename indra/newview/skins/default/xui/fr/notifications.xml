@@ -87,7 +87,7 @@ Aucun didacticiel n'est disponible actuellement.
 
 
 	<notification name="BadInstallation">
-Une erreur est survenue lors de la mise à jour de Singularity. Veuillez télécharger la dernière version depuis singularityviewer.org
+Une erreur est survenue lors de la mise à jour de [SHORT_APP_NAME]. Veuillez télécharger la dernière version depuis singularityviewer.org
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
@@ -3124,10 +3124,10 @@ The folder '[FOLDERNAME]' is a system folder. Deleting system folders can cause 
    icon="alertmodal.tga"
    name="WebLaunchSinguIssue"
    type="alertmodal">
-Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+Visit the [SHORT_APP_NAME] Issue Tracker, to report bugs and issues with [SHORT_APP_NAME] Viewer.
 Please be sure that your report won't be a duplicate of an existing one.
     <usetemplate
-     ignoretext="Quand vous lancez votre navigateur pour aller sur le Singularity Public Issue Tracker"
+     ignoretext="Quand vous lancez votre navigateur pour aller sur le [SHORT_APP_NAME] Public Issue Tracker"
      name="okcancelignore"
      notext="Cancel"
      yestext="Go to page"/>

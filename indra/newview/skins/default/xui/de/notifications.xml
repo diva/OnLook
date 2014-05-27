@@ -1050,7 +1050,7 @@ In Ihren Anwendungsordner herunterladen?<usetemplate name="okcancelbuttons" yest
 
   <notification name="WebLaunchPublicIssue">Im [SECOND_LIFE] Allgemeine-Fragen-Tracker k&#xF6;nnen Sie Fehler und andere Probleme melden.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>
 
-  <notification name="WebLaunchSinguIssue">Besuche den Singularity Issue Tracker, um Fehler und Bugs mit dem Singularity Viewer zu berichten.
+  <notification name="WebLaunchSinguIssue">Besuche den [SHORT_APP_NAME] Issue Tracker, um Fehler und Bugs mit dem [SHORT_APP_NAME] Viewer zu berichten.
 Achte bitte da drauf das deine Meldung nicht schon existiert.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>
 
   <notification name="WebLaunchPublicIssueHelp">Informieren Sie sich im [SECOND_LIFE] Wiki &#xFC;ber den Allgemeine Fragen-Tracker.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>

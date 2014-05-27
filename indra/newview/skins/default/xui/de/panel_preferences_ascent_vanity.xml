@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Aussehen" name="ascvan">
-  <tab_container label="Singularity System" name="Ascent Vanity">
+  <tab_container label="System" name="Ascent Vanity">
     <panel label="Haupt" name="General">
       <check_box label="Wo möglich, speichere Einstellungen pro Account." tool_tip="Speichere Einstellungen pro akkount, erlaubt das einfache ändern für Alt Accounts." name="use_account_settings_check"/>
       <check_box label="Verstecke den TP Bildschirm." tool_tip="If checked, the viewer will hide the teleport progress screen, allowing you to continue to read IMs." name="disable_tp_screen_check"/>
@@ -17,7 +17,7 @@
     </panel>
     <panel label="Tags/Colors" name="TagsColors">
       <!-- Client tag options -->
-      <check_box label="Broadcast Client Tag:" tool_tip="Choose whether others see that you enjoy Singularity." name="show_my_tag_check"/>
+      <check_box label="Broadcast Client Tag:" tool_tip="Choose whether others see that you enjoy [SHORT_APP_NAME]." name="show_my_tag_check"/>
       <combo_box tool_tip="The client tag (And subsequent color) to broadcast. Overridden locally by Custom Tag/Color." name="tag_spoofing_combobox">
         <combo_item name="Singularity">Singularity</combo_item>
       </combo_box>
@@ -34,7 +34,7 @@
       <check_box label="Display client tag for others" tool_tip="Enabling this will show client tag names on others' avatar names." name="show_other_tag_check"/>
       <check_box label="Display client tag color for others" tool_tip="Enabling this sets others' avatar name color to their client's color." name="show_client_tag_color_check"/>
       <check_box label="Show Idle Time" tool_tip="Enabling this will show the amount of time an avatar has been idle." name="show_idle_time_check"/>
-      <check_box label="Automatically check website for updates to client definitions" tool_tip="Enabling this will allow Singularity to download fresh definitions when needed." name="update_tags_check"/>
+      <check_box label="Automatically check website for updates to client definitions" tool_tip="Enabling this will allow [SHORT_APP_NAME] to download fresh definitions when needed." name="update_tags_check"/>
       <button name="update_clientdefs" label="Manual Update"/>
       <!-- End of Client Tag settings -->
       <text name="effects_color_textbox">Color For My Effects:</text>
