@@ -38,6 +38,10 @@ mat4 getObjectSkinnedTransform()
 		 index = max(index, vec4( 0.0));
 
 	float sum = (w.x+w.y+w.z+w.w);
+	if(sum > 0.0)
+		w*=1.0/sum;
+	else
+		w=vec4(FLT_MAX);
 
 	int i1 = int(index.x);
 	int i2 = int(index.y);
@@ -59,7 +63,7 @@ mat4 getObjectSkinnedTransform()
 	ret[0] = vec4(mat[0], 0);
 	ret[1] = vec4(mat[1], 0);
 	ret[2] = vec4(mat[2], 0);
-	ret[3] = vec4(trans, sum);
+	ret[3] = vec4(trans, 1.0);
 				
 	return ret;
 }
