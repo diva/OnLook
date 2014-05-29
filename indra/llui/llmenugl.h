@@ -453,6 +453,15 @@ public:
 	static const std::string ARROW_UP;
 	static const std::string ARROW_DOWN;
 	
+	// for scrollable menus
+	typedef enum e_scrolling_direction
+	{
+		SD_UP = 0,
+		SD_DOWN = 1,
+		SD_BEGIN = 2,
+		SD_END = 3
+	} EScrollingDirection;
+
 protected:
 	// let branching menu items use my protected traversal methods
 	friend class LLMenuItemBranchGL;
@@ -566,15 +575,18 @@ public:
 	static BOOL getKeyboardMode() { return sKeyboardMode; }
 
 	S32 getShortcutPad() { return mShortcutPad; }
-	BOOL isScrollable() const { return FALSE; }
+
+	bool scrollItems(EScrollingDirection direction);
+	BOOL isScrollable() const { return mScrollable; }
+	void setScrollable(bool b);
 
 	static class LLMenuHolderGL* sMenuContainer;
 	
-	bool isScrollPositionOnShowReset() { return false; }
+	void resetScrollPositionOnShow(bool reset_scroll_pos) { mResetScrollPositionOnShow = reset_scroll_pos; }
+	bool isScrollPositionOnShowReset() { return mResetScrollPositionOnShow; }
 protected:
 	void createSpilloverBranch();
 	void cleanupSpilloverBranch();
-
 	// Add the menu item to this menu.
 	virtual BOOL append( LLMenuItemGL* item );
 	BOOL append(LLMenuItemGL* item, LLView* insert_before);
@@ -587,6 +599,7 @@ protected:
 	typedef std::list< LLMenuItemGL* > item_list_t;
 	item_list_t mItems;
 	LLMenuItemGL*mFirstVisibleItem;
+	LLMenuItemGL *mArrowUpItem, *mArrowDownItem;
 
 	typedef std::map<KEY, LLMenuItemGL*> navigation_key_map_t;
 	navigation_key_map_t mJumpKeys;
@@ -594,11 +607,15 @@ protected:
 	S32				mLastMouseY;
 	S32				mMouseVelX;
 	S32				mMouseVelY;
+	U32				mMaxScrollableItems;
 	BOOL			mHorizontalLayout;
+	BOOL			mScrollable;
 	BOOL			mKeepFixedSize;
 	BOOL			mNeedsArrange;
 
 private:
+
+
 	static LLColor4 sDefaultBackgroundColor;
 	static BOOL		sKeyboardMode;
 
@@ -609,12 +626,14 @@ private:
 	BOOL mDropShadowed; 	//  Whether to drop shadow 
 	bool			mHasSelection;
 	LLFrameTimer	mFadeTimer;
+	LLTimer			mScrollItemsTimer;
 	BOOL			mTornOff;
 	class LLMenuItemTearOffGL* mTearOffItem;
 	class LLMenuItemBranchGL* mSpilloverBranch;
 	LLMenuGL*		mSpilloverMenu;
 	KEY				mJumpKey;
 	S32				mShortcutPad;
+	bool			mResetScrollPositionOnShow;
 }; // end class LLMenuGL
 
 

@@ -116,10 +116,10 @@ public:
 	void			setSelectedLabelColor( const LLColor4& c )			{ mSelectedLabelColor = c; }
 
 
-	/*boost::signals2::connection setClickedCallback(const CommitCallbackParam& cb);
+	boost::signals2::connection setClickedCallback(const CommitCallbackParam& cb);
 	boost::signals2::connection setMouseDownCallback(const CommitCallbackParam& cb);
 	boost::signals2::connection setMouseUpCallback(const CommitCallbackParam& cb);
-	boost::signals2::connection setHeldDownCallback(const CommitCallbackParam& cb);*/
+	boost::signals2::connection setHeldDownCallback(const CommitCallbackParam& cb);
 
 	boost::signals2::connection setClickedCallback( const commit_signal_t::slot_type& cb ); // mouse down and up within button
 	boost::signals2::connection setMouseDownCallback( const commit_signal_t::slot_type& cb );
