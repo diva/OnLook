@@ -138,7 +138,7 @@ Detalles del error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado e
 	</notification>
 	
 	<notification name="BadInstallation">
-		Ha ocurrido un error al actualizar [APP_NAME].  Por favor, descarga la última versión desde www.singularityviewer.org.
+		Ha ocurrido un error al actualizar [APP_NAME].  Por favor, descarga la última versión desde [APP_SITE].
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	

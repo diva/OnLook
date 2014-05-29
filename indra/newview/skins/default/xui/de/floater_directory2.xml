@@ -242,7 +242,7 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
       
       <string name="loading_text">Wird geladen...</string>
       <string name="done_text">Fertig</string>
-      <string name="redirect_404_url">http://www.singularityviewer.org/404</string>
+      <string name="redirect_404_url">[APP_SITE]/404</string>
     </panel>
 	</tab_container>
 	

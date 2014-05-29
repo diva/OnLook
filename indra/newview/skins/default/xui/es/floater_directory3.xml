@@ -493,7 +493,7 @@ subasta. Para comprarlo directamente, visítalo y pulsa en el nombre del terreno
 			<text name="status_text"/>
 			<string name="loading_text">Cargando...</string>
 			<string name="done_text">Hecho</string>
-			<string name="redirect_404_url">http://www.singularityviewer.org/404</string>
+			<string name="redirect_404_url">[APP_SITE]/404</string>
 		</panel>		
 	</tab_container>
 	<panel name="classified_details_panel"/>

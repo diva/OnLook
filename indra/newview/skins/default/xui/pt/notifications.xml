@@ -100,7 +100,7 @@ Detalhes do erro: O alerta chamado '[_NAME]' não foi encontrado em notification
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Sim"/>
 	</notification>
 	<notification name="BadInstallation">
-		Ocorreu um erro atualizando o [APP_NAME]. Por favor, faça o download da última versão em www.singularityviewer.org.
+		Ocorreu um erro atualizando o [APP_NAME]. Por favor, faça o download da última versão em [APP_SITE].
     <usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 

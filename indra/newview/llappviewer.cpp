@@ -357,6 +357,7 @@ void init_default_trans_args()
 	default_trans_args.insert("APP_NAME");
 	default_trans_args.insert("SHORT_APP_NAME");
 	default_trans_args.insert("CAPITALIZED_APP_NAME");
+	default_trans_args.insert("APP_SITE");
 	default_trans_args.insert("SECOND_LIFE_GRID");
 	default_trans_args.insert("SUPPORT_SITE");
 	default_trans_args.insert("CURRENCY");

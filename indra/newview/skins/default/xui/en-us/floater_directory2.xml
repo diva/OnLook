@@ -631,7 +631,7 @@ To buy direct, visit the land and click on the place name in the title bar.
       <text bottom="5" follows="bottom|left" left="10" height="16" name="status_text"/>
       <string name="loading_text">Loading...</string>
       <string name="done_text">Done</string>
-      <string name="redirect_404_url">http://www.singularityviewer.org/404</string>
+      <string name="redirect_404_url">[APP_SITE]/404</string>
     </panel>
 	</tab_container>
 	<panel bottom="-560" follows="right|top" height="470" left="340"
