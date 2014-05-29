@@ -79,16 +79,6 @@ typedef void (*label_callback)(std::string&,void*);
 class LLMenuItemGL : public LLUICtrl
 {
 public:
-	// static functions to control the global color scheme.
-	/*static void setEnabledColor( const LLColor4& color ) { sEnabledColor = color; }
-	static const LLColor4& getEnabledColor() { return sEnabledColor; }
-	static void setDisabledColor( const LLColor4& color ) { sDisabledColor = color; }
-	static const LLColor4& getDisabledColor() { return sDisabledColor; }
-	static void setHighlightBGColor( const LLColor4& color ) { sHighlightBackground = color; }
-	static const LLColor4& getHighlightBGColor() { return sHighlightBackground; }
-	static void setHighlightFGColor( const LLColor4& color ) { sHighlightForeground = color; }
-	static const LLColor4& getHighlightFGColor() { return sHighlightForeground; }*/
-
 	LLMenuItemGL( const std::string& name, const std::string& label, KEY key = KEY_NONE, MASK = MASK_NONE );
 	virtual ~LLMenuItemGL();
 
@@ -190,6 +180,7 @@ protected:
 	// the current accelerator key and mask to the provided string.
 	void appendAcceleratorString( std::string& st ) const;
 
+protected:
 	KEY mAcceleratorKey;
 	MASK mAcceleratorMask;
 	// mLabel contains the actual label specified by the user.
@@ -248,12 +239,12 @@ public:
 	// doIt() - do the primary funcationality of the menu item.
 	virtual void doIt( void ) {}
 
-	virtual void draw( void );
-	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
-	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask);
-	virtual BOOL handleHover(S32 x, S32 y, MASK mask);
+	/*virtual*/ void draw( void );
+	/*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
+	/*virtual*/ BOOL handleHover(S32 x, S32 y, MASK mask);
 
-	virtual U32 getNominalHeight( void ) const;
+	/*virtual*/ U32 getNominalHeight( void ) const;
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -429,7 +420,6 @@ private:
 	BOOL* mToggle;
 };
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLMenuGL
 //
@@ -479,7 +469,7 @@ public:
 	/*virtual*/ BOOL handleHover( S32 x, S32 y, MASK mask );
 	/*virtual*/ BOOL handleScrollWheel( S32 x, S32 y, S32 clicks );
 	/*virtual*/ void draw( void );
-	virtual void drawBackground(LLMenuItemGL* itemp, LLColor4& color);
+	/*virtual*/ void drawBackground(LLMenuItemGL* itemp, LLColor4& color);
 	/*virtual*/ void setVisible(BOOL visible);
 	/*virtual*/ bool addChild(LLView* view, S32 tab_group = 0);
 	/*virtual*/ void removeChild( LLView* ctrl);
@@ -554,7 +544,7 @@ public:
 	// Show popup in global screen space based on last mouse location.
 	static void showPopup(LLMenuGL* menu);
 
-	// Show popup at a specific location.
+	// Show popup at a specific location, in the spawn_view's coordinate frame
 	static void showPopup(LLView* spawning_view, LLMenuGL* menu, S32 x, S32 y);
 
 	// Whether to drop shadow menu bar 
@@ -632,6 +622,7 @@ private:
 	class LLMenuItemBranchGL* mSpilloverBranch;
 	LLMenuGL*		mSpilloverMenu;
 	KEY				mJumpKey;
+	BOOL			mCreateJumpKeys;
 	S32				mShortcutPad;
 	bool			mResetScrollPositionOnShow;
 }; // end class LLMenuGL
@@ -703,11 +694,11 @@ private:
 }; // end class LLMenuItemBranchGL
 
 
-
 //-----------------------------------------------------------------------------
 // class LLContextMenu
 // A context menu
 //-----------------------------------------------------------------------------
+
 class LLContextMenu
 : public LLMenuGL
 {
@@ -923,7 +914,8 @@ class LLTearOffMenu : public LLFloater
 {
 public:
 	static LLTearOffMenu* create(LLMenuGL* menup);
-	virtual ~LLTearOffMenu() {}
+	virtual ~LLTearOffMenu();
+
 	virtual void onClose(bool app_quitting);
 	virtual void draw(void);
 	virtual void onFocusReceived();
