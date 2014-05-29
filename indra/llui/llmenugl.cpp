@@ -2084,7 +2084,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 	{
 		// SUBMENU
 		LLMenuGL *submenu = (LLMenuGL*)LLMenuGL::fromXML(child, parent, factory);
-		appendMenu(submenu, 0);
+		appendMenu(submenu);
 		if (LLMenuGL::sMenuContainer != NULL)
 		{
 			submenu->updateParent(LLMenuGL::sMenuContainer);
@@ -2355,27 +2355,18 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 	}
 }
 
-// This wrapper is needed because the virtual linkage causes errors if default parameters are used
 bool LLMenuGL::addChild(LLView* view, S32 tab_group)
-{
-	return addChild(view, 0, tab_group);
-}
-
-bool LLMenuGL::addChild(LLView* view, LLView* insert_before, S32 tab_group)
 {
 	if (LLMenuGL* menup = dynamic_cast<LLMenuGL*>(view))
 	{
 		lldebugs << "Adding menu " << menup->getName() << " to " << getName() << llendl;
-		if (!insert_before)
-			appendMenu(menup);
-		else
-			appendMenu(menup, insert_before);
+		appendMenu(menup);
 		return true;
 	}
 	else if (LLMenuItemGL* itemp = dynamic_cast<LLMenuItemGL*>(view))
 	{
 		lldebugs << "Adding " << itemp->getName() << " to " << getName() << llendl;
-		append(itemp, insert_before);
+		append(itemp);
 		return true;
 	}
 	lldebugs << "Error adding unknown child '"<<(view ? view->getName() : std::string("NULL")) << "' to " << getName() << llendl;
@@ -3110,7 +3101,60 @@ void LLMenuGL::empty( void )
 	mArrowDownItem = NULL;
 
 	deleteAllChildren();
-	
+}
+
+// erase group of items from menu
+void LLMenuGL::erase( S32 begin, S32 end, bool arrange/* = true*/)
+{
+	S32 items = mItems.size();
+
+	if ( items == 0 || begin >= end || begin < 0 || end > items )
+	{
+		return;
+	}
+
+	item_list_t::iterator start_position = mItems.begin();
+	std::advance(start_position, begin);
+
+	item_list_t::iterator end_position = mItems.begin();
+	std::advance(end_position, end);
+
+	for (item_list_t::iterator position_iter = start_position; position_iter != end_position; position_iter++)
+	{
+		LLUICtrl::removeChild(*position_iter);
+	}
+
+	mItems.erase(start_position, end_position);
+
+	if (arrange)
+	{
+		needsArrange();
+	}
+}
+
+// add new item at position
+void LLMenuGL::insert(S32 position, LLView* ctrl, bool arrange /*= true*/)
+{
+	LLMenuItemGL* item = dynamic_cast<LLMenuItemGL *>(ctrl);
+
+	if (NULL == item || position < 0 || (U32)position >= mItems.size())
+	{
+		return;
+	}
+
+	item_list_t::iterator position_iter = mItems.begin();
+	std::advance(position_iter, position);
+	insert(position_iter, item, arrange);
+}
+void LLMenuGL::insert(item_list_t::iterator position_iter, LLMenuItemGL* item, bool arrange /*= true*/)
+{
+	mItems.insert(position_iter, item);
+	LLUICtrl::addChild(item);
+
+	if (arrange)
+	{
+		needsArrange();
+	}
 }
 
 // Adjust rectangle of the menu
@@ -3142,29 +3186,10 @@ BOOL LLMenuGL::handleJumpKey(KEY key)
 
 
 // Add the menu item to this menu.
-// This wrapper is needed because the virtual linkage causes errors if default parameters are used
 BOOL LLMenuGL::append( LLMenuItemGL* item )
 {
-	return append(item, 0);
-}
-
-BOOL LLMenuGL::append(LLMenuItemGL* item, LLView* insert_before)
-{
 	if (!item) return FALSE;
-	if (!insert_before)
-	{
 	mItems.push_back( item );
-	}
-	else
-	{
-		item_list_t::iterator i;
-
-		for (i = mItems.begin(); i != mItems.end(); ++i)
-			if (*i == insert_before)
-				break;
-		mItems.insert(i, item);
-	}
-
 	LLUICtrl::addChild(item);
 	needsArrange();
 	return TRUE;
@@ -3178,13 +3203,7 @@ BOOL LLMenuGL::addSeparator()
 }
 
 // add a menu - this will create a cascading menu
-// This wrapper is needed because the virtual linkage causes errors if default parameters are used
 BOOL LLMenuGL::appendMenu( LLMenuGL* menu )
-{
-	return appendMenu(menu, 0);
-}
-
-BOOL LLMenuGL::appendMenu(LLMenuGL* menu, LLView* insert_before)
 {
 	if( menu == this )
 	{
@@ -3196,7 +3215,7 @@ BOOL LLMenuGL::appendMenu(LLMenuGL* menu, LLView* insert_before)
 	LLMenuItemBranchGL* branch = NULL;
 	branch = new LLMenuItemBranchGL( menu->getName(), menu->getLabel(), menu->getHandle() );
 	branch->setJumpKey(menu->getJumpKey());
-	success &= append( branch, insert_before );
+	success &= append( branch );
 
 	// Inherit colors
 	menu->setBackgroundColor( mBackgroundColor );

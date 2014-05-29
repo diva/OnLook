@@ -475,8 +475,6 @@ public:
 	/*virtual*/ void removeChild( LLView* ctrl);
 	/*virtual*/ BOOL postBuild();
 
-	bool addChild(LLView* view, LLView* insert_before, S32 tab_group = 0);
-
 	virtual BOOL handleAcceleratorKey(KEY key, MASK mask);
 
 	LLMenuGL* getChildMenuByName(const std::string& name, BOOL recurse) const;
@@ -529,6 +527,16 @@ public:
 
 	// remove all items on the menu
 	void empty( void );
+
+	// erase group of items from menu
+	void erase(S32 begin, S32 end, bool arrange = true);
+
+	// add new item at position
+	void insert(S32 begin, LLView* ctrl, bool arrange = true);
+	void insert(std::list<LLMenuItemGL*>::iterator position_iter, LLMenuItemGL* item, bool arrange = true);
+
+	// find an item's position
+	std::list<LLMenuItemGL*>::iterator find(LLMenuItemGL* item) { return std::find(mItems.begin(), mItems.end(), item); }
 
 	void			setItemLastSelected(LLMenuItemGL* item);	// must be in menu
 	U32				getItemCount();				// number of menu items

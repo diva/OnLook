@@ -9551,18 +9551,20 @@ void parse_simulator_features()
 	{
 		std::string insertMarker = "insert_" + i->first;
 
-		LLView* marker = gMenuBarView->getChildView(insertMarker, true, false);
+		LLMenuItemGL* marker = gMenuBarView->findChild<LLMenuItemGL>(insertMarker);
 		if (!marker) continue;
 
 		LLMenuGL* menu = dynamic_cast<LLMenuGL*>(marker->getParent());
 		if (!menu) continue;
+
+		std::list<LLMenuItemGL*>::iterator it = menu->find(marker);
 
 		for (LLSD::map_iterator j = i->second.beginMap(); j != i->second.endMap(); ++j)
 		{
 			LLMenuItemCallGL* custom = new LLMenuItemCallGL(j->second.asString(), j->first, custom_selected);
 			custom->setUserData(custom);
 			gCustomMenuItems.push_back(custom);
-			menu->addChild(custom, marker);
+			menu->insert(it, custom);
 		}
 	}
 }
