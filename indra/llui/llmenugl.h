@@ -138,7 +138,7 @@ public:
 	// lead to visual errors if the state of the object changes
 	// without the knowledge of the menu item. For example, if a
 	// boolean being watched is changed outside of the menu item's
-	// doIt() function, the draw buffer will not be updated and will
+	// onCommit() function, the draw buffer will not be updated and will
 	// reflect the wrong value. If this ever becomes an issue, there
 	// are ways to fix this.
 	// Returns the enabled state of the item.
@@ -147,8 +147,7 @@ public:
 	// for branching menu items, bring sub menus up to root level of menu hierarchy
 	virtual void updateBranchParent( LLView* parentp ){};
 	
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 	virtual void setHighlight( BOOL highlight );
 	virtual BOOL getHighlight() const { return mHighlight; }
@@ -236,8 +235,7 @@ public:
 
 	virtual std::string getType() const	{ return "separator"; }
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void ) {}
+	virtual void onCommit( void ) {}
 
 	/*virtual*/ void draw( void );
 	/*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
@@ -314,8 +312,7 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 	virtual BOOL handleAcceleratorKey(KEY key, MASK mask);
 	virtual BOOL handleKeyHere(KEY key, MASK mask);
@@ -410,8 +407,8 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	// onCommit() - do the primary funcationality of the menu item.
+	virtual void onCommit( void );
 
 	// LLView Functionality
 	//virtual void draw( void );
@@ -664,8 +661,7 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 	virtual BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
 	virtual BOOL handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
@@ -808,8 +804,8 @@ public:
 		return TRUE;
 	}
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	// onCommit() - do the primary funcationality of the menu item.
+	virtual void	onCommit( void );
 
 	LLContextMenu* getBranch() { return mBranch; }
 	void setHighlight( BOOL highlight );
@@ -952,7 +948,7 @@ public:
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	virtual std::string getType() const { return "tearoff_menu"; }
 
-	virtual void doIt(void);
+	virtual void onCommit(void);
 	virtual void draw(void);
 	virtual U32 getNominalHeight() const;
 

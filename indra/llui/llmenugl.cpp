@@ -221,7 +221,7 @@ BOOL LLMenuItemGL::handleAcceleratorKey(KEY key, MASK mask)
 {
 	if( getEnabled() && (!gKeyboard->getKeyRepeated(key) || mAllowKeyRepeat) && (key == mAcceleratorKey) && (mask == (mAcceleratorMask & MASK_NORMALKEYS)) )
 	{
-		doIt();
+		onCommit();
 		return TRUE;
 	}
 	return FALSE;
@@ -400,7 +400,7 @@ void LLMenuItemGL::buildDrawLabel( void )
 	mDrawAccelLabel = st;
 }
 
-void LLMenuItemGL::doIt( void )
+void LLMenuItemGL::onCommit( void )
 {
 	// Check torn-off status to allow left-arrow keyboard navigation back
 	// to parent menu.
@@ -411,6 +411,8 @@ void LLMenuItemGL::doIt( void )
 	{
 		LLMenuGL::sMenuContainer->hideMenus();
 	}
+
+	LLUICtrl::onCommit();
 }
 
 // set the hover status (called by it's menu)
@@ -456,7 +458,7 @@ BOOL LLMenuItemGL::handleKeyHere( KEY key, MASK mask )
 			// switch to keyboard navigation mode
 			LLMenuGL::setKeyboardMode(TRUE);
 
-			doIt();
+			onCommit();
 			return TRUE;
 		}
 	}
@@ -469,7 +471,7 @@ BOOL LLMenuItemGL::handleMouseUp( S32 x, S32 y, MASK mask)
 	// switch to mouse navigation mode
 	LLMenuGL::setKeyboardMode(FALSE);
 
-	doIt();
+	onCommit();
 	make_ui_sound("UISndClickRelease");
 	return LLView::handleMouseUp(x, y, mask);
 }
@@ -733,12 +735,15 @@ LLFloater* LLMenuItemTearOffGL::getParentFloater()
 	return NULL;
 }
 
-void LLMenuItemTearOffGL::doIt()
+void LLMenuItemTearOffGL::onCommit()
 {
 	if (getMenu()->getTornOff())
 	{
-		LLTearOffMenu* torn_off_menu = (LLTearOffMenu*)(getMenu()->getParent());
-		torn_off_menu->close();
+		LLTearOffMenu* torn_off_menu = dynamic_cast<LLTearOffMenu*>(getMenu()->getParent());
+		if (torn_off_menu)
+		{
+			torn_off_menu->close();
+		}
 	}
 	else
 	{
@@ -810,7 +815,7 @@ public:
 	{
 		setEnabled(FALSE);
 	}
-	virtual void doIt( void ) {}
+	virtual void onCommit( void ) {}
 	virtual void draw( void ) {}
 };
 
@@ -954,8 +959,7 @@ LLXMLNodePtr LLMenuItemCallGL::getXML(bool save_children) const
 	return node;
 }
 
-// doIt() - Call the callback provided
-void LLMenuItemCallGL::doIt( void )
+void LLMenuItemCallGL::onCommit( void )
 {
 	// RN: menu item can be deleted in callback, so beware
 	getMenu()->setItemLastSelected( this );
@@ -966,7 +970,7 @@ void LLMenuItemCallGL::doIt( void )
 	}
 	LLPointer<LLEvent> fired_event = new LLEvent(this);
 	fireEvent(fired_event, "on_click");
-	LLMenuItemGL::doIt();
+	LLMenuItemGL::onCommit();
 }
 
 void LLMenuItemCallGL::updateEnabled( void )
@@ -1151,14 +1155,14 @@ void LLMenuItemToggleGL::buildDrawLabel( void )
 	mDrawAccelLabel = st;
 }
 
-// doIt() - do the primary funcationality of the menu item.
-void LLMenuItemToggleGL::doIt( void )
+// onCommit() - do the primary funcationality of the menu item.
+void LLMenuItemToggleGL::onCommit( void )
 {
 	getMenu()->setItemLastSelected( this );
-	//llinfos << "LLMenuItemToggleGL::doIt " << mLabel.c_str() << llendl;
+	//llinfos << "LLMenuItemToggleGL::onCommit " << mLabel.c_str() << llendl;
 	*mToggle = !(*mToggle);
 	buildDrawLabel();
-	LLMenuItemGL::doIt();
+	LLMenuItemGL::onCommit();
 }
 
 
@@ -1217,7 +1221,7 @@ BOOL LLMenuItemBranchGL::handleMouseUp(S32 x, S32 y, MASK mask)
 	// switch to mouse navigation mode
 	LLMenuGL::setKeyboardMode(FALSE);
 
-	doIt();
+	onCommit();
 	make_ui_sound("UISndClickRelease");
 	return TRUE;
 }
@@ -1272,8 +1276,7 @@ void LLMenuItemBranchGL::buildDrawLabel( void )
 	mDrawBranchLabel = LLMenuGL::BRANCH_SUFFIX;
 }
 
-// doIt() - do the primary functionality of the menu item.
-void LLMenuItemBranchGL::doIt( void )
+void LLMenuItemBranchGL::onCommit( void )
 {
 	openMenu();
 
@@ -1283,6 +1286,8 @@ void LLMenuItemBranchGL::doIt( void )
 	{
 		getBranch()->highlightNextItem(NULL);
 	}
+
+	LLUICtrl::onCommit();
 }
 
 BOOL LLMenuItemBranchGL::handleKey(KEY key, MASK mask, BOOL called_from_parent)
@@ -1689,7 +1694,7 @@ BOOL LLMenuItemBranchDownGL::handleMouseDown( S32 x, S32 y, MASK mask )
 {
 	// switch to mouse control mode
 	LLMenuGL::setKeyboardMode(FALSE);
-	doIt();
+	onCommit();
 	make_ui_sound("UISndClick");
 	setVisible(TRUE);
 	return TRUE;
@@ -1729,7 +1734,7 @@ BOOL LLMenuItemBranchDownGL::handleKeyHere(KEY key, MASK mask)
 			// open new menu only if previous menu was open
 			if (itemp && itemp->getEnabled() && menu_open)
 			{
-				itemp->doIt();
+				itemp->onCommit();
 			}
 
 			return TRUE;
@@ -1743,7 +1748,7 @@ BOOL LLMenuItemBranchDownGL::handleKeyHere(KEY key, MASK mask)
 			// open new menu only if previous menu was open
 			if (itemp && itemp->getEnabled() && menu_open)
 			{
-				itemp->doIt();
+				itemp->onCommit();
 			}
 
 			return TRUE;
@@ -1755,7 +1760,7 @@ BOOL LLMenuItemBranchDownGL::handleKeyHere(KEY key, MASK mask)
 
 			if (!isActive())
 			{
-				doIt();
+				onCommit();
 			}
 			getBranch()->highlightNextItem(NULL);
 			return TRUE;
@@ -1767,7 +1772,7 @@ BOOL LLMenuItemBranchDownGL::handleKeyHere(KEY key, MASK mask)
 
 			if (!isActive())
 			{
-				doIt();
+				onCommit();
 			}
 			getBranch()->highlightPrevItem(NULL);
 			return TRUE;
@@ -1865,7 +1870,7 @@ public:
 	/*virtual*/ void draw();
 	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent);
 	/*virtual*/ void setEnabled(BOOL enabled);
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 private:
 	LLButton*				mArrowBtn;
@@ -1939,7 +1944,7 @@ void LLMenuScrollItem::setEnabled(BOOL enabled)
 	LLView::setEnabled(enabled);
 }
 
-void LLMenuScrollItem::doIt( void )
+void LLMenuScrollItem::onCommit( void )
 {
 	LLUICtrl::onCommit();
 }
@@ -3176,7 +3181,7 @@ BOOL LLMenuGL::handleJumpKey(KEY key)
 
 		// force highlight to close old menus and open and sub-menus
 		found_it->second->setHighlight(TRUE);
-		found_it->second->doIt();
+		found_it->second->onCommit();
 
 	}
 	// if we are navigating the menus, we need to eat the keystroke
@@ -3904,8 +3909,8 @@ void LLContextMenuBranch::showSubMenu()
 	mBranch->show(center_x, center_y, context);
 }
 
-// doIt() - do the primary funcationality of the menu item.
-void LLContextMenuBranch::doIt( void )
+// onCommit() - do the primary funcationality of the menu item.
+void LLContextMenuBranch::onCommit( void )
 {
 	showSubMenu();
 }
@@ -4905,7 +4910,7 @@ BOOL LLMenuBarGL::handleJumpKey(KEY key)
 		LLMenuGL::setKeyboardMode(TRUE);
 
 		found_it->second->setHighlight(TRUE);
-		found_it->second->doIt();
+		found_it->second->onCommit();
 	}
 	return TRUE;
 }
@@ -5102,7 +5107,7 @@ BOOL LLMenuBarGL::handleHover( S32 x, S32 y, MASK mask )
 				handled = TRUE;
 				if (active_menu && active_menu != viewp)
 				{
-					((LLMenuItemGL*)viewp)->doIt();
+					((LLMenuItemGL*)viewp)->onCommit();
 					LLMenuGL::setKeyboardMode(FALSE);
 				}
 				LLMenuGL::setKeyboardMode(FALSE);
