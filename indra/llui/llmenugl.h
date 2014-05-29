@@ -587,11 +587,9 @@ protected:
 	void cleanupSpilloverBranch();
 	// Add the menu item to this menu.
 	virtual BOOL append( LLMenuItemGL* item );
-	BOOL append(LLMenuItemGL* item, LLView* insert_before);
 
 	// add a menu - this will create a cascading menu
 	virtual BOOL appendMenu( LLMenuGL* menu );
-	BOOL appendMenu(LLMenuGL* menu, LLView* insert_before);
 
 	// TODO: create accessor methods for these?
 	typedef std::list< LLMenuItemGL* > item_list_t;
