@@ -4983,6 +4983,17 @@ bool LLContextMenu::addChild(LLView* view, S32 tab_group)
 }
 
 
+BOOL LLContextMenu::appendContextSubMenu(LLContextMenu* menu)
+{
+	if (menu == this)
+	{
+		llerrs << "Can't attach a context menu to itself" << llendl;
+	}
+	LLContextMenuBranch* item = new LLContextMenuBranch(menu->getName(), menu->getLabel(), menu);
+	getParent()->addChild(item->getBranch());
+	return append(item);
+}
+
 const S32 PIE_MENU_HEIGHT = 190;
 const S32 PIE_MENU_WIDTH = 190;
 
