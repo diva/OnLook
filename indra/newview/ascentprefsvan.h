@@ -59,6 +59,7 @@ private:
 	bool mDisableChatAnimation;
 	bool mAddNotReplace;
 	bool mTurnAround;
+	bool mCustomizeAnim;
 	bool mAnnounceSnapshots;
 	bool mAnnounceStreamMetadata;
 	bool mUnfocusedFloatersOpaque;

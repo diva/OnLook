@@ -2447,9 +2447,12 @@ void LLAgentCamera::changeCameraToCustomizeAvatar()
 		at.normalize();
 		gAgent.resetAxes(at);
 
-		gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
-		gAgent.setCustomAnim(TRUE);
-		gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		if (gSavedSettings.getBOOL("LiruCustomizeAnim"))
+		{
+			gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
+			gAgent.setCustomAnim(TRUE);
+			gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		}
 		LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
 
 		if (turn_motion)
