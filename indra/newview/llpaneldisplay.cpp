@@ -207,7 +207,7 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlSliderQuality->setSliderMouseUpCallback(boost::bind(&LLPanelDisplay::onChangeQuality,this,_1));
 
 	mCtrlCustomSettings = getChild<LLCheckBoxCtrl>("CustomSettings");
-	mCtrlCustomSettings->setCommitCallback(boost::bind(&LLPanelDisplay::onChangeCustom));
+	mCtrlCustomSettings->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	//----------------------------------------------------------------------------
 	// Enable Bump/Shiny
@@ -216,19 +216,19 @@ BOOL LLPanelDisplay::postBuild()
 	//----------------------------------------------------------------------------
 	// Enable Reflections
 	mCtrlReflectionDetail = getChild<LLComboBox>("ReflectionDetailCombo");
-	mCtrlReflectionDetail->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlReflectionDetail->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	// WindLight
 	mCtrlWindLight = getChild<LLCheckBoxCtrl>("WindLightUseAtmosShaders");
-	mCtrlWindLight->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlWindLight->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	// Deferred
 	mCtrlDeferred = getChild<LLCheckBoxCtrl>("RenderDeferred");
-	mCtrlDeferred->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlDeferred->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 	mCtrlDeferredDoF = getChild<LLCheckBoxCtrl>("RenderDepthOfField");
-	mCtrlDeferredDoF->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlDeferredDoF->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 	mCtrlShadowDetail = getChild<LLComboBox>("ShadowDetailCombo");
-	mCtrlShadowDetail->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlShadowDetail->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	//----------------------------------------------------------------------------
 	// Terrain Scale
@@ -237,13 +237,13 @@ BOOL LLPanelDisplay::postBuild()
 	//----------------------------------------------------------------------------
 	// Enable Avatar Shaders
 	mCtrlAvatarVP = getChild<LLCheckBoxCtrl>("AvatarVertexProgram");
-	mCtrlAvatarVP->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlAvatarVP->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	//----------------------------------------------------------------------------
 	// Avatar Render Mode
 	mCtrlAvatarCloth = getChild<LLCheckBoxCtrl>("AvatarCloth");
 	mCtrlAvatarImpostors = getChild<LLCheckBoxCtrl>("AvatarImpostors");
-	mCtrlAvatarImpostors->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlAvatarImpostors->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	//----------------------------------------------------------------------------
 	// Checkbox for ambient occlusion
@@ -256,7 +256,7 @@ BOOL LLPanelDisplay::postBuild()
 	//----------------------------------------------------------------------------
 	// Global Shader Enable
 	mCtrlShaderEnable = getChild<LLCheckBoxCtrl>("BasicShaders");
-	mCtrlShaderEnable->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mCtrlShaderEnable->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 	
 	//============================================================================
 
@@ -312,7 +312,7 @@ BOOL LLPanelDisplay::postBuild()
 
 	// Hardware tab
 	mVBO = getChild<LLCheckBoxCtrl>("vbo");
-	mVBO->setCommitCallback(boost::bind(&LLPanelDisplay::onVertexShaderEnable));
+	mVBO->setCommitCallback(boost::bind(&LLPanelDisplay::refreshEnabledState, this));
 
 	if(gGLManager.mIsATI)	//AMD gpus don't go beyond 8x fsaa.
 	{
@@ -686,19 +686,13 @@ void LLPanelDisplay::apply()
 
 void LLPanelDisplay::onChangeQuality(LLUICtrl* ctrl)
 {
-	LLFloaterPreference::refreshEnabledGraphics();
 	LLFeatureManager::getInstance()->setGraphicsLevel(ctrl->getValue(), true);
+	refreshEnabledState();
 	refresh();
-}
-
-void LLPanelDisplay::onChangeCustom()
-{
-	LLFloaterPreference::refreshEnabledGraphics();
 }
 
 void LLPanelDisplay::applyResolution()
 {
-
 	gGL.flush();
 	char aspect_ratio_text[ASPECT_RATIO_STR_LEN];		/*Flawfinder: ignore*/
 	if (mCtrlAspectRatio->getCurrentIndex() == -1)
@@ -810,11 +804,6 @@ void LLPanelDisplay::fractionFromDecimal(F32 decimal_val, S32& numerator, S32& d
 	}
 }
 
-void LLPanelDisplay::onVertexShaderEnable()
-{
-	LLFloaterPreference::refreshEnabledGraphics();
-}
-
 void LLPanelDisplay::setHardwareDefaults()
 {
 	LLFeatureManager::getInstance()->applyRecommendedSettings();
@@ -822,7 +811,7 @@ void LLPanelDisplay::setHardwareDefaults()
 	{
 		controlp->resetToDefault(true);
 	}
-	LLFloaterPreference::refreshEnabledGraphics();
+	refreshEnabledState();
 }
 
 void updateSliderText(LLSliderCtrl* slider, LLTextBox* text_box)

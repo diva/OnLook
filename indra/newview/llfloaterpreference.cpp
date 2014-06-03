@@ -338,11 +338,6 @@ void LLPreferenceCore::setPersonalInfo(const std::string& visibility, bool im_vi
 	mPrefsIM->setPersonalInfo(visibility, im_via_email, email);
 }
 
-void LLPreferenceCore::refreshEnabledGraphics()
-{
-	mDisplayPanel->refreshEnabledState();
-}
-
 //////////////////////////////////////////////
 // LLFloaterPreference
 
@@ -365,23 +360,13 @@ BOOL LLFloaterPreference::postBuild()
 		return FALSE;
 	}
 
-	mAboutBtn = getChild<LLButton>("About...");
-	mAboutBtn->setClickedCallback(onClickAbout, this);
-	
-	mApplyBtn = getChild<LLButton>("Apply");
-	mApplyBtn->setClickedCallback(onBtnApply, this);
-		
-	mCancelBtn = getChild<LLButton>("Cancel");
-	mCancelBtn->setClickedCallback(onBtnCancel, this);
+	getChild<LLUICtrl>("About...")->setCommitCallback(boost::bind(LLFloaterAbout::show, (void*)0));
+	getChild<LLUICtrl>("Apply")->setCommitCallback(boost::bind(&LLFloaterPreference::onBtnApply, this));
+	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLFloaterPreference::onBtnCancel, this));
+	getChild<LLUICtrl>("OK")->setCommitCallback(boost::bind(&LLFloaterPreference::onBtnOK, this));
 
-	mOKBtn = getChild<LLButton>("OK");
-	mOKBtn->setClickedCallback(onBtnOK, this);
-			
-	mPreferenceCore = new LLPreferenceCore(
-		getChild<LLTabContainer>("pref core"),
-		getChild<LLButton>("OK")
-		);
-	
+	mPreferenceCore = new LLPreferenceCore(getChild<LLTabContainer>("pref core"), getChild<LLButton>("OK"));
+
 	sInstance = this;
 
 	return TRUE;
@@ -396,13 +381,13 @@ LLFloaterPreference::~LLFloaterPreference()
 
 void LLFloaterPreference::apply()
 {
-	this->mPreferenceCore->apply();
+	mPreferenceCore->apply();
 }
 
 
 void LLFloaterPreference::cancel()
 {
-	this->mPreferenceCore->cancel();
+	mPreferenceCore->cancel();
 }
 
 
@@ -431,19 +416,11 @@ void LLFloaterPreference::show(void*)
 }
 
 
-// static
-void LLFloaterPreference::onClickAbout(void*)
-{
-	LLFloaterAbout::show(NULL);
-}
 
-
-// static 
-void LLFloaterPreference::onBtnOK( void* userdata )
+void LLFloaterPreference::onBtnOK()
 {
-	LLFloaterPreference *fp =(LLFloaterPreference *)userdata;
 	// commit any outstanding text entry
-	if (fp->hasFocus())
+	if (hasFocus())
 	{
 		LLUICtrl* cur_focus = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
 		if (cur_focus->acceptsTextInput())
@@ -452,17 +429,12 @@ void LLFloaterPreference::onBtnOK( void* userdata )
 		}
 	}
 
-	if (fp->canClose())
+	if (canClose())
 	{
-		fp->apply();
-		fp->close(false);
+		apply();
+		close(false);
 
 		gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), TRUE );
-		
-		std::string crash_settings_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, CRASH_SETTINGS_FILE);
-		// save all settings, even if equals defaults
-		// Singu Note: crash settings no longer separate
-		// gCrashSettings.saveToFile(crash_settings_filename, FALSE);
 	}
 	else
 	{
@@ -473,12 +445,9 @@ void LLFloaterPreference::onBtnOK( void* userdata )
 	LLPanelLogin::updateLocationSelectorsVisibility();
 }
 
-
-// static 
-void LLFloaterPreference::onBtnApply( void* userdata )
+void LLFloaterPreference::onBtnApply()
 {
-	LLFloaterPreference *fp =(LLFloaterPreference *)userdata;
-	if (fp->hasFocus())
+	if (hasFocus())
 	{
 		LLUICtrl* cur_focus = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
 		if (cur_focus && cur_focus->acceptsTextInput())
@@ -486,7 +455,7 @@ void LLFloaterPreference::onBtnApply( void* userdata )
 			cur_focus->onCommit();
 		}
 	}
-	fp->apply();
+	apply();
 
 	LLPanelLogin::updateLocationSelectorsVisibility();
 }
@@ -504,10 +473,9 @@ void LLFloaterPreference::onClose(bool app_quitting)
 
 
 // static 
-void LLFloaterPreference::onBtnCancel( void* userdata )
+void LLFloaterPreference::onBtnCancel()
 {
-	LLFloaterPreference *fp =(LLFloaterPreference *)userdata;
-	if (fp->hasFocus())
+	if (hasFocus())
 	{
 		LLUICtrl* cur_focus = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
 		if (cur_focus->acceptsTextInput())
@@ -515,7 +483,7 @@ void LLFloaterPreference::onBtnCancel( void* userdata )
 			cur_focus->onCommit();
 		}
 	}
-	fp->close(); // side effect will also cancel any unsaved changes.
+	close(); // side effect will also cancel any unsaved changes.
 }
 
 
@@ -526,11 +494,6 @@ void LLFloaterPreference::updateUserInfo(const std::string& visibility, bool im_
 	{
 		sInstance->mPreferenceCore->setPersonalInfo(visibility, im_via_email, email);
 	}
-}
-
-void LLFloaterPreference::refreshEnabledGraphics()
-{
-	sInstance->mPreferenceCore->refreshEnabledGraphics();
 }
 
 //static

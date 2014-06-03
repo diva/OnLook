@@ -156,18 +156,12 @@ protected:
 	// if the quality radio buttons are changed
 	void onChangeQuality(LLUICtrl* caller);
 	
-	// if the custom settings box is clicked
-	static void onChangeCustom();
-	
 	void onCommitAutoDetectAspect(const LLSD& value);
 	void onCommitWindowedMode();
 	void updateMeterText();
 
 	/// callback for defaults
 	void setHardwareDefaults();
-
-	// callback for when client turns on shaders
-	static void onVertexShaderEnable();
 
 	// helper function
 	static void fractionFromDecimal(F32 decimal_val, S32& numerator, S32& denominator);
