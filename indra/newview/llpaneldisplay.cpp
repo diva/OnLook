@@ -392,6 +392,13 @@ void LLPanelDisplay::refresh()
 	childSetValue("fsaa", (LLSD::Integer) mFSAASamples);
 	childSetValue("vsync", (LLSD::Integer) mVsyncMode);
 
+	// Depth of Field tab
+	mFNumber = gSavedSettings.getF32("CameraFNumber");
+	mFocalLength = gSavedSettings.getF32("CameraFocalLength");
+	mMaxCoF = gSavedSettings.getF32("CameraMaxCoF");
+	mFocusTrans = gSavedSettings.getF32("CameraFocusTransitionTime");
+	mDoFRes = gSavedSettings.getF32("CameraDoFResScale");
+
 	refreshEnabledState();
 }
 
@@ -638,6 +645,13 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setS32("TextureMemory", mVideoCardMem);
 	gSavedSettings.setF32("RenderFogRatio", mFogRatio);
 	gSavedSettings.setS32("SHRenderVsyncMode", mVsyncMode);
+
+	// Depth of Field tab
+	gSavedSettings.setF32("CameraFNumber", mFNumber);
+	gSavedSettings.setF32("CameraFocalLength", mFocalLength);
+	gSavedSettings.setF32("CameraMaxCoF", mMaxCoF);
+	gSavedSettings.setF32("CameraFocusTransitionTime", mFocusTrans);
+	gSavedSettings.setF32("CameraDoFResScale", mDoFRes);
 }
 
 void LLPanelDisplay::apply()

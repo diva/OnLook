@@ -153,6 +153,13 @@ protected:
 	F32 mFogRatio;
 	S32 mVsyncMode;
 
+	// Depth of Field tab
+	F32 mFNumber;
+	F32 mFocalLength;
+	F32 mMaxCoF;
+	F32 mFocusTrans;
+	F32 mDoFRes;
+
 	// if the quality radio buttons are changed
 	void onChangeQuality(LLUICtrl* caller);
 	
