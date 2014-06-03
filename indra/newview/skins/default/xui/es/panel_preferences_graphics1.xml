@@ -2,50 +2,6 @@
 <panel label="Gráficos" name="Display panel">
 	<check_box label="Ejecutar el Visor en Ventana" name="windowed mode" tool_tip="Si está desmarcado, el visor se ejecutará a pantalla completa cuando inicies sesión."/>
 	<button label="Valores Predeterminados" name="Defaults" tool_tip="Reiniciar a los valores gráficos recomendados" width="170"/>		
-	<text name="WindowSizeLabel">
-		Tamaño de la Ventana:
-	</text>
-	<combo_box name="windowsize combo">
-		<combo_item name="800x600">
-			800x600
-		</combo_item>
-		<combo_item name="720x480">
-			720x480 (NTSC)
-		</combo_item>
-		<combo_item name="768x576">
-			768x576 (PAL)
-		</combo_item>
-		<combo_item name="1024x768">
-			1024x768
-		</combo_item>
-		<combo_item name="1280x720">
-			1280x720 (HD)
-		</combo_item>
-		<combo_item name="1366x768">
-			1366x768
-		</combo_item>
-		<combo_item name="1280x800">
-			1280x800
-		</combo_item>
-		<combo_item name="1440x900">
-			1440x900
-		</combo_item>
-		<combo_item name="1600x900">
-      1600x900 (HD+)
-    </combo_item>
-		<combo_item name="1680x1050">
-			1680x1050
-		</combo_item>
-		<combo_item name="1440x1080">
-			1440x1080 (HDV1080)
-		</combo_item>
-		<combo_item name="1920x1080">
-			1920x1080 (Full-HD)
-		</combo_item>
-		<combo_item name="2560x1440">
-			2560x1440
-		</combo_item>		
-	</combo_box>
 	<text name="DisplayResLabel">
 		Resolución de Pantalla:
 	</text>

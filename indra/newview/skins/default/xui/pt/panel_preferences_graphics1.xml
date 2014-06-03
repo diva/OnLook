@@ -5,26 +5,6 @@
 	<text_editor bottom="-56" height="40" name="FullScreenInfo" width="480">
 		Se desmarcado, o visualizador irá exibir em tela inteira quando fizer o acesso.
 	</text_editor>
-	<text name="WindowSizeLabel">
-		Tamanho da Janela:
-	</text>
-	<combo_box name="windowsize combo">
-		<combo_item name="640x480">
-			640x480
-		</combo_item>
-		<combo_item name="800x600">
-			800x600
-		</combo_item>
-		<combo_item name="720x480">
-			720x480 (NTSC)
-		</combo_item>
-		<combo_item name="768x576">
-			768x576 (PAL)
-		</combo_item>
-		<combo_item name="1024x768">
-			1024x768
-		</combo_item>
-	</combo_box>
 	<text name="DisplayResLabel">
 		Resolução de Display:
 	</text>

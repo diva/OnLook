@@ -73,7 +73,6 @@ public:
 	void setHiddenGraphicsState(bool isHidden);
 	void apply();	// Apply the changed values.
 	void applyResolution();
-	void applyWindowSize();
 	void cancel();
 	
 protected:
@@ -86,7 +85,6 @@ protected:
 	LLComboBox		*mCtrlAspectRatio;				// user provided aspect ratio
 
 	LLCheckBoxCtrl	*mCtrlWindowed;					// windowed mode
-	LLComboBox      *mCtrlWindowSize;               // window size for windowed mode
 
 	/// performance radio group
 	LLSliderCtrl	*mCtrlSliderQuality;
@@ -125,7 +123,6 @@ protected:
 
 	LLTextBox		*mAspectRatioLabel1;
 	LLTextBox		*mDisplayResLabel;
-	LLTextBox       *mWindowSizeLabel;
 	
 	LLTextBox		*mShaderText;
 	LLTextBox		*mReflectionText;
