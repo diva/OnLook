@@ -5481,7 +5481,7 @@ void LLViewerWindow::restartDisplay(BOOL show_progress_bar)
 
 BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, const S32 vsync_mode, BOOL show_progress_bar)
 {
-	BOOL was_maximized = gSavedSettings.getBOOL("WindowMaximized");
+	BOOL was_maximized = mWindow->getMaximized();
 	mWantFullscreen = fullscreen;
 	mShowFullscreenProgress = show_progress_bar;
 	gSavedSettings.setBOOL("FullScreen", mWantFullscreen);
