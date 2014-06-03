@@ -70,14 +70,11 @@ public:
 	void refresh();	// Refresh enable/disable
 	void refreshEnabledState();
 	void disableUnavailableSettings();
-	void setHiddenGraphicsState(bool isHidden);
 	void apply();	// Apply the changed values.
 	void applyResolution();
 	void cancel();
 	
 protected:
-	void initWindowSizeControls();
-	bool extractWindowSizeFromString(const std::string& instr, U32 &width, U32 &height);
 	
 	// aspect ratio sliders and boxes
 	LLComboBox		*mCtrlFullScreen;               // Fullscreen resolution
@@ -90,22 +87,6 @@ protected:
 	LLSliderCtrl	*mCtrlSliderQuality;
 	LLCheckBoxCtrl	*mCtrlCustomSettings;
 
-	// performance sliders and boxes
-	//LLViewBorder	*mGraphicsBorder;
-
-	LLSliderCtrl	*mCtrlDrawDistance;				// the draw distance slider
-	LLSliderCtrl	*mCtrlLODFactor;				// LOD for volume objects
-	LLSliderCtrl	*mCtrlFlexFactor;				// Timeslice for flexible objects
-	LLSliderCtrl	*mCtrlTreeFactor;				// Control tree cutoff distance
-	LLSliderCtrl	*mCtrlAvatarFactor;				// LOD for avatars
-	LLSliderCtrl	*mCtrlAvatarPhysicsFactor;		// Physics LOD for avatars
-	LLSliderCtrl	*mCtrlTerrainFactor;			// LOD for terrain
-	LLSliderCtrl	*mCtrlSkyFactor;				// LOD for terrain
-	LLSliderCtrl	*mCtrlMaxParticle;				// Max Particle
-	LLSliderCtrl	*mCtrlPostProcess;				// Max Particle
-	LLSliderCtrl	*mCtrlNonImpostors;				// Max non-impostors
-
-	LLCheckBoxCtrl	*mCtrlTransparentWater;
 	LLCheckBoxCtrl	*mCtrlBumpShiny;
 	LLCheckBoxCtrl	*mCtrlWindLight;
 	LLCheckBoxCtrl	*mCtrlAvatarVP;
@@ -117,34 +98,13 @@ protected:
 	LLComboBox		*mCtrlTerrainScale;
 	LLCheckBoxCtrl	*mCtrlAvatarImpostors;
 	LLCheckBoxCtrl	*mCtrlAvatarCloth;
-	LLCheckBoxCtrl	*mCtrlLightingDetail2;
 	LLCheckBoxCtrl	*mCtrlAmbientOcc;
 	LLRadioGroup	*mRadioTerrainDetail;
 
 	LLTextBox		*mAspectRatioLabel1;
 	LLTextBox		*mDisplayResLabel;
 	
-	LLTextBox		*mShaderText;
-	LLTextBox		*mReflectionText;
-	LLTextBox		*mAvatarText;
-	LLTextBox		*mTerrainText;
-	LLTextBox		*mDrawDistanceMeterText1;
-	LLTextBox		*mDrawDistanceMeterText2;
-
-	LLTextBox		*mMeshDetailText;
-	LLTextBox		*mLODFactorText;
-	LLTextBox		*mFlexFactorText;
-	LLTextBox		*mTreeFactorText;
-	LLTextBox		*mAvatarFactorText;
-	LLTextBox		*mAvatarPhysicsFactorText;
-	LLTextBox		*mTerrainFactorText;
-	LLTextBox		*mSkyFactorText;
-	LLTextBox		*mPostProcessText;
-	LLTextBox		*mShadowDetailText;
-	LLTextBox		*mTerrainScaleText;
-
 	LLCheckBoxCtrl	*mVBO;
-	LLCheckBoxCtrl	*mVBOStream;
 
 	BOOL mFSAutoDetectAspect;
 	F32 mAspectRatio;
@@ -200,14 +160,11 @@ protected:
 	static void onChangeCustom();
 	
 	void onCommitAutoDetectAspect(const LLSD& value);
-	void onKeystrokeAspectRatio();
-	void onSelectAspectRatio();
 	void onCommitWindowedMode();
-	static void updateSliderText(LLUICtrl* ctrl, LLTextBox* text_box);
 	void updateMeterText();
 
 	/// callback for defaults
-	static void setHardwareDefaults();
+	void setHardwareDefaults();
 
 	// callback for when client turns on shaders
 	static void onVertexShaderEnable();
