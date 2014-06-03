@@ -434,6 +434,28 @@ void LLPanelDisplay::refreshEnabledState()
 	mAspectRatioLabel1->setVisible(isFullScreen);
 	mCtrlAutoDetectAspect->setVisible(isFullScreen);
 
+	// Hardware tab
+	getChild<LLUICtrl>("GrapicsCardTextureMemory")->setMinValue(LLViewerTextureList::getMinVideoRamSetting());
+	getChild<LLUICtrl>("GrapicsCardTextureMemory")->setMaxValue(LLViewerTextureList::getMaxVideoRamSetting());
+
+	if (!LLFeatureManager::getInstance()->isFeatureAvailable("RenderVBOEnable") ||
+		!gGLManager.mHasVertexBufferObject)
+	{
+		mVBO->setEnabled(false);
+		//Streaming VBOs -Shyotl
+		mVBOStream->setEnabled(false);
+	}
+	else
+	{
+		mVBOStream->setEnabled(gSavedSettings.getBOOL("RenderVBOEnable"));
+	}
+
+	static LLCachedControl<bool> wlatmos("WindLightUseAtmosShaders",false);
+	// if no windlight shaders, enable gamma, and fog distance
+	getChildView("gamma")->setEnabled(!wlatmos);
+	getChildView("fog")->setEnabled(!wlatmos);
+	getChildView("note")->setVisible(wlatmos);
+
 	// disable graphics settings and exit if it's not set to custom
 	if(!gSavedSettings.getBOOL("RenderCustomSettings"))
 	{
@@ -467,7 +489,6 @@ void LLPanelDisplay::refreshEnabledState()
 		mCtrlAvatarCloth->setEnabled(true);
 	}
 
-	static LLCachedControl<bool> wlatmos("WindLightUseAtmosShaders",false);
 	//I actually recommend RenderUseFBO:FALSE for ati users when not using deferred, so RenderUseFBO shouldn't control visibility of the element.
 	// Instead, gGLManager.mHasFramebufferObject seems better as it is determined by hardware and not current user settings. -Shyotl
 	//Enabling deferred will force RenderUseFBO to TRUE.
@@ -539,28 +560,6 @@ void LLPanelDisplay::refreshEnabledState()
 		mCtrlAvatarVP->setEnabled(true);
 	}
 
-	// Hardware tab
-	S32 min_tex_mem = LLViewerTextureList::getMinVideoRamSetting();
-	S32 max_tex_mem = LLViewerTextureList::getMaxVideoRamSetting();
-	childSetMinValue("GrapicsCardTextureMemory", min_tex_mem);
-	childSetMaxValue("GrapicsCardTextureMemory", max_tex_mem);
-
-	if (!LLFeatureManager::getInstance()->isFeatureAvailable("RenderVBOEnable") ||
-		!gGLManager.mHasVertexBufferObject)
-	{
-		mVBO->setEnabled(false);
-		//Streaming VBOs -Shyotl
-		mVBOStream->setEnabled(false);
-	}
-	else
-	{
-		mVBOStream->setEnabled(gSavedSettings.getBOOL("RenderVBOEnable"));
-	}
-
-	// if no windlight shaders, enable gamma, and fog distance
-	childSetEnabled("gamma",!wlatmos);
-	childSetEnabled("fog",  !wlatmos);
-	childSetVisible("note",  wlatmos);
 
 	// now turn off any features that are unavailable
 	disableUnavailableSettings();
