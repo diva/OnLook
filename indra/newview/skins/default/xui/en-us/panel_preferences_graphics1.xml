@@ -28,7 +28,7 @@
     <icon bottom="-89" height="14" image_name="rounded_square.tga" left_delta="44" name="UltraDivet" width="2"/>
 -->
     <slider bottom_delta="0" control_name="RenderQualityPerformance" increment="1" initial_val="0" left="165" max_val="3" min_val="0" name="QualityPerformanceSelection" show_text="false" width="150" />
-    <check_box bottom_delta="-10" control_name="RenderCustomSettings" visibility_control="RenderCustomSettings" label="Custom" left="410" name="CustomSettings"/>
+    <check_box bottom_delta="-10" control_name="RenderCustomSettings" label="Custom" left="410" name="CustomSettings"/>
     <!--view_border bevel_style="none" bottom="-395" height="280" left="5" visibility_control="RenderCustomSettings" name="GraphicsBorder" width="485"/-->
     <text bottom="300" height="12" left="10" visibility_control="RenderCustomSettings" name="ShadersText">Shaders:</text>
     <check_box bottom_delta="-23" control_name="RenderTransparentWater" visibility_control="RenderCustomSettings" height="16" label="Transparent water" left="10" name="TransparentWater"/>
