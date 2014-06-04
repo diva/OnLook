@@ -506,8 +506,12 @@ void LLAvatarActions::on_avatar_name_cache_teleport_request(const LLUUID& id, co
 {
 	LLSD notification;
 	notification["uuid"] = id;
-	//notification["NAME_SLURL"] =  LLSLURL("agent", id, "about").getSLURLString();
 	std::string name;
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+	if (!RlvActions::canShowName(RlvActions::SNC_TELEPORTREQUEST))
+		name = RlvStrings::getAnonym(av_name.getLegacyName());
+	else
+// [RLVa:KB]
 	LLAvatarNameCache::getPNSName(av_name, name);
 	notification["NAME"] = name;
 	LLSD payload;

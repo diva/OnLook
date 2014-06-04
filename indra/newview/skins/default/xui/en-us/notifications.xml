@@ -6798,6 +6798,16 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
 
   <notification
    icon="notify.tga"
+   name="TeleportOfferSent"
+   log_to_im="true"
+   log_to_chat="false"
+   show_toast="false"
+   type="notifytip">
+    Teleport offer sent to [TO_NAME]
+  </notification>
+
+  <notification
+   icon="notify.tga"
    name="TeleportRequest"
    type="notify">
 [NAME] is requesting to be teleported to your location.

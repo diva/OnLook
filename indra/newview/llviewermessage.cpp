@@ -2523,7 +2523,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{
 				if (!mute_im)
 					RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM_REMOTE), session_id);
-				message = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
+				buffer = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
 			}
 // [/RLVa:KB]
 
@@ -4053,10 +4053,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				sdQuery["name"] = chat.mFromName;
 				sdQuery["owner"] = owner_id;
 
-				/* Singu Note: We don't use this field, seems like part of llinspectremoteobject
 				if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (!is_owned_by_me) )
 					sdQuery["rlv_shownames"] = true;
-				*/
 
 				const LLViewerRegion* pRegion = LLWorld::getInstance()->getRegionFromPosAgent(chat.mPosAgent);
 				if (pRegion)
@@ -7751,6 +7749,39 @@ void send_lures(const LLSD& notification, const LLSD& response)
 
 		msg->nextBlockFast(_PREHASH_TargetData);
 		msg->addUUIDFast(_PREHASH_TargetID, target_id);
+		// Record the offer.
+		if (notification["payload"]["ids"].size() < 10) // Singu Note: Do NOT spam chat!
+		{
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			bool fRlvHideName = notification["payload"]["rlv_shownames"].asBoolean();
+// [/RLVa:KB]
+			std::string target_name;
+			gCacheName->getFullName(target_id, target_name);  // for im log filenames
+
+			LLSD args;
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			if (fRlvHideName)
+				target_name = RlvStrings::getAnonym(target_name);
+			else
+// [/RLVa:KB]
+				LLAvatarNameCache::getPNSName(target_id, target_name);
+			args["TO_NAME"] = target_name;
+
+			LLSD payload;
+
+			//*TODO please rewrite all keys to the same case, lower or upper
+			payload["from_id"] = target_id;
+			payload["SUPPRESS_TOAST"] = true;
+			LLNotificationsUtil::add("TeleportOfferSent", args, payload);
+
+			/* Singu TODO?
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			if (!fRlvHideName)
+				LLRecentPeople::instance().add(target_id);
+// [/RLVa:KB]
+//			LLRecentPeople::instance().add(target_id);
+			*/
+		}
 	}
 	gAgent.sendReliableMessage();
 }
@@ -7795,8 +7826,7 @@ void handle_lure(const uuid_vec_t& ids)
 
 	LLSD edit_args;
 // [RLVa:KB] - Checked: 2010-04-07 (RLVa-1.2.0d) | Modified: RLVa-1.0.0a
-	edit_args["REGION"] = 
-		(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? gAgent.getRegion()->getName() : RlvStrings::getString(RLV_STRING_HIDDEN);
+	edit_args["REGION"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? gAgent.getRegion()->getName() : RlvStrings::getString(RLV_STRING_HIDDEN);
 // [/RLVa:KB]
 	//edit_args["REGION"] = gAgent.getRegion()->getName();
 
@@ -7816,6 +7846,7 @@ void handle_lure(const uuid_vec_t& ids)
 				return;
 			}
 		}
+		payload["rlv_shownames"] = !RlvActions::canShowName(RlvActions::SNC_TELEPORTOFFER);
 // [/RLVa:KB]
 		payload["ids"].append(*it);
 	}

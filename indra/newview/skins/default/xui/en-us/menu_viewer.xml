@@ -617,22 +617,27 @@
 			<menu_item_call bottom="-29" enabled="true" height="19" label="Sunrise" left="0"
 			     mouse_opaque="true" name="Sunrise" width="169">
 				<on_click function="World.EnvSettings" userdata="sunrise" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-48" enabled="true" height="19" label="Midday" left="0"
 			     mouse_opaque="true" name="Noon" shortcut="control|shift|Y" width="169">
 				<on_click function="World.EnvSettings" userdata="noon" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-67" enabled="true" height="19" label="Sunset" left="0"
 			     mouse_opaque="true" name="Sunset" shortcut="control|shift|N" width="169">
 				<on_click function="World.EnvSettings" userdata="sunset" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-86" enabled="true" height="19" label="Midnight" left="0"
 			     mouse_opaque="true" name="Midnight" width="169">
 				<on_click function="World.EnvSettings" userdata="midnight" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-105" enabled="false" height="19" label="Revert to Region Default"
 			     left="0" mouse_opaque="true" name="Revert to Region Default" width="169">
 				<on_click function="World.EnvSettings" userdata="default" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_separator bottom="-113" enabled="true" height="8" label="-----------" left="0"
 			     mouse_opaque="true" name="separator" width="169" />

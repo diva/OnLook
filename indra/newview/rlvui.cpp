@@ -261,8 +261,12 @@ void RlvUIEnabler::onToggleShowLoc()
 {
 	bool fEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC);
 
-	// RELEASE-RLVa: [SL-2.0.1] Check that the code below still evaluates to *only* LLNavigationBar::instance().mCmbLocation->refresh()
-	//LLAppViewer::instance()->handleLoginComplete();
+	/* Singu TODO: LLNavigationBar
+	if (LLNavigationBar::instanceExists())
+		LLNavigationBar::instance().refreshLocationCtrl();
+	if (LLPanelTopInfoBar::instanceExists())
+		LLPanelTopInfoBar::instance().update();
+	*/
 
 	if (!fEnable)
 	{
