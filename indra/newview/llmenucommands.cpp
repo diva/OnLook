@@ -190,7 +190,6 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		//Singu TODO: Re-implement f1 help.
 		//registerFloater("help f1", boost::bind(/*gViewerHtmlHelp.show*/));
 		registerFloater("help tutorial", boost::bind(LLFloaterHUD::showHUD));
-		registerFloater("inspect", boost::bind(LLFloaterInspect::showInstance));
 		registerFloater("inventory", boost::bind(LLInventoryView::toggleVisibility, (void*)NULL), boost::bind(is_visible_view, static_cast<boost::function<LLView* ()> >(LLInventoryView::getActiveInventory)));
 		registerFloater("local assets", boost::bind(FloaterLocalAssetBrowser::show, (void*)0));
 		registerFloater("mean events", boost::bind(LLFloaterBump::show, (void*)NULL));
@@ -205,6 +204,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
 		registerFloater("script errors", boost::bind(LLFloaterScriptDebug::show, LLUUID::null));
 		registerFloater("search", boost::bind(toggle_search_floater));
+		registerFloater("show inspect", boost::bind(LLFloaterInspect::showInstance, LLSD()));
 		registerFloater("sit", boost::bind(toggle_sit));
 		registerFloater("snapshot", boost::bind(LLFloaterSnapshot::show, (void*)NULL));
 		registerFloater("sound_explorer", boost::bind(LLFloaterExploreSounds::toggle), boost::bind(LLFloaterExploreSounds::visible));
@@ -227,6 +227,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterGesture>				("gestures");
 		registerFloater<LLFloaterMyFriends>				("groups", 1);
 		registerFloater<CommWrapper>					("im");
+		registerFloater<LLFloaterInspect>				("inspect");
 		registerFloater<LLFloaterLagMeter>				("lag meter");
 		registerFloater<SLFloaterMediaFilter>			("media filter");
 		registerFloater<LLFloaterMap>					("mini map");

@@ -5709,7 +5709,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	if (mSelectedObjects->getNumNodes())
 	{
 		LLUUID inspect_item_id= LLUUID::null;
-		LLFloaterInspect* inspect_instance = LLFloaterInspect::instanceExists() ? LLFloaterInspect::getInstance() : NULL;
+		LLFloaterInspect* inspect_instance = LLFloaterInspect::findInstance();
 		if(inspect_instance && inspect_instance->getVisible())
 		{
 			inspect_item_id = inspect_instance->getSelectedUUID();
@@ -6447,7 +6447,7 @@ void dialog_refresh_all()
 
 	LLFloaterProperties::dirtyAll();
 
-	LLFloaterInspect* inspect_instance = LLFloaterInspect::instanceExists() ? LLFloaterInspect::getInstance() : NULL;
+	LLFloaterInspect* inspect_instance = LLFloaterInspect::findInstance();
 	if(inspect_instance)
 	{
 		inspect_instance->dirty();

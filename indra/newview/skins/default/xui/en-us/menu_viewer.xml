@@ -279,7 +279,7 @@
 		</menu_item_call>
 	</menu>
 	<menu bottom="-1" create_jump_keys="true" drop_shadow="true" enabled="true"
-	     height="537" label="View" left="80" mouse_opaque="false" name="View"
+	     height="537" label="View" left="80" mouse_opaque="false" name="View" scrollable="true"
 	     opaque="true" tear_off="true" width="211">
 		<tearoff_menu bottom="-10" enabled="true" height="10" label="~~~~~~~~~~~" left="0"
 		     mouse_opaque="true" name="~~~~~~~~~~~" width="211" />
