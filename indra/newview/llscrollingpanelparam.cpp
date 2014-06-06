@@ -77,10 +77,6 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 		mHintMin->setAllowsUpdates( FALSE );
 		mHintMax->setAllowsUpdates( FALSE );
 
-		std::string min_name = LLTrans::getString(param->getMinDisplayName());
-		std::string max_name = LLTrans::getString(param->getMaxDisplayName());
-		childSetValue("min param text", min_name);
-		childSetValue("max param text", max_name);
 		mLess = getChild<LLButton>("less");
 		mLess->setMouseDownCallback( boost::bind(&LLScrollingPanelParam::onHintMouseDown, this, false) );
 		mLess->setMouseUpCallback( boost::bind(&LLScrollingPanelParam::onHintMouseUp, this, false) );
@@ -93,6 +89,10 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 		mMore->setHeldDownCallback( boost::bind(&LLScrollingPanelParam::onHintHeldDown, this, true) );
 		mMore->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
 	}
+	mMinText = getChildView("min param text");
+	mMinText->setValue(LLTrans::getString(param->getMinDisplayName()));
+	mMaxText = getChildView("max param text");
+	mMaxText->setValue(LLTrans::getString(param->getMaxDisplayName()));
 
 	setVisible(FALSE);
 	setBorderVisible( FALSE );
@@ -157,9 +157,6 @@ void LLScrollingPanelParam::draw()
 	if(mMore)
 		mMore->setVisible(mHintMax && mHintMax->getVisible());
 
-	// Draw all the children except for the labels
-	childSetVisible( "min param text", FALSE );
-	childSetVisible( "max param text", FALSE );
 	LLPanel::draw();
 
 	// Draw the hints over the "less" and "more" buttons.
@@ -191,23 +188,8 @@ void LLScrollingPanelParam::draw()
 
 
 	// Draw labels on top of the buttons
-	childSetVisible( "min param text", TRUE );
-	drawChild(getChild<LLView>("min param text"), BTN_BORDER, BTN_BORDER);
-
-	childSetVisible( "max param text", TRUE );
-	drawChild(getChild<LLView>("max param text"), BTN_BORDER, BTN_BORDER);
-}
-
-// static
-void LLScrollingPanelParam::onSliderMouseDown(LLUICtrl* ctrl, void* userdata)
-{
-}
-
-// static
-void LLScrollingPanelParam::onSliderMouseUp(LLUICtrl* ctrl, void* userdata)
-{
-	LLScrollingPanelParam* self = (LLScrollingPanelParam*) userdata;
-	LLVisualParamHint::requestHintUpdates( self->mHintMin, self->mHintMax );
+	drawChild(mMinText, BTN_BORDER, BTN_BORDER, true);
+	drawChild(mMaxText, BTN_BORDER, BTN_BORDER, true);
 }
 
 void LLScrollingPanelParam::onHintMouseDown( bool max )
@@ -262,17 +244,16 @@ void LLScrollingPanelParam::onHintHeldDown( bool max )
 		// Make sure we're not taking the slider out of bounds
 		// (this is where some simple UI limits are stored)
 		F32 new_percent = weightToPercent(new_weight);
-		LLSliderCtrl* slider = getChild<LLSliderCtrl>("param slider");
-		if (slider)
+		if (mSlider)
 		{
-			if (slider->getMinValue() < new_percent
-				&& new_percent < slider->getMaxValue())
+			if (mSlider->getMinValue() < new_percent
+				&& new_percent < mSlider->getMaxValue())
 			{
 				mWearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
 				mWearable->writeToAvatar(gAgentAvatarp);
 				gAgentAvatarp->updateVisualParams();
 
-				slider->setValue( weightToPercent( new_weight ) );
+				mSlider->setValue( weightToPercent( new_weight ) );
 			}
 		}
 	}
@@ -301,15 +282,14 @@ void LLScrollingPanelParam::onHintMouseUp( bool max )
 				// step a fraction in the negative direction
 				F32 new_weight = current_weight + (range / 10.f);
 				F32 new_percent = weightToPercent(new_weight);
-				LLSliderCtrl* slider = getChild<LLSliderCtrl>("param slider");
-				if (slider)
+				if (mSlider)
 				{
-					if (slider->getMinValue() < new_percent
-						&& new_percent < slider->getMaxValue())
+					if (mSlider->getMinValue() < new_percent
+						&& new_percent < mSlider->getMaxValue())
 					{
 						mWearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
 						mWearable->writeToAvatar(gAgentAvatarp);
-						slider->setValue( weightToPercent( new_weight ) );
+						mSlider->setValue( weightToPercent( new_weight ) );
 					}
 				}
 			}

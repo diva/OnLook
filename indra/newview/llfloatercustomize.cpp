@@ -90,20 +90,6 @@ BOOL edit_wearable_for_teens(LLWearableType::EType type)
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////
-
-void updateAvatarHeightDisplay()
-{
-	if (LLFloaterCustomize::instanceExists() && isAgentAvatarValid())
-	{
-		F32 avatar_size = (gAgentAvatarp->mBodySize.mV[VZ]) + (F32)0.17; //mBodySize is actually quite a bit off.
-		LLFloaterCustomize::getInstance()->getChild<LLTextBox>("HeightTextM")->setValue(llformat("%.2f", avatar_size) + "m");
-		F32 feet = avatar_size / 0.3048;
-		F32 inches = (feet - (F32)((U32)feet)) * 12.0;
-		LLFloaterCustomize::getInstance()->getChild<LLTextBox>("HeightTextI")->setValue(llformat("%d'%d\"", (U32)feet, (U32)inches));
-	}
- }
-
 /////////////////////////////////////////////////////////////////////
 // LLFloaterCustomize
 
@@ -117,7 +103,7 @@ struct WearablePanelData
 
 LLFloaterCustomize::LLFloaterCustomize()
 :	LLFloater(std::string("customize")),
-	mScrollingPanelList( NULL ),
+	mScrollingPanelList(new LLScrollingPanelList(std::string("panel_list"), LLRect())),
 	mInventoryObserver(NULL),
 	mCurrentWearableType(LLWearableType::WT_INVALID)
 {
@@ -168,8 +154,10 @@ LLFloaterCustomize::~LLFloaterCustomize()
 // virtual
 BOOL LLFloaterCustomize::postBuild()
 {
+	mMakeOutfitBtn = getChild<LLUICtrl>("Make Outfit");
 	getChild<LLUICtrl>("Make Outfit")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnMakeOutfit, this));
-	getChild<LLUICtrl>("Save Outfit")->setCommitCallback(boost::bind(&LLAppearanceMgr::updateBaseOutfit, LLAppearanceMgr::getInstance()));
+	mSaveOutfitBtn = getChild<LLUICtrl>("Save Outfit");
+	mSaveOutfitBtn->setCommitCallback(boost::bind(&LLAppearanceMgr::updateBaseOutfit, LLAppearanceMgr::getInstance()));
 	refreshCurrentOutfitName(); // Initialize tooltip for save outfit button
 	getChild<LLUICtrl>("Ok")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnOk, this));
 	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLFloater::onClickClose, this));
@@ -179,41 +167,46 @@ BOOL LLFloaterCustomize::postBuild()
 	getChild<LLUICtrl>("Export")->setCommitCallback(boost::bind(&LLFloaterCustomize::onBtnExport, this));
 	
 	// Tab container
-	LLTabContainer* tab_container = getChild<LLTabContainer>("customize tab container");
-	if(tab_container)
+	if (mTabContainer = getChild<LLTabContainer>("customize tab container"))
 	{
-		tab_container->setCommitCallback(boost::bind(&LLFloaterCustomize::onTabChanged, this, _2));
-		tab_container->setValidateCallback(boost::bind(&LLFloaterCustomize::onTabPrecommit, this, _1, _2));
+		mTabContainer->setCommitCallback(boost::bind(&LLFloaterCustomize::onTabChanged, this, _2));
+		mTabContainer->setValidateCallback(boost::bind(&LLFloaterCustomize::onTabPrecommit, this, _1, _2));
 	}
 
 	// Remove underwear panels for teens
 	if (gAgent.isTeen())
 	{
-		if (tab_container)
+		if (mTabContainer)
 		{
-			LLPanel* panel = tab_container->getPanelByName("Undershirt");
-			if (panel) tab_container->removeTabPanel(panel);
-			panel = tab_container->getPanelByName("Underpants");
-			if (panel) tab_container->removeTabPanel(panel);
+			LLPanel* panel = mTabContainer->getPanelByName("Undershirt");
+			if (panel) mTabContainer->removeTabPanel(panel);
+			panel = mTabContainer->getPanelByName("Underpants");
+			if (panel) mTabContainer->removeTabPanel(panel);
 		}
 	}
-	
+
 	// Scrolling Panel
-	initScrollingPanelList();
-	
+	if (LLScrollContainer* scroll_container = getChild<LLScrollContainer>("panel_container"))
+	{
+		scroll_container->setScrolledView(mScrollingPanelList);
+		scroll_container->addChild(mScrollingPanelList);
+	}
+
+	mMetricHeight = getChildView("HeightTextM");
+	mImperialHeight = getChildView("HeightTextI");
+
 	return TRUE;
 }
 
 void LLFloaterCustomize::refreshCurrentOutfitName(const std::string& name)
 {
-	LLUICtrl* save_outfit_btn = getChild<LLUICtrl>("Save Outfit");
 	// Set current outfit status (wearing/unsaved).
 	bool dirty = LLAppearanceMgr::getInstance()->isOutfitDirty();
 	//std::string cof_status_str = getString(dirty ? "Unsaved Changes" : "Now Wearing");
 	//mOutfitStatus->setText(cof_status_str);
-	save_outfit_btn->setEnabled(dirty); // No use saving unless dirty
+	mSaveOutfitBtn->setEnabled(dirty); // No use saving unless dirty
 
-	if (name == "")
+	if (name.empty())
 	{
 		std::string outfit_name;
 		if (LLAppearanceMgr::getInstance()->getBaseOutfitName(outfit_name))
@@ -221,22 +214,22 @@ void LLFloaterCustomize::refreshCurrentOutfitName(const std::string& name)
 				//mCurrentLookName->setText(outfit_name);
 				LLStringUtil::format_map_t args;
 				args["[OUTFIT]"] = outfit_name;
-				save_outfit_btn->setToolTip(getString("Save changes to", args));
+				mSaveOutfitBtn->setToolTip(getString("Save changes to", args));
 				return;
 		}
 
 		std::string string_name = gAgentWearables.isCOFChangeInProgress() ? "Changing outfits" : "No Outfit";
 		//mCurrentLookName->setText(getString(string_name));
-		save_outfit_btn->setToolTip(getString(string_name));
+		mSaveOutfitBtn->setToolTip(getString(string_name));
 		//mOpenOutfitBtn->setEnabled(FALSE);
-		save_outfit_btn->setEnabled(false); // Can't save right now
+		mSaveOutfitBtn->setEnabled(false); // Can't save right now
 	}
 	else
 	{
 		//mCurrentLookName->setText(name);
 		LLStringUtil::format_map_t args;
 		args["[OUTFIT]"] = name;
-		save_outfit_btn->setToolTip(getString("Save changes to", args));
+		mSaveOutfitBtn->setToolTip(getString("Save changes to", args));
 		// Can't just call update verbs since the folder link may not have been created yet.
 		//mOpenOutfitBtn->setEnabled(TRUE);
 	}
@@ -305,7 +298,7 @@ void LLFloaterCustomize::setCurrentWearableType( LLWearableType::EType type, boo
 		if(mWearablePanelList[type_int])
 		{
 			std::string panelname = mWearablePanelList[type_int]->getName();
-			childShowTab("customize tab container", panelname);
+			mTabContainer->selectTabByName(panelname);
 			switchToDefaultSubpart();
 		}
 
@@ -589,7 +582,14 @@ void LLFloaterCustomize::draw()
 	// arrives. Figure out some way to avoid this if possible.
 	updateInventoryUI();
 	
-	updateAvatarHeightDisplay();
+	if (isAgentAvatarValid())
+	{
+		F32 avatar_size = (gAgentAvatarp->mBodySize.mV[VZ]) + (F32)0.17; //mBodySize is actually quite a bit off.
+		mMetricHeight->setValue(llformat("%.2f", avatar_size) + "m");
+		F32 feet = avatar_size / 0.3048;
+		F32 inches = (feet - (F32)((U32)feet)) * 12.0;
+		mImperialHeight->setValue(llformat("%d'%d\"", (U32)feet, (U32)inches));
+	}
 
 	LLScrollingPanelParam::sUpdateDelayFrames = 0;
 	
@@ -669,20 +669,6 @@ const S32 FLOATER_CUSTOMIZE_BOTTOM_PAD = 30;
 const S32 LINE_HEIGHT = 16;
 const S32 HEADER_PAD = 8;
 const S32 HEADER_HEIGHT = 3 * (LINE_HEIGHT + LLFLOATER_VPAD) + (2 * LLPANEL_BORDER_WIDTH) + HEADER_PAD; 
-
-void LLFloaterCustomize::initScrollingPanelList()
-{
-	LLScrollContainer* scroll_container =
-		getChild<LLScrollContainer>("panel_container");
-	// LLScrollingPanelList's do not import correctly 
-// 	mScrollingPanelList = LLUICtrlFactory::getScrollingPanelList(this, "panel_list");
-	mScrollingPanelList = new LLScrollingPanelList(std::string("panel_list"), LLRect());
-	if (scroll_container)
-	{
-		scroll_container->setScrolledView(mScrollingPanelList);
-		scroll_container->addChild(mScrollingPanelList);
-	}
-}
 
 void LLFloaterCustomize::wearablesChanged(LLWearableType::EType type)
 {
@@ -878,11 +864,9 @@ void LLFloaterCustomize::updateInventoryUI()
 			{
 				panel->setUIPermissions(perm_mask, is_complete);
 			}
-			//BOOL is_vis = panel && item && is_complete && (perm_mask & PERM_MODIFY);
-			//childSetVisible("panel_container", is_vis);
 		}
 	}
 
-	childSetEnabled("Make Outfit", all_complete);
+	mMakeOutfitBtn->setEnabled(all_complete);
 }
 

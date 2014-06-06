@@ -47,9 +47,6 @@ public:
 	virtual void		setVisible( BOOL visible );
 	virtual void		updatePanel(BOOL allow_modify);
 
-	static void			onSliderMouseDown(LLUICtrl* ctrl, void* userdata);
-	static void			onSliderMouseUp(LLUICtrl* ctrl, void* userdata);
-
 	void				onHintMouseUp( bool max );
 	void				onHintMouseDown( bool max );
 	void				onHintHeldDown( bool max );
@@ -69,6 +66,8 @@ public:
 protected:
 	LLTimer				mMouseDownTimer;	// timer for how long mouse has been held down on a hint.
 	F32					mLastHeldTime;
+private:
+	LLView *mMinText, *mMaxText;
 };
 
 
