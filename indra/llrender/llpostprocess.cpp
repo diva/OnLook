@@ -43,6 +43,7 @@
 #include "llsdutil_math.h"
 #include "llvertexbuffer.h"
 #include "llfasttimer.h"
+#include "llmatrix4a.h"
 
 extern LLGLSLShader			gPostColorFilterProgram;
 extern LLGLSLShader			gPostNightVisionProgram;
@@ -305,16 +306,16 @@ public:
 	{
 		addSetting(mStrength);
 	}
-	/*virtual*/ bool isEnabled()		const	{ return LLPostProcessShader::isEnabled() && llabs(gGLModelView[0] - gGLPreviousModelView[0]) > .0000001; }
+	/*virtual*/ bool isEnabled()		const	{ return LLPostProcessShader::isEnabled() && llabs(gGLModelView.getF32ptr()[0] - gGLPreviousModelView.getF32ptr()[0]) > .0000001; }
 	/*virtual*/ S32 getColorChannel()	const	{ return 0; }
 	/*virtual*/ S32 getDepthChannel()	const	{ return 1; }
 	/*virtual*/ QuadType preDraw()
 	{
-		glh::matrix4f inv_proj(gGLModelView);
-		inv_proj.mult_left(gGLProjection);
+		glh::matrix4f inv_proj(gGLModelView.getF32ptr());
+		inv_proj.mult_left(gGLProjection.getF32ptr());
 		inv_proj = inv_proj.inverse();
-		glh::matrix4f prev_proj(gGLPreviousModelView);
-		prev_proj.mult_left(gGLProjection);
+		glh::matrix4f prev_proj(gGLPreviousModelView.getF32ptr());
+		prev_proj.mult_left(gGLProjection.getF32ptr());
 
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
 

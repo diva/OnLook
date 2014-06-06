@@ -125,7 +125,7 @@ void LLDrawPoolTree::render(S32 pass)
 			if (model_matrix != gGLLastMatrix)
 			{
 				gGLLastMatrix = model_matrix;
-				gGL.loadMatrix(gGLModelView);
+				gGL.loadMatrix(gGLModelView.getF32ptr());
 				if (model_matrix)
 				{
 					llassert(gGL.getMatrixMode() == LLRender::MM_MODELVIEW);
@@ -250,10 +250,10 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 			}
 			
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(gGLModelView.getF32ptr());
 			//gGL.pushMatrix();
 
-			LLMatrix4 matrix(gGLModelView);
+			LLMatrix4 matrix(gGLModelView.getF32ptr());
 			
 			// Translate to tree base  HACK - adjustment in Z plants tree underground
 			const LLVector3 &pos_agent = treep->getPositionAgent();

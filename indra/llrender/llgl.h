@@ -455,8 +455,6 @@ public:
 	void wait();
 };
 
-extern LLMatrix4 gGLObliqueProjectionInverse;
-
 #include "llglstates.h"
 
 void init_glstates();

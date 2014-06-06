@@ -81,7 +81,6 @@ BOOL compute_min_max(LLMatrix4& box, LLVector2& min, LLVector2& max); // Shouldn
 bool LLRayAABB(const LLVector3 &center, const LLVector3 &size, const LLVector3& origin, const LLVector3& dir, LLVector3 &coord, F32 epsilon = 0);
 BOOL setup_hud_matrices(); // use whole screen to render hud
 BOOL setup_hud_matrices(const LLRect& screen_region); // specify portion of screen (in pixels) to render hud attachments from (for picking)
-glh::matrix4f glh_copy_matrix(F32* src);
 glh::matrix4f glh_get_current_modelview();
 void glh_set_current_modelview(const glh::matrix4f& mat);
 glh::matrix4f glh_get_current_projection();
@@ -639,8 +638,8 @@ public:
 	LLCamera				mShadowCamera[8];
 	LLVector3				mShadowExtents[4][2];
 	glh::matrix4f			mSunShadowMatrix[6];
-	glh::matrix4f			mShadowModelview[6];
-	glh::matrix4f			mShadowProjection[6];
+	LLMatrix4a				mShadowModelview[6];
+	LLMatrix4a				mShadowProjection[6];
 	glh::matrix4f			mGIMatrix;
 	glh::matrix4f			mGIMatrixProj;
 	glh::matrix4f			mGIModelview;

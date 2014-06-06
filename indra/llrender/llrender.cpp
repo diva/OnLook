@@ -35,17 +35,18 @@
 #include "llrendertarget.h"
 #include "lltexture.h"
 #include "llshadermgr.h"
+#include "llmatrix4a.h"
 
 LLRender gGL;
 
 // Handy copies of last good GL matrices
 //Would be best to migrate these to LLMatrix4a and LLVector4a, but that's too divergent right now.
-LL_ALIGN_16(F32	gGLModelView[16]);
-LL_ALIGN_16(F32	gGLLastModelView[16]);
-LL_ALIGN_16(F32 gGLPreviousModelView[16]);
-LL_ALIGN_16(F32 gGLLastProjection[16]);
-LL_ALIGN_16(F32 gGLProjection[16]);
-LL_ALIGN_16(S32	gGLViewport[4]);
+LLMatrix4a gGLModelView;
+LLMatrix4a gGLLastModelView;
+LLMatrix4a gGLPreviousModelView;
+LLMatrix4a gGLLastProjection;
+LLMatrix4a gGLProjection;
+S32 gGLViewport[4];
 
 U32 LLRender::sUICalls = 0;
 U32 LLRender::sUIVerts = 0;
@@ -1398,6 +1399,120 @@ void LLRender::rotatef(const GLfloat& a, const GLfloat& x, const GLfloat& y, con
 		mMatrix[mMatrixMode][mMatIdx[mMatrixMode]].mult_right(rot_mat);
 		mMatHash[mMatrixMode]++;
 	}
+}
+
+//LLRender::projectf & LLRender::unprojectf adapted from gluProject & gluUnproject in Mesa's GLU 9.0 library.
+//  License/Copyright Statement:
+/*
+ * SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
+ * Copyright (C) 1991-2000 Silicon Graphics, Inc. All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice including the dates of first publication and
+ * either this permission notice or a reference to
+ * http://oss.sgi.com/projects/FreeB/
+ * shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * SILICON GRAPHICS, INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of Silicon Graphics, Inc.
+ * shall not be used in advertising or otherwise to promote the sale, use or
+ * other dealings in this Software without prior written authorization from
+ * Silicon Graphics, Inc.
+ */
+
+bool LLRender::projectf(const LLVector3& object, const LLMatrix4a& modelview, const LLMatrix4a& projection, const LLRect& viewport, LLVector3& windowCoordinate)
+{
+	//Begin SSE intrinsics
+
+	// Declare locals
+	const LLVector4a obj_vector(object.mV[VX],object.mV[VY],object.mV[VZ]);
+	const LLVector4a one(1.f);
+	LLVector4a temp_vec;								//Scratch vector
+	LLVector4a w;										//Splatted W-component.
+	
+	modelview.affineTransform(obj_vector, temp_vec);	//temp_vec = modelview * obj_vector;
+
+	//Passing temp_matrix as v and res is safe. res not altered until after all other calculations
+	projection.rotate4(temp_vec, temp_vec);				//temp_vec = projection * temp_vec
+
+	w.splat<3>(temp_vec);								//w = temp_vec.wwww
+
+	//If w == 0.f, use 1.f instead. Defer return if temp_vec.w == 0.f until after all SSE intrinsics.
+	__m128 is_zero_mask = _mm_cmpeq_ps(w,LLVector4a::getZero());							//bool is_zero = (w == 0.f);
+	temp_vec.div(_mm_or_ps(_mm_andnot_ps(is_zero_mask, w), _mm_and_ps(is_zero_mask, one)));	//temp_vec /= (!iszero ? w : 1.f);
+
+	//Map x, y to range 0-1
+	temp_vec.mul(.5f);
+	temp_vec.add(.5f);
+
+	//End SSE intrinsics
+
+	if(temp_vec[VW]==0.f)
+       return false;
+
+	//Window coordinates
+	windowCoordinate[0]=temp_vec[VX]*viewport.getWidth()+viewport.mLeft;
+	windowCoordinate[1]=temp_vec[VY]*viewport.getHeight()+viewport.mBottom;
+	//This is only correct when glDepthRange(0.0, 1.0)
+	windowCoordinate[2]=temp_vec[VZ];	
+	
+	return true;
+}
+
+bool LLRender::unprojectf(const LLVector3& windowCoordinate, const LLMatrix4a& modelview, const LLMatrix4a& projection, const LLRect& viewport, LLVector3& object)
+{
+	//Begin SSE intrinsics
+
+	// Declare locals
+	static const LLVector4a one(1.f);
+	static const LLVector4a two(2.f);
+	LLVector4a norm_view(
+		((windowCoordinate.mV[VX] - (F32)viewport.mLeft) / (F32)viewport.getWidth()),
+		((windowCoordinate.mV[VY] - (F32)viewport.mBottom) / (F32)viewport.getHeight()),
+		windowCoordinate.mV[VZ],
+		1.f);
+	
+	LLMatrix4a inv_mat;								//Inverse transformation matrix
+	LLVector4a temp_vec;							//Scratch vector
+	LLVector4a w;									//Splatted W-component.
+
+	inv_mat.setMul(projection,modelview);			//inv_mat = projection*modelview
+
+	float det = inv_mat.invert();
+
+	//Normalize. -1.0 : +1.0
+	norm_view.mul(two);								// norm_view *= vec4(.2f)
+	norm_view.sub(one);								// norm_view -= vec4(1.f)
+
+	inv_mat.rotate4(norm_view,temp_vec);			//inv_mat * norm_view
+
+	w.splat<3>(temp_vec);							//w = temp_vec.wwww
+
+	//If w == 0.f, use 1.f instead. Defer return if temp_vec.w == 0.f until after all SSE intrinsics.
+	__m128 is_zero_mask = _mm_cmpeq_ps(w,LLVector4a::getZero());							//bool is_zero = (w == 0.f);
+	temp_vec.div(_mm_or_ps(_mm_andnot_ps(is_zero_mask, w), _mm_and_ps(is_zero_mask, one)));	//temp_vec /= (!iszero ? w : 1.f);
+	
+	//End SSE intrinsics
+
+	if(det == 0.f || temp_vec[VW]==0.f)	
+       return false;
+
+	object.set(temp_vec.getF32ptr());
+
+	return true;
 }
 
 void LLRender::pushMatrix()

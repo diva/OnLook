@@ -28,6 +28,9 @@ class LLFace;
 class LLPolyMesh;
 class LLViewerObject;
 class LLVOAvatar;
+class LLVolume;
+class LLVolumeFace;
+class LLXform;
 
 typedef std::vector<std::pair<LLVector3, LLVector2> > vert_t;
 typedef std::vector<LLVector3> vec3_t;

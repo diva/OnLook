@@ -6175,13 +6175,13 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 
 	if (drawable->isActive())
 	{
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(gGLModelView.getF32ptr());
 		gGL.multMatrix((F32*) objectp->getRenderMatrix().mMatrix);
 	}
 	else if (!is_hud_object)
 	{
 		gGL.loadIdentity();
-		gGL.multMatrix(gGLModelView);
+		gGL.multMatrix(gGLModelView.getF32ptr());
 		LLVector3 trans = objectp->getRegion()->getOriginAgent();		
 		gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);		
 	}
@@ -6291,7 +6291,7 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 	if (!is_hud_object)
 	{
 		gGL.loadIdentity();
-		gGL.multMatrix(gGLModelView);
+		gGL.multMatrix(gGLModelView.getF32ptr());
 	}
 	
 	

@@ -249,49 +249,34 @@ void drawBoxOutline(const LLVector3& pos, const LLVector3& size);
 U32 nhpo2(U32 v);
 LLVertexBuffer* ll_create_cube_vb(U32 type_mask, U32 usage);
 
-glh::matrix4f glh_copy_matrix(F32* src)
-{
-	glh::matrix4f ret;
-	ret.set_value(src);
-	return ret;
-}
-
 glh::matrix4f glh_get_current_modelview()
 {
-	return glh_copy_matrix(gGLModelView);
+	return glh::matrix4f(gGLModelView.getF32ptr());
 }
 
 glh::matrix4f glh_get_current_projection()
 {
-	return glh_copy_matrix(gGLProjection);
+	return glh::matrix4f(gGLProjection.getF32ptr());
 }
 
 glh::matrix4f glh_get_last_modelview()
 {
-	return glh_copy_matrix(gGLLastModelView);
+	return glh::matrix4f(gGLLastModelView.getF32ptr());
 }
 
 glh::matrix4f glh_get_last_projection()
 {
-	return glh_copy_matrix(gGLLastProjection);
-}
-
-void glh_copy_matrix(const glh::matrix4f& src, F32* dst)
-{
-	for (U32 i = 0; i < 16; i++)
-	{
-		dst[i] = src.m[i];
-	}
+	return glh::matrix4f(gGLLastProjection.getF32ptr());
 }
 
 void glh_set_current_modelview(const glh::matrix4f& mat)
 {
-	glh_copy_matrix(mat, gGLModelView);
+	gGLModelView.loadu(mat.m);
 }
 
 void glh_set_current_projection(glh::matrix4f& mat)
 {
-	glh_copy_matrix(mat, gGLProjection);
+	gGLProjection.loadu(mat.m);
 }
 
 glh::matrix4f gl_ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat znear, GLfloat zfar)
@@ -2339,11 +2324,11 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 
 	gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-	gGL.loadMatrix(gGLLastProjection);
+	gGL.loadMatrix(gGLLastProjection.getF32ptr());
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLLastModelView);
+	gGL.loadMatrix(gGLLastModelView.getF32ptr());
 
 	LLGLDisable blend(GL_BLEND);
 	LLGLDisable test(GL_ALPHA_TEST);
@@ -4105,17 +4090,14 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 
 	assertInitialized();
 
-	F32 saved_modelview[16];
-	F32 saved_projection[16];
+	LLMatrix4a saved_modelview;
+	LLMatrix4a saved_projection;
 
 	//HACK: preserve/restore matrices around HUD render
 	if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
 	{
-		for (U32 i = 0; i < 16; i++)
-		{
-			saved_modelview[i] = gGLModelView[i];
-			saved_projection[i] = gGLProjection[i];
-		}
+		saved_modelview = gGLModelView;
+		saved_projection = gGLProjection;
 	}
 
 	///////////////////////////////////////////
@@ -4219,7 +4201,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			{
 				occlude = FALSE;
 				gGLLastMatrix = NULL;
-				gGL.loadMatrix(gGLModelView);
+				gGL.loadMatrix(gGLModelView.getF32ptr());
 				LLGLSLShader::bindNoShader();
 				doOcclusion(camera);
 			}
@@ -4230,7 +4212,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 				LLFastTimer t(FTM_POOLRENDER);
 
 				gGLLastMatrix = NULL;
-				gGL.loadMatrix(gGLModelView);
+				gGL.loadMatrix(gGLModelView.getF32ptr());
 			
 				for( S32 i = 0; i < poolp->getNumPasses(); i++ )
 				{
@@ -4279,13 +4261,13 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	LLVertexBuffer::unbind();
 		
 		gGLLastMatrix = NULL;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(gGLModelView.getF32ptr());
 
 		if (occlude)
 		{
 			occlude = FALSE;
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(gGLModelView.getF32ptr());
 			LLGLSLShader::bindNoShader();
 			doOcclusion(camera);
 		}
@@ -4348,11 +4330,8 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 		//HACK: preserve/restore matrices around HUD render
 		if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
 		{
-			for (U32 i = 0; i < 16; i++)
-			{
-				gGLModelView[i] = saved_modelview[i];
-				gGLProjection[i] = saved_projection[i];
-			}
+			gGLModelView = saved_modelview;
+			gGLProjection = saved_projection;
 		}
 	}
 
@@ -4414,7 +4393,7 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 			LLFastTimer t(FTM_DEFERRED_POOLRENDER);
 
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(gGLModelView.getF32ptr());
 		
 			for( S32 i = 0; i < poolp->getNumDeferredPasses(); i++ )
 			{
@@ -4458,7 +4437,7 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 	}
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 
 	gGL.setColorMask(true, false);
 }
@@ -4491,7 +4470,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 		{
 			occlude = FALSE;
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(gGLModelView.getF32ptr());
 			LLGLSLShader::bindNoShader();
 			doOcclusion(camera/*, mScreen, mOcclusionDepth, &mDeferredDepth*/);
 			gGL.setColorMask(true, false);
@@ -4503,7 +4482,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 			LLFastTimer t(FTM_POST_DEFERRED_POOLRENDER);
 
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(gGLModelView.getF32ptr());
 		
 			for( S32 i = 0; i < poolp->getNumPostDeferredPasses(); i++ )
 			{
@@ -4545,17 +4524,17 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 	}
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 
 	if (occlude)
 	{
 		occlude = FALSE;
 		gGLLastMatrix = NULL;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(gGLModelView.getF32ptr());
 		LLGLSLShader::bindNoShader();
 		doOcclusion(camera);
 		gGLLastMatrix = NULL;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(gGLModelView.getF32ptr());
 	}
 }
 
@@ -4581,7 +4560,7 @@ void LLPipeline::renderGeomShadow(LLCamera& camera)
 			poolp->prerender() ;
 
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(gGLModelView.getF32ptr());
 		
 			for( S32 i = 0; i < poolp->getNumShadowPasses(); i++ )
 			{
@@ -4620,7 +4599,7 @@ void LLPipeline::renderGeomShadow(LLCamera& camera)
 	}
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 }
 
 
@@ -4720,7 +4699,7 @@ void LLPipeline::renderDebug()
 	gGL.color4f(1,1,1,1);
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 	gGL.setColorMask(true, false);
 	bool hud_only = hasRenderType(LLPipeline::RENDER_TYPE_HUD);
 
@@ -4992,7 +4971,7 @@ void LLPipeline::renderDebug()
 		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sWhiteImagep);
 		
 		gGL.pushMatrix();
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(gGLModelView.getF32ptr());
 		gGLLastMatrix = NULL;
 
 		for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ2.begin(); iter != mGroupQ2.end(); ++iter)
@@ -6858,20 +6837,20 @@ void LLPipeline::doResetVertexBuffers()
 void LLPipeline::renderObjects(U32 type, U32 mask, BOOL texture, BOOL batch_texture)
 {
 	assertInitialized();
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 	gGLLastMatrix = NULL;
 	mSimplePool->pushBatches(type, mask, texture, batch_texture);
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 	gGLLastMatrix = NULL;		
 }
 
 void LLPipeline::renderMaskedObjects(U32 type, U32 mask, BOOL texture, BOOL batch_texture)
 {
 	assertInitialized();
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 	gGLLastMatrix = NULL;
 	mAlphaMaskPool->pushMaskBatches(type, mask, texture, batch_texture);
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 	gGLLastMatrix = NULL;		
 }
 
@@ -7858,7 +7837,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 		{
 			cube_map->enable(channel);
 			cube_map->bind();
-			F32* m = gGLModelView;
+			F32* m = gGLModelView.getF32ptr();
 						
 			F32 mat[] = { m[0], m[1], m[2],
 						  m[4], m[5], m[6],
@@ -7968,7 +7947,7 @@ void LLPipeline::renderDeferredLighting()
 		LLGLEnable cull(GL_CULL_FACE);
 		LLGLEnable blend(GL_BLEND);
 
-		glh::matrix4f mat = glh_copy_matrix(gGLModelView);
+		glh::matrix4f mat(gGLModelView.getF32ptr());
 
 		if(mDeferredVB.isNull())
 		{
@@ -8643,7 +8622,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 		LLGLEnable cull(GL_CULL_FACE);
 		LLGLEnable blend(GL_BLEND);
 
-		glh::matrix4f mat = glh_copy_matrix(gGLModelView);
+		glh::matrix4f mat(gGLModelView.getF32ptr());
 
 		LLStrider<LLVector3> vert; 
 		mDeferredVB->getVertexStrider(vert);
@@ -9827,7 +9806,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	gGL.loadMatrix(proj.m);
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 
 	stop_glerror();
 	gGLLastMatrix = NULL;
@@ -9906,7 +9885,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 
 	gDeferredShadowCubeProgram.bind();
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(gGLModelView.getF32ptr());
 
 	//LLRenderTarget& occlusion_source = mShadow[LLViewerCamera::sCurCameraID-1];
 
@@ -10135,13 +10114,8 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 		gAgentAvatarp->updateAttachmentVisibility(CAMERA_MODE_THIRD_PERSON);
 	}
 
-	F64 last_modelview[16];
-	F64 last_projection[16];
-	for (U32 i = 0; i < 16; i++)
-	{ //store last_modelview of world camera
-		last_modelview[i] = gGLLastModelView[i];
-		last_projection[i] = gGLLastProjection[i];
-	}
+	LLMatrix4a last_modelview = gGLLastModelView;
+	LLMatrix4a last_projection = gGLLastProjection;
 
 	pushRenderTypeMask();
 	andRenderTypeMask(LLPipeline::RENDER_TYPE_SIMPLE,
@@ -10675,14 +10649,11 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 			glh_set_current_modelview(view[j]);
 			glh_set_current_projection(proj[j]);
 
-			for (U32 i = 0; i < 16; i++)
-			{
-				gGLLastModelView[i] = mShadowModelview[j].m[i];
-				gGLLastProjection[i] = mShadowProjection[j].m[i];
-			}
+			gGLLastModelView = mShadowModelview[j];
+			gGLLastProjection = mShadowProjection[j];
 
-			mShadowModelview[j] = view[j];
-			mShadowProjection[j] = proj[j];
+			mShadowModelview[j].loadu(view[j].m);
+			mShadowProjection[j].loadu(proj[j].m);
 
 	
 			mSunShadowMatrix[j] = trans*proj[j]*view[j]*inv_view;
@@ -10817,14 +10788,11 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 			mSunShadowMatrix[i+4] = trans*proj[i+4]*view[i+4]*inv_view;
 			
-			for (U32 j = 0; j < 16; j++)
-			{
-				gGLLastModelView[j] = mShadowModelview[i+4].m[j];
-				gGLLastProjection[j] = mShadowProjection[i+4].m[j];
-			}
+			gGLLastModelView = mShadowModelview[i+4];
+			gGLLastProjection = mShadowProjection[i+4];
 
-			mShadowModelview[i+4] = view[i+4];
-			mShadowProjection[i+4] = proj[i+4];
+			mShadowModelview[i+4].loadu(view[i+4].m);
+			mShadowProjection[i+4].loadu(proj[i+4].m);
 
 			LLCamera shadow_cam = camera;
 			shadow_cam.setFar(far_clip);
@@ -10871,11 +10839,8 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	}
 	gGL.setColorMask(true, false);
 
-	for (U32 i = 0; i < 16; i++)
-	{
-		gGLLastModelView[i] = last_modelview[i];
-		gGLLastProjection[i] = last_projection[i];
-	}
+	gGLLastModelView = last_modelview;
+	gGLLastProjection = last_projection;
 
 	popRenderTypeMask();
 

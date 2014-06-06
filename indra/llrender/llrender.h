@@ -42,14 +42,15 @@
 #include "llstrider.h"
 #include "llpointer.h"
 #include "llglheaders.h"
-#include "llmatrix4a.h"
 #include "glh/glh_linear.h"
+#include "llrect.h"
 
 class LLVertexBuffer;
 class LLCubeMap;
 class LLImageGL;
 class LLRenderTarget;
 class LLTexture ;
+class LLMatrix4a;
 
 #define LL_MATRIX_STACK_DEPTH 32
 
@@ -347,6 +348,8 @@ public:
 	void scalef(const GLfloat& x, const GLfloat& y, const GLfloat& z);
 	void rotatef(const GLfloat& a, const GLfloat& x, const GLfloat& y, const GLfloat& z);
 	void ortho(F32 left, F32 right, F32 bottom, F32 top, F32 zNear, F32 zFar);
+	bool projectf(const LLVector3& object, const LLMatrix4a& modelview, const LLMatrix4a& projection, const LLRect& viewport, LLVector3& windowCoordinate);
+	bool unprojectf(const LLVector3& windowCoordinate, const LLMatrix4a& modelview, const LLMatrix4a& projection, const LLRect& viewport, LLVector3& object);
 
 	void pushMatrix();
 	void popMatrix();
@@ -480,11 +483,11 @@ private:
 	LLAlignedArray<LLVector4a, 64> mUIScale;
 };
 
-extern F32 gGLModelView[16];
-extern F32 gGLLastModelView[16];
-extern F32 gGLLastProjection[16];
-extern F32 gGLPreviousModelView[16];
-extern F32 gGLProjection[16];
+extern LLMatrix4a gGLModelView;
+extern LLMatrix4a gGLLastModelView;
+extern LLMatrix4a gGLLastProjection;
+extern LLMatrix4a gGLPreviousModelView;
+extern LLMatrix4a gGLProjection;
 extern S32 gGLViewport[4];
 
 extern LLRender gGL;

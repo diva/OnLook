@@ -187,7 +187,7 @@
 //#include "lltextureentry.h"
 #include "lltreeparams.h"
 //#include "llvolume.h"
-#include "llvolumemgr.h"
+//#include "llvolumemgr.h"
 #include "material_codes.h"
 
 // Library includes from llxml

@@ -50,7 +50,6 @@
 #include "llstl.h"
 #include "llsdserialize.h"
 #include "llvector4a.h"
-#include "llmatrix4a.h"
 #include "lltimer.h"
 
 #define DEBUG_SILHOUETTE_BINORMALS 0

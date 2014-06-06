@@ -445,7 +445,7 @@ void LLRenderPass::applyModelMatrix(LLDrawInfo& params)
 	if (params.mModelMatrix != gGLLastMatrix)
 	{
 		gGLLastMatrix = params.mModelMatrix;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(gGLModelView.getF32ptr());
 		if (params.mModelMatrix)
 		{
 			llassert(gGL.getMatrixMode() == LLRender::MM_MODELVIEW);

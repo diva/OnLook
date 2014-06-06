@@ -1049,12 +1049,9 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 
 			//store this frame's modelview matrix for use
 			//when rendering next frame's occlusion queries
-			for (U32 i = 0; i < 16; i++)
-			{
-				gGLPreviousModelView[i] = gGLLastModelView[i];
-				gGLLastModelView[i] = gGLModelView[i];
-				gGLLastProjection[i] = gGLProjection[i];
-			}
+			gGLPreviousModelView = gGLLastModelView;
+			gGLLastModelView = gGLModelView;
+			gGLLastProjection = gGLProjection;
 			stop_glerror();
 		}
 
@@ -1345,8 +1342,8 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 	if (!gSnapshot)
 	{
 		gGL.pushMatrix();
-		gGL.loadMatrix(gGLLastModelView);
-		glh_set_current_modelview(glh_copy_matrix(gGLLastModelView));
+		gGL.loadMatrix(gGLLastModelView.getF32ptr());
+		glh_set_current_modelview(glh::matrix4f(gGLLastModelView.getF32ptr()));
 	}
 	
 	{

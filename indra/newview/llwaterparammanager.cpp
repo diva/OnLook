@@ -393,13 +393,7 @@ void LLWaterParamManager::update(LLViewerCamera * cam)
 		glh::vec3f norm(0.f, 0.f, 1.f);
 		glh::vec3f p(0.f, 0.f, gAgent.getRegion()->getWaterHeight()+0.1f);
 		
-		F32 modelView[16];
-		for (U32 i = 0; i < 16; i++)
-		{
-			modelView[i] = (F32) gGLModelView[i];
-		}
-
-		glh::matrix4f mat(modelView);
+		glh::matrix4f mat(gGLModelView.getF32ptr());
 		glh::matrix4f invtrans = mat.inverse().transpose();
 		glh::vec3f enorm;
 		glh::vec3f ep;
