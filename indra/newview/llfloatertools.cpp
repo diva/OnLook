@@ -560,7 +560,7 @@ void LLFloaterTools::refresh()
 				else
 				{
 					children.push_front(selected->getRootEdit()); // need root in the list too
-					S32 index = 0;
+					S32 index = 1;
 					for (LLViewerObject::child_list_t::iterator iter = children.begin(); iter != children.end(); ++iter, ++index)
 					{
 						if ((*iter)->isSelected())
