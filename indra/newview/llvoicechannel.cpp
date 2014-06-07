@@ -55,8 +55,9 @@ class LLVoiceCallCapResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLVoiceCallCapResponder(const LLUUID& session_id) : mSessionID(session_id) {};
 
-	/*virtual*/ void error(U32 status, const std::string& reason);	// called with bad status codes
-	/*virtual*/ void result(const LLSD& content);
+	// called with bad status codes
+	virtual void error(U32 status, const std::string& reason);
+	virtual void result(const LLSD& content);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLVoiceCallCapResponder"; }
 
@@ -412,7 +413,7 @@ void LLVoiceChannel::doSetState(const EState& new_state)
 	mState = new_state;
 
 	if (!mStateChangedCallback.empty())
-		mStateChangedCallback(old_state, mState, mCallDirection, mCallEndedByAgent);
+		mStateChangedCallback(old_state, mState, mCallDirection, mCallEndedByAgent, mSessionID);
 }
 
 //static
