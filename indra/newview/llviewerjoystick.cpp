@@ -1351,7 +1351,7 @@ void LLViewerJoystick::setSNDefaults()
 	gSavedSettings.setF32("FlycamAxisScale1", (xbox ? 16.f : 2.f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale2", (xbox ? 16.f : 2.f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale0", (xbox ? 25.f : 2.1f) * platformScale); // Z Scale
-	gSavedSettings.setF32("FlycamAxisScale4", (xbox ? 4.f : .1f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale4", (xbox ? -4.f : .1f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale5", (xbox ? 4.f : .15f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale3", (xbox ? 4.f : 0.f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale6", (xbox ? 4.f : 0.f) * platformScale);
