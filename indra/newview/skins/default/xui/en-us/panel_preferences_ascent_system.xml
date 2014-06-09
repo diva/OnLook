@@ -80,6 +80,8 @@
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open." name="AscentCmdLineTP2" width="200"/>
       <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_14">Toggle Fake Away Status (usage: cmd)</text>
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineAway" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_15">Send region message (usage: cmd msg)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineRegionSay" tool_tip="Only works on permissive regions (Estate Managers only)" width="200"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Security &amp; Privacy" name="Security">

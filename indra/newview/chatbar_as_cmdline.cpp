@@ -38,34 +38,28 @@
 #include "llchatbar.h"
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "stdtypes.h"
+#include "llagentui.h"
 #include "llviewerregion.h"
 #include "llworld.h"
-#include "lluuid.h"
 #include "lleventtimer.h"
-#include "llviewercontrol.h"
 
-#include "material_codes.h"
 #include "llvolume.h"
-#include "object_flags.h"
 #include "llvolumemessage.h"
 #include "llurldispatcher.h"
 #include "llworld.h"
 #include "llworldmap.h"
 #include "llfloateravatarlist.h"
+#include "llfloaterregioninfo.h"
 #include "llviewerobjectlist.h"
 #include "llviewertexteditor.h"
 #include "llviewermenu.h"
 #include "llvoavatar.h"
 #include "lltooldraganddrop.h"
 #include "llinventorymodel.h"
+#include "llregioninfomodel.h"
 #include "llselectmgr.h"
 #include "llslurl.h"
 #include "llurlaction.h"
-
-#include <iosfwd>
-
-#include <float.h>
 
 #include "llchat.h"
 
@@ -239,6 +233,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 	static LLCachedControl<std::string> sAscentCmdLineTP2(gSavedSettings,  "AscentCmdLineTP2");
 	static LLCachedControl<std::string> sAscentCmdLineClearChat(gSavedSettings,  "AscentCmdLineClearChat");
 	static LLCachedControl<std::string> sSinguCmdLineAway(gSavedSettings,  "SinguCmdLineAway");
+	static LLCachedControl<std::string> sSinguCmdLineRegionSay(gSavedSettings,  "SinguCmdLineRegionSay");
 	static LLCachedControl<std::string> sSinguCmdLineURL(gSavedSettings,  "SinguCmdLineURL");
 
 	if(sAscentCmdLine)
@@ -434,6 +429,23 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				if (revised_text.length() > command.length() + 1)
 				{
 					LLUrlAction::clickAction(revised_text.substr(command.length()+1));
+				}
+				return false;
+			}
+			else if(command == utf8str_tolower(sSinguCmdLineRegionSay))
+			{
+				if (revised_text.length() > command.length() + 1)
+				{
+					std::vector<std::string> strings(5, "-1");
+					// [0] grid_x, unused here
+					// [1] grid_y, unused here
+					strings[2] = gAgentID.asString(); // [2] agent_id of sender
+					// [3] sender name
+					std::string name;
+					LLAgentUI::buildFullname(name);
+					strings[3] = name;
+					strings[4] = revised_text.substr(command.length()+1); // [4] message
+					LLRegionInfoModel::sendEstateOwnerMessage(gMessageSystem, "simulatormessage", LLFloaterRegionInfo::getLastInvoice(), strings);
 				}
 				return false;
 			}

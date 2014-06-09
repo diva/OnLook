@@ -94,6 +94,7 @@ private:
 	bool mCmdMapToKeepPos;
 	std::string mCmdLineTP2;
 	std::string mCmdLineAway;
+	std::string mCmdLineRegionSay;
 	std::string mCmdLineURL;
 
 	//Security ----------------------------------------------------------------------------

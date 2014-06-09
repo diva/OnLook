@@ -71,6 +71,7 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 	getChild<LLUICtrl>("AscentCmdLineMapTo")->setCommitCallback(lineEditorControl);
 	getChild<LLUICtrl>("AscentCmdLineTP2")->setCommitCallback(lineEditorControl);
 	getChild<LLUICtrl>("SinguCmdLineAway")->setCommitCallback(lineEditorControl);
+	getChild<LLUICtrl>("SinguCmdLineRegionSay")->setCommitCallback(lineEditorControl);
 	getChild<LLUICtrl>("SinguCmdLineURL")->setCommitCallback(lineEditorControl);
 
 	//Security ----------------------------------------------------------------------------
@@ -180,6 +181,7 @@ void LLPrefsAscentSys::refreshValues()
     mCmdMapToKeepPos            = gSavedSettings.getBOOL("AscentMapToKeepPos");
     mCmdLineTP2                 = gSavedSettings.getString("AscentCmdLineTP2");
     mCmdLineAway                = gSavedSettings.getString("SinguCmdLineAway");
+	mCmdLineRegionSay           = gSavedSettings.getString("SinguCmdLineRegionSay");
 	mCmdLineURL                 = gSavedSettings.getString("SinguCmdLineURL");
 
     //Security ----------------------------------------------------------------------------
@@ -247,6 +249,7 @@ void LLPrefsAscentSys::refresh()
     childSetValue("AscentCmdLineMapTo",         mCmdLineMapTo);
     childSetValue("AscentCmdLineTP2",           mCmdLineTP2);
     childSetValue("SinguCmdLineAway",           mCmdLineAway);
+	childSetValue("SinguCmdLineRegionSay",      mCmdLineRegionSay);
 	childSetValue("SinguCmdLineURL",            mCmdLineURL);
 
 	//Security ----------------------------------------------------------------------------
@@ -317,6 +320,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("AscentMapToKeepPos",            mCmdMapToKeepPos);
     gSavedSettings.setString("AscentCmdLineTP2",			mCmdLineTP2);
     gSavedSettings.setString("SinguCmdLineAway",			mCmdLineAway);
+	gSavedSettings.setString("SinguCmdLineRegionSay",		mCmdLineRegionSay);
 	gSavedSettings.setString("SinguCmdLineURL",				mCmdLineURL);
 
     //Security ----------------------------------------------------------------------------

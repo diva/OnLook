@@ -686,6 +686,17 @@
 			<key>Value</key>
 			<string>/away</string>
 		</map>
+		<key>SinguCmdLineRegionSay</key>
+		<map>
+			<key>Comment</key>
+			<string>Command prefix for chat to say to entire region, if allowed(EM).</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>String</string>
+			<key>Value</key>
+			<string>/regionsay</string>
+		</map>
 		<key>SinguCmdLineURL</key>
 		<map>
 			<key>Comment</key>
