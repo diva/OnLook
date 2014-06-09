@@ -797,9 +797,9 @@
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>d3ee81e7dfe338b46efc2830930e771e</string>
+            <string>22fd1388454117626c2477509d3e93be</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libhunspell-1.3.2-windows64-20131020.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libhunspell-1.3.2-windows64-20140605.tar.bz2</uri>
           </map>
         </map>
       </map>
