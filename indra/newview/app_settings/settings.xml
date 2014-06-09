@@ -939,6 +939,19 @@
       <key>IsCOA</key>
       <integer>1</integer>
     </map>
+    <key>LiruNewMessageSoundIMsOn</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not ding defaults to being on for new IMs.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
     <key>LiruNoTransactionClutter</key>
     <map>
       <key>Comment</key>
