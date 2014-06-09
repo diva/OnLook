@@ -1938,6 +1938,7 @@ void errorCallback(const std::string &error_string)
 	}
 }
 
+bool init_logging();
 bool LLAppViewer::initLogging()
 {
 	//
@@ -1947,6 +1948,10 @@ bool LLAppViewer::initLogging()
 				gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, ""));
 	LLError::setFatalFunction(errorCallback);
 	
+	return init_logging();
+}
+bool init_logging()
+{
 	// Remove the last ".old" log file.
 	std::string old_log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, OLD_LOG_FILE);
 	LLFile::remove(old_log_file);
@@ -2206,6 +2211,19 @@ bool LLAppViewer::initConfiguration()
 	}
 	
 	// - selectively apply settings 
+
+	// <singu> Portability Mode!
+	if (clp.hasOption("portable"))
+	{
+		const std::string log = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, LOG_FILE);
+		llinfos	<< "Attempting to use portable settings and cache!" << llendl;
+		gDirUtilp->makePortable();
+		init_logging(); // Switch to portable log file
+		llinfos	<< "Portable viewer configuration initialized!" << llendl;
+		LLFile::remove(log);
+		llinfos << "Cleaned up local log file to keep this computer untouched." << llendl;
+	}
+	// </singu>
 
 	// If the user has specified a alternate settings file name.
 	// Load	it now before loading the user_settings/settings.xml

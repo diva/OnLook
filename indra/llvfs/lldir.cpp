@@ -710,6 +710,33 @@ void LLDir::setLindenUserDir(const std::string &grid, const std::string &first, 
 	dumpCurrentDirectories();	
 }
 
+void LLDir::makePortable()
+{
+	std::string dir = mExecutableDir;
+	dir.erase(dir.rfind(mDirDelimiter)); // Go one level up
+	dir += mDirDelimiter + "portable_viewer";
+	if (LLFile::mkdir(dir) == -1)
+	{
+		if (errno != EEXIST)
+		{
+			llwarns << "Couldn't create portable_viewer directory." << llendl;
+			return; // Failed, don't mess anything up.
+		}
+	}
+	mOSUserDir = dir + mDirDelimiter + "settings";
+	mOSCacheDir = dir + mDirDelimiter + "cache";
+	if (LLFile::mkdir(mOSUserDir) == -1 || LLFile::mkdir(mOSCacheDir) == -1)
+	{
+		if (errno != EEXIST)
+		{
+			llwarns << "Couldn't create portable_viewer cache and settings directories." << llendl;
+			return; // Failed, don't mess up the existing initialization.
+		}
+	}
+	mDefaultCacheDir = buildSLOSCacheDir();
+	initAppDirs(mAppName); // This is kinda lazy, but it's probably the quickest, most uniform way.
+}
+
 void LLDir::setChatLogsDir(const std::string &path)
 {
 	if (!path.empty() )
