@@ -34,6 +34,7 @@
 
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
+#include "llfloaterperms.h"
 #include "llfoldervieweventlistener.h"
 #include "llimview.h"
 #include "llinventorybridge.h"
@@ -304,7 +305,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							parent_id,
 							LLAssetType::AT_LSL_TEXT,
 							LLInventoryType::IT_LSL,
-							PERM_MOVE | PERM_TRANSFER);
+							LLFloaterPerms::getNextOwnerPerms("Script"));
 	}
 	else if ("notecard" == type)
 	{

@@ -127,6 +127,9 @@ private:
 	bool mNextCopy;
 	bool mNextMod;
 	bool mNextTrans;
+	bool mScriptNextCopy;
+	bool mScriptNextMod;
+	bool mScriptNextTrans;
 	std::string mShiny;
 	bool mTemporary;
 	std::string mTexture;

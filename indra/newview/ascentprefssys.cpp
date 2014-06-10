@@ -79,7 +79,7 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 
 	//Build -------------------------------------------------------------------------------
 	getChild<LLUICtrl>("next_owner_copy")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
-	childSetEnabled("next_owner_transfer", gSavedSettings.getBOOL("NextOwnerCopy"));
+	getChild<LLUICtrl>("script_next_owner_copy")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitCheckBox, this, _1, _2));
 	getChild<LLUICtrl>("material")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitComboBox, this, _1, _2));
 	getChild<LLUICtrl>("combobox shininess")->setCommitCallback(boost::bind(&LLPrefsAscentSys::onCommitComboBox, this, _1, _2));
 	getChild<LLTextureCtrl>("texture control")->setDefaultImageAssetID(LLUUID(gSavedSettings.getString("EmeraldBuildPrefs_Texture")));
@@ -122,7 +122,10 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value)
 	else if (name == "next_owner_copy")
 	{
 		if (!enabled) gSavedSettings.setBOOL("NextOwnerTransfer", true);
-		childSetEnabled("next_owner_transfer", enabled);
+	}
+	else if (name == "script_next_owner_copy")
+	{
+		if (!enabled) gSavedSettings.setBOOL("ScriptNextOwnerTransfer", true);
 	}
 }
 
@@ -214,6 +217,9 @@ void LLPrefsAscentSys::refreshValues()
 	mNextCopy					= gSavedSettings.getBOOL("NextOwnerCopy");
 	mNextMod					= gSavedSettings.getBOOL("NextOwnerModify");
 	mNextTrans					= gSavedSettings.getBOOL("NextOwnerTransfer");
+	mScriptNextCopy				= gSavedSettings.getBOOL("ScriptNextOwnerCopy");
+	mScriptNextMod				= gSavedSettings.getBOOL("ScriptNextOwnerModify");
+	mScriptNextTrans			= gSavedSettings.getBOOL("ScriptNextOwnerTransfer");
 	mShiny						= gSavedSettings.getString("EmeraldBuildPrefs_Shiny");
 	mTemporary					= gSavedSettings.getBOOL("EmeraldBuildPrefs_Temporary");
 	mTexture					= gSavedSettings.getString("EmeraldBuildPrefs_Texture");
@@ -353,6 +359,9 @@ void LLPrefsAscentSys::cancel()
 	gSavedSettings.setBOOL("NextOwnerCopy",                 mNextCopy);
 	gSavedSettings.setBOOL("NextOwnerModify",               mNextMod);
 	gSavedSettings.setBOOL("NextOwnerTransfer",             mNextTrans);
+	gSavedSettings.setBOOL("ScriptNextOwnerCopy",           mScriptNextCopy);
+	gSavedSettings.setBOOL("ScriptNextOwnerModify",         mScriptNextMod);
+	gSavedSettings.setBOOL("ScriptNextOwnerTransfer",       mScriptNextTrans);
 	gSavedSettings.setBOOL("EmeraldBuildPrefs_Phantom",     mPhantom);
 	gSavedSettings.setBOOL("EmeraldBuildPrefs_Physical",    mPhysical);
 	gSavedSettings.setString("EmeraldBuildPrefs_Shiny",     mShiny);
