@@ -396,7 +396,7 @@ void LLCrashLogger::checkCrashDump()
 	if (pref == 2) return; //never send
 
 	mCrashHost = gSavedSettings.getString("CrashHostUrl");
-	std::string dumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
+	std::string dumpDir = gDirUtilp->getDumpDir();
 
 	// Do we have something to send, and somewhere to send it
 	if (!mCrashHost.empty() && miniDumpExists(dumpDir))
