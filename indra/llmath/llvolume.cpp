@@ -1094,8 +1094,6 @@ BOOL LLProfile::generate(const LLProfileParams& params, BOOL path_open,F32 detai
 		}
 	}
 	
-	//genNormals(params);
-
 	return TRUE;
 }
 
@@ -2374,7 +2372,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 	LLSD mdl;
 	if (!unzip_llsd(mdl, is, size))
 	{
-		LL_DEBUGS("MeshStreaming") << "Failed to unzip LLSD blob for LoD, will probably fetch from sim again." << llendl;
+		LL_DEBUGS("MeshStreaming") << "Failed to unzip LLSD blob for LoD, will probably fetch from sim again." << LL_ENDL;
 		return false;
 	}
 	
@@ -5617,7 +5615,6 @@ BOOL LLVolumeFace::createCap(LLVolume* volume, BOOL partial_build)
 	else
 	{
 		resizeVertices(num_vertices);
-		
 		if (!partial_build)
 		{
 			resizeIndices(num_indices);
@@ -5721,6 +5718,7 @@ BOOL LLVolumeFace::createCap(LLVolume* volume, BOOL partial_build)
 	mCenter->mul(0.5f); 
 
 	cuv = (min_uv + max_uv)*0.5f;
+
 
 	VertexData vd;
 	vd.setPosition(*mCenter);
@@ -6770,7 +6768,7 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 	return TRUE;
 }
 
-//adapted from Lengyel, Eric. “Computing Tangent Space Basis Vectors for an Arbitrary Mesh”. Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html
+//adapted from Lengyel, Eric. "Computing Tangent Space Basis Vectors for an Arbitrary Mesh". Terathon Software 3D Graphics Library, 2001. http://www.terathon.com/code/tangent.html
 void CalculateTangentArray(U32 vertexCount, const LLVector4a *vertex, const LLVector4a *normal,
         const LLVector2 *texcoord, U32 triangleCount, const U16* index_array, LLVector4a *tangent)
 {

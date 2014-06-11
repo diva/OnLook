@@ -69,7 +69,6 @@ BOOL LLFace::sSafeRenderSelect = TRUE; // FALSE
 
 #define DOTVEC(a,b) (a.mV[0]*b.mV[0] + a.mV[1]*b.mV[1] + a.mV[2]*b.mV[2])
 
-
 /*
 For each vertex, given:
 	B - binormal
@@ -398,6 +397,7 @@ void LLFace::setSize(S32 num_vertices, const S32 num_indices, bool align)
 		//allocate vertices in blocks of 4 for alignment
 		num_vertices = (num_vertices + 0x3) & ~0x3;
 	}
+
 	if (mGeomCount != num_vertices ||
 		mIndicesCount != num_indices)
 	{
@@ -1311,7 +1311,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				};
 			
 			llassert(tep->getShiny() <= 3);
-
 			color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
 		}
 	}
@@ -1525,7 +1524,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 
 		glBindBufferARB(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
-
 		gGL.popMatrix();
 
 		if (cur_shader)
@@ -2385,8 +2383,6 @@ F32 LLFace::calcImportanceToCamera(F32 cos_angle_to_view_dir, F32 dist)
 			return 0.f ;
 		}
 		
-		//F32 camera_relative_speed = camera_moving_speed * (lookAt * LLViewerCamera::getInstance()->getVelocityDir()) ;
-		
 		S32 i = 0 ;
 		for(i = 0; i < FACE_IMPORTANCE_LEVEL && dist > FACE_IMPORTANCE_TO_CAMERA_OVER_DISTANCE[i][0]; ++i);
 		i = llmin(i, FACE_IMPORTANCE_LEVEL - 1) ;
@@ -2427,16 +2423,7 @@ BOOL LLFace::verify(const U32* indices_array) const
 	BOOL ok = TRUE;
 
 	if( mVertexBuffer.isNull() )
-	{
-		if( mGeomCount )
-		{
-			// This happens before teleports as faces are torn down.
-			// Stop the crash in DEV-31893 with a null pointer check,
-			// but present this info.
-			// To clean up the log, the geometry could be cleared, or the
-			// face could otherwise be marked for no ::verify.
-			//AIFIXME: llinfos << "Face with no vertex buffer and " << mGeomCount << " mGeomCount" << llendl;
-		}
+	{ //no vertex buffer, face is implicitly valid
 		return TRUE;
 	}
 	
