@@ -588,6 +588,18 @@ public:
 	}
 };
 
+void load_default_bindings(bool zqsd)
+{
+	gViewerKeyboard.unloadBindings();
+	const std::string keys(zqsd ? "keysZQSD.ini" : "keys.ini");
+	if (!gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, keys)))
+	{
+		LL_ERRS("InitInfo") << "Unable to open " << keys << LL_ENDL;
+	}
+	// Load Custom bindings (override defaults)
+	gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"custom_keys.ini"));
+}
+
 bool LLAppViewer::init()
 {	
 	setupErrorHandling();
@@ -872,12 +884,7 @@ bool LLAppViewer::init()
 	bind_keyboard_functions();
 
 	// Load Default bindings
-	if (!gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"keys.ini")))
-	{
-		LL_ERRS("InitInfo") << "Unable to open keys.ini" << LL_ENDL;
-	}
-	// Load Custom bindings (override defaults)
-	gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"custom_keys.ini"));
+	load_default_bindings(gSavedSettings.getBOOL("LiruUseZQSDKeys"));
 
 	// If we don't have the right GL requirements, exit.
 	if (!gGLManager.mHasRequirements && !gNoRender)

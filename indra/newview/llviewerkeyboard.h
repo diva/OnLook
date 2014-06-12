@@ -72,6 +72,7 @@ public:
 	void			bindNamedFunction(const std::string& name, LLKeyFunc func);
 
 	S32				loadBindings(const std::string& filename);										// returns number bound, 0 on error
+	void				unloadBindings();
 	EKeyboardMode	getMode();
 
 	BOOL			modeFromString(const std::string& string, S32 *mode);			// False on failure
