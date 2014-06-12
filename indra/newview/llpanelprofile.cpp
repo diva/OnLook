@@ -96,7 +96,9 @@ public:
 			return false;
 		}
 
-		const std::string verb = params[1].asString();
+		std::string verb = params[1].asString();
+		while (!verb.empty() && std::ispunct(verb.back()))
+			verb.pop_back();
 		if (verb == "about")
 		{
 			LLAvatarActions::showProfile(avatar_id);
