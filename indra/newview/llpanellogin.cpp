@@ -191,6 +191,8 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 	password_edit->setCommitCallback(mungePassword, this);
 	password_edit->setDrawAsterixes(TRUE);
 
+	getChild<LLUICtrl>("remove_login")->setCommitCallback(boost::bind(&LLPanelLogin::removeLogin, this));
+
 	// change z sort of clickable text to be behind buttons
 	sendChildToBack(getChildView("channel_text"));
 	sendChildToBack(getChildView("forgot_password_text"));
@@ -354,6 +356,8 @@ void LLPanelLogin::reshapeBrowser()
 
 LLPanelLogin::~LLPanelLogin()
 {
+	std::string login_hist_filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
+	LLSavedLogins::saveFile(mLoginHistoryData, login_hist_filepath);
 	LLPanelLogin::sInstance = NULL;
 
 	if ( gFocusMgr.getDefaultKeyboardFocus() == this )
@@ -1126,4 +1130,18 @@ void LLPanelLogin::clearPassword()
 	sInstance->childSetText("password_edit", blank);
 	sInstance->mIncomingPassword = blank;
 	sInstance->mMungedPassword = blank;
+}
+
+void LLPanelLogin::removeLogin()
+{
+	LLComboBox* combo(getChild<LLComboBox>("username_combo"));
+	const std::string label(combo->getTextEntry());
+	if (combo->isTextDirty() || !combo->itemExists(label)) return; // Text entries aren't in the list
+	const LLSD& selected = combo->getSelectedValue();
+	if (!selected.isUndefined())
+	{
+		mLoginHistoryData.deleteEntry(selected.get("firstname").asString(), selected.get("lastname").asString(), selected.get("grid").asString());
+		combo->remove(label);
+		combo->selectFirstItem();
+	}
 }
