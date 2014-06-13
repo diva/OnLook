@@ -101,7 +101,7 @@ public:
 		while (!verb.empty() && std::ispunct(verb.back()))
 			verb.pop_back();
 #else
-		for (size_t i = verb.size()-1; i >= 0 && std::ispunct(verb.back[i]); --i)
+		for (size_t i = verb.size()-1; i >= 0 && std::ispunct(verb[i]); --i)
 			verb.erase(i);
 #endif
 		if (verb == "about")
