@@ -554,7 +554,7 @@ void LLFloaterAvatarList::updateAvatarList()
 
 			// Announce position
 			F32 dist((position - mypos).magVec());
-			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position), avatarp, dist < LFSimFeatureHandler::getInstance()->sayRange(), dist < LFSimFeatureHandler::getInstance()->shoutRange());
+			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position) || !(LLWorld::getInstance()->positionRegionValidGlobal(position)), avatarp, dist < LFSimFeatureHandler::getInstance()->sayRange(), dist < LFSimFeatureHandler::getInstance()->shoutRange());
 
 			// Mark as typing if they are typing
 			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
