@@ -210,8 +210,6 @@ Dieses Kontrollk&#xE4;stchen zeigt Folgendes an:
 
 Die Second Life Website f&#xFC;r weitere Informationen &#xFC;ber Partnerschaften &#xF6;ffnen?<usetemplate name="okcancelbuttons" yestext="Gehe zu Seite"/></notification>
 
-  <notification name="ClickUploadHelpPermissions">Ihre Standardberechtigung funktionieren in &#xE4;lteren Regionen m&#xF6;glicherweise nicht.</notification>
-
   <notification name="ClickWebProfileHelpAvatar">Wenn dieser Einwohner einen Webprofil-URL angegeben hat, k&#xF6;nnen Sie:
  * Auf &#x201E;Laden&#x201C; klicken und die Seite in dieser Web-Registerkarte anzeigen.
  * Auf Laden &gt; &#x201E;In externem Browser&#x201C; klicken und die Seite im Standard-Browser anzeigen.

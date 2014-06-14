@@ -58,6 +58,7 @@
 #include "lldir.h"
 #include "lleventpoll.h"
 #include "llfloatergodtools.h"
+#include "llfloaterperms.h"
 #include "llfloaterreporter.h"
 #include "llfloaterregioninfo.h"
 #include "llhttpnode.h"
@@ -1694,6 +1695,7 @@ void LLViewerRegion::unpackRegionHandshake()
 
 void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 {
+	capabilityNames.append("AgentPreferences");
 	capabilityNames.append("AgentState");
 	capabilityNames.append("AttachmentResources");
 	//capabilityNames.append("AvatarPickerSearch"); //Display name/SLID lookup (llfloateravatarpicker.cpp)
@@ -1997,6 +1999,8 @@ void LLViewerRegion::setCapabilitiesReceived(bool received)
 	if (received)
 	{
 		mCapabilitiesReceivedSignal(getRegionID());
+
+		LLFloaterPermsDefault::sendInitialPerms();
 
 		// This is a single-shot signal. Forget callbacks to save resources.
 		mCapabilitiesReceivedSignal.disconnect_all_slots();

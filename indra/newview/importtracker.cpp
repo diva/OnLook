@@ -226,7 +226,9 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 							}
 						}
 				}
-				
+
+				// Anything below here must be permissions!!!
+				if (gAgent.getRegion()->getCapability("AgentPreferences").empty()) break; // This cap automates perm setting on the server
 				msg->newMessageFast(_PREHASH_ObjectPermissions);
 				msg->nextBlockFast(_PREHASH_AgentData);
 				msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -238,16 +240,16 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 				msg->addU8Fast(_PREHASH_Field,	PERM_NEXT_OWNER);
 				msg->addU8Fast(_PREHASH_Set, PERM_SET_TRUE);
 				U32 flags = 0;
-				if ( gSavedSettings.getBOOL("NextOwnerCopy") )
+				if ( gSavedSettings.getBOOL("ObjectsNextOwnerCopy") )
 				{
 					flags |= PERM_COPY;
 				}
-				if ( gSavedSettings.getBOOL("NextOwnerModify") )
+				if ( gSavedSettings.getBOOL("ObjectsNextOwnerModify") )
 				{
 					flags |= PERM_MODIFY;
 				}
 				bool next_owner_trans;
-				if ( next_owner_trans = gSavedSettings.getBOOL("NextOwnerTransfer") )
+				if ( next_owner_trans = gSavedSettings.getBOOL("ObjectsNextOwnerTransfer") )
 				{
 					flags |= PERM_TRANSFER;
 				}
@@ -399,7 +401,7 @@ public:
 		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 			gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH), data->tid, data->name,
 			data->description, data->type, LLInventoryType::defaultForAssetType(data->type), data->wear_type,
-			LLFloaterPerms::getNextOwnerPerms(),
+			LLFloaterPerms::getNextOwnerPerms("Uploads"),
 			cb);
 		
 	}
@@ -542,7 +544,7 @@ void JCImportInventorycallback(const LLUUID& uuid, void* user_data, S32 result, 
 		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 			gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH), data->tid, data->name,
 			data->description, data->type, LLInventoryType::defaultForAssetType(data->type), data->wear_type,
-			LLFloaterPerms::getNextOwnerPerms(),
+			LLFloaterPerms::getNextOwnerPerms("Uploads"),
 			cb);
 	}else cmdline_printchat("err: "+std::string(LLAssetStorage::getErrorString(result)));
 }
@@ -690,7 +692,7 @@ void ImportTracker::send_inventory(LLSD& prim)
 						create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 							gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH), data->tid, data->name,
 							data->description, data->type, LLInventoryType::defaultForAssetType(data->type), data->wear_type,
-							LLFloaterPerms::getNextOwnerPerms(),
+							LLFloaterPerms::getNextOwnerPerms("Notecards"),
 							cb);
 					}
 					break;
@@ -702,7 +704,7 @@ void ImportTracker::send_inventory(LLSD& prim)
 						create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 							gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH), data->tid, data->name,
 							data->description, data->type, LLInventoryType::defaultForAssetType(data->type), data->wear_type,
-							LLFloaterPerms::getNextOwnerPerms(),
+							LLFloaterPerms::getNextOwnerPerms("Scripts"),
 							cb);
 					}
 					break;

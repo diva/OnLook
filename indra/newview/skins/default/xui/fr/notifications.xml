@@ -244,10 +244,6 @@ Aller sur le site de [SECOND_LIFE_GRID] pour avoir plus d'informations sur les p
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Aller sur cette page"/>
 	</notification>
 
-	<notification name="ClickUploadHelpPermissions">
-		Il est possible que vos droits par défaut ne fonctionnent pas dans les anciennes régions.
-	</notification>
-
 	<notification name="ClickWebProfileHelpAvatar">
 Si ce résident a défini une URL de profil web, vous pouvez:
  * Cliquer sur Charger pour afficher la page dans cet onglet;

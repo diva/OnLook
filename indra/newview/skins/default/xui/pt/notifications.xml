@@ -300,10 +300,6 @@ Ir para o site do [SECOND_LIFE] para mais informações sobre parceria?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Ir para a Página"/>
 	</notification>
 
-	<notification name="ClickUploadHelpPermissions">
-		Suas permissões padrão podem não funcionar em regiões antigas.
-	</notification>
-
 	<notification name="ClickWebProfileHelpAvatar">
 		Se este Residente definiu uma URL de perfil na web, então você pode:
  * Clicar em 'Carregar' para ver a página na aba Web.

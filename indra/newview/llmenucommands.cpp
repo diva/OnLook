@@ -237,7 +237,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterOutbox>				("outbox");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
-		registerFloater<LLFloaterPerms>					("perm prefs");
+		registerFloater<LLFloaterPermsDefault>			("perm prefs");
 		registerFloater<LLFloaterAvatarList>			("radar");
 		registerFloater<LLFloaterScriptLimits>			("script info");
 		registerFloater<LLFloaterStats>					("stat bar");

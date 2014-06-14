@@ -1904,7 +1904,7 @@ void LLLiveLSLEditor::loadAsset()
 		mScriptEd->enableSave(FALSE);
 		LLPermissions perm;
 		perm.init(gAgent.getID(), gAgent.getID(), LLUUID::null, gAgent.getGroupID());
-		perm.initMasks(PERM_ALL, PERM_ALL, PERM_NONE, PERM_NONE, LLFloaterPerms::getNextOwnerPerms("Script"));
+		perm.initMasks(PERM_ALL, PERM_ALL, LLFloaterPerms::getEveryonePerms("Scripts"), LLFloaterPerms::getGroupPerms("Scripts"), LLFloaterPerms::getNextOwnerPerms("Scripts"));
 		mItem = new LLViewerInventoryItem(mItemUUID,
 										  mObjectUUID,
 										  perm,

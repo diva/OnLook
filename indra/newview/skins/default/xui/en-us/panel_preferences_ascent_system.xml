@@ -137,13 +137,13 @@
       </combo_box>
       <text bottom="-19" left_delta="85" name="text_box7" halign="center" width="145">Next Owner Perms</text>
       <text bottom="-34" left_delta="0" name="text_box8" halign="center" width="65">Objects</text>
-        <check_box follows="top" height="16" initial_value="false" label="Copy" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="NextOwnerCopy"/>
-        <check_box follows="top" height="16" initial_value="false" label="Modify" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="NextOwnerModify"/>
-        <check_box follows="top" height="16" initial_value="true" label="Transfer" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer" enabled_control="NextOwnerCopy"/>
+        <check_box follows="top" height="16" initial_value="false" label="Copy" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="ObjectsNextOwnerCopy"/>
+        <check_box follows="top" height="16" initial_value="false" label="Modify" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="ObjectsNextOwnerModify"/>
+        <check_box follows="top" height="16" initial_value="true" label="Transfer" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="ObjectsNextOwnerTransfer" enabled_control="ObjectsNextOwnerCopy"/>
       <text bottom="-34" left_delta="85" name="text_box9" halign="center" width="65">Scripts</text>
-        <check_box follows="top" height="16" label="Copy" tool_tip="Next owner can make copies of scripts" name="script_next_owner_copy" control_name="ScriptNextOwnerCopy"/>
-        <check_box follows="top" height="16" label="Modify" tool_tip="Next owner can edit scripts" name="script_next_owner_modify" control_name="ScriptNextOwnerModify"/>
-        <check_box follows="top" height="16" label="Transfer" tool_tip="Next owner can give(or sell) scripts" name="script_next_owner_transfer" control_name="ScriptNextOwnerTransfer" enabled_control="ScriptNextOwnerCopy"/>
+        <check_box follows="top" height="16" label="Copy" tool_tip="Next owner can make copies of scripts" name="script_next_owner_copy" control_name="ScriptsNextOwnerCopy"/>
+        <check_box follows="top" height="16" label="Modify" tool_tip="Next owner can edit scripts" name="script_next_owner_modify" control_name="ScriptsNextOwnerModify"/>
+        <check_box follows="top" height="16" label="Transfer" tool_tip="Next owner can give(or sell) scripts" name="script_next_owner_transfer" control_name="ScriptsNextOwnerTransfer" enabled_control="ScriptsNextOwnerCopy"/>
       <check_box bottom="-131" left="5" follows="top" height="16" label="Phantom" name="EmPhantomToggle" control_name="EmeraldBuildPrefs_Phantom"/>
       <check_box follows="top" height="16" label="Physical" name="EmPhysicalToggle" control_name="EmeraldBuildPrefs_Physical"/>
       <check_box follows="top" height="16" label="Temporary" name="EmTemporaryToggle" control_name="EmeraldBuildPrefs_Temporary"/>

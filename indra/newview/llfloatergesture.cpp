@@ -34,32 +34,24 @@
 
 #include "llfloatergesture.h"
 
-#include "lldir.h"
 #include "llinventory.h"
 #include "llmultigesture.h"
 
 #include "llagent.h"
-#include "llviewerwindow.h"
-#include "llbutton.h"
-#include "llcombobox.h"
-#include "llgesturemgr.h"
 #include "llfloaterinventory.h"
+#include "llfloaterperms.h"
+#include "llgesturemgr.h"
 #include "llinventorymodel.h"
 #include "llinventorypanel.h"
 #include "llkeyboard.h"
-#include "lllineeditor.h"
 #include "llpreviewgesture.h"
-#include "llresizehandle.h"
-#include "llscrollbar.h"
-#include "llscrollcontainer.h"
 #include "llscrolllistctrl.h"
-#include "lltextbox.h"
 #include "lluictrlfactory.h"
 #include "llviewergesture.h"
-#include "llviewertexturelist.h"
 #include "llviewerinventory.h"
+#include "llviewertexturelist.h"
+#include "llviewerwindow.h"
 #include "llvoavatar.h"
-#include "llviewercontrol.h"
 
 // static
 LLFloaterGesture* LLFloaterGesture::sInstance = NULL;
@@ -367,27 +359,38 @@ void LLFloaterGesture::onClickPlay(void* data)
 class GestureShowCallback : public LLInventoryCallback
 {
 public:
-	GestureShowCallback(std::string &title)
-	{
-		mTitle = title;
-	}
 	void fire(const LLUUID &inv_item)
 	{
-		LLPreviewGesture::show(mTitle, inv_item, LLUUID::null);
+		LLPreviewGesture::show("Gesture: New Gesture", inv_item, LLUUID::null);
+
+		LLInventoryItem* item = gInventory.getItem(inv_item);
+		if (item)
+		{
+			LLPermissions perm = item->getPermissions();
+			perm.setMaskNext(LLFloaterPerms::getNextOwnerPerms("Gestures"));
+			perm.setMaskEveryone(LLFloaterPerms::getEveryonePerms("Gestures"));
+			perm.setMaskGroup(LLFloaterPerms::getGroupPerms("Gestures"));
+			item->setPermissions(perm);
+			item->updateServer(FALSE);
+		}
 	}
-private:
-	std::string mTitle;
 };
 
 // static
 void LLFloaterGesture::onClickNew(void* data)
 {
-	std::string title("Gesture: ");
-	title.append("New Gesture");
-	LLPointer<LLInventoryCallback> cb = new GestureShowCallback(title);
-	create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
-		LLUUID::null, LLTransactionID::tnull, "New Gesture", "", LLAssetType::AT_GESTURE,
-		LLInventoryType::IT_GESTURE, NOT_WEARABLE, PERM_MOVE | PERM_TRANSFER, cb);
+	LLPointer<LLInventoryCallback> cb = new GestureShowCallback();
+	create_inventory_item(gAgent.getID(),
+		gAgent.getSessionID(),
+		LLUUID::null,
+		LLTransactionID::tnull,
+		"New Gesture",
+		"",
+		LLAssetType::AT_GESTURE,
+		LLInventoryType::IT_GESTURE,
+		NOT_WEARABLE,
+		LLFloaterPerms::getNextOwnerPerms("Gestures"),
+		cb);
 }
 
 

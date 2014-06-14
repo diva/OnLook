@@ -374,6 +374,30 @@ void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
 	LLFloaterAvatarList::sound_trigger_hook(msg,NULL);
 }
 
+void convert_legacy_settings()
+{
+	// Convert legacy settings to new ones here.
+	if (!gSavedPerAccountSettings.getBOOL("DefaultUploadPermissionsConverted"))
+	{
+		gSavedSettings.setBOOL("UploadsEveryoneCopy", gSavedSettings.getBOOL("EveryoneCopy"));
+		bool val = gSavedPerAccountSettings.getBOOL("EveryoneExport");
+		gSavedPerAccountSettings.setBOOL("UploadsEveryoneExport", val);
+		gSavedPerAccountSettings.setBOOL("ObjectsEveryoneExport", val);
+		val = gSavedSettings.getBOOL("NextOwnerCopy");
+		gSavedSettings.setBOOL("UploadsNextOwnerCopy", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerCopy", val);
+		val = gSavedSettings.getBOOL("NextOwnerModify");
+		gSavedSettings.setBOOL("UploadsNextOwnerModify", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerModify", val);
+		val = gSavedSettings.getBOOL("NextOwnerTransfer");
+		gSavedSettings.setBOOL("UploadsNextOwnerTransfer", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerTransfer", val);
+		val = gSavedSettings.getBOOL("NextOwnerTransfer");
+		gSavedSettings.setBOOL("UploadsShareWithGroup", gSavedSettings.getBOOL("ShareWithGroup"));
+		gSavedPerAccountSettings.setBOOL("DefaultUploadPermissionsConverted", true);
+	}
+}
+
 void init_audio()
 {
 	if (FALSE == gSavedSettings.getBOOL("NoAudio"))
@@ -1039,6 +1063,8 @@ bool idle_startup()
 			gSavedPerAccountSettings.setU32("LastLogoff", time_corrected());
 		}
 
+		convert_legacy_settings();
+
 		//Default the path if one isn't set.
 		if (gSavedPerAccountSettings.getString("InstantMessageLogPath").empty())
 		{
@@ -1554,6 +1580,7 @@ bool idle_startup()
 				}
 				if (gSavedSettings.getBOOL("LiruGridInTitle")) gWindowTitle += "- " + gHippoGridManager->getCurrentGrid()->getGridName() + " ";
 				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
+
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
 				// create the default proximal channel

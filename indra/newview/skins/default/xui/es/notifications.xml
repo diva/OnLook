@@ -372,10 +372,6 @@ Marcando este ítem, se mostrará:
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Ir a la Página"/>
 	</notification>
 	
-	<notification name="ClickUploadHelpPermissions">
-		Tus permisos por defecto no funcionarán en regiones antiguas.
-	</notification>
-	
 	<notification name="ClickWebProfileHelpAvatar">
 		Si este residente ha indicado una URL para mostrar un perfil en la web, tu puedes:
  * Pulsar &apos;Cargar&apos; para ver la página en esta pestaña web.

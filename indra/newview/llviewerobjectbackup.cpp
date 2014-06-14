@@ -967,8 +967,8 @@ void LLObjectBackup::importObject_continued(AIFilePicker* filepicker)
 		// User canceled save.
 		return;
 	}
-	
-	std::string file_name = filepicker->getFilename();	
+
+	std::string file_name = filepicker->getFilename();
 	mFolder = gDirUtilp->getDirName(file_name);
 	llifstream import_file(file_name);
 	LLSDSerialize::fromXML(mLLSD, import_file);

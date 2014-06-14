@@ -235,9 +235,6 @@ Marcando questo campo si mostrerà:
 Vai al sito web di Second Life per ulteriori informazioni sulla partnership?
 		<usetemplate name="okcancelbuttons" notext="Annulla" yestext="Vai alla pagina"/>
 	</notification>
-	<notification name="ClickUploadHelpPermissions">
-		I tuoi permessi di base possono non funzionare nelle regioni più vecchie.
-	</notification>
 	<notification name="ClickWebProfileHelpAvatar">
 		Se questo/a residente ha impostato una URL nel suo profilo puoi:
  * Cliccare &apos;Carica&apos; per vedere la pagina in questa finestra web.

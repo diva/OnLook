@@ -1,15 +1,67 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="perm prefs" title="Default Upload Permissions" width="315" height="180" rect_control="FloaterPermPrefsRect" can_close="true" can_minimize="true">
-    <panel label="Permissions" name="permissions" width="292" height="120" left="10" border="true" bottom="-140">
-    	<button name="help" label="?" label_selected="?" bottom_delta="-25" height="18" width="22" left="260"/>
-    	<check_box bottom_delta="0" width="106" height="16" left="10" initial_value="false" label="Share with group" name="share_with_group" control_name="ShareWithGroup"/>
-		<check_box bottom_delta="-20" width="130" height="16" initial_value="false" label="Allow anyone to copy" name="everyone_copy" control_name="EveryoneCopy"/>
-		<check_box bottom_delta="-20" label="Allow exportation" name="everyone_export" control_name="EveryoneExport"/>
-		<text bottom_delta="-18" name="NextOwnerLabel" height="10">Next owner can:</text>
-		<check_box bottom_delta="-30" width="78" height="16" initial_value="false" label="Modify" name="next_owner_modify" control_name="NextOwnerModify"/>
-		<check_box bottom_delta="0" width="88" height="16" left_delta="78" initial_value="false" label="Copy" name="next_owner_copy" control_name="NextOwnerCopy"/>
-    	<check_box bottom_delta="0" width="106" height="16" left_delta="88" initial_value="true" label="Resell/Give away" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
+<floater name="perm prefs" title="Default Creation Permissions" width="820" height="250" rect_control="FloaterPermPrefsRect" can_close="true" can_minimize="true">
+    <panel label="Permissions" name="permissions" width="800" height="180" left="10" border="false" bottom="-210" mouse_opaque="false">
+      <view_border bevel_style="none" height="18" bottom_delta="-26" left="0" width="430"/>
+      <text follows="left|top" bottom_delta="0" left="4" name="NextOwnerLabel" height="16">Next owner:</text>
+      <text follows="left|top" bottom_delta="0" left_delta="120" name="NextOwnerCopyLabel" height="16">Copy</text>
+      <text follows="left|top" bottom_delta="0" left_delta="105" name="NextOwnerModifyLabel" height="16">Modify</text>
+      <text follows="left|top" bottom_delta="0" left_delta="105" name="NextOwnerTransferLabel" height="16">Transfer</text>
+      <text follows="left|top" bottom_delta="0" left_delta="105" name="ShareWithGroupLabel" height="16">Share With Group</text>
+      <text follows="left|top" bottom_delta="0" left_delta="105" name="AnyoneCopyLabel" height="16">Allow anyone to copy</text>
+      <text follows="left|top" bottom_delta="0" left_delta="125" width="120" name="ExportationLabel" height="16">Allow exportation</text>
+      <text follows="left|top" bottom_delta="-26" left="4" name="ObjectsLabel" height="16" tool_tip="Set default permissions for when Objects are created">Objects</text>
+      <icon follows="left|top" bottom_delta="0" left_delta="102" image_name="inv_item_object.tga" width="18" height="16"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="18" label="" name="Objectsnext_owner_copy" control_name="ObjectsNextOwnerCopy"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Objectsnext_owner_modify" control_name="ObjectsNextOwnerModify"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Objectsnext_owner_transfer" control_name="ObjectsNextOwnerTransfer"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Objectsshare_with_group" control_name="ObjectsShareWithGroup"/>
+      <check_box follows="left|top" bottom_delta="0" width="120" height="16" left_delta="110" label="" name="Objectseveryone_copy" control_name="ObjectsEveryoneCopy"/>
+      <check_box follows="left|top" bottom_delta="0" height="16" left_delta="130" label="" name="Objectseveryone_export" control_name="ObjectsEveryoneExport"/>
+      <text follows="left|top" bottom_delta="-20" left="4" name="UploadsLabel" height="16" tool_tip="Set default permissions for uploaded items">Uploads</text>
+      <icon follows="left|top" bottom_delta="0" left_delta="102" image_name="inv_item_texture.tga" width="18" height="16"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="18" label="" name="Uploadsnext_owner_copy" control_name="UploadsNextOwnerCopy"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Uploadsnext_owner_modify" control_name="UploadsNextOwnerModify"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Uploadsnext_owner_transfer" control_name="UploadsNextOwnerTransfer"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Uploadsshare_with_group" control_name="UploadsShareWithGroup"/>
+      <check_box follows="left|top" bottom_delta="0" width="120" height="16" left_delta="110" label="" name="Uploadseveryone_copy" control_name="UploadsEveryoneCopy"/>
+      <check_box follows="left|top" bottom_delta="0" height="16" left_delta="130" label="" name="Uploadseveryone_export" control_name="UploadsEveryoneExport"/>
+      <text follows="left|top" bottom_delta="-20" left="4" name="ScriptsLabel" height="16" tool_tip="Set default permissions for when Scripts are created">Scripts</text>
+      <icon follows="left|top" bottom_delta="0" left_delta="102" image_name="inv_item_script.tga" width="18" height="16"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="18" label="" name="Scriptsnext_owner_copy" control_name="ScriptsNextOwnerCopy"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Scriptsnext_owner_modify" control_name="ScriptsNextOwnerModify"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Scriptsnext_owner_transfer" control_name="ScriptsNextOwnerTransfer"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Scriptsshare_with_group" control_name="ScriptsShareWithGroup"/>
+      <check_box follows="left|top" bottom_delta="0" width="120" height="16" left_delta="110" label="" name="Scriptseveryone_copy" control_name="ScriptsEveryoneCopy"/>
+      <check_box follows="left|top" bottom_delta="0" height="16" left_delta="130" label="" name="Scriptseveryone_export" control_name="ScriptsEveryoneExport"/>
+      <text follows="left|top" bottom_delta="-20" left="4" name="NotecardsLabel" height="16" tool_tip="Set default permissions for when Notecards are created">Notecards</text>
+      <icon follows="left|top" bottom_delta="0" left_delta="102" image_name="inv_item_notecard.tga" width="18" height="16"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="18" label="" name="Notecardsnext_owner_copy" control_name="NotecardsNextOwnerCopy"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Notecardsnext_owner_modify" control_name="NotecardsNextOwnerModify"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Notecardsnext_owner_transfer" control_name="NotecardsNextOwnerTransfer"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Notecardsshare_with_group" control_name="NotecardsShareWithGroup"/>
+      <check_box follows="left|top" bottom_delta="0" width="120" height="16" left_delta="110" label="" name="Notecardseveryone_copy" control_name="NotecardsEveryoneCopy"/>
+      <check_box follows="left|top" bottom_delta="0" height="16" left_delta="130" label="" name="Notecardseveryone_export" control_name="NotecardsEveryoneExport"/>
+      <text follows="left|top" bottom_delta="-20" left="4" name="GesturesLabel" height="16" tool_tip="Set default permissions for when Gestures are created">Gestures</text>
+      <icon follows="left|top" bottom_delta="0" left_delta="102" image_name="inv_item_gesture.tga" width="18" height="16"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="18" label="" name="Gesturesnext_owner_copy" control_name="GesturesNextOwnerCopy"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Gesturesnext_owner_modify" control_name="GesturesNextOwnerModify"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Gesturesnext_owner_transfer" control_name="GesturesNextOwnerTransfer"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Gesturesshare_with_group" control_name="ShareWithGroup"/>
+      <check_box follows="left|top" bottom_delta="0" width="120" height="16" left_delta="110" label="" name="Gestureseveryone_copy" control_name="GesturesEveryoneCopy"/>
+      <check_box follows="left|top" bottom_delta="0" height="16" left_delta="130" label="" name="Gestureseveryone_export" control_name="GesturesEveryoneExport"/>
+      <text follows="left|top" bottom_delta="-20" left="4" name="WearablesLabel" height="16" tool_tip="Set default permissions for when Clothing or Body Parts are created">Wearables</text>
+      <icon follows="left|top" bottom_delta="0" left_delta="102" image_name="inv_item_clothing.tga" width="18" height="16"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="18" label="" name="Wearablesnext_owner_copy" control_name="WearablesNextOwnerCopy"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Wearablesnext_owner_modify" control_name="WearablesNextOwnerModify"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Wearablesnext_owner_transfer" control_name="WearablesNextOwnerTransfer"/>
+      <check_box follows="left|top" bottom_delta="0" width="100" height="16" left_delta="110" label="" name="Wearablesshare_with_group" control_name="WearablesShareWithGroup"/>
+      <check_box follows="left|top" bottom_delta="0" width="120" height="16" left_delta="110" label="" name="Wearableseveryone_copy" control_name="WearablesEveryoneCopy"/>
+      <check_box follows="left|top" bottom_delta="0" height="16" left_delta="130" label="" name="Wearableseveryone_export" control_name="WearablesEveryoneExport"/>
     </panel>
-	<button bottom_delta="-30" height="20" label="OK" label_selected="OK" left="90" name="ok" width="100"/>
-	<button bottom_delta="0" height="20" label="Cancel" label_selected="Cancel" left_delta="105" name="cancel" width="100"/>
+    <button bottom_delta="-30" height="20" label="OK" label_selected="OK" left="297" name="ok" width="100">
+      <button.commit_callback function="PermsDefault.OK"/>
+    </button>
+    <button bottom_delta="0" height="20" label="Cancel" label_selected="Cancel" left_delta="105" name="cancel" width="100">
+      <button.commit_callback function="PermsDefault.Cancel"/>
+    </button>
 </floater>

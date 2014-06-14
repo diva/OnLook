@@ -181,12 +181,14 @@ void LLPanelContents::onClickNewScript(void *userdata)
 
 		LLPermissions perm;
 		perm.init(gAgent.getID(), gAgent.getID(), LLUUID::null, LLUUID::null);
+
+		// Parameters are base, owner, everyone, group, next
 		perm.initMasks(
 			PERM_ALL,
 			PERM_ALL,
-			PERM_NONE,
-			PERM_NONE,
-			LLFloaterPerms::getNextOwnerPerms("Script"));
+			LLFloaterPerms::getEveryonePerms("Scripts"),
+			LLFloaterPerms::getGroupPerms("Scripts"),
+			LLFloaterPerms::getNextOwnerPerms("Scripts"));
 		std::string desc;
 		LLViewerAssetType::generateDescriptionFor(LLAssetType::AT_LSL_TEXT, desc);
 		LLPointer<LLViewerInventoryItem> new_item =
