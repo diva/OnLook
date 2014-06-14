@@ -9782,6 +9782,17 @@ AntiSpam: Blocked newline flood from [SOURCE] (over [AMOUNT] newlines).
 
   <notification
    icon="alertmodal.tga"
+   name="ConfirmDeleteUser"
+   type="alertmodal">
+Are you sure you want to delete the selected user?
+    <usetemplate
+     name="okcancelbuttonscanceldefault"
+     yestext="Yes"
+     notext="No"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="RadarChatKeysRequest"
    type="alertmodal">
 An object owned by you has requested keys from your radar.

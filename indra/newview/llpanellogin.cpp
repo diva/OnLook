@@ -154,7 +154,6 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-
 //---------------------------------------------------------------------------
 // Public methods
 //---------------------------------------------------------------------------
@@ -191,7 +190,7 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 	password_edit->setCommitCallback(mungePassword, this);
 	password_edit->setDrawAsterixes(TRUE);
 
-	getChild<LLUICtrl>("remove_login")->setCommitCallback(boost::bind(&LLPanelLogin::removeLogin, this));
+	getChild<LLUICtrl>("remove_login")->setCommitCallback(boost::bind(&LLPanelLogin::confirmDelete, this));
 
 	// change z sort of clickable text to be behind buttons
 	sendChildToBack(getChildView("channel_text"));
@@ -1132,8 +1131,14 @@ void LLPanelLogin::clearPassword()
 	sInstance->mMungedPassword = blank;
 }
 
-void LLPanelLogin::removeLogin()
+void LLPanelLogin::confirmDelete()
 {
+	LLNotificationsUtil::add("ConfirmDeleteUser", LLSD(), LLSD(), boost::bind(&LLPanelLogin::removeLogin, this, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
+}
+
+void LLPanelLogin::removeLogin(bool not)
+{
+	if (not) return;
 	LLComboBox* combo(getChild<LLComboBox>("username_combo"));
 	const std::string label(combo->getTextEntry());
 	if (combo->isTextDirty() || !combo->itemExists(label)) return; // Text entries aren't in the list

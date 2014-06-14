@@ -118,7 +118,8 @@ private:
 	void onLoginComboLostFocus(LLComboBox* combo_box);
 	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);
 	static void clearPassword();
-	void removeLogin();
+	void confirmDelete();
+	void removeLogin(bool not);
 
 public:
 
