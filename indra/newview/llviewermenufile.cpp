@@ -1391,6 +1391,7 @@ void NewResourceItemCallback::fire(const LLUUID& new_item_id)
 		case LLInventoryType::IT_LSL:      type = "Scripts"; break;
 		case LLInventoryType::IT_GESTURE:  type = "Gestures"; break;
 		case LLInventoryType::IT_NOTECARD: type = "Notecard"; break;
+		default: break;
 	}
 	LLPermissions perms = new_item->getPermissions();
 	perms.setMaskNext(LLFloaterPerms::getNextOwnerPerms(type));

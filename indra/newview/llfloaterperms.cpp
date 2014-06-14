@@ -104,7 +104,6 @@ U32 LLFloaterPerms::getNextOwnerPerms(std::string prefix)
 
 namespace
 {
-	bool everyone_export;
 	void handle_checkboxes(LLView* view, const std::string& ctrl_name, const LLSD& value, const std::string& type)
 	{
 		if (ctrl_name == type+"everyone_export")
