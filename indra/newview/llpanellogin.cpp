@@ -1136,9 +1136,9 @@ void LLPanelLogin::confirmDelete()
 	LLNotificationsUtil::add("ConfirmDeleteUser", LLSD(), LLSD(), boost::bind(&LLPanelLogin::removeLogin, this, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
 }
 
-void LLPanelLogin::removeLogin(bool not)
+void LLPanelLogin::removeLogin(bool knot)
 {
-	if (not) return;
+	if (knot) return;
 	LLComboBox* combo(getChild<LLComboBox>("username_combo"));
 	const std::string label(combo->getTextEntry());
 	if (combo->isTextDirty() || !combo->itemExists(label)) return; // Text entries aren't in the list

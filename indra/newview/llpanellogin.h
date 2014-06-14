@@ -119,7 +119,7 @@ private:
 	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);
 	static void clearPassword();
 	void confirmDelete();
-	void removeLogin(bool not);
+	void removeLogin(bool knot);
 
 public:
 
