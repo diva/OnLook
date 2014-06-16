@@ -243,7 +243,9 @@ bool LLHTTPClient::getByteRange(std::string const& url, AIHTTPHeaders& headers, 
 	{
 		if (offset > 0 || bytes > 0)
 		{
-			headers.addHeader("Range", llformat("bytes=%d-%d", offset, offset + bytes - 1));
+			int const range_end = offset + bytes - 1;
+			char const* const range_format = (range_end >= HTTP_REQUESTS_RANGE_END_MAX) ? "bytes=%d-" : "bytes=%d-%d";
+			headers.addHeader("Range", llformat(range_format, offset, range_end));
 		}
 		request(url, HTTP_GET, NULL, responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug));
 	}

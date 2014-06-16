@@ -1416,7 +1416,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			// Call LLHTTPClient::request directly instead of LLHTTPClient::getByteRange, because we want to pass a NULL AIEngine.
 			if (mRequestedOffset > 0 || mRequestedSize > 0)
 			{
-				headers.addHeader("Range", llformat("bytes=%d-%d", mRequestedOffset, mRequestedOffset + mRequestedSize - 1));
+				int const range_end = mRequestedOffset + mRequestedSize - 1;
+				char const* const range_format = (range_end >= HTTP_REQUESTS_RANGE_END_MAX) ? "bytes=%d-" : "bytes=%d-%d";
+				headers.addHeader("Range", llformat(range_format, mRequestedOffset, range_end));
 			}
 			LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
 				new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset),

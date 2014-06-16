@@ -55,6 +55,17 @@ typedef struct _xmlrpc_request* XMLRPC_REQUEST;
 typedef struct _xmlrpc_value* XMLRPC_VALUE;
 extern AIEngine gMainThreadEngine;
 
+// In Viewer 3 this definition is in indra/newview/lltexturefetch.cpp,
+// but we need it in two .cpp files, so it's moved here.
+//
+// BUG-3323/SH-4375
+// *NOTE:  This is a heuristic value.  Texture fetches have a habit of using a
+// value of 32MB to indicate 'get the rest of the image'.  Certain ISPs and
+// network equipment get confused when they see this in a Range: header.  So,
+// if the request end is beyond this value, we issue an open-ended Range:
+// request (e.g. 'Range: <start>-') which seems to fix the problem.
+static const S32 HTTP_REQUESTS_RANGE_END_MAX = 20000000;
+
 // Output parameter of AICurlPrivate::CurlEasyRequest::getResult.
 // Used in XMLRPCResponder.
 struct AITransferInfo {
