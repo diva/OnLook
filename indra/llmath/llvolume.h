@@ -27,6 +27,9 @@
 #ifndef LL_LLVOLUME_H
 #define LL_LLVOLUME_H
 
+#ifdef IN_PCH
+#error "llvolume.h should not be in pch include chain."
+#endif
 #include <iostream>
 
 class LLProfileParams;
@@ -1017,8 +1020,8 @@ public:
 	void generateSilhouetteVertices(std::vector<LLVector3> &vertices, 
 									std::vector<LLVector3> &normals, 
 									const LLVector3& view_vec,
-									const LLMatrix4& mat,
-									const LLMatrix3& norm_mat,
+									const LLMatrix4a& mat,
+									const LLMatrix4a& norm_mat,
 									S32 face_index);
 
 	//get the face index of the face that intersects with the given line segment at the point 

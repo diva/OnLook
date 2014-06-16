@@ -173,7 +173,7 @@ public:
 	bool canRenderAsMask(); // logic helper
 	BOOL getGeometryVolume(const LLVolume& volume,
 						const S32 &f,
-						const LLMatrix4& mat_vert, const LLMatrix3& mat_normal,
+						const LLMatrix4a& mat_vert, const LLMatrix4a& mat_normal,
 						const U16 &index_offset,
 						bool force_rebuild = false);
 
@@ -196,7 +196,7 @@ public:
 
 	void		setSize(S32 numVertices, S32 num_indices = 0, bool align = false);
 	
-	BOOL		genVolumeBBoxes(const LLVolume &volume, S32 f,const LLMatrix4& mat, BOOL global_volume = FALSE);
+	BOOL		genVolumeBBoxes(const LLVolume &volume, S32 f,const LLMatrix4a& mat, BOOL global_volume = FALSE);
 	
 	void		init(LLDrawable* drawablep, LLViewerObject* objp);
 	void		destroy();

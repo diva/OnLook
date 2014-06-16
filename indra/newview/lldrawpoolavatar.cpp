@@ -1387,16 +1387,11 @@ void LLDrawPoolAvatar::getRiggedGeometry(LLFace* face, LLPointer<LLVertexBuffer>
 
 		U16 offset = 0;
 		
-		LLMatrix4 mat_vert = skin->mBindShapeMatrix;
-		glh::matrix4f m((F32*) mat_vert.mMatrix);
-		m = m.inverse().transpose();
-		
-		F32 mat3[] = 
-		{ m.m[0], m.m[1], m.m[2],
-		  m.m[4], m.m[5], m.m[6],
-		  m.m[8], m.m[9], m.m[10] };
-
-		LLMatrix3 mat_normal(mat3);				
+		LLMatrix4a mat_vert;
+		mat_vert.loadu(skin->mBindShapeMatrix);
+		LLMatrix4a mat_inv_trans = mat_vert;
+		mat_inv_trans.invert();
+		mat_inv_trans.transpose();
 
 		//let getGeometryVolume know if alpha should override shiny
 		U32 type = gPipeline.getPoolTypeFromTE(face->getTextureEntry(), face->getTexture());
@@ -1411,7 +1406,7 @@ void LLDrawPoolAvatar::getRiggedGeometry(LLFace* face, LLPointer<LLVertexBuffer>
 	}
 
 	//llinfos << "Rebuilt face " << face->getTEOffset() << " of " << face->getDrawable() << " at " << gFrameTimeSeconds << llendl;
-	face->getGeometryVolume(*volume, face->getTEOffset(), mat_vert, mat_normal, offset, true);
+	face->getGeometryVolume(*volume, face->getTEOffset(), mat_vert, mat_inv_trans, offset, true);
 
 	buffer->flush();
 }

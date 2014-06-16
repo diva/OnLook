@@ -2179,7 +2179,7 @@ void parse_glsl_version(S32& major, S32& minor)
 	LLStringUtil::convertToS32(minor_str, minor);
 }
 
-LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const glh::matrix4f& modelview, const glh::matrix4f& projection, bool apply)
+LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const LLMatrix4a& modelview, const LLMatrix4a& projection, bool apply)
 {
 	mApply = apply;
 
@@ -2194,27 +2194,33 @@ LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const glh::matrix4f& mode
 
 void LLGLUserClipPlane::setPlane(F32 a, F32 b, F32 c, F32 d)
 {
-	glh::matrix4f& P = mProjection;
-	glh::matrix4f& M = mModelview;
-    
-	glh::matrix4f invtrans_MVP = (P * M).inverse().transpose();
-    glh::vec4f oplane(a,b,c,d);
-    glh::vec4f cplane;
-    invtrans_MVP.mult_matrix_vec(oplane, cplane);
+    LLMatrix4a& P = mProjection;
+	LLMatrix4a& M = mModelview;
 
-    cplane /= fabs(cplane[2]); // normalize such that depth is not scaled
-    cplane[3] -= 1;
+	LLMatrix4a invtrans_MVP;
+	invtrans_MVP.setMul(P,M);
+	invtrans_MVP.invert();
+	invtrans_MVP.transpose();
 
-    if(cplane[2] < 0)
-        cplane *= -1;
+	LLVector4a oplane(a,b,c,d);
+	LLVector4a cplane;
+	invtrans_MVP.rotate4(oplane,cplane);
 
-    glh::matrix4f suffix;
-    suffix.set_row(2, cplane);
-    glh::matrix4f newP = suffix * P;
+	cplane.div(cplane.getScalarAt<2>().getAbs());
+	cplane.sub(LLVector4a(0.f,0.f,0.f,1.f));
+
+	cplane.setSelectWithMask( LLVector4a(cplane.getScalarAt<2>().getQuad()).lessThan( _mm_setzero_ps() ), -(LLSimdScalar)cplane, cplane );
+
+	LLMatrix4a suffix;
+	suffix.setIdentity();
+	suffix.setColumn<2>(cplane);
+	LLMatrix4a newP;
+	newP.setMul(suffix,P);
+
     gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-    gGL.loadMatrix(newP.m);
-	gGLObliqueProjectionInverse = LLMatrix4(newP.inverse().transpose().m);
+    gGL.loadMatrix(newP.getF32ptr());
+	//gGLObliqueProjectionInverse = LLMatrix4(newP.inverse().transpose().m);
     gGL.matrixMode(LLRender::MM_MODELVIEW);
 }
 

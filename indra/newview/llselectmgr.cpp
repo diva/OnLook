@@ -6119,7 +6119,7 @@ void pushWireframe(LLDrawable* drawable)
 	{
 		LLVertexBuffer::unbind();
 		gGL.pushMatrix();
-		gGL.multMatrix((F32*) vobj->getRelativeXform().mMatrix);
+		gGL.multMatrix(vobj->getRelativeXform().getF32ptr());
 
 		LLVolume* volume = NULL;
 

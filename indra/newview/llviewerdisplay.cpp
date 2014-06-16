@@ -767,8 +767,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				LLGLState::checkTextureChannels();
 				LLGLState::checkClientArrays();
 
-				glh::matrix4f proj = glh_get_current_projection();
-				glh::matrix4f mod = glh_get_current_modelview();
+				const LLMatrix4a& proj = glh_get_current_projection();
+				const LLMatrix4a& mod = glh_get_current_modelview();
 				glViewport(0,0,512,512);
 				LLVOAvatar::updateFreezeCounter() ;
 
@@ -780,9 +780,9 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				glh_set_current_projection(proj);
 				glh_set_current_modelview(mod);
 				gGL.matrixMode(LLRender::MM_PROJECTION);
-				gGL.loadMatrix(proj.m);
+				gGL.loadMatrix(proj.getF32ptr());
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
-				gGL.loadMatrix(mod.m);
+				gGL.loadMatrix(mod.getF32ptr());
 				gViewerWindow->setup3DViewport();
 
 				LLGLState::checkStates();
@@ -1143,8 +1143,8 @@ void render_hud_attachments()
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 		
-	glh::matrix4f current_proj = glh_get_current_projection();
-	glh::matrix4f current_mod = glh_get_current_modelview();
+	const LLMatrix4a saved_proj = glh_get_current_projection();
+	const LLMatrix4a saved_mod = glh_get_current_modelview();
 
 	// clamp target zoom level to reasonable values
 //	gAgentCamera.mHUDTargetZoom = llclamp(gAgentCamera.mHUDTargetZoom, 0.1f, 1.f);
@@ -1240,8 +1240,8 @@ void render_hud_attachments()
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.popMatrix();
 	
-	glh_set_current_projection(current_proj);
-	glh_set_current_modelview(current_mod);
+	glh_set_current_projection(saved_proj);
+	glh_set_current_modelview(saved_mod);
 }
 
 LLRect get_whole_screen_region()
@@ -1316,17 +1316,22 @@ BOOL setup_hud_matrices()
 
 BOOL setup_hud_matrices(const LLRect& screen_region)
 {
-	glh::matrix4f proj, model;
-	bool result = get_hud_matrices(screen_region, proj, model);
+	glh::matrix4f P, M;
+	bool result = get_hud_matrices(screen_region, P, M);
 	if (!result) return result;
 	
+	LLMatrix4a proj;
+	proj.loadu(P.m);
+	LLMatrix4a model;
+	model.loadu(M.m);
+
 	// set up transform to keep HUD objects in front of camera
 	gGL.matrixMode(LLRender::MM_PROJECTION);
-	gGL.loadMatrix(proj.m);
+	gGL.loadMatrix(proj.getF32ptr());
 	glh_set_current_projection(proj);
 	
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
-	gGL.loadMatrix(model.m);
+	gGL.loadMatrix(model.getF32ptr());
 	glh_set_current_modelview(model);
 	return TRUE;
 }
@@ -1337,13 +1342,13 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 {
 	LLGLState::checkStates();
 	
-	glh::matrix4f saved_view = glh_get_current_modelview();
+	const LLMatrix4a saved_view = glh_get_current_modelview();
 
 	if (!gSnapshot)
 	{
 		gGL.pushMatrix();
 		gGL.loadMatrix(gGLLastModelView.getF32ptr());
-		glh_set_current_modelview(glh::matrix4f(gGLLastModelView.getF32ptr()));
+		glh_set_current_modelview(gGLLastModelView);
 	}
 	
 	{

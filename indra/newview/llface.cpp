@@ -540,7 +540,7 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 				{
 					LLGLEnable offset(GL_POLYGON_OFFSET_FILL);
 					glPolygonOffset(-1.f, -1.f);
-					gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
+					gGL.multMatrix(volume->getRelativeXform().getF32ptr());
 					const LLVolumeFace& vol_face = rigged->getVolumeFace(getTEOffset());
 
 					// Singu Note: Implementation changed to utilize a VBO, avoiding fixed functions unless required
@@ -808,14 +808,14 @@ bool less_than_max_mag(const LLVector4a& vec)
 }
 
 BOOL LLFace::genVolumeBBoxes(const LLVolume &volume, S32 f,
-								const LLMatrix4& mat_vert_in, BOOL global_volume)
+								const LLMatrix4a& mat_vert_in, BOOL global_volume)
 {
 	//get bounding box
 	if (mDrawablep->isState(LLDrawable::REBUILD_VOLUME | LLDrawable::REBUILD_POSITION | LLDrawable::REBUILD_RIGGED))
 	{
 		//VECTORIZE THIS
-		LLMatrix4a mat_vert;
-		mat_vert.loadu(mat_vert_in);
+		const LLMatrix4a& mat_vert = mat_vert_in;
+		//mat_vert.loadu(mat_vert_in);
 
 		LLVector4a min,max;
 	
@@ -1202,7 +1202,7 @@ static LLFastTimer::DeclareTimer FTM_FACE_TEX_QUICK_PLANAR("Quick Planar");
 
 BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 							   const S32 &f,
-								const LLMatrix4& mat_vert_in, const LLMatrix3& mat_norm_in,
+								const LLMatrix4a& mat_vert_in, const LLMatrix4a& mat_norm_in,
 								const U16 &index_offset,
 								bool force_rebuild)
 {
@@ -1350,8 +1350,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 	}
 	
-	LLMatrix4a mat_normal;
-	mat_normal.loadu(mat_norm_in);
+	const LLMatrix4a& mat_normal = mat_norm_in;
 	
 	F32 r = 0, os = 0, ot = 0, ms = 0, mt = 0, cos_ang = 0, sin_ang = 0;
 	bool do_xform = false;
@@ -1410,7 +1409,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		LLGLSLShader* cur_shader = LLGLSLShader::sCurBoundShaderPtr;
 		
 		gGL.pushMatrix();
-		gGL.loadMatrix((GLfloat*) mat_vert_in.mMatrix);
+		gGL.loadMatrix(mat_vert_in.getF32ptr());
 
 		if (rebuild_pos)
 		{
@@ -1937,8 +1936,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		
 			mVertexBuffer->getVertexStrider(vert, mGeomIndex, mGeomCount, map_range);
 			
-			LLMatrix4a mat_vert;
-			mat_vert.loadu(mat_vert_in);
+			const LLMatrix4a& mat_vert = mat_vert_in;
 
 			F32* dst = (F32*) vert.get();
 			F32* end_f32 = dst+mGeomCount*4;

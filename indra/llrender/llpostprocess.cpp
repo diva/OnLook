@@ -311,16 +311,19 @@ public:
 	/*virtual*/ S32 getDepthChannel()	const	{ return 1; }
 	/*virtual*/ QuadType preDraw()
 	{
-		glh::matrix4f inv_proj(gGLModelView.getF32ptr());
-		inv_proj.mult_left(gGLProjection.getF32ptr());
-		inv_proj = inv_proj.inverse();
-		glh::matrix4f prev_proj(gGLPreviousModelView.getF32ptr());
-		prev_proj.mult_left(gGLProjection.getF32ptr());
+		const LLMatrix4a& M = gGLModelView;
+		const LLMatrix4a& P = gGLProjection;
+		LLMatrix4a inv_proj;
+		inv_proj.setMul(gGLProjection,gGLModelView);
+		inv_proj.invert();
+		const LLMatrix4a& MPrev = gGLPreviousModelView;
+		LLMatrix4a prev_proj;
+		prev_proj.setMul(P,MPrev);
 
 		LLVector2 screen_rect = LLPostProcess::getInstance()->getDimensions();
 
-		getShader().uniformMatrix4fv(sPrevProj, 1, GL_FALSE, prev_proj.m);
-		getShader().uniformMatrix4fv(sInvProj, 1, GL_FALSE, inv_proj.m);
+		getShader().uniformMatrix4fv(sPrevProj, 1, GL_FALSE, prev_proj.getF32ptr());
+		getShader().uniformMatrix4fv(sInvProj, 1, GL_FALSE, inv_proj.getF32ptr());
 		getShader().uniform2fv(sScreenRes, 1, screen_rect.mV);
 		getShader().uniform1i(sBlurStrength, mStrength);
 		
