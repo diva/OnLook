@@ -72,9 +72,12 @@ public:
 	void disableUnavailableSettings();
 	void apply();	// Apply the changed values.
 	void applyResolution();
+	void applyWindowSize();
 	void cancel();
 	
 protected:
+	void initWindowSizeControls();
+	bool extractWindowSizeFromString(const std::string& instr, U32 &width, U32 &height);
 	
 	// aspect ratio sliders and boxes
 	LLComboBox		*mCtrlFullScreen;               // Fullscreen resolution
@@ -82,6 +85,7 @@ protected:
 	LLComboBox		*mCtrlAspectRatio;				// user provided aspect ratio
 
 	LLCheckBoxCtrl	*mCtrlWindowed;					// windowed mode
+	LLComboBox      *mCtrlWindowSize;               // window size for windowed mode
 
 	/// performance radio group
 	LLSliderCtrl	*mCtrlSliderQuality;
@@ -103,6 +107,7 @@ protected:
 
 	LLTextBox		*mAspectRatioLabel1;
 	LLTextBox		*mDisplayResLabel;
+	LLTextBox       *mWindowSizeLabel;
 	
 	LLCheckBoxCtrl	*mVBO;
 

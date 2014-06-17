@@ -2,6 +2,22 @@
 <panel border="true" bottom="-449" height="438" label="Graphics" name="Display panel" width="517">
  <check_box bottom="-23" height="16" initial_value="false" label="Run viewer in a window" left="10" name="windowed mode" width="120" tool_tip="If unchecked, viewer will display full-screen when logged in."/>
  <button bottom_delta="4" height="20" left="-210" label="Reset to Defaults" tool_tip="Reset to recommended graphics settings" name="Defaults" width="200"/>
+ <text bottom="-62" left="10" height="12" name="WindowSizeLabel">Window Size:</text>
+ <combo_box bottom="-67" height="18" left="165" name="windowsize combo" width="150">
+   <combo_item name="800x600" value="800 x 600">800x600</combo_item>
+   <combo_item name="720x480" value="720 x 480">720x480 (NTSC)</combo_item>
+   <combo_item name="768x576" value="768 x 576">768x576 (PAL)</combo_item>
+   <combo_item name="1024x768" value="1024 x 768">1024x768</combo_item>
+   <combo_item name="1280x720" value="1280 x 720">1280x720 (HD)</combo_item>
+   <combo_item name="1366x768" value="1366 x 768">1366x768</combo_item>
+   <combo_item name="1280x800" value="1280 x 800">1280x800</combo_item>
+   <combo_item name="1440x900" value="1440 x 900">1440x900</combo_item>
+   <combo_item name="1600x900" value="1600 x 900">1600x900 (HD+)</combo_item>
+   <combo_item name="1680x1050" value="1680 x 1050">1680x1050</combo_item>
+   <combo_item name="1440x1080" value="1440 x 1080">1440x1080 (HDV1080)</combo_item>
+   <combo_item name="1920x1080" value="1920 x 1080">1920x1080 (Full-HD)</combo_item>
+   <combo_item name="2560x1440" value="2560 x 1440">2560x1440</combo_item>
+ </combo_box>
  <text bottom="-62" height="12" left="10" name="DisplayResLabel">Display Resolution:</text>
  <combo_box bottom="-67" height="18" left="165" name="fullscreen combo" width="150"/>
  <text bottom="-39" height="12" left="10" name="AspectRatioLabel1">Aspect Ratio:</text>

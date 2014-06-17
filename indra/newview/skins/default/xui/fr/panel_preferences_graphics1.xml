@@ -5,6 +5,14 @@
 	<text_editor bottom="-56" height="40" left="25" name="FullScreenInfo" width="460">
 		D&#xE9;cocher cette option pour passer en mode plein &#xE9;cran.
 	</text_editor>
+	<text name="WindowSizeLabel">Taille de la fen&#xEA;tre :</text>
+	<combo_box name="windowsize combo">
+		<combo_item name="640x480">640 x 480</combo_item>
+		<combo_item name="800x600">800 x 600</combo_item>
+		<combo_item name="720x480">720 x 480 (NTSC)</combo_item>
+		<combo_item name="768x576">68 x 576 (PAL)</combo_item>
+		<combo_item name="1024x768">1024 x 768</combo_item>
+	</combo_box>
 	<text name="DisplayResLabel" width="165">R&#xE9;solution de l'affichage :</text>
 	<text name="AspectRatioLabel1" tool_tip="largeur/hauteur">Rapport hauteur/largeur :</text>
 	<combo_box name="aspect_ratio" tool_tip="largeur/hauteur">

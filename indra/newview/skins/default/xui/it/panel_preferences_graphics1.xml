@@ -5,6 +5,9 @@
 	<text_editor name="FullScreenInfo" width="480">
 		Se deselezionato, all&apos;avvio il programma partirà a schermo intero.
 	</text_editor>
+	<text name="WindowSizeLabel">
+		Dimensione della finestra:
+	</text>
 	<text name="DisplayResLabel">
 		Risoluzione del monitor:
 	</text>
