@@ -1197,18 +1197,6 @@ bool LLScriptEdContainer::onExternalChange(const std::string& filename)
 	return true;
 }
 
-// virtual
-void LLScriptEdContainer::reshape(S32 width, S32 height, BOOL called_from_parent)
-{
-	LLPreview::reshape(width, height, called_from_parent);
-
-	if (!isMinimized())
-	{
-		// So that next time you open a script it will have the same height and width (although not the same position).
-		gSavedSettings.setRect("PreviewScriptRect", getRect());
-	}
-}
-
 // <edit>
 // virtual
 BOOL LLScriptEdContainer::canSaveAs() const
