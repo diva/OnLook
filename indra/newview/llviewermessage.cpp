@@ -673,6 +673,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 			args["NAME"] = name;
 			args["INVITE"] = message;
 			LLNotificationsUtil::add("JoinedTooManyGroupsMember", args, notification["payload"]);
+			return false;
 		}
 	}
 
