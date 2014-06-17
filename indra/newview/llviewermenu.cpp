@@ -3008,6 +3008,7 @@ class LLScriptCount : public view_listener_t
 	{
 		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
 		{
+			if (ScriptCounter::getInstance(object->getID())) return true;
 			ScriptCounter* sc = new ScriptCounter(false, object);
 			sc->requestInventories();
 			// sc will destroy itself
@@ -3022,6 +3023,7 @@ class LLScriptDelete : public view_listener_t
 	{
 		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
 		{
+			if (ScriptCounter::getInstance(object->getID())) return true;
 			ScriptCounter* sc = new ScriptCounter(true, object);
 			sc->requestInventories();
 			// sc will destroy itself
