@@ -1836,43 +1836,6 @@ bool idle_startup()
 		LLVoiceClient::getInstance()->updateSettings();
 		display_startup();
 
-		if (gSavedSettings.getBOOL("ShowMiniMap"))
-		{
-			LLFloaterMap::showInstance();
-		}
-		if (gSavedSettings.getBOOL("ShowRadar"))
-		{
-			LLFloaterAvatarList::showInstance();
-		}
-		// <edit>
-		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
-		{
-			LLFloaterAvatarList::getInstance()->close();
-		}
-		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
-		{
-			SHFloaterMediaTicker::showInstance();
-		}
-		// </edit>
-		if (gSavedSettings.getBOOL("ShowCameraControls"))
-		{
-			LLFloaterCamera::showInstance();
-		}
-		if (gSavedSettings.getBOOL("ShowMovementControls"))
-		{
-			LLFloaterMove::showInstance();
-		}
-
-		if (gSavedSettings.getBOOL("ShowActiveSpeakers"))
-		{
-			LLFloaterActiveSpeakers::showInstance();
-		}
-
-		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
-		{
-			LLFloaterBeacons::showInstance();
-		}
-
 		// *Note: this is where gWorldMap used to be initialized.
 
 		// register null callbacks for audio until the audio system is initialized
@@ -2419,6 +2382,43 @@ bool idle_startup()
 		}
 		gDisplaySwapBuffers = TRUE;
 		display_startup();
+
+		if (gSavedSettings.getBOOL("ShowMiniMap"))
+		{
+			LLFloaterMap::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowRadar"))
+		{
+			LLFloaterAvatarList::showInstance();
+		}
+		// <edit>
+		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
+		{
+			LLFloaterAvatarList::getInstance()->close();
+		}
+		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
+		{
+			SHFloaterMediaTicker::showInstance();
+		}
+		// </edit>
+		if (gSavedSettings.getBOOL("ShowCameraControls"))
+		{
+			LLFloaterCamera::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowMovementControls"))
+		{
+			LLFloaterMove::showInstance();
+		}
+
+		if (gSavedSettings.getBOOL("ShowActiveSpeakers"))
+		{
+			LLFloaterActiveSpeakers::showInstance();
+		}
+
+		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
+		{
+			LLFloaterBeacons::showInstance();
+		}
 
 		LLMessageSystem* msg = gMessageSystem;
 		msg->setHandlerFuncFast(_PREHASH_SoundTrigger,				hooked_process_sound_trigger);
