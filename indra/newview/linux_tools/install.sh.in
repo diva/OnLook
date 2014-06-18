@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Install Singularity Viewer. This script can install the viewer both
+# Install @VIEWER_CHANNEL@. This script can install the viewer both
 # system-wide and for an individual user.
 
 VT102_STYLE_NORMAL='\E[0m'
@@ -48,8 +48,8 @@ function warn()
 function homedir_install()
 {
     warn "You are not running as a privileged user, so you will only be able"
-    warn "to install Singularity Viewer in your home directory. If you"
-    warn "would like to install Singularity Viewer system-wide, please run"
+    warn "to install @VIEWER_CHANNEL@ in your home directory. If you"
+    warn "would like to install @VIEWER_CHANNEL@ system-wide, please run"
     warn "this script as the root user, or with the 'sudo' command."
     echo
 
@@ -58,13 +58,13 @@ function homedir_install()
 	exit 0
     fi
 
-    install_to_prefix "$HOME/.singularity-install"
-    $HOME/.singularity-install/refresh_desktop_app_entry.sh
+    install_to_prefix "$HOME/.@VIEWER_BRANDING_ID@-install"
+    $HOME/.@VIEWER_BRANDING_ID@-install/refresh_desktop_app_entry.sh
 }
 
 function root_install()
 {
-    local default_prefix="/opt/singularity-install"
+    local default_prefix="/opt/@VIEWER_BRANDING_ID@-install"
 
     echo -n "Enter the desired installation directory [${default_prefix}]: ";
     read
