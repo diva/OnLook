@@ -1021,6 +1021,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruUseAdvancedMenuShortcut</key>
+    <map>
+      <key>Comment</key>
+      <string>Use ctrl-alt(-shift)-d to toggle the advanced menu.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
     <key>LiruUseContextMenus</key>
     <map>
       <key>Comment</key>
