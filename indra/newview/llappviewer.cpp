@@ -4708,6 +4708,12 @@ void LLAppViewer::handleLoginComplete()
 	}
 
 	mOnLoginCompleted();
+	// Singu Note: Due to MAINT-4001, we must do this here, it lives in LLSidepanelInventory::updateInbox upstream.
+	// Consolidate Received items
+	// We shouldn't have to do that but with a client/server system relying on a "well known folder" convention,
+	// things can get messy and conventions broken. This call puts everything back together in its right place.
+	LLUUID id(gInventory.findCategoryUUIDForType(LLFolderType::FT_INBOX, true));
+	if (id.notNull()) gInventory.consolidateForType(id, LLFolderType::FT_INBOX);
 
 	writeDebugInfo();
 }
