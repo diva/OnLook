@@ -78,6 +78,12 @@ enum XBoxKeys
 	XBOX_L_STICK_CLICK,
 	XBOX_R_STICK_CLICK
 };
+
+bool isXboxLike(const std::string& desc)
+{
+	return desc.find("Xbox") != std::string::npos
+		|| desc.find("OUYA") != std::string::npos;
+}
 // </Singu>
 
 // These constants specify the maximum absolute value coming in from the device.
@@ -276,7 +282,7 @@ void LLViewerJoystick::init(bool autoenable)
 				gSavedSettings.setString("JoystickInitialized", "SpaceNavigator");
 			}
 		}
-		else if (getDescription().find("Xbox") != std::string::npos)
+		else if (isXboxLike(getDescription()))
 		{
 			sType = XBOX;
 			// It's an Xbox controller, we have defaults for it.
