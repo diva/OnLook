@@ -33,6 +33,7 @@
 
 #include "chatbar_as_cmdline.h"
 
+#include "llavatarnamecache.h"
 #include "llcalc.h"
 
 #include "llchatbar.h"
@@ -215,6 +216,12 @@ struct ProfCtrlListAccum : public LLControlGroup::ApplyFunctor
 	std::vector<std::pair<std::string, U32> > mVariableList;
 };
 #endif //PROF_CTRL_CALLS
+void spew_key_to_name(const LLUUID& targetKey, const LLAvatarName& av_name)
+{
+	std::string object_name;
+	LLAvatarNameCache::getPNSName(av_name, object_name);
+	cmdline_printchat(llformat("%s: %s", targetKey.asString().c_str(), object_name.c_str()));
+}
 bool cmd_line_chat(std::string revised_text, EChatType type)
 {
 	static LLCachedControl<bool> sAscentCmdLine(gSavedSettings, "AscentCmdLine");
@@ -289,11 +296,13 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				LLUUID targetKey;
 				if(i >> targetKey)
 				{
-					std::string object_name;
-					gCacheName->getFullName(targetKey, object_name);
-					char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-					snprintf(buffer,sizeof(buffer),"%s: (%s)",targetKey.asString().c_str(), object_name.c_str());
-					cmdline_printchat(std::string(buffer));
+					LLAvatarName av_name;
+					if (!LLAvatarNameCache::get(targetKey, &av_name))
+					{
+						LLAvatarNameCache::get(targetKey, boost::bind(spew_key_to_name, _1, _2));
+						return false;
+					}
+					spew_key_to_name(targetKey, av_name);
 				}
 				return false;
 			}
