@@ -59,7 +59,7 @@ F32  LLViewerJoystick::sLastDelta[] = {0,0,0,0,0,0,0};
 F32  LLViewerJoystick::sDelta[] = {0,0,0,0,0,0,0};
 
 // <Singu> Note: Save the type of controller
-enum EControllerType { NONE, SPACE_NAV, XBOX, UNKNOWN };
+enum EControllerType { NONE, SPACE_NAV, XBOX, DS3, UNKNOWN };
 static EControllerType sType = NONE;
 
 // Control cursor instead of avatar?
@@ -84,6 +84,28 @@ bool isXboxLike(const std::string& desc)
 	return desc.find("Xbox") != std::string::npos
 		|| desc.find("OUYA") != std::string::npos;
 }
+
+bool isDS3Like(const std::string& desc)
+{
+	return desc.find("MotioninJoy") != std::string::npos;
+}
+
+enum DS3Keys
+{
+	DS3_TRIANGLE_KEY = 0,
+	DS3_CIRCLE_KEY,
+	DS3_X_KEY,
+	DS3_SQUARE_KEY,
+	DS3_L1_KEY,
+	DS3_R1_KEY,
+	DS3_L2_KEY,
+	DS3_R2_KEY,
+	DS3_SELECT_KEY,
+	DS3_L_STICK_CLICK,
+	DS3_R_STICK_CLICK,
+	DS3_START_KEY,
+	DS3_LOGO_KEY
+};
 // </Singu>
 
 // These constants specify the maximum absolute value coming in from the device.
@@ -1168,11 +1190,12 @@ void LLViewerJoystick::scanJoystick()
 	static bool toggle_cursor = false;
 
 	// <Singu> Xbox 360 support
-	if (sType == XBOX)
+	if (sType == XBOX || sType == DS3)
 	{
+		bool ds3 = sType == DS3;
 		// Special command keys ...
 		// - Back = toggle flycam
-		if (mBtn[XBOX_BACK_KEY] == 1)
+		if (mBtn[ds3 ? DS3_SELECT_KEY : XBOX_BACK_KEY] == 1)
 		{
 			if (!toggle_flycam) toggle_flycam = toggleFlycam();
 		}
@@ -1182,7 +1205,7 @@ void LLViewerJoystick::scanJoystick()
 		}
 
 		// - Start = toggle cursor/camera control
-		if (mBtn[XBOX_START_KEY] == 1)
+		if (mBtn[ds3 ? XBOX_START_KEY : DS3_START_KEY] == 1)
 		{
 			if (!toggle_cursor) toggle_cursor = toggleCursor();
 		}
@@ -1193,40 +1216,40 @@ void LLViewerJoystick::scanJoystick()
 
 		// Toggle mouselook ...
 		static bool right_stick_click_down = false;
-		if (!!mBtn[XBOX_R_STICK_CLICK] != right_stick_click_down)
+		if (!!mBtn[ds3 ? DS3_R_STICK_CLICK : XBOX_R_STICK_CLICK] != right_stick_click_down)
 		{
-			if (right_stick_click_down = mBtn[XBOX_R_STICK_CLICK]) // Note: Setting, not comparing.
+			if (right_stick_click_down = mBtn[ds3 ? DS3_R_STICK_CLICK : XBOX_R_STICK_CLICK]) // Note: Setting, not comparing.
 				gAgentCamera.cameraMouselook() ? gAgentCamera.changeCameraToDefault() : gAgentCamera.changeCameraToMouselook();
 		}
 
 		MASK mask = gKeyboard->currentMask(TRUE);
 		// Esc
 		static bool esc_down = false;
-		if (!!mBtn[XBOX_Y_KEY] != esc_down)
+		if (!!mBtn[ds3 ? DS3_TRIANGLE_KEY : XBOX_Y_KEY] != esc_down)
 		{
-			esc_down = mBtn[XBOX_Y_KEY];
+			esc_down = mBtn[ds3 ? DS3_TRIANGLE_KEY : XBOX_Y_KEY];
 			(gKeyboard->*(esc_down ? &LLKeyboard::handleTranslatedKeyDown : &LLKeyboard::handleTranslatedKeyDown))(KEY_ESCAPE, mask);
 		}
 
 		// Alt
 		static bool alt_down = false;
-		if (!!mBtn[XBOX_A_KEY] != alt_down)
+		if (!!mBtn[ds3 ? DS3_X_KEY : XBOX_A_KEY] != alt_down)
 		{
-			gKeyboard->setControllerKey(KEY_ALT, alt_down = mBtn[XBOX_A_KEY]);
+			gKeyboard->setControllerKey(KEY_ALT, alt_down = mBtn[ds3 ? DS3_X_KEY : XBOX_A_KEY]);
 		}
 
 		// Ctrl
 		static bool ctrl_down = false;
-		if (!!mBtn[XBOX_X_KEY] != ctrl_down)
+		if (!!mBtn[ds3 ? DS3_SQUARE_KEY : XBOX_X_KEY] != ctrl_down)
 		{
-			gKeyboard->setControllerKey(KEY_CONTROL, ctrl_down = mBtn[XBOX_X_KEY]);
+			gKeyboard->setControllerKey(KEY_CONTROL, ctrl_down = mBtn[ds3 ? DS3_SQUARE_KEY : XBOX_X_KEY]);
 		}
 
 		// Shift
 		static bool shift_down = false;
-		if (!!mBtn[XBOX_B_KEY] != shift_down)
+		if (!!mBtn[ds3 ? DS3_CIRCLE_KEY : XBOX_B_KEY] != shift_down)
 		{
-			gKeyboard->setControllerKey(KEY_SHIFT, shift_down = mBtn[XBOX_B_KEY]);
+			gKeyboard->setControllerKey(KEY_SHIFT, shift_down = mBtn[ds3 ? DS3_CIRCLE_KEY : XBOX_B_KEY]);
 		}
 
 		// Mouse clicks ...
@@ -1234,19 +1257,33 @@ void LLViewerJoystick::scanJoystick()
 		LLUI::getMousePositionScreen(&coord.mX, &coord.mY);
 		static bool m1_down = false;
 		static F32 last_m1 = 0;
-		if (!!mBtn[XBOX_L_BUMP_KEY] != m1_down)
+		if (!!mBtn[ds3 ? DS3_L1_KEY : XBOX_L_BUMP_KEY] != m1_down)
 		{
-			m1_down = mBtn[XBOX_L_BUMP_KEY];
+			m1_down = mBtn[ds3 ? DS3_L1_KEY : XBOX_L_BUMP_KEY];
 			(gViewerWindow->*(m1_down ? &LLViewerWindow::handleMouseDown : &LLViewerWindow::handleMouseUp))(gViewerWindow->getWindow(), coord, mask);
 			if (m1_down && gFrameTimeSeconds-last_m1 == 0.5f)
 				gViewerWindow->handleDoubleClick(gViewerWindow->getWindow(), coord, mask);
 			last_m1 = gFrameTimeSeconds;
 		}
 		static bool m2_down = false;
-		if (!!mBtn[XBOX_R_BUMP_KEY] != m2_down)
+		if (!!mBtn[ds3 ? DS3_R1_KEY : XBOX_R_BUMP_KEY] != m2_down)
 		{
-			m2_down = mBtn[XBOX_R_BUMP_KEY];
+			m2_down = mBtn[ds3 ? DS3_R1_KEY : XBOX_R_BUMP_KEY];
 			(gViewerWindow->*(m2_down ? &LLViewerWindow::handleRightMouseDown : &LLViewerWindow::handleRightMouseUp))(gViewerWindow->getWindow(), coord, mask);
+		}
+
+		if (ds3) // Yay bonus keys~
+		{
+			static bool sit_down = false;
+			if (!!mBtn[DS3_LOGO_BUTTON] != sit_down)
+			{
+				sit_down = mBtn[DS3_LOGO_BUTTON];
+				(gAgentAvatarp && gAgentAvatarp->isSitting()) ? gAgent.standUp() : gAgent.sitDown();
+			}
+			/* Singu TODO: What should these be?
+			DS3_L2_BUTTON
+			DS3_R2_BUTTON
+			*/
 		}
 	}
 	else
@@ -1318,7 +1355,8 @@ void LLViewerJoystick::setSNDefaults()
 	
 	//gViewerWindow->alertXml("CacheWillClear");
 	const bool xbox = sType == XBOX;
-	llinfos << "restoring " << (xbox ? "Xbox Controller" : "SpaceNavigator") << " defaults..." << llendl;
+	const bool ds3 = sType == DS3;
+	llinfos << "restoring " << (xbox ? "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << llendl;
 
 	/*
 	Axis 0: Left Thumbstick Horizontal
@@ -1332,57 +1370,58 @@ void LLViewerJoystick::setSNDefaults()
 		Debug setting				InternalMapping,Jostick Axis (see above)	*/
 	gSavedSettings.setS32("JoystickAxis0", 1); // z (at)
 	gSavedSettings.setS32("JoystickAxis1", 0); // x (slide)
-	gSavedSettings.setS32("JoystickAxis2", 2); // y (up)
+	gSavedSettings.setS32("JoystickAxis2", ds3 ? 3 : 2); // y (up)
 	gSavedSettings.setS32("JoystickAxis3", xbox ? -1 : 4); // roll
-	gSavedSettings.setS32("JoystickAxis4", xbox ? 4 : 3); // pitch
-	gSavedSettings.setS32("JoystickAxis5", xbox ? 3 : 5); // yaw
+	gSavedSettings.setS32("JoystickAxis4", xbox ? 4 : ds3 ? 5 : 3); // pitch
+	gSavedSettings.setS32("JoystickAxis5", xbox ? 3 : ds3 ? 2 : 5); // yaw
 	gSavedSettings.setS32("JoystickAxis6", -1);
 	
 	gSavedSettings.setBOOL("Cursor3D", !xbox && is_3d_cursor);
 	gSavedSettings.setBOOL("AutoLeveling", true);
 	gSavedSettings.setBOOL("ZoomDirect", false);
 	
-	gSavedSettings.setF32("AvatarAxisScale0", (xbox ? 0.43f : 1.f) * platformScaleAvXZ);
-	gSavedSettings.setF32("AvatarAxisScale1", (xbox ? 0.43f : 1.f) * platformScaleAvXZ);
-	gSavedSettings.setF32("AvatarAxisScale2", xbox ? 0.43f : 1.f);
-	gSavedSettings.setF32("AvatarAxisScale4", (xbox ? 4.f : .1f) * platformScale);
-	gSavedSettings.setF32("AvatarAxisScale5", (xbox ? 4.f : .1f) * platformScale);
-	gSavedSettings.setF32("AvatarAxisScale3", (xbox ? 4.f : 0.f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale1", (xbox ? 0.8f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale2", (xbox ? 0.8f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale0", (xbox ? 1.6f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale4", (xbox ? 1.f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale5", (xbox ? 2.f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale3", (xbox ? 1.f : .3f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale1", (xbox ? 16.f : 2.f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale2", (xbox ? 16.f : 2.f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale0", (xbox ? 25.f : 2.1f) * platformScale); // Z Scale
-	gSavedSettings.setF32("FlycamAxisScale4", (xbox ? -4.f : .1f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale5", (xbox ? 4.f : .15f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale3", (xbox ? 4.f : 0.f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale6", (xbox ? 4.f : 0.f) * platformScale);
+	const bool game = xbox || ds3; // All game controllers are relatively the same
+	gSavedSettings.setF32("AvatarAxisScale0", (game ? 0.43f : 1.f) * platformScaleAvXZ);
+	gSavedSettings.setF32("AvatarAxisScale1", (game  ? 0.43f : 1.f) * platformScaleAvXZ);
+	gSavedSettings.setF32("AvatarAxisScale2", xbox ? 0.43f : ds3 ? -0.43f : 1.f);
+	gSavedSettings.setF32("AvatarAxisScale4", (game  ? 4.f : .1f) * platformScale);
+	gSavedSettings.setF32("AvatarAxisScale5", (game  ? 4.f : .1f) * platformScale);
+	gSavedSettings.setF32("AvatarAxisScale3", (game  ? 4.f : 0.f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale1", (game ? 0.8f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale2", (xbox ? 0.8f : ds3 ? -0.8f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale0", (game ? 1.6f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale4", (game ? 1.f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale5", (game ? 2.f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale3", (game ? 1.f : .3f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale1", (game ? 16.f : 2.f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale2", (game ? 16.f : ds3 ? -16.f : 2.f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale0", (game ? 25.f : 2.1f) * platformScale); // Z Scale
+	gSavedSettings.setF32("FlycamAxisScale4", (game ? -4.f : .1f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale5", (game ? 4.f : .15f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale3", (game ? 4.f : 0.f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale6", (game ? 4.f : 0.f) * platformScale);
 	
-	gSavedSettings.setF32("AvatarAxisDeadZone0", xbox ? .2f : .1f);
-	gSavedSettings.setF32("AvatarAxisDeadZone1", xbox ? .2f : .1f);
-	gSavedSettings.setF32("AvatarAxisDeadZone2", xbox ? .2f : .1f);
-	gSavedSettings.setF32("AvatarAxisDeadZone3", xbox ? .2f : 1.f);
-	gSavedSettings.setF32("AvatarAxisDeadZone4", xbox ? .2f : .02f);
-	gSavedSettings.setF32("AvatarAxisDeadZone5", xbox ? .2f : .01f);
-	gSavedSettings.setF32("BuildAxisDeadZone0", xbox ? .02f : .01f);
-	gSavedSettings.setF32("BuildAxisDeadZone1", xbox ? .02f : .01f);
-	gSavedSettings.setF32("BuildAxisDeadZone2", xbox ? .02f : .01f);
-	gSavedSettings.setF32("BuildAxisDeadZone3", xbox ? .02f : .01f);
-	gSavedSettings.setF32("BuildAxisDeadZone4", xbox ? .02f : .01f);
-	gSavedSettings.setF32("BuildAxisDeadZone5", xbox ? .02f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone0", xbox ? .2f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone1", xbox ? .2f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone2", xbox ? .2f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone3", xbox ? .1f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone4", xbox ? .25f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone5", xbox ? .25f : .01f);
-	gSavedSettings.setF32("FlycamAxisDeadZone6", xbox ? .2f : 1.f);
+	gSavedSettings.setF32("AvatarAxisDeadZone0", game ? .2f : .1f);
+	gSavedSettings.setF32("AvatarAxisDeadZone1", game ? .2f : .1f);
+	gSavedSettings.setF32("AvatarAxisDeadZone2", game ? .2f : .1f);
+	gSavedSettings.setF32("AvatarAxisDeadZone3", game ? .2f : 1.f);
+	gSavedSettings.setF32("AvatarAxisDeadZone4", game ? .2f : .02f);
+	gSavedSettings.setF32("AvatarAxisDeadZone5", game ? .2f : .01f);
+	gSavedSettings.setF32("BuildAxisDeadZone0", game ? .02f : .01f);
+	gSavedSettings.setF32("BuildAxisDeadZone1", game ? .02f : .01f);
+	gSavedSettings.setF32("BuildAxisDeadZone2", game ? .02f : .01f);
+	gSavedSettings.setF32("BuildAxisDeadZone3", game ? .02f : .01f);
+	gSavedSettings.setF32("BuildAxisDeadZone4", game ? .02f : .01f);
+	gSavedSettings.setF32("BuildAxisDeadZone5", game ? .02f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone0", game ? .2f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone1", game ? .2f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone2", game ? .2f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone3", game ? .1f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone4", game ? .25f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone5", game ? .25f : .01f);
+	gSavedSettings.setF32("FlycamAxisDeadZone6", game ? .2f : 1.f);
 	
-	gSavedSettings.setF32("AvatarFeathering", xbox ? 3.f : 6.f);
+	gSavedSettings.setF32("AvatarFeathering", game ? 3.f : 6.f);
 	gSavedSettings.setF32("BuildFeathering", 12.f);
-	gSavedSettings.setF32("FlycamFeathering", xbox ? 1.f : 5.f);
+	gSavedSettings.setF32("FlycamFeathering", game ? 1.f : 5.f);
 }
