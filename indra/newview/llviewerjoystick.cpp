@@ -568,6 +568,7 @@ void LLViewerJoystick::cursorZoom(F32 inc)
 	if (!is_approx_zero(inc))
 	{
 		static U8 count = 0;
+		++count;
 		if (count == 3) // Slow down the zoom in/out.
 		{
 			gViewerWindow->handleScrollWheel(inc > F_APPROXIMATELY_ZERO ? 1 : -1);
