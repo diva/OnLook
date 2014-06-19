@@ -1357,8 +1357,9 @@ void LLViewerJoystick::setSNDefaults()
 	
 	//gViewerWindow->alertXml("CacheWillClear");
 	const bool xbox = sType == XBOX;
+	const bool ouya = xbox && getDescription().find("OUYA") != std::string::npos;
 	const bool ds3 = sType == DS3;
-	llinfos << "restoring " << (xbox ? "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << llendl;
+	llinfos << "restoring " << (xbox ? ouya ? "OUYA	Game Controller" : "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << llendl;
 
 	/*
 	Axis 0: Left Thumbstick Horizontal
@@ -1371,12 +1372,12 @@ void LLViewerJoystick::setSNDefaults()
 	Syntax/Format:
 		Debug setting				InternalMapping,Jostick Axis (see above)	*/
 	gSavedSettings.setS32("JoystickAxis0", 1); // z (at)
-	gSavedSettings.setS32("JoystickAxis1", 0); // x (slide)
-	gSavedSettings.setS32("JoystickAxis2", ds3 ? 3 : 2); // y (up)
-	gSavedSettings.setS32("JoystickAxis3", xbox ? -1 : 4); // roll
+	gSavedSettings.setS32("JoystickAxis1", ouya ? 3 : 0); // x (slide)
+	gSavedSettings.setS32("JoystickAxis2", ouya ? 4 : ds3 ? 3 : 2); // y (up)
+	gSavedSettings.setS32("JoystickAxis3", xbox ? ouya ? 3 : -1 : 4); // roll
 	gSavedSettings.setS32("JoystickAxis4", xbox ? 4 : ds3 ? 5 : 3); // pitch
-	gSavedSettings.setS32("JoystickAxis5", xbox ? 3 : ds3 ? 2 : 5); // yaw
-	gSavedSettings.setS32("JoystickAxis6", -1);
+	gSavedSettings.setS32("JoystickAxis5", xbox ? ouya ? 0 : 3 : ds3 ? 2 : 5); // yaw
+	gSavedSettings.setS32("JoystickAxis6", ouya ? 5 : -1);
 	
 	gSavedSettings.setBOOL("Cursor3D", !xbox && is_3d_cursor);
 	gSavedSettings.setBOOL("AutoLeveling", true);
@@ -1389,16 +1390,16 @@ void LLViewerJoystick::setSNDefaults()
 	gSavedSettings.setF32("AvatarAxisScale4", (game  ? 4.f : .1f) * platformScale);
 	gSavedSettings.setF32("AvatarAxisScale5", (game  ? 4.f : .1f) * platformScale);
 	gSavedSettings.setF32("AvatarAxisScale3", (game  ? 4.f : 0.f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale1", (game ? 0.8f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale2", (xbox ? 0.8f : ds3 ? -0.8f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale0", (game ? 1.6f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale4", (game ? 1.f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale1", (game ? ouya ? 20.f : 0.8f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale2", (xbox ? ouya ? 20.f : 0.8f : ds3 ? -0.8f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale0", (game ? ouya ? 50.f : 1.6f : .3f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale4", (game ? ouya ? 1.8f : 1.f : .3f) * platformScale);
 	gSavedSettings.setF32("BuildAxisScale5", (game ? 2.f : .3f) * platformScale);
-	gSavedSettings.setF32("BuildAxisScale3", (game ? 1.f : .3f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale1", (game ? 16.f : 2.f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale2", (game ? 16.f : ds3 ? -16.f : 2.f) * platformScale);
-	gSavedSettings.setF32("FlycamAxisScale0", (game ? 25.f : 2.1f) * platformScale); // Z Scale
-	gSavedSettings.setF32("FlycamAxisScale4", (game ? -4.f : .1f) * platformScale);
+	gSavedSettings.setF32("BuildAxisScale3", (game ? ouya ? -6.f : 1.f : .3f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale1", (game ? ouya ? 20.f : 16.f : 2.f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale2", (game ? ouya ? 20.f : 16.f : ds3 ? -16.f : 2.f) * platformScale);
+	gSavedSettings.setF32("FlycamAxisScale0", (game ? ouya ? 50.f : 25.f : 2.1f) * platformScale); // Z Scale
+	gSavedSettings.setF32("FlycamAxisScale4", (game ? ouya ? 1.80 : -4.f : .1f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale5", (game ? 4.f : .15f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale3", (game ? 4.f : 0.f) * platformScale);
 	gSavedSettings.setF32("FlycamAxisScale6", (game ? 4.f : 0.f) * platformScale);
