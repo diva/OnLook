@@ -36,6 +36,7 @@
 #include "lltoolmgr.h"
 #include "llselectmgr.h"
 #include "llviewermenu.h"
+#include "llvoavatarself.h" // Singu Note: For toggle sit.
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llfocusmgr.h"
@@ -753,7 +754,7 @@ void LLViewerJoystick::moveAvatar(bool reset)
 	bool is_zero = true;
 	static bool button_held = false;
 
-	if (mBtn[sType == XBOX ? XBOX_L_STICK_CLICK : 1] == 1)
+	if (mBtn[sType == XBOX ? XBOX_L_STICK_CLICK : sType == DS3 ? DS3_L_STICK_CLICK : 1] == 1)
 	{
 		// If AutomaticFly is enabled, then button1 merely causes a
 		// jump (as the up/down axis already controls flying) if on the
@@ -1276,9 +1277,9 @@ void LLViewerJoystick::scanJoystick()
 		if (ds3) // Yay bonus keys~
 		{
 			static bool sit_down = false;
-			if (!!mBtn[DS3_LOGO_BUTTON] != sit_down)
+			if (!!mBtn[DS3_LOGO_KEY] != sit_down)
 			{
-				sit_down = mBtn[DS3_LOGO_BUTTON];
+				sit_down = mBtn[DS3_LOGO_KEY];
 				(gAgentAvatarp && gAgentAvatarp->isSitting()) ? gAgent.standUp() : gAgent.sitDown();
 			}
 			/* Singu TODO: What should these be?
