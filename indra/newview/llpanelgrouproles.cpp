@@ -1083,8 +1083,27 @@ void LLPanelGroupMembersSubTab::handleEjectMembers()
 
 	mMembersList->deleteSelectedItems();
 
+	sendEjectNotifications(mGroupID, selected_members);
+
 	LLGroupMgr::getInstance()->sendGroupMemberEjects(mGroupID,
 									 selected_members);
+}
+
+void LLPanelGroupMembersSubTab::sendEjectNotifications(const LLUUID& group_id, const uuid_vec_t& selected_members)
+{
+	LLGroupMgrGroupData* group_data = LLGroupMgr::getInstance()->getGroupData(group_id);
+
+	if (group_data)
+	{
+		for (uuid_vec_t::const_iterator i = selected_members.begin(); i != selected_members.end(); ++i)
+		{
+			LLSD args;
+			args["AVATAR_NAME"] = LLSLURL("agent", *i, "displayname").getSLURLString();
+			args["GROUP_NAME"] = group_data->mName;
+
+			LLNotifications::instance().add(LLNotification::Params("EjectAvatarFromGroup").substitutions(args));
+		}
+	}
 }
 
 void LLPanelGroupMembersSubTab::handleRoleCheck(const LLUUID& role_id,
