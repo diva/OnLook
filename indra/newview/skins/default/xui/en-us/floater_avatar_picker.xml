@@ -46,7 +46,7 @@
 			     height="20" label="Find" label_selected="Find" left_delta="20" right="-10"
 			     mouse_opaque="true" name="Find" scale_image="TRUE" width="95" />
 			<scroll_list background_visible="true" bottom_delta="-95" column_padding="5"
-			     draw_border="true" draw_heading="false" draw_stripes="true"
+			     draw_border="true" draw_heading="false" draw_stripes="true" menu_num="0"
 			     follows="left|top|right|bottom" height="90" left="10" mouse_opaque="true"
 			     multi_select="false" name="SearchResults" width="115" />
 		</panel>
@@ -68,7 +68,7 @@
               function="Refresh.FriendList"/>
             </button>
 			<scroll_list background_visible="true" bottom_delta="-115" column_padding="5"
-			     draw_border="true" draw_heading="false" draw_stripes="true"
+			     draw_border="true" draw_heading="false" draw_stripes="true" menu_num="0"
 			     follows="left|top|right|bottom" height="110" left="10" mouse_opaque="true"
 			     multi_select="false" name="Friends" width="115" />
 		</panel>
@@ -96,7 +96,7 @@
         Meters
       </text>
       <scroll_list bottom_delta="-185" width="115" height="175" left="10" 
-           follows="left|top|right|bottom" draw_border="true" draw_heading="false" 
+           follows="left|top|right|bottom" draw_border="true" draw_heading="false" menu_num="0"
            draw_stripes="true" column_padding="5" sort_column="0" mouse_opaque="true"
            background_visible="true" multi_select="false" name="NearMe"  />
     </panel>
