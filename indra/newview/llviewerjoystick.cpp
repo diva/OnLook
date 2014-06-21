@@ -80,10 +80,12 @@ enum XBoxKeys
 	XBOX_R_STICK_CLICK
 };
 
+bool isOUYA(const std::string& desc) { return desc.find("OUYA") != std::string::npos; }
+
 bool isXboxLike(const std::string& desc)
 {
 	return desc.find("Xbox") != std::string::npos
-		|| desc.find("OUYA") != std::string::npos;
+		|| isOUYA(desc);
 }
 
 bool isDS3Like(const std::string& desc)
@@ -290,6 +292,7 @@ void LLViewerJoystick::init(bool autoenable)
 	}
 	updateEnabled(autoenable);
 	
+	const std::string desc(getDescription());
 	if (mDriverState == JDS_INITIALIZED)
 	{
 		sControlCursor = false;
@@ -305,18 +308,19 @@ void LLViewerJoystick::init(bool autoenable)
 				gSavedSettings.setString("JoystickInitialized", "SpaceNavigator");
 			}
 		}
-		else if (isXboxLike(getDescription()))
+		else if (isXboxLike(desc))
 		{
 			sType = XBOX;
 			// It's an Xbox controller, we have defaults for it.
-			if (gSavedSettings.getString("JoystickInitialized") != "XboxController")
+			std::string controller = isOUYA(desc) ? "OUYA" : "XboxController";
+			if (gSavedSettings.getString("JoystickInitialized") != controller)
 			{
 				// Only set the defaults if we haven't already (in case they were overridden)
 				setSNDefaults();
-				gSavedSettings.setString("JoystickInitialized", "XboxController");
+				gSavedSettings.setString("JoystickInitialized", controller);
 			}
 		}
-		else if (isDS3Like(getDescription()))
+		else if (isDS3Like(desc))
 		{
 			sType = DS3;
 			// It's a DS3 controller, we have defaults for it.
@@ -346,7 +350,7 @@ void LLViewerJoystick::init(bool autoenable)
 	// <CV:David>
 	if (mDriverState == JDS_INITIALIZED)
 	{
-		llinfos << "Joystick = " << getDescription() << llendl;
+		llinfos << "Joystick = " << desc << llendl;
 	}
 	// </CV:David>
 #endif
@@ -1377,7 +1381,7 @@ void LLViewerJoystick::setSNDefaults()
 	
 	//gViewerWindow->alertXml("CacheWillClear");
 	const bool xbox = sType == XBOX;
-	const bool ouya = xbox && getDescription().find("OUYA") != std::string::npos;
+	const bool ouya = xbox && isOUYA(getDescription());
 	const bool ds3 = sType == DS3;
 	llinfos << "restoring " << (xbox ? ouya ? "OUYA	Game Controller" : "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << llendl;
 
