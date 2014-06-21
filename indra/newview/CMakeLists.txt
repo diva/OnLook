@@ -216,6 +216,7 @@ set(viewer_SOURCE_FILES
     llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
+    llfloatergroupbulkban.cpp
     llfloatergroupinfo.cpp
     llfloatergroupinvite.cpp
     llfloatergroups.cpp
@@ -368,6 +369,8 @@ set(viewer_SOURCE_FILES
     llpanelface.cpp
     llpanelgeneral.cpp
     llpanelgroup.cpp
+    llpanelgroupbulk.cpp
+    llpanelgroupbulkban.cpp
     llpanelgroupgeneral.cpp
     llpanelgroupinvite.cpp
     llpanelgrouplandmoney.cpp
@@ -739,6 +742,7 @@ set(viewer_HEADER_FILES
     llfloaterfriends.h
     llfloatergesture.h
     llfloatergodtools.h
+    llfloatergroupbulkban.h
     llfloatergroupinfo.h
     llfloatergroupinvite.h
     llfloatergroups.h
@@ -891,6 +895,9 @@ set(viewer_HEADER_FILES
     llpanelface.h
     llpanelgeneral.h
     llpanelgroup.h
+    llpanelgroupbulk.h
+    llpanelgroupbulkban.h
+    llpanelgroupbulkimpl.h
     llpanelgroupgeneral.h
     llpanelgroupinvite.h
     llpanelgrouplandmoney.h
@@ -1117,6 +1124,7 @@ set(viewer_HEADER_FILES
     rlvinventory.h
     rlvlocks.h
     rlvui.h
+    roles_constants.h
     scriptcounter.h
     sgmemstat.h
     sgversion.h
