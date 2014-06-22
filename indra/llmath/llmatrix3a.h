@@ -40,6 +40,7 @@
 
 // LLMatrix3a is the base class for LLRotation, which should be used instead any time you're dealing with a 
 // rotation matrix.
+LL_ALIGN_PREFIX(16)
 class LLMatrix3a
 {
 public:
@@ -113,8 +114,9 @@ protected:
 
 	LL_ALIGN_16(LLVector4a mColumns[3]);
 
-};
+} LL_ALIGN_POSTFIX(16);
 
+LL_ALIGN_PREFIX(16)
 class LLRotation : public LLMatrix3a
 {
 public:
@@ -123,6 +125,6 @@ public:
 	
 	// Returns true if this rotation is orthonormal with det ~= 1
 	inline bool isOkRotation() const;		
-};
+} LL_ALIGN_POSTFIX(16);
 
 #endif

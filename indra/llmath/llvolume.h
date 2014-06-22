@@ -750,10 +750,10 @@ public:
 	class PathPt
 	{
 	public:
-		LLMatrix4a   mRot;
-		LLVector4a	 mPos;
+		LL_ALIGN_16(LLMatrix4a   mRot);
+		LL_ALIGN_16(LLVector4a	 mPos);
 		
-		LLVector4a   mScale;
+		LL_ALIGN_16(LLVector4a   mScale);
 		F32			 mTexT;
 		F32 pad[3]; //for alignment
 		PathPt() 

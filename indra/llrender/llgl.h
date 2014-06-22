@@ -322,6 +322,7 @@ public:
   Does not stack.
   Caches inverse of projection matrix used in gGLObliqueProjectionInverse
 */
+LL_ALIGN_PREFIX(16)
 class LLGLUserClipPlane 
 {
 public:
@@ -332,11 +333,12 @@ public:
 	void setPlane(F32 a, F32 b, F32 c, F32 d);
 
 private:
-	bool mApply;
 
-	LLMatrix4a mProjection;
-	LLMatrix4a mModelview;
-};
+	LL_ALIGN_16(LLMatrix4a mProjection);
+	LL_ALIGN_16(LLMatrix4a mModelview);
+
+	bool mApply;
+} LL_ALIGN_POSTFIX(16);
 
 /*
   Modify and load projection matrix to push depth values to far clip plane.

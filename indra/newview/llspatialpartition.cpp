@@ -3576,6 +3576,7 @@ void renderLights(LLDrawable* drawablep)
 	}
 }
 
+LL_ALIGN_PREFIX(16)
 class LLRenderOctreeRaycast : public LLOctreeTriangleRayIntersect
 {
 public:
@@ -3648,7 +3649,7 @@ public:
 			}
 		}
 	}
-};
+} LL_ALIGN_POSTFIX(16);
 
 void renderRaycast(LLDrawable* drawablep)
 {

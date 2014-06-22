@@ -239,7 +239,7 @@ public:
 	static U32 getRiggedDataMask(U32 type);
 
 public: //aligned members
-	LLVector4a		mExtents[2];
+	LL_ALIGN_16(LLVector4a		mExtents[2]);
 
 private:	
 	F32         adjustPartialOverlapPixelArea(F32 cos_angle_to_view_dir, F32 radius );

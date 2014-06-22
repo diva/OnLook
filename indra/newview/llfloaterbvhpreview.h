@@ -40,13 +40,24 @@
 class LLVOAvatar;
 class LLViewerJointMesh;
 
+LL_ALIGN_PREFIX(16)
 class LLPreviewAnimation : public LLViewerDynamicTexture
 {
 public:
 	virtual ~LLPreviewAnimation();
 
 public:
-	LLPreviewAnimation(S32 width, S32 height);	
+	LLPreviewAnimation(S32 width, S32 height);
+
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
 
 	/*virtual*/ S8 getType() const ;
 
@@ -69,7 +80,7 @@ protected:
 	LLVector3			mCameraOffset;
 	LLVector3			mCameraRelPos;
 	LLPointer<LLVOAvatar>			mDummyAvatar;
-};
+} LL_ALIGN_POSTFIX(16);
 
 class LLFloaterBvhPreview : public LLFloaterNameDesc
 {

@@ -102,7 +102,7 @@ public:
 
 	void validate();
 
-	LLVector4a mExtents[2];
+	LL_ALIGN_16(LLVector4a mExtents[2]);
 	
 	LLPointer<LLVertexBuffer> mVertexBuffer;
 	LLPointer<LLViewerTexture>     mTexture;
