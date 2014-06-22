@@ -767,8 +767,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				LLGLState::checkTextureChannels();
 				LLGLState::checkClientArrays();
 
-				const LLMatrix4a& proj = glh_get_current_projection();
-				const LLMatrix4a& mod = glh_get_current_modelview();
+				const LLMatrix4a saved_proj = glh_get_current_projection();
+				const LLMatrix4a saved_mod = glh_get_current_modelview();
 				glViewport(0,0,512,512);
 				LLVOAvatar::updateFreezeCounter() ;
 
@@ -777,12 +777,12 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 					LLVOAvatar::updateImpostors();
 				}
 
-				glh_set_current_projection(proj);
-				glh_set_current_modelview(mod);
+				glh_set_current_projection(saved_proj);
+				glh_set_current_modelview(saved_mod);
 				gGL.matrixMode(LLRender::MM_PROJECTION);
-				gGL.loadMatrix(proj.getF32ptr());
+				gGL.loadMatrix(saved_proj);
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
-				gGL.loadMatrix(mod.getF32ptr());
+				gGL.loadMatrix(saved_mod);
 				gViewerWindow->setup3DViewport();
 
 				LLGLState::checkStates();
@@ -1272,7 +1272,7 @@ bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::mat
 		LLBBox hud_bbox = gAgentAvatarp->getHUDBBox();
 		
 		F32 hud_depth = llmax(1.f, hud_bbox.getExtentLocal().mV[VX] * 1.1f);
-		proj = gl_ortho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, hud_depth);
+		proj.set_value(gGL.genOrtho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, hud_depth).getF32ptr());
 		proj.element(2,2) = -0.01f;
 		
 		F32 aspect_ratio = LLViewerCamera::getInstance()->getAspect();
@@ -1287,7 +1287,7 @@ bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::mat
 					   0.f));
 		proj *= mat;
 		
-		glh::matrix4f tmp_model((GLfloat*) OGL_TO_CFR_ROTATION);
+		glh::matrix4f tmp_model((GLfloat*) OGL_TO_CFR_ROTATION.getF32ptr());
 		
 		mat.set_scale(glh::vec3f(zoom_level, zoom_level, zoom_level));
 		mat.set_translate(glh::vec3f(-hud_bbox.getCenterLocal().mV[VX] + (hud_depth * 0.5f), 0.f, 0.f));
@@ -1327,11 +1327,11 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 
 	// set up transform to keep HUD objects in front of camera
 	gGL.matrixMode(LLRender::MM_PROJECTION);
-	gGL.loadMatrix(proj.getF32ptr());
+	gGL.loadMatrix(proj);
 	glh_set_current_projection(proj);
 	
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
-	gGL.loadMatrix(model.getF32ptr());
+	gGL.loadMatrix(model);
 	glh_set_current_modelview(model);
 	return TRUE;
 }
@@ -1347,7 +1347,7 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 	if (!gSnapshot)
 	{
 		gGL.pushMatrix();
-		gGL.loadMatrix(gGLLastModelView.getF32ptr());
+		gGL.loadMatrix(gGLLastModelView);
 		glh_set_current_modelview(gGLLastModelView);
 	}
 	

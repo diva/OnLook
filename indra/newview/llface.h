@@ -100,8 +100,8 @@ public:
 	LLFace(LLDrawable* drawablep, LLViewerObject* objp)   { init(drawablep, objp); }
 	~LLFace()  { destroy(); }
 
-	const LLMatrix4& getWorldMatrix()	const	{ return mVObjp->getWorldMatrix(mXform); }
-	const LLMatrix4& getRenderMatrix() const;
+	const LLMatrix4a& getWorldMatrix()	const	{ return mVObjp->getWorldMatrix(mXform); }
+	const LLMatrix4a& getRenderMatrix() const;
 	U32				getIndicesCount()	const	{ return mIndicesCount; };
 	S32				getIndicesStart()	const	{ return mIndicesIndex; };
 	U16				getGeomCount()		const	{ return mGeomCount; }		// vertex count for this face
@@ -258,9 +258,7 @@ public:
 	F32			mLastUpdateTime;
 	F32			mLastSkinTime;
 	F32			mLastMoveTime;
-	LLMatrix4*	mTextureMatrix;
-	LLMatrix4*	mSpecMapMatrix;
-	LLMatrix4*	mNormalMapMatrix;
+	LLMatrix4a*	mTextureMatrix;
 	LLDrawInfo* mDrawInfo;
 
 	bool		mShinyInAlpha;

@@ -1662,10 +1662,6 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 
 	GLint stackDepth = 0;
 
-	glh::matrix4f mat;
-	glh::matrix4f identity;
-	identity.identity();
-
 	for (GLint i = 1; i < gGLManager.mNumTextureUnits; i++)
 	{
 		gGL.getTexUnit(i)->activate();
@@ -1685,10 +1681,11 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 			}
 		}
 
-		glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) mat.m);
+		LLMatrix4a mat;
+		glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) mat.mMatrix);
 		stop_glerror();
 
-		if (mat != identity)
+		if (!mat.isIdentity())
 		{
 			error = TRUE;
 			LL_WARNS("RenderState") << "Texture matrix in channel " << i << " corrupt." << LL_ENDL;
@@ -2204,12 +2201,21 @@ void LLGLUserClipPlane::setPlane(F32 a, F32 b, F32 c, F32 d)
 
 	LLVector4a oplane(a,b,c,d);
 	LLVector4a cplane;
-	invtrans_MVP.rotate4(oplane,cplane);
+	LLVector4a cplane_splat;
+	LLVector4a cplane_neg;
 
-	cplane.div(cplane.getScalarAt<2>().getAbs());
+	invtrans_MVP.rotate4(oplane,cplane);
+	
+	cplane_splat.splat<2>(cplane);
+	cplane_splat.setAbs(cplane_splat);
+	cplane.div(cplane_splat);
 	cplane.sub(LLVector4a(0.f,0.f,0.f,1.f));
 
-	cplane.setSelectWithMask( LLVector4a(cplane.getScalarAt<2>().getQuad()).lessThan( _mm_setzero_ps() ), -(LLSimdScalar)cplane, cplane );
+	cplane_splat.splat<2>(cplane);
+	cplane_neg = cplane;
+	cplane_neg.negate();
+
+	cplane.setSelectWithMask( cplane_splat.lessThan( _mm_setzero_ps() ), cplane_neg, cplane );
 
 	LLMatrix4a suffix;
 	suffix.setIdentity();
@@ -2219,7 +2225,7 @@ void LLGLUserClipPlane::setPlane(F32 a, F32 b, F32 c, F32 d)
 
     gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-    gGL.loadMatrix(newP.getF32ptr());
+    gGL.loadMatrix(newP);
 	//gGLObliqueProjectionInverse = LLMatrix4(newP.inverse().transpose().m);
     gGL.matrixMode(LLRender::MM_MODELVIEW);
 }
@@ -2409,19 +2415,18 @@ void LLGLDepthTest::checkState()
 	}
 }
 
-LLGLSquashToFarClip::LLGLSquashToFarClip(glh::matrix4f P, U32 layer)
+LLGLSquashToFarClip::LLGLSquashToFarClip(const LLMatrix4a& P_in, U32 layer)
 {
-
+	LLMatrix4a P = P_in;
 	F32 depth = 0.99999f - 0.0001f * layer;
 
-	for (U32 i = 0; i < 4; i++)
-	{
-		P.element(2, i) = P.element(3, i) * depth;
-	}
+	LLVector4a col = P.getColumn<3>();
+	col.mul(depth);
+	P.setColumn<2>(col);
 
 	gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-	gGL.loadMatrix(P.m);
+	gGL.loadMatrix(P);
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 }
 

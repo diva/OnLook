@@ -162,7 +162,7 @@ public:
 	void setScale( const LLVector3& scale );
 
 	// get/set world matrix
-	const LLMatrix4 &getWorldMatrix();
+	const LLMatrix4a &getWorldMatrix();
 	void setWorldMatrix( const LLMatrix4& mat );
 
 	void updateWorldMatrixChildren();

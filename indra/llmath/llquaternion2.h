@@ -84,6 +84,8 @@ public:
 	// Quantize this quaternion to 16 bit precision
 	inline void quantize16();
 
+	inline void mul(const LLQuaternion2& b);
+
 	/////////////////////////
 	// Quaternion inspection
 	/////////////////////////

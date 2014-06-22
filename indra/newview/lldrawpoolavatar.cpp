@@ -155,13 +155,9 @@ void LLDrawPoolAvatar::prerender()
 	}
 }
 
-LLMatrix4& LLDrawPoolAvatar::getModelView()
+const LLMatrix4a& LLDrawPoolAvatar::getModelView()
 {
-	static LLMatrix4 ret;
-
-	ret = LLMatrix4(gGLModelView.getF32ptr());
-
-	return ret;
+	return gGLModelView;
 }
 
 //-----------------------------------------------------------------------------
@@ -1330,7 +1326,7 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 	{
 		LLMatrix4 rot_mat;
 		LLViewerCamera::getInstance()->getMatrixToLocal(rot_mat);
-		LLMatrix4 cfr(OGL_TO_CFR_ROTATION);
+		LLMatrix4 cfr(OGL_TO_CFR_ROTATION.getF32ptr());
 		rot_mat *= cfr;
 		
 		LLVector4 wind;
@@ -1532,8 +1528,10 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 					}
 					if (joint)
 					{
-						mat[i] = skin->mInvBindMatrix[i];
-						mat[i] *= joint->getWorldMatrix();
+						LLMatrix4a tmp;
+						tmp.loadu((F32*)skin->mInvBindMatrix[i].mMatrix);
+						tmp.setMul(joint->getWorldMatrix(),tmp);
+						mat[i] = LLMatrix4(tmp.getF32ptr());
 					}
 				}
 				
@@ -1657,7 +1655,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 			if (face->mTextureMatrix && vobj->mTexAnimMode)
 			{
 				gGL.matrixMode(LLRender::MM_TEXTURE);
-				gGL.loadMatrix((F32*) face->mTextureMatrix->mMatrix);
+				gGL.loadMatrix(*face->mTextureMatrix);
 				buff->setBuffer(data_mask);
 				buff->drawRange(LLRender::TRIANGLES, start, end, count, offset);
 				gGL.loadIdentity();

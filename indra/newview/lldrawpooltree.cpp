@@ -120,16 +120,19 @@ void LLDrawPoolTree::render(S32 pass)
 
 		if(buff)
 		{
-			LLMatrix4* model_matrix = &(face->getDrawable()->getRegion()->mRenderMatrix);
-
+			LLMatrix4a* model_matrix = &(face->getDrawable()->getRegion()->mRenderMatrix);
+			if(model_matrix && model_matrix->isIdentity())
+			{
+				model_matrix = NULL;
+			}
 			if (model_matrix != gGLLastMatrix)
 			{
 				gGLLastMatrix = model_matrix;
-				gGL.loadMatrix(gGLModelView.getF32ptr());
+				gGL.loadMatrix(gGLModelView);
 				if (model_matrix)
 				{
 					llassert(gGL.getMatrixMode() == LLRender::MM_MODELVIEW);
-					gGL.multMatrix((GLfloat*) model_matrix->mMatrix);
+					gGL.multMatrix(*model_matrix);
 				}
 				gPipeline.mMatrixOpCount++;
 			}
@@ -250,17 +253,16 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 			}
 			
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView.getF32ptr());
+			gGL.loadMatrix(gGLModelView);
 			//gGL.pushMatrix();
 
-			LLMatrix4 matrix(gGLModelView.getF32ptr());
+			LLMatrix4a matrix(gGLModelView);
 			
 			// Translate to tree base  HACK - adjustment in Z plants tree underground
 			const LLVector3 &pos_agent = treep->getPositionAgent();
 			//gGL.translatef(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
-			LLMatrix4 trans_mat;
-			trans_mat.setTranslation(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
-			trans_mat *= matrix;
+			LLMatrix4a trans_mat = matrix;
+			trans_mat.applyTranslation_affine(pos_agent - LLVector3(0.f,0.f,1.f));
 			
 			// Rotate to tree position and bend for current trunk/wind
 			// Note that trunk stiffness controls the amount of bend at the trunk as 
@@ -273,16 +275,12 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 				LLQuaternion(90.f*DEG_TO_RAD, LLVector4(0,0,1)) *
 				treep->getRotation();
 
-			LLMatrix4 rot_mat(rot);
-			rot_mat *= trans_mat;
+			LLMatrix4a rot_mat = trans_mat;
+			rot_mat.mul(LLQuaternion2(rot));
 
 			F32 radius = treep->getScale().magVec()*0.05f;
-			LLMatrix4 scale_mat;
-			scale_mat.mMatrix[0][0] = 
-				scale_mat.mMatrix[1][1] =
-				scale_mat.mMatrix[2][2] = radius;
-
-			scale_mat *= rot_mat;
+			LLMatrix4a scale_mat = rot_mat;
+			scale_mat.applyScale_affine(radius);
 
 			//TO-DO: Make these set-able?
 			const F32 THRESH_ANGLE_FOR_BILLBOARD = 7.5f; //Made LoD now a little less aggressive here -Shyotl

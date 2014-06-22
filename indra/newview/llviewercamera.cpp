@@ -77,31 +77,6 @@ glh::matrix4f gl_pick_matrix(GLfloat x, GLfloat y, GLfloat width, GLfloat height
 	return glh::matrix4f(m);
 }
 
-glh::matrix4f gl_perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar)
-{
-	GLfloat f = 1.f/tanf(DEG_TO_RAD*fovy/2.f);
-
-	return glh::matrix4f(f/aspect, 0, 0, 0,
-						 0, f, 0, 0,
-						 0, 0, (zFar+zNear)/(zNear-zFar), (2.f*zFar*zNear)/(zNear-zFar),
-						 0, 0, -1.f, 0);
-}
-
-glh::matrix4f gl_lookat(LLVector3 eye, LLVector3 center, LLVector3 up)
-{
-	LLVector3 f = center-eye;
-	f.normVec();
-	up.normVec();
-	LLVector3 s = f % up;
-	LLVector3 u = s % f;
-
-	return glh::matrix4f(s[0], s[1], s[2], 0,
-					  u[0], u[1], u[2], 0,
-					  -f[0], -f[1], -f[2], 0,
-					  0, 0, 0, 1);
-	
-}
-
 LLViewerCamera::LLViewerCamera() : LLCamera()
 {
 	calcProjection(getFar());
@@ -171,37 +146,26 @@ void LLViewerCamera::updateCameraLocation(const LLVector3 &center,
 	mScreenPixelArea =(S32)((F32)getViewHeightInPixels() * ((F32)getViewHeightInPixels() * getAspect()));
 }
 
-const LLMatrix4 &LLViewerCamera::getProjection() const
+const LLMatrix4a &LLViewerCamera::getProjection() const
 {
 	calcProjection(getFar());
 	return mProjectionMatrix;
 
 }
 
-const LLMatrix4 &LLViewerCamera::getModelview() const
+const LLMatrix4a &LLViewerCamera::getModelview() const
 {
-	LLMatrix4 cfr(OGL_TO_CFR_ROTATION);
-	getMatrixToLocal(mModelviewMatrix);
-	mModelviewMatrix *= cfr;
+	LLMatrix4 modelview;
+	getMatrixToLocal(modelview);
+	LLMatrix4a modelviewa;
+	modelviewa.loadu((F32*)modelview.mMatrix);
+	mModelviewMatrix.setMul(OGL_TO_CFR_ROTATION,modelviewa);
 	return mModelviewMatrix;
 }
 
 void LLViewerCamera::calcProjection(const F32 far_distance) const
 {
-	F32 fov_y, z_far, z_near, aspect, f;
-	fov_y = getView();
-	z_far = far_distance;
-	z_near = getNear();
-	aspect = getAspect();
-
-	f = 1/tan(fov_y*0.5f);
-
-	mProjectionMatrix.setZero();
-	mProjectionMatrix.mMatrix[0][0] = f/aspect;
-	mProjectionMatrix.mMatrix[1][1] = f;
-	mProjectionMatrix.mMatrix[2][2] = (z_far + z_near)/(z_near - z_far);
-	mProjectionMatrix.mMatrix[3][2] = (2*z_far*z_near)/(z_near - z_far);
-	mProjectionMatrix.mMatrix[2][3] = -1;
+	mProjectionMatrix = gGL.genPersp( getView()*RAD_TO_DEG, getAspect(), getNear(), far_distance );
 }
 
 // Sets up opengl state for 3D drawing.  If for selection, also
@@ -357,23 +321,23 @@ void LLViewerCamera::setPerspective(BOOL for_selection,
 
 	calcProjection(z_far); // Update the projection matrix cache
 
-	proj_mat *= gl_perspective(fov_y,aspect,z_near,z_far);
-
-	gGL.loadMatrix(proj_mat.m);
-
-	gGLProjection.loadu(proj_mat.m);
+	LLMatrix4a proj_mata;
+	proj_mata.loadu(proj_mat.m);
+	proj_mata.mul(gGL.genPersp(fov_y,aspect,z_near,z_far));
+	
+	gGL.loadMatrix(proj_mata);
+	
+	gGLProjection = proj_mata;
 
 	gGL.matrixMode(LLRender::MM_MODELVIEW );
 
-	glh::matrix4f modelview((GLfloat*) OGL_TO_CFR_ROTATION);
+	LLMatrix4a ogl_matrix;
+	getOpenGLTransform(ogl_matrix.getF32ptr());
 
-	GLfloat			ogl_matrix[16];
-
-	getOpenGLTransform(ogl_matrix);
-
-	modelview *= glh::matrix4f(ogl_matrix);
+	LLMatrix4a modelview;
+	modelview.setMul(OGL_TO_CFR_ROTATION, ogl_matrix);
 	
-	gGL.loadMatrix(modelview.m);
+	gGL.loadMatrix(modelview);
 	
 	if (for_selection && (width > 1 || height > 1))
 	{
@@ -392,7 +356,7 @@ void LLViewerCamera::setPerspective(BOOL for_selection,
 	{
 		// Save GL matrices for access elsewhere in code, especially project_world_to_screen
 		//glGetDoublev(GL_MODELVIEW_MATRIX, gGLModelView);
-		gGLModelView.loadu(modelview.m);
+		glh_set_current_modelview(modelview);
 	}
 
 	updateFrustumPlanes(*this);

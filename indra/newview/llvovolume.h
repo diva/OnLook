@@ -86,7 +86,7 @@ public:
 	virtual bool isVolumeUnique() const = 0; // Do we need a unique LLVolume instance?
 	virtual bool isVolumeGlobal() const = 0; // Are we in global space?
 	virtual bool isActive() const = 0; // Is this object currently active?
-	virtual const LLMatrix4& getWorldMatrix(LLXformMatrix* xform) const = 0;
+	virtual const LLMatrix4a& getWorldMatrix(LLXformMatrix* xform) const = 0;
 	virtual void updateRelativeXform(bool force_identity = false) = 0;
 	virtual U32 getID() const = 0;
 	virtual void preRebuild() = 0;
@@ -113,6 +113,16 @@ public:
 							(1 << LLVertexBuffer::TYPE_COLOR)
 	};
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 public:
 						LLVOVolume(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp);
 	/*virtual*/ void markDead();		// Override (and call through to parent) to clean up media references
@@ -133,9 +143,9 @@ public:
 	/*virtual*/	BOOL	setParent(LLViewerObject* parent);
 				S32		getLOD() const							{ return mLOD; }
 	const LLVector3		getPivotPositionAgent() const;
-	const LLMatrix4&	getRelativeXform() const				{ return mRelativeXform; }
-	const LLMatrix3&	getRelativeXformInvTrans() const		{ return mRelativeXformInvTrans; }
-	/*virtual*/	const LLMatrix4	getRenderMatrix() const;
+	const LLMatrix4a&	getRelativeXform() const				{ return mRelativeXform; }
+	const LLMatrix4a&	getRelativeXformInvTrans() const		{ return mRelativeXformInvTrans; }
+	/*virtual*/	const LLMatrix4a&	getRenderMatrix() const;
 	typedef std::map<LLUUID, S32> texture_cost_t;
 				U32 	getRenderCost(texture_cost_t &textures) const;
 	/*virtual*/	F32		getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL, F32* unscaled_value = NULL) const;
@@ -161,7 +171,7 @@ public:
 				BOOL	getVolumeChanged() const				{ return mVolumeChanged; }
 				
 	/*virtual*/ F32  	getRadius() const						{ return mVObjRadius; };
-				const LLMatrix4& getWorldMatrix(LLXformMatrix* xform) const;
+				const LLMatrix4a& getWorldMatrix(LLXformMatrix* xform) const;
 
 				void	markForUpdate(BOOL priority)			{ LLViewerObject::markForUpdate(priority); mVolumeChanged = TRUE; }
 				void    faceMappingChanged()                    { mFaceMappingChanged=TRUE; };
@@ -365,8 +375,8 @@ private:
 	BOOL		mLODChanged;
 	BOOL		mSculptChanged;
 	F32			mSpotLightPriority;
-	LLMatrix4	mRelativeXform;
-	LLMatrix3	mRelativeXformInvTrans;
+	LL_ALIGN_16(LLMatrix4a	mRelativeXform);
+	LL_ALIGN_16(LLMatrix4a	mRelativeXformInvTrans);
 	BOOL		mVolumeChanged;
 	F32			mVObjRadius;
 	LLVolumeInterface *mVolumeImpl;

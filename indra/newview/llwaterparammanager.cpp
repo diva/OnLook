@@ -390,18 +390,23 @@ void LLWaterParamManager::update(LLViewerCamera * cam)
 	if(gPipeline.canUseVertexShaders()) 
 	{
 		//transform water plane to eye space
-		glh::vec3f norm(0.f, 0.f, 1.f);
-		glh::vec3f p(0.f, 0.f, gAgent.getRegion()->getWaterHeight()+0.1f);
+		LLVector4a enorm(0.f, 0.f, 1.f);
+		LLVector4a ep(0.f, 0.f, gAgent.getRegion()->getWaterHeight()+0.1f);
 		
-		glh::matrix4f mat(gGLModelView.getF32ptr());
-		glh::matrix4f invtrans = mat.inverse().transpose();
-		glh::vec3f enorm;
-		glh::vec3f ep;
-		invtrans.mult_matrix_vec(norm, enorm);
-		enorm.normalize();
-		mat.mult_matrix_vec(p, ep);
+		const LLMatrix4a& mat = gGLModelView;
+		LLMatrix4a invtrans = mat;
+		invtrans.invert();
+		invtrans.transpose();
 
-		mWaterPlane = LLVector4(enorm.v[0], enorm.v[1], enorm.v[2], -ep.dot(enorm));
+		invtrans.perspectiveTransform(enorm,enorm);
+		enorm.normalize3fast();
+		mat.affineTransform(ep,ep);
+
+		ep.setAllDot3(ep,enorm);
+		ep.negate();
+		enorm.copyComponent<3>(ep);
+
+		mWaterPlane.set(enorm.getF32ptr());
 
 		LLVector3 sunMoonDir;
 		if (gSky.getSunDirection().mV[2] > LLSky::NIGHTTIME_ELEVATION_COS) 	 
