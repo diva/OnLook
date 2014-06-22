@@ -444,6 +444,7 @@ LLGLManager::LLGLManager() :
 	mHasDebugOutput(FALSE),
 
 	mHasAdaptiveVsync(FALSE),
+	mHasTextureSwizzle(FALSE),
 
 	mIsATI(FALSE),
 	mIsNVIDIA(FALSE),
