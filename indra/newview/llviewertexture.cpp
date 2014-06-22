@@ -914,6 +914,7 @@ LLViewerFetchedTexture::LLViewerFetchedTexture(const LLUUID& id, const LLHost& h
 {
 	init(TRUE) ;
 	generateGLTexture() ;
+	mGLTexturep->setNeedsAlphaAndPickMask(TRUE) ;
 }
 	
 LLViewerFetchedTexture::LLViewerFetchedTexture(const LLImageRaw* raw, BOOL usemipmaps)
@@ -928,6 +929,7 @@ LLViewerFetchedTexture::LLViewerFetchedTexture(const std::string& url, const LLU
 {
 	init(TRUE) ;
 	generateGLTexture() ;
+	mGLTexturep->setNeedsAlphaAndPickMask(TRUE) ;
 }
 
 void LLViewerFetchedTexture::init(bool firstinit)
@@ -3172,8 +3174,6 @@ LLViewerMediaTexture::LLViewerMediaTexture(const LLUUID& id, BOOL usemipmaps, LL
 
 	mGLTexturep->setAllowCompression(false);
 
-	mGLTexturep->setNeedsAlphaAndPickMask(FALSE) ;
-
 	mIsPlaying = FALSE ;
 
 	setMediaImpl() ;
@@ -3204,7 +3204,6 @@ void LLViewerMediaTexture::reinit(BOOL usemipmaps /* = TRUE */)
 	mUseMipMaps = usemipmaps ;
 	getLastReferencedTimer()->reset() ;
 	mGLTexturep->setUseMipMaps(mUseMipMaps) ;
-	mGLTexturep->setNeedsAlphaAndPickMask(FALSE) ;
 }
 
 void LLViewerMediaTexture::setUseMipMaps(BOOL mipmap) 
