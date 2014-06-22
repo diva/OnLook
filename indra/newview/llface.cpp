@@ -1100,7 +1100,7 @@ bool LLFace::canRenderAsMask()
 	static const LLCachedControl<F32> auto_mask_max_rmse("SHAutoMaskMaxRMSE",.09f);
 	if ((te->getColor().mV[3] == 1.0f) && // can't treat as mask if we have face alpha
 		(te->getGlow() == 0.f) && // glowing masks are hard to implement - don't mask
-		(!getViewerObject()->isAttachment() && getTexture()->getIsAlphaMask(use_rmse_auto_mask ? auto_mask_max_rmse : -1.f))) // texture actually qualifies for masking (lazily recalculated but expensive)
+		(getTexture()->getIsAlphaMask((!getViewerObject()->isAttachment() && use_rmse_auto_mask) ? auto_mask_max_rmse : -1.f))) // texture actually qualifies for masking (lazily recalculated but expensive)
 	{
 		if (LLPipeline::sRenderDeferred)
 		{
