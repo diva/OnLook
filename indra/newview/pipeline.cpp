@@ -249,11 +249,6 @@ void drawBoxOutline(const LLVector3& pos, const LLVector3& size);
 U32 nhpo2(U32 v);
 LLVertexBuffer* ll_create_cube_vb(U32 type_mask, U32 usage);
 
-glh::matrix4f glh_get_current_modelview()
-{
-	return glh::matrix4f(gGLModelView.getF32ptr());
-}
-
 inline const LLMatrix4a& glh_get_current_modelview()
 {
 	return gGLModelView;
