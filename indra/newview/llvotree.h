@@ -113,9 +113,6 @@ public:
 								 F32 branches, 
 								 F32 alpha);
 
-	U32 drawBranchPipeline(LLMatrix4a& matrix, U16* indicesp, S32 trunk_LOD, S32 stop_level, U16 depth, U16 trunk_depth,  F32 scale, F32 twist, F32 droop,  F32 branches, F32 alpha);
- 
-
 	 /*virtual*/ BOOL lineSegmentIntersect(const LLVector4a& start, const LLVector4a& end, 
 										  S32 face = -1,                        // which face to check, -1 = ALL_SIDES
 										  BOOL pick_transparent = FALSE,
@@ -195,6 +192,8 @@ protected:
 	LLQuaternion mLastRotation;
 	
 	U32 mFrameCount;
+
+	std::vector<LLPointer<LLDrawInfo> > mDrawList;
 
 	typedef std::map<U32, TreeSpeciesData*> SpeciesMap;
 	static SpeciesMap sSpeciesTable;

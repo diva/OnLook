@@ -107,6 +107,10 @@ LLVOTree::~LLVOTree()
 		delete[] mData;
 		mData = NULL;
 	}
+	for(std::vector<LLPointer<LLDrawInfo> >::iterator iter = mDrawList.begin(); iter != mDrawList.end(); iter++)
+	{
+		delete (*iter)->mModelMatrix;
+	}
 }
 
 //static
@@ -397,6 +401,11 @@ void LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 			mTrunkVel.normalize();
 		}
 	}
+	else
+	{
+		mTrunkBend.clear();
+		mTrunkVel.clear();
+	}
 
 	S32 trunk_LOD = sMAX_NUM_TREE_LOD_LEVELS;
 	F32 app_angle = getAppAngle()*LLVOTree::sTreeFactor;
@@ -445,6 +454,10 @@ void LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 				}
 			}
 		}
+	}
+	else
+	{
+		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL, FALSE);
 	}
 
 	mTrunkLOD = trunk_LOD;
@@ -541,6 +554,12 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 {
 	LLFastTimer ftm(FTM_UPDATE_TREE);
 
+	for(std::vector<LLPointer<LLDrawInfo> >::iterator iter = mDrawList.begin(); iter != mDrawList.end(); iter++)
+	{
+		delete (*iter)->mModelMatrix;
+	}
+	mDrawList.clear();
+
 	if(mTrunkLOD >= sMAX_NUM_TREE_LOD_LEVELS) //do not display the tree.
 	{
 		mReferenceBuffer = NULL ;
@@ -582,8 +601,7 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 			max_vertices += sLODVertexCount[lod];
 		}
 		
-		static LLCachedControl<bool> sRenderAnimateTrees(gSavedSettings, "RenderAnimateTrees");
-		mReferenceBuffer = new LLVertexBuffer(LLDrawPoolTree::VERTEX_DATA_MASK, sRenderAnimateTrees ? GL_STATIC_DRAW_ARB : 0);
+		mReferenceBuffer = new LLVertexBuffer(LLDrawPoolTree::VERTEX_DATA_MASK, GL_STATIC_DRAW_ARB);
 		mReferenceBuffer->allocateBuffer(max_vertices, max_indices, TRUE);
 
 		LLStrider<LLVector3> vertices;
@@ -886,17 +904,9 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 		llassert(vertex_count == max_vertices);
 		llassert(index_count == max_indices);
 	}
-	
-	static LLCachedControl<bool> sRenderAnimateTrees(gSavedSettings, "RenderAnimateTrees");
-	if (sRenderAnimateTrees)
-	{
-		mDrawable->getFace(0)->setVertexBuffer(mReferenceBuffer);
-	}
-	else
-	{
-		//generate tree mesh
-		updateMesh();
-	}
+
+	//generate tree mesh
+	updateMesh();
 
 	return TRUE;
 }
@@ -926,7 +936,6 @@ void LLVOTree::updateMesh()
 	rot_mat.mul(LLQuaternion2(rot));
 
 	F32 radius = getScale().magVec()*0.05f;
-	LLMatrix4a scale_mat = rot_mat;
 	rot_mat.applyScale_affine(radius);
 
 //	const F32 THRESH_ANGLE_FOR_BILLBOARD = 15.f;
@@ -944,9 +953,6 @@ void LLVOTree::updateMesh()
 
 	LLFace* facep = mDrawable->getFace(0);
 	if (!facep) return;
-	LLVertexBuffer* buff = new LLVertexBuffer(LLDrawPoolTree::VERTEX_DATA_MASK, GL_STATIC_DRAW_ARB);
-	buff->allocateBuffer(vert_count, index_count, TRUE);
-	facep->setVertexBuffer(buff);
 	
 	LLStrider<LLVector4a> vertices;
 	LLStrider<LLVector4a> normals;
@@ -954,15 +960,32 @@ void LLVOTree::updateMesh()
 	LLStrider<U16> indices;
 	U16 idx_offset = 0;
 
-	buff->getVertexStrider(vertices);
-	buff->getNormalStrider(normals);
-	buff->getTexCoord0Strider(tex_coords);
-	buff->getIndexStrider(indices);
+	LLVertexBuffer* buff = NULL;
+
+	static LLCachedControl<bool> sRenderAnimateTrees("RenderAnimateTrees", false);
+	if (sRenderAnimateTrees)
+	{
+		facep->setVertexBuffer(NULL);
+	}
+	else
+	{
+		buff = new LLVertexBuffer(LLDrawPoolTree::VERTEX_DATA_MASK, GL_STATIC_DRAW_ARB);
+		buff->allocateBuffer(vert_count, index_count, TRUE);
+		facep->setVertexBuffer(buff);
+
+		buff->getVertexStrider(vertices);
+		buff->getNormalStrider(normals);
+		buff->getTexCoord0Strider(tex_coords);
+		buff->getIndexStrider(indices);
+	}
 
 	genBranchPipeline(vertices, normals, tex_coords, indices, idx_offset, rot_mat, mTrunkLOD, stop_depth, mDepth, mTrunkDepth, 1.0, mTwist, droop, mBranches, alpha);
 	
-	mReferenceBuffer->flush();
-	buff->flush();
+	if(buff)
+	{
+		mReferenceBuffer->flush();
+		buff->flush();
+	}
 }
 
 void LLVOTree::appendMesh(LLStrider<LLVector4a>& vertices, 
@@ -982,31 +1005,41 @@ void LLVOTree::appendMesh(LLStrider<LLVector4a>& vertices,
 	LLStrider<LLVector2> t;
 	LLStrider<U16> idx;
 
-	mReferenceBuffer->getVertexStrider(v);
-	mReferenceBuffer->getNormalStrider(n);
-	mReferenceBuffer->getTexCoord0Strider(t);
-	mReferenceBuffer->getIndexStrider(idx);
-	
-	//copy/transform vertices into mesh - check
-	for (S32 i = 0; i < vert_count; i++)
-	{ 
-		U16 index = vert_start + i;
-		matrix.affineTransform(v[index],*vertices++);
-		LLVector4a& norm = *normals++;
-		norm_mat.perspectiveTransform(n[index],norm);
-		norm.normalize3fast();
-		*tex_coords++ = t[index];
-	}
-
-	//copy offset indices into mesh - check
-	for (S32 i = 0; i < index_count; i++)
+	static LLCachedControl<bool> sRenderAnimateTrees(gSavedSettings, "RenderAnimateTrees");
+	if(sRenderAnimateTrees)	//Instead of manipulating the vbo, use the reference vbo and apply the transformation matrix to the matrix stack at draw-time.
 	{
-		U16 index = index_offset + i;
-		*indices++ = idx[index]-vert_start+cur_idx;
+		LLDrawInfo* draw_info = new LLDrawInfo(vert_start,vert_start+vert_count-1,index_count,index_offset,NULL,mReferenceBuffer);
+		draw_info->mModelMatrix = new LLMatrix4a(matrix);	//Make sure these are deleted before clearing/destructing mDrawList!
+		mDrawList.push_back(draw_info);
 	}
+	else
+	{
+		mReferenceBuffer->getVertexStrider(v);
+		mReferenceBuffer->getNormalStrider(n);
+		mReferenceBuffer->getTexCoord0Strider(t);
+		mReferenceBuffer->getIndexStrider(idx);
+	
+		//copy/transform vertices into mesh - check
+		for (S32 i = 0; i < vert_count; i++)
+		{ 
+			U16 index = vert_start + i;
+			matrix.affineTransform(v[index],*vertices++);
+			LLVector4a& norm = *normals++;
+			norm_mat.perspectiveTransform(n[index],norm);
+			norm.normalize3fast();
+			*tex_coords++ = t[index];
+		}
 
-	//increment index offset - check
-	cur_idx += vert_count;
+		//copy offset indices into mesh - check
+		for (S32 i = 0; i < index_count; i++)
+		{
+			U16 index = index_offset + i;
+			*indices++ = idx[index]-vert_start+cur_idx;
+		}
+
+		//increment index offset - check
+		cur_idx += vert_count;
+	}
 }
 								 
 
@@ -1138,119 +1171,6 @@ void LLVOTree::calcNumVerts(U32& vert_count, U32& index_count, S32 trunk_LOD, S3
 		index_count += LEAF_INDICES;
 		vert_count += LEAF_VERTICES;
 	}
-}
-
-U32 LLVOTree::drawBranchPipeline(LLMatrix4a& matrix, U16* indicesp, S32 trunk_LOD, S32 stop_level, U16 depth, U16 trunk_depth,  F32 scale, F32 twist, F32 droop,  F32 branches, F32 alpha)
-{
-	U32 ret = 0;
-	//
-	//  Draws a tree by recursing, drawing branches and then a 'leaf' texture.
-	//  If stop_level = -1, simply draws the whole tree as a billboarded texture
-	//
-	
-	static F32 constant_twist;
-	static F32 width = 0;
-
-	//F32 length = ((scale == 1.f)? mTrunkLength:mBranchLength);
-	//F32 aspect = ((scale == 1.f)? mTrunkAspect:mBranchAspect);
-	F32 length = ((trunk_depth || (scale == 1.f))? mTrunkLength:mBranchLength);
-	F32 aspect = ((trunk_depth || (scale == 1.f))? mTrunkAspect:mBranchAspect);
-	
-	constant_twist = 360.f/branches;
-
-	if (!LLPipeline::sReflectionRender && stop_level >= 0)
-	{
-		//
-		//  Draw the tree using recursion
-		//
-		if (depth > stop_level)
-		{
-			{
-				llassert(sLODIndexCount[trunk_LOD] > 0);
-				width = scale * length * aspect;
-				LLMatrix4a scale_mat = matrix;
-				scale_mat.applyScale_affine(width, width, scale*length);
-
-				gGL.loadMatrix(scale_mat);
-				gGL.syncMatrices();
- 				glDrawElements(GL_TRIANGLES, sLODIndexCount[trunk_LOD], GL_UNSIGNED_SHORT, indicesp + sLODIndexOffset[trunk_LOD]);
-				gPipeline.addTrianglesDrawn(LEAF_INDICES);
-				stop_glerror();
-				ret += sLODIndexCount[trunk_LOD];
-			}
-			
-			LLMatrix4a trans_matrix = matrix;
-			trans_matrix.applyTranslation_affine(0.f,0.f,scale*length);
-			const LLMatrix4a& trans_mat = trans_matrix;
-			
-			// Recurse to create more branches
-			for (S32 i=0; i < (S32)branches; i++) 
-			{
-
-				LLQuaternion rot = 
-					LLQuaternion(20.f*DEG_TO_RAD, LLVector4(0.f, 0.f, 1.f)) *
-					LLQuaternion(droop*DEG_TO_RAD, LLVector4(0.f, 1.f, 0.f)) *
-					LLQuaternion(((constant_twist + ((i%2==0)?twist:-twist))*i)*DEG_TO_RAD, LLVector4(0.f, 0.f, 1.f));
-				
-				LLMatrix4a rot_mat = trans_mat;
-				rot_mat.mul(LLQuaternion2(rot));
-				
-				ret += drawBranchPipeline(rot_mat, indicesp, trunk_LOD, stop_level, depth - 1, 0, scale*mScaleStep, twist, droop, branches, alpha);
-			}
-			//  Recurse to continue trunk
-			if (trunk_depth)
-			{
-				static const LLMatrix4a srot_mat = gGL.genRot(70.5f,0.f,0.f,1.f);
-				LLMatrix4a rot_mat;
-				rot_mat.setMul(trans_mat, srot_mat);	// rotate a bit around Z when ascending
-
-				ret += drawBranchPipeline(rot_mat, indicesp, trunk_LOD, stop_level, depth, trunk_depth-1, scale*mScaleStep, twist, droop, branches, alpha);
-			}
-		}
-		else
-		{
-			//
-			//  Draw leaves as two 90 deg crossed quads with leaf textures
-			//
-			{
-				LLMatrix4a scale_mat = matrix;
-				scale_mat.applyScale_affine(scale*mLeafScale);
-
-				gGL.loadMatrix(scale_mat);
-				gGL.syncMatrices();
-				glDrawElements(GL_TRIANGLES, LEAF_INDICES, GL_UNSIGNED_SHORT, indicesp);
-				gPipeline.addTrianglesDrawn(LEAF_INDICES);							
-				stop_glerror();
-				ret += LEAF_INDICES;
-			}
-		}
-	}
-	else
-	{
-		//
-		//  Draw the tree as a single billboard texture 
-		//
-
-		LLMatrix4a scale_mat = matrix;
-		scale_mat.applyScale_affine(mBillboardScale*mBillboardRatio);
-	
-		gGL.matrixMode(LLRender::MM_TEXTURE);
-		gGL.translatef(0.0, -0.5, 0.0);
-		gGL.matrixMode(LLRender::MM_MODELVIEW);
-					
-		gGL.loadMatrix(scale_mat);
-		gGL.syncMatrices();
-		glDrawElements(GL_TRIANGLES, LEAF_INDICES, GL_UNSIGNED_SHORT, indicesp);
-		gPipeline.addTrianglesDrawn(LEAF_INDICES);
-		stop_glerror();
-		ret += LEAF_INDICES;
-
-		gGL.matrixMode(LLRender::MM_TEXTURE);
-		gGL.loadIdentity();
-		gGL.matrixMode(LLRender::MM_MODELVIEW);
-	}
-
-	return ret;
 }
 
 void LLVOTree::updateRadius()
