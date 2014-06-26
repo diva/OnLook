@@ -62,6 +62,7 @@ LLFloaterEnvSettings::LLFloaterEnvSettings() : LLFloater(std::string("Environmen
 	
 	// load it up
 	initCallbacks();
+	syncMenu();
 }
 
 LLFloaterEnvSettings::~LLFloaterEnvSettings()
@@ -99,14 +100,14 @@ void LLFloaterEnvSettings::initCallbacks(void)
 void LLFloaterEnvSettings::syncMenu()
 {
 	LLSliderCtrl* sldr;
-	sldr = sEnvSettings->getChild<LLSliderCtrl>("EnvTimeSlider");
+	sldr = getChild<LLSliderCtrl>("EnvTimeSlider");
 
 	// sync the clock
 	F32 val = (F32)LLWLParamManager::getInstance()->mAnimator.getDayTime();
 	std::string timeStr = timeToString(val);
 
 	LLTextBox* textBox;
-	textBox = sEnvSettings->getChild<LLTextBox>("EnvTimeText");
+	textBox = getChild<LLTextBox>("EnvTimeText");
 
 	textBox->setValue(timeStr);
 	
@@ -125,7 +126,7 @@ void LLFloaterEnvSettings::syncMenu()
 	LLWaterParamManager * param_mgr = LLWaterParamManager::getInstance();
 	// sync water params
 	LLColor4 col = param_mgr->getFogColor();
-	LLColorSwatchCtrl* colCtrl = sEnvSettings->getChild<LLColorSwatchCtrl>("EnvWaterColor");
+	LLColorSwatchCtrl* colCtrl = getChild<LLColorSwatchCtrl>("EnvWaterColor");
 	col.mV[3] = 1.0f;
 	colCtrl->set(col);
 
@@ -182,6 +183,11 @@ LLFloaterEnvSettings* LLFloaterEnvSettings::instance()
 void LLFloaterEnvSettings::show()
 {
 	if (RlvActions::hasBehaviour(RLV_BHVR_SETENV)) return;
+	if (!sEnvSettings) // Liru TODO: Remove this when UI Overhaul merges, it will no longer be an issue.
+	{
+		sEnvSettings = new LLFloaterEnvSettings();
+		return; // Will now be visible, don't change that.
+	}
 	LLFloaterEnvSettings* envSettings = instance();
 	envSettings->syncMenu();
 
