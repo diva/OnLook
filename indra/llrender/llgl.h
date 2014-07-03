@@ -44,7 +44,6 @@
 #include "llinstancetracker.h"
 
 #include "llglheaders.h"
-#include "glh/glh_linear.h"
 
 extern BOOL gDebugGL;
 extern BOOL gDebugSession;

@@ -43,7 +43,6 @@
 #include "llstrider.h"
 #include "llpointer.h"
 #include "llglheaders.h"
-#include "glh/glh_linear.h"
 #include "llrect.h"
 
 class LLVertexBuffer;

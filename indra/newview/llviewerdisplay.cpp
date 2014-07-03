@@ -1264,7 +1264,7 @@ LLRect get_whole_screen_region()
 	return whole_screen;
 }
 
-bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::matrix4f &model)
+bool get_hud_matrices(const LLRect& screen_region, LLMatrix4a &proj, LLMatrix4a &model)
 {
 	if (isAgentAvatarValid() && gAgentAvatarp->hasHUDAttachment())
 	{
@@ -1272,28 +1272,24 @@ bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::mat
 		LLBBox hud_bbox = gAgentAvatarp->getHUDBBox();
 		
 		F32 hud_depth = llmax(1.f, hud_bbox.getExtentLocal().mV[VX] * 1.1f);
-		proj.set_value(gGL.genOrtho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, hud_depth).getF32ptr());
-		proj.element(2,2) = -0.01f;
-		
+		proj = gGL.genOrtho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, hud_depth);
+		proj.getRow<2>().copyComponent<2>(LLVector4a(-0.01f));
+
 		F32 aspect_ratio = LLViewerCamera::getInstance()->getAspect();
 		
-		glh::matrix4f mat;
 		F32 scale_x = (F32)gViewerWindow->getWorldViewWidthScaled() / (F32)screen_region.getWidth();
 		F32 scale_y = (F32)gViewerWindow->getWorldViewHeightScaled() / (F32)screen_region.getHeight();
-		mat.set_scale(glh::vec3f(scale_x, scale_y, 1.f));
-		mat.set_translate(
-			glh::vec3f(clamp_rescale((F32)(screen_region.getCenterX() - screen_region.mLeft), 0.f, (F32)gViewerWindow->getWorldViewWidthScaled(), 0.5f * scale_x * aspect_ratio, -0.5f * scale_x * aspect_ratio),
-					   clamp_rescale((F32)(screen_region.getCenterY() - screen_region.mBottom), 0.f, (F32)gViewerWindow->getWorldViewHeightScaled(), 0.5f * scale_y, -0.5f * scale_y),
-					   0.f));
-		proj *= mat;
-		
-		glh::matrix4f tmp_model((GLfloat*) OGL_TO_CFR_ROTATION.getF32ptr());
-		
-		mat.set_scale(glh::vec3f(zoom_level, zoom_level, zoom_level));
-		mat.set_translate(glh::vec3f(-hud_bbox.getCenterLocal().mV[VX] + (hud_depth * 0.5f), 0.f, 0.f));
-		
-		tmp_model *= mat;
-		model = tmp_model;		
+
+		proj.applyTranslation_affine(
+			clamp_rescale((F32)(screen_region.getCenterX() - screen_region.mLeft), 0.f, (F32)gViewerWindow->getWorldViewWidthScaled(), 0.5f * scale_x * aspect_ratio, -0.5f * scale_x * aspect_ratio),
+			clamp_rescale((F32)(screen_region.getCenterY() - screen_region.mBottom), 0.f, (F32)gViewerWindow->getWorldViewHeightScaled(), 0.5f * scale_y, -0.5f * scale_y),
+			0.f);
+		proj.applyScale_affine(scale_x, scale_y, 1.f);
+
+		model = OGL_TO_CFR_ROTATION;
+		model.applyTranslation_affine(LLVector3(-hud_bbox.getCenterLocal().mV[VX] + (hud_depth * 0.5f), 0.f, 0.f));
+		model.applyScale_affine(zoom_level);
+
 		return TRUE;
 	}
 	else
@@ -1302,7 +1298,7 @@ bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::mat
 	}
 }
 
-bool get_hud_matrices(glh::matrix4f &proj, glh::matrix4f &model)
+bool get_hud_matrices(LLMatrix4a &proj, LLMatrix4a &model)
 {
 	LLRect whole_screen = get_whole_screen_region();
 	return get_hud_matrices(whole_screen, proj, model);
@@ -1316,14 +1312,9 @@ BOOL setup_hud_matrices()
 
 BOOL setup_hud_matrices(const LLRect& screen_region)
 {
-	glh::matrix4f P, M;
-	bool result = get_hud_matrices(screen_region, P, M);
+	LLMatrix4a proj, model;
+	bool result = get_hud_matrices(screen_region, proj, model);
 	if (!result) return result;
-	
-	LLMatrix4a proj;
-	proj.loadu(P.m);
-	LLMatrix4a model;
-	model.loadu(M.m);
 
 	// set up transform to keep HUD objects in front of camera
 	gGL.matrixMode(LLRender::MM_PROJECTION);

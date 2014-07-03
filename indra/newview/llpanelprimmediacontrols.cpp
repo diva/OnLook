@@ -73,7 +73,7 @@
 const LLMatrix4a& glh_get_current_modelview();
 const LLMatrix4a& glh_get_current_projection();
 // Functions pulled from llviewerdisplay.cpp
-bool get_hud_matrices(glh::matrix4f &proj, glh::matrix4f &model);
+bool get_hud_matrices(LLMatrix4a &proj, LLMatrix4a &model);
 
 // Warning: make sure these two match!
 const LLPanelPrimMediaControls::EZoomLevel LLPanelPrimMediaControls::kZoomLevels[] = { ZOOM_NONE, ZOOM_MEDIUM };
@@ -615,15 +615,11 @@ void LLPanelPrimMediaControls::updateShape()
 			mat.setMul(glh_get_current_projection(),glh_get_current_modelview());
 		}
 		else {
-			glh::matrix4f proj, modelview;
+			LLMatrix4a proj, modelview;
 			if (get_hud_matrices(proj, modelview))
 			{
 				//mat = proj * modelview;
-				LLMatrix4a P;
-				P.loadu(proj.m);
-				LLMatrix4a M;
-				M.loadu(modelview.m);
-				mat.setMul(P,M);
+				mat.setMul(proj,modelview);
 			}
 		}
 		LLVector4a min;

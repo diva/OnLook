@@ -1383,6 +1383,35 @@ void flush_glerror()
 	glGetError();
 }
 
+const std::string getGLErrorString(GLenum error)
+{
+	switch(error)
+	{
+	case GL_NO_ERROR:
+		return "No Error";
+	case GL_INVALID_ENUM:
+		return "Invalid Enum";
+	case GL_INVALID_VALUE:
+		return "Invalid Value";
+	case GL_INVALID_OPERATION:
+		return "Invalid Operation";
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		return "Invalid Framebuffer Operation";
+	case GL_OUT_OF_MEMORY:
+		return "Out of Memory";
+	case GL_STACK_UNDERFLOW:
+		return "Stack Underflow";
+	case GL_STACK_OVERFLOW:
+		return "Stack Overflow";
+#ifdef GL_TABLE_TOO_LARGE
+	case GL_TABLE_TOO_LARGE:
+		return "Table too large";
+#endif
+	default:
+		return "UNKNOWN ERROR";
+	}
+}
+
 //this function outputs gl error to the log file, does not crash the code.
 void log_glerror()
 {
@@ -1395,17 +1424,8 @@ void log_glerror()
 	error = glGetError();
 	while (LL_UNLIKELY(error))
 	{
-		GLubyte const * gl_error_msg = gluErrorString(error);
-		if (NULL != gl_error_msg)
-		{
-			llwarns << "GL Error: " << error << " GL Error String: " << gl_error_msg << llendl ;			
-		}
-		else
-		{
-			// gluErrorString returns NULL for some extensions' error codes.
-			// you'll probably have to grep for the number in glext.h.
-			llwarns << "GL Error: UNKNOWN 0x" << std::hex << error << std::dec << llendl;
-		}
+		std::string gl_error_msg = getGLErrorString(error);
+		llwarns << "GL Error: 0x" << std::hex << error << std::dec << " GL Error String: " << gl_error_msg << llendl;			
 		error = glGetError();
 	}
 }
@@ -1419,27 +1439,13 @@ void do_assert_glerror()
 	while (LL_UNLIKELY(error))
 	{
 		quit = TRUE;
-		GLubyte const * gl_error_msg = gluErrorString(error);
-		if (NULL != gl_error_msg)
+		
+		std::string gl_error_msg = getGLErrorString(error);
+		LL_WARNS("RenderState") << "GL Error: 0x" << std::hex << error << std::dec << LL_ENDL;		
+		LL_WARNS("RenderState") << "GL Error String: " << gl_error_msg << LL_ENDL;
+		if (gDebugSession)
 		{
-			LL_WARNS("RenderState") << "GL Error:" << error<< LL_ENDL;
-			LL_WARNS("RenderState") << "GL Error String:" << gl_error_msg << LL_ENDL;
-
-			if (gDebugSession)
-			{
-				gFailLog << "GL Error:" << gl_error_msg << std::endl;
-			}
-		}
-		else
-		{
-			// gluErrorString returns NULL for some extensions' error codes.
-			// you'll probably have to grep for the number in glext.h.
-			LL_WARNS("RenderState") << "GL Error: UNKNOWN 0x" << std::hex << error << std::dec << LL_ENDL;
-
-			if (gDebugSession)
-			{
-				gFailLog << "GL Error: UNKNOWN 0x" << std::hex << error << std::dec << std::endl;
-			}
+			gFailLog << "GL Error: 0x" << std::hex << error << std::dec << " GL Error String: " << gl_error_msg << std::endl;
 		}
 		error = glGetError();
 	}
