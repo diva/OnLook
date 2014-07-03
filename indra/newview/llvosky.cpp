@@ -1410,8 +1410,6 @@ BOOL LLVOSky::updateGeometry(LLDrawable *drawable)
 	{
 		setDrawRefl(-1);
 	}
-
-	LLPipeline::sCompiles++;
 	return TRUE;
 }
 

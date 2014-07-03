@@ -292,8 +292,6 @@ void glh_set_last_projection(const LLMatrix4a& mat)
 void display_update_camera(bool tiling=false);
 //----------------------------------------
 
-S32		LLPipeline::sCompiles = 0;
-
 BOOL	LLPipeline::sPickAvatar = TRUE;
 BOOL	LLPipeline::sDynamicLOD = TRUE;
 BOOL	LLPipeline::sShowHUDAttachments = TRUE;
@@ -313,7 +311,6 @@ BOOL	LLPipeline::sAutoMaskAlphaDeferred = TRUE;
 BOOL	LLPipeline::sAutoMaskAlphaNonDeferred = FALSE;
 BOOL	LLPipeline::sDisableShaders = FALSE;
 BOOL	LLPipeline::sRenderBump = TRUE;
-BOOL	LLPipeline::sBakeSunlight = FALSE;
 BOOL	LLPipeline::sNoAlpha = FALSE;
 BOOL	LLPipeline::sUseFarClip = TRUE;
 BOOL	LLPipeline::sShadowRender = FALSE;
@@ -332,7 +329,7 @@ BOOL	LLPipeline::sRenderDeferred = FALSE;
 BOOL    LLPipeline::sMemAllocationThrottled = FALSE;
 S32		LLPipeline::sVisibleLightCount = 0;
 F32		LLPipeline::sMinRenderSize = 0.f;
-BOOL	LLPipeline::sRenderingHUDs;
+BOOL	LLPipeline::sRenderingHUDs = FALSE;
 
 
 static LLCullResult* sCull = NULL;
@@ -367,10 +364,6 @@ LLPipeline::LLPipeline() :
 	mMeanBatchSize(0),
 	mTrianglesDrawn(0),
 	mNumVisibleNodes(0),
-	mVerticesRelit(0),
-	mLightingChanges(0),
-	mGeometryChanges(0),
-	mNumVisibleFaces(0),
 
 	mInitialized(FALSE),
 	mVertexShadersEnabled(FALSE),
@@ -1821,11 +1814,6 @@ void LLPipeline::resetFrameStats()
 		mMeanBatchSize = gPipeline.mTrianglesDrawn/gPipeline.mBatchCount;
 	}
 	mTrianglesDrawn = 0;
-	sCompiles        = 0;
-	mVerticesRelit   = 0;
-	mLightingChanges = 0;
-	mGeometryChanges = 0;
-	mNumVisibleFaces = 0;
 
 	if (mOldRenderDebugMask != mRenderDebugMask)
 	{
@@ -2668,7 +2656,6 @@ BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
 	if (update_complete && assertInitialized())
 	{
 		drawablep->setState(LLDrawable::BUILT);
-		mGeometryChanges++;
 	}
 	return update_complete;
 }
@@ -3458,9 +3445,6 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 			}
 		}
 	}
-	
-
-	mNumVisibleFaces += drawablep->getNumFaces();
 }
 
 
@@ -6826,7 +6810,6 @@ void LLPipeline::doResetVertexBuffers()
 	LLVertexBuffer::sPreferStreamDraw = gSavedSettings.getBOOL("RenderPreferStreamDraw");
 	LLVertexBuffer::sEnableVBOs = gSavedSettings.getBOOL("RenderVBOEnable");
 	LLVertexBuffer::sDisableVBOMapping = LLVertexBuffer::sEnableVBOs;// && gSavedSettings.getBOOL("RenderVBOMappingDisable") ; //Temporary workaround for vbo mapping being straight up broken
-	sBakeSunlight = gSavedSettings.getBOOL("RenderBakeSunlight");
 	sNoAlpha = gSavedSettings.getBOOL("RenderNoAlpha");
 	LLPipeline::sTextureBindTest = gSavedSettings.getBOOL("RenderDebugTextureBind");
 
@@ -8032,42 +8015,6 @@ void LLPipeline::renderDeferredLighting()
 				mDeferredLight.clear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0,0,0,0);
 
-				/*glh::matrix4f inv_trans = glh_get_current_modelview().inverse().transpose();
-
-				const U32 slice = 32;
-				F32 offset[slice*3];
-				for (U32 i = 0; i < 4; i++)
-				{
-					for (U32 j = 0; j < 8; j++)
-					{
-						glh::vec3f v;
-						v.set_value(sinf(6.284f/8*j), cosf(6.284f/8*j), -(F32) i);
-#if 0
-						// Singu note: the call to mult_matrix_vec can crash, because it attempts to divide by zero.
-						v.normalize();
-						inv_trans.mult_matrix_vec(v);
-#else
-						// However, because afterwards we normalize the vector anyway, there is an alternative
-						// way to calculate the same thing without the division (which happens to be faster, too).
-						glh::vec4f src(v, v.length());				// Make a copy of the source and extent it with its length.
-						glh::vec4f dst;
-						inv_trans.mult_matrix_vec(src, dst);		// Do a normal 4D multiplication.
-						dst.get_value(v[0], v[1], v[2], dst[3]);	// Copy the first 3 coordinates to v.
-						// At this point v is equal to what it used to be, except for a constant factor (v.length() * dst[3]),
-						// but that doesn't matter because the next step is normalizaton. The old computation would crash
-						// if v.length() is zero in the commented out v.normalize(), and in inv_trans.mult_matrix_vec(v)
-						// if dst[3] is zero (which some times happens). Now we will only crash if v.length() is zero
-						// and well in the next line (but this never happens).	--Aleric
-#endif
-						v.normalize();
-						offset[(i*8+j)*3+0] = v.v[0];
-						offset[(i*8+j)*3+1] = v.v[2];
-						offset[(i*8+j)*3+2] = v.v[1];
-					}
-				}
-
-				gDeferredSunProgram.uniform3fv(sOffset, slice, offset);*/
-
 				gDeferredSunProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredLight.getWidth(), mDeferredLight.getHeight());
 
 				//Enable bilinear filtering, as the screen tex resolution may not match current framebuffer resolution. Eg, half-res SSAO
@@ -8700,26 +8647,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				mDeferredLight.clear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0,0,0,0);
 
-				/*glh::matrix4f inv_trans = glh_get_current_modelview().inverse().transpose();
-
-				const U32 slice = 32;
-				F32 offset[slice*3];
-				for (U32 i = 0; i < 4; i++)
-				{
-					for (U32 j = 0; j < 8; j++)
-					{
-						glh::vec3f v;
-						v.set_value(sinf(6.284f/8*j), cosf(6.284f/8*j), -(F32) i);
-						v.normalize();
-						inv_trans.mult_matrix_vec(v);
-						v.normalize();
-						offset[(i*8+j)*3+0] = v.v[0];
-						offset[(i*8+j)*3+1] = v.v[2];
-						offset[(i*8+j)*3+2] = v.v[1];
-					}
-				}
-
-				gDeferredSunProgram.uniform3fv(LLShaderMgr::DEFERRED_SHADOW_OFFSET, slice, offset);*/
 				gDeferredSunProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredLight.getWidth(), mDeferredLight.getHeight());
 				
 				//Enable bilinear filtering, as the screen tex resolution may not match current framebuffer resolution. Eg, half-res SSAO
@@ -10109,9 +10036,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	//far clip on last split is minimum of camera view distance and 128
 	mSunClipPlanes = LLVector4(clip, clip.mV[2] * clip.mV[2]/clip.mV[1]);
 
-	clip = RenderShadowOrthoClipPlanes;
-	mSunOrthoClipPlanes = LLVector4(clip, clip.mV[2]*clip.mV[2]/clip.mV[1]);
-
 	//currently used for amount to extrude frusta corners for constructing shadow frusta
 	//LLVector3 n = RenderShadowNearDist;
 	//F32 nearDist[] = { n.mV[0], n.mV[1], n.mV[2], n.mV[2] };
@@ -10126,8 +10050,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 	LLVector3 lightDir = -mSunDir;
 	lightDir.normVec();
-
-	glh::vec3f light_dir(lightDir.mV);
 
 	//create light space camera matrix
 	
@@ -10310,9 +10232,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 				}
 				mShadow[j].flush();
 
-				mShadowError.mV[j] = 0.f;
-				mShadowFOV.mV[j] = 0.f;
-
 				continue;
 			}
 
@@ -10422,20 +10341,19 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 				bfb = lp.mV[1]-bfm*lp.mV[0];
 
 				//calculate error
-				mShadowError.mV[j] = 0.f;
+				F32 shadow_error = 0.f;
 
 				for (U32 i = 0; i < wpf.size(); ++i)
 				{
 					F32 lx = (wpf[i].mV[1]-bfb)/bfm;
-					mShadowError.mV[j] += fabsf(wpf[i].mV[0]-lx);
+					shadow_error += fabsf(wpf[i].mV[0]-lx);
 				}
 
-				mShadowError.mV[j] /= wpf.size();
-				mShadowError.mV[j] /= size.mV[0];
+				shadow_error /= wpf.size();
+				shadow_error /= size.mV[0];
 
-				if (mShadowError.mV[j] > RenderShadowErrorCutoff)
+				if (shadow_error > RenderShadowErrorCutoff)
 				{ //just use ortho projection
-					mShadowFOV.mV[j] = -1.f;
 					origin.clearVec();
 					proj[j] = gGL.genOrtho(min.mV[0], max.mV[0], min.mV[1], max.mV[1], -max.mV[2], -min.mV[2]);
 				}
@@ -10476,8 +10394,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 					F32 cutoff = llmin((F32) RenderShadowFOVCutoff, 1.4f);
 				
-					mShadowFOV.mV[j] = fovx;
-				
 					if (fovx < cutoff && fovz > cutoff)
 					{
 						//x is a good fit, but z is too big, move away from zp enough so that fovz matches cutoff
@@ -10505,7 +10421,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 						fovx = acos(fovx);
 						fovz = acos(fovz);
 
-						mShadowFOV.mV[j] = cutoff;
 					}
 
 				
@@ -10525,7 +10440,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 					if (fovx > cutoff)
 					{ //just use ortho projection
 						origin.clearVec();
-						mShadowError.mV[j] = -1.f;
 						proj[j] = gGL.genOrtho(min.mV[0], max.mV[0], min.mV[1], max.mV[1], -max.mV[2], -min.mV[2]);
 					}
 					else
@@ -10539,11 +10453,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 						view[j].affineTransform(origin_agent,origin_agent);
 
 						eye = LLVector3(origin_agent.getF32ptr());
-
-						if (!hasRenderDebugMask(LLPipeline::RENDER_DEBUG_SHADOW_FRUSTA))
-						{
-							mShadowFrustOrigin[j] = eye;
-						}
 
 						view[j] = gGL.genLook(LLVector3(origin_agent.getF32ptr()), lightDir, -up);
 
@@ -10580,7 +10489,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 			mShadowModelview[j] = view[j];
 			mShadowProjection[j] = proj[j];
 
-			LLMatrix4a sunshadowi;
+
 			mSunShadowMatrix[j].setMul(gGL.genNDCtoWC(),proj[j]);
 			mSunShadowMatrix[j].mul_affine(view[j]);
 			mSunShadowMatrix[j].mul_affine(inv_view);
@@ -10713,7 +10622,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 			mShadowModelview[i+4] = view[i+4];
 			mShadowProjection[i+4] = proj[i+4];
 
-			LLMatrix4a sunshadowi;
 			mSunShadowMatrix[i+4].setMul(gGL.genNDCtoWC(),proj[i+4]);
 			mSunShadowMatrix[i+4].mul_affine(view[i+4]);
 			mSunShadowMatrix[i+4].mul_affine(inv_view);

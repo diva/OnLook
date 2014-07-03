@@ -1686,11 +1686,6 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 	// Update face flags
 	updateFaceFlags();
 	
-	if(compiled)
-	{
-		LLPipeline::sCompiles++;
-	}
-	
 	mVolumeChanged = FALSE;
 	mLODChanged = FALSE;
 	mSculptChanged = FALSE;
@@ -4515,8 +4510,6 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 						vobj->isMesh() && 
 						gMeshRepo.getSkinInfo(vobj->getVolume()->getParams().getSculptID(), vobj);
 
-			//bool bake_sunlight = LLPipeline::sBakeSunlight && drawablep->isStatic();
-
 			bool is_rigged = false;
 
 			static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
@@ -5533,8 +5526,6 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, LLFac
 		LLFace* facep = *face_iter;
 		LLViewerTexture* tex = facep->getTexture();
 		LLMaterialPtr mat = facep->getTextureEntry()->getMaterialParams();
-
-		//bool bake_sunlight = LLPipeline::sBakeSunlight && facep->getDrawable()->isStatic();
 
 		static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
 		if (!alt_batching && distance_sort)
