@@ -153,7 +153,7 @@ const F32 BACKLIGHT_NIGHT_MAGNITUDE_OBJECT = 0.08f;
 const S32 MAX_ACTIVE_OBJECT_QUIET_FRAMES = 40;
 const S32 MAX_OFFSCREEN_GEOMETRY_CHANGES_PER_FRAME = 10;
 const U32 REFLECTION_MAP_RES = 128;
-const U32 DEFERRED_VB_MASK = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
+const U32 AUX_VB_MASK = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
 // Max number of occluders to search for. JC
 const S32 MAX_OCCLUDER_COUNT = 2;
 
@@ -577,7 +577,7 @@ void LLPipeline::cleanup()
 
 	mInitialized = FALSE;
 
-	mDeferredVB = NULL;
+	mAuxScreenRectVB = NULL;
 	mCubeVB = NULL;
 }
 
@@ -775,6 +775,8 @@ LLPipeline::eFBOStatus LLPipeline::doAllocateScreenBuffer(U32 resX, U32 resY)
 
 bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 {
+	mAuxScreenRectVB = NULL;
+
 	refreshCachedSettings();
 	U32 res_mod = gSavedSettings.getU32("RenderResolutionDivisor");
 	if (res_mod > 1 && res_mod < resX && res_mod < resY)
@@ -2530,18 +2532,6 @@ void LLPipeline::downsampleDepthBuffer(LLRenderTarget& source, LLRenderTarget& d
 
 	dest.bindTarget();
 	dest.clear(GL_DEPTH_BUFFER_BIT);
-
-	if(mDeferredVB.isNull())
-	{
-		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-		mDeferredVB->allocateBuffer(8, 0, true);
-		LLStrider<LLVector3> vert; 
-		mDeferredVB->getVertexStrider(vert);
-		
-		vert[0].set(-1,1,0);
-		vert[1].set(-1,-3,0);
-		vert[2].set(3,1,0);
-	}
 	
 	if (source.getUsage() == LLTexUnit::TT_RECT_TEXTURE)
 	{
@@ -2562,8 +2552,7 @@ void LLPipeline::downsampleDepthBuffer(LLRenderTarget& source, LLRenderTarget& d
 
 	{
 		LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
-		mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-		mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 	}
 	
 	dest.flush();
@@ -6765,7 +6754,7 @@ void LLPipeline::doResetVertexBuffers()
 	mResetVertexBuffers = false;
 
 	mCubeVB = NULL;
-	mDeferredVB = NULL;
+	mAuxScreenRectVB = NULL;
 
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
@@ -6954,10 +6943,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 	//U32 res_mod = RenderResolutionDivisor;//.get();	
 
-	LLVector2 tc1(0,0);
-	LLVector2 tc2((F32) mScreen.getWidth()*2,
-				  (F32) mScreen.getHeight()*2);
-
 	/*if (res_mod > 1)
 	{
 		tc2 /= (F32) res_mod;
@@ -7002,29 +6987,36 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			llassert(zoom_factor > 0.0); // Non-zero, non-negative.
 			const F32 tile_size = 1.0/zoom_factor;
 			
-			tc1 = tile*tile_size; // Top left texture coordinates
-			tc2 = (tile+LLVector2(1,1))*tile_size; // Bottom right texture coordinates
+			LLVector2 tc1 = tile*tile_size; // Top left texture coordinates
+			LLVector2 tc2 = (tile+LLVector2(1,1))*tile_size; // Bottom right texture coordinates
 			
 			LLGLEnable blend(GL_BLEND);
 			gGL.setSceneBlendType(LLRender::BT_ADD);
-				
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.color4f(1,1,1,1);
-			gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-			gGL.vertex2f(-1,-1);
-			
-			gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-			gGL.vertex2f(-1,1);
-			
-			gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-			gGL.vertex2f(1,-1);
-			
-			gGL.texCoord2f(tc2.mV[0], tc2.mV[1]);
-			gGL.vertex2f(1,1);
+						
+			LLPointer<LLVertexBuffer> buff = new LLVertexBuffer(AUX_VB_MASK, 0);
+			buff->allocateBuffer(4, 0, true);
+			LLStrider<LLVector3> vert;
+			LLStrider<LLVector2> texcoord0, texcoord1;
+			buff->getVertexStrider(vert);
+			buff->getTexCoord0Strider(texcoord0);
+			buff->getTexCoord1Strider(texcoord1);
 
-			gGL.end();
+			vert[0].set(-1.f,-1.f,0.f);
+			vert[1].set(-1.f,1.f,0.f);
+			vert[2].set(1.f,-1.f,0.f);
+			vert[3].set(1.f,1.f,0.f);
 
-			gGL.flush();
+			//Texcoord 0 is actually for texture 1, which is unbound and thus all components = 0,0,0,0. Just zero out the texcoords.
+			texcoord0[0] = texcoord0[1] = texcoord0[2] = texcoord0[3] = LLVector2::zero;
+
+			texcoord1[0].set(tc1.mV[0], tc1.mV[1]);
+			texcoord1[1].set(tc1.mV[0], tc2.mV[1]);
+			texcoord1[2].set(tc2.mV[0], tc1.mV[1]);
+			texcoord1[3].set(tc2.mV[0], tc2.mV[1]);
+
+			buff->setBuffer(AUX_VB_MASK);
+			buff->drawArrays(LLRender::TRIANGLE_STRIP, 0, 4);
+
 			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		}
 
@@ -7068,25 +7060,13 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		
 		gGL.color4f(1,1,1,1);
 		gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
-		gGL.begin(LLRender::TRIANGLE_STRIP);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-		
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
+
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 		
 		gGL.getTexUnit(0)->unbind(mScreen.getUsage());
 
 		mGlow[1].flush();
 	}
-
-	tc1.setVec(0,0);
-	tc2.setVec(2,2);
 
 	// power of two between 1 and 1024
 	U32 glowResPow = RenderGlowResolutionPow;
@@ -7125,17 +7105,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			gGlowProgram.uniform2f(LLShaderMgr::GLOW_DELTA, 0, delta);
 		}
 
-		gGL.begin(LLRender::TRIANGLE_STRIP);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD1);
 		
 		mGlow[i%2].flush();
 	}
@@ -7153,9 +7123,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	gGLViewport[2] = gViewerWindow->getWorldViewRectRaw().getWidth();
 	gGLViewport[3] = gViewerWindow->getWorldViewRectRaw().getHeight();
 	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
-
-	tc2.setVec((F32) mScreen.getWidth(),
-			(F32) mScreen.getHeight());
 
 	gGL.flush();
 	
@@ -7298,17 +7265,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
 				shader->uniform1f(LLShaderMgr::DOF_RES_SCALE, CameraDoFResScale);
 
-				gGL.begin(LLRender::TRIANGLE_STRIP);
-				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-				gGL.vertex2f(-1,-1);
-		
-				gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-				gGL.vertex2f(-1,3);
-		
-				gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-				gGL.vertex2f(3,-1);
-		
-				gGL.end();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 				unbindDeferredShader(*shader);
 				mDeferredLight.flush();
@@ -7333,17 +7290,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
 				shader->uniform1f(LLShaderMgr::DOF_RES_SCALE, CameraDoFResScale);
 
-				gGL.begin(LLRender::TRIANGLE_STRIP);
-				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-				gGL.vertex2f(-1,-1);
-		
-				gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-				gGL.vertex2f(-1,3);
-		
-				gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-				gGL.vertex2f(3,-1);
-		
-				gGL.end();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 				unbindDeferredShader(*shader);
 				mScreen.flush();
@@ -7387,17 +7334,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::DOF_WIDTH, dof_width-1);
 				shader->uniform1f(LLShaderMgr::DOF_HEIGHT, dof_height-1);
 
-				gGL.begin(LLRender::TRIANGLE_STRIP);
-				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-				gGL.vertex2f(-1,-1);
-		
-				gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-				gGL.vertex2f(-1,3);
-		
-				gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-				gGL.vertex2f(3,-1);
-		
-				gGL.end();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 				unbindDeferredShader(*shader);
 
@@ -7430,17 +7367,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0);
 			}
 
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-			gGL.vertex2f(-1,-1);
-		
-			gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-			gGL.vertex2f(-1,3);
-		
-			gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-			gGL.vertex2f(3,-1);
-		
-			gGL.end();
+			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 			unbindDeferredShader(*shader);
 
@@ -7470,13 +7397,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				mDeferredLight.bindTexture(0, channel);
 			}
 						
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.vertex2f(-1,-1);
-			gGL.vertex2f(-1,3);
-			gGL.vertex2f(3,-1);
-			gGL.end();
-
-			gGL.flush();
+			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
 			shader->disableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mDeferredLight.getUsage());
 			shader->unbind();
@@ -7506,13 +7427,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			shader->uniform4f(LLShaderMgr::FXAA_RCP_FRAME_OPT, -0.5f/width*scale_x, -0.5f/height*scale_y, 0.5f/width*scale_x, 0.5f/height*scale_y);
 			shader->uniform4f(LLShaderMgr::FXAA_RCP_FRAME_OPT2, -2.f/width*scale_x, -2.f/height*scale_y, 2.f/width*scale_x, 2.f/height*scale_y);
 			
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.vertex2f(-1,-1);
-			gGL.vertex2f(-1,3);
-			gGL.vertex2f(3,-1);
-			gGL.end();
+			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
-			gGL.flush();
 			shader->unbind();
 		}
 	}
@@ -7522,32 +7438,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		{
 			tc2 /= (F32) res_mod;
 		}*/
-
-		U32 mask = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
-		LLPointer<LLVertexBuffer> buff = new LLVertexBuffer(mask, 0);
-		buff->allocateBuffer(3,0,TRUE);
-
-		LLStrider<LLVector3> v;
-		LLStrider<LLVector2> uv1;
-		LLStrider<LLVector2> uv2;
-
-		buff->getVertexStrider(v);
-		buff->getTexCoord0Strider(uv1);
-		buff->getTexCoord1Strider(uv2);
-		
-		uv1[0] = LLVector2(0, 0);
-		uv1[1] = LLVector2(0, 2);
-		uv1[2] = LLVector2(2, 0);
-		
-		uv2[0] = LLVector2(0, 0);
-		uv2[1] = LLVector2(0, tc2.mV[1]*2.f);
-		uv2[2] = LLVector2(tc2.mV[0]*2.f, 0);
-		
-		v[0] = LLVector3(-1,-1,0);
-		v[1] = LLVector3(-1,3,0);
-		v[2] = LLVector3(3,-1,0);
-				
-		buff->flush();
 
 		LLGLDisable blend(GL_BLEND);
 
@@ -7568,8 +7458,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		
 		LLGLEnable multisample(RenderFSAASamples > 0 ? GL_MULTISAMPLE_ARB : 0);
 		
-		buff->setBuffer(mask);
-		buff->drawArrays(LLRender::TRIANGLE_STRIP, 0, 3);
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1);
 		
 		if (LLGLSLShader::sNoFixedFunction)
 		{
@@ -7597,27 +7486,12 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 		gGL.setColorMask(true, false);
 
-		LLVector2 tc1(0,0);
-		LLVector2 tc2((F32) gViewerWindow->getWorldViewWidthRaw()*2,
-				  (F32) gViewerWindow->getWorldViewHeightRaw()*2);
-
 		LLGLEnable blend(GL_BLEND);
 		gGL.color4f(1,1,1,0.75f);
 
 		gGL.getTexUnit(0)->bind(&mPhysicsDisplay);
 
-		gGL.begin(LLRender::TRIANGLES);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-		
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
-		gGL.flush();
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 		if (LLGLSLShader::sNoFixedFunction)
 		{
@@ -7932,18 +7806,6 @@ void LLPipeline::renderDeferredLighting()
 		LLGLEnable cull(GL_CULL_FACE);
 		LLGLEnable blend(GL_BLEND);
 
-		if(mDeferredVB.isNull())
-		{
-			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-			mDeferredVB->allocateBuffer(8, 0, true);
-			LLStrider<LLVector3> vert; 
-			mDeferredVB->getVertexStrider(vert);
-		
-			vert[0].set(-1,1,0);
-			vert[1].set(-1,-3,0);
-			vert[2].set(3,1,0);
-		}
-
 		{
 			setupHWLights(NULL); //to set mSunDir;
 			mTransformedSunDir.load3(mSunDir.mV);
@@ -7969,12 +7831,9 @@ void LLPipeline::renderDeferredLighting()
 				mDeferredDownsampledDepth.clear(GL_DEPTH_BUFFER_BIT);
 				bindDeferredShader(gDeferredDownsampleDepthNearestProgram, 0);
 				gDeferredDownsampleDepthNearestProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mDeferredDownsampledDepth.flush();
 				unbindDeferredShader(gDeferredDownsampleDepthNearestProgram);
@@ -7992,12 +7851,9 @@ void LLPipeline::renderDeferredLighting()
 					glViewport(0,0,mDeferredDownsampledDepth.getWidth(),mDeferredDownsampledDepth.getHeight());
 					gDeferredSSAOProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);
 				}
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_FALSE);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mScreen.flush();
 				unbindDeferredShader(gDeferredSSAOProgram);
@@ -8010,7 +7866,6 @@ void LLPipeline::renderDeferredLighting()
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
 				LLFastTimer ftm(FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram, 0);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				glClearColor(1,1,1,1);
 				mDeferredLight.clear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0,0,0,0);
@@ -8029,9 +7884,7 @@ void LLPipeline::renderDeferredLighting()
 				{
 					LLGLDisable blend(GL_BLEND);
 					LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				if (channel > -1)
@@ -8055,7 +7908,6 @@ void LLPipeline::renderDeferredLighting()
 			glClearColor(0,0,0,0);
 			
 			bindDeferredShader(gDeferredBlurLightProgram);
-			mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 			LLVector3 go = RenderShadowGaussian;
 			const U32 kern_length = 4;
 			F32 blur_size = RenderShadowBlurSize;
@@ -8082,16 +7934,13 @@ void LLPipeline::renderDeferredLighting()
 			{
 				LLGLDisable blend(GL_BLEND);
 				LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-				stop_glerror();
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-				stop_glerror();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 			}
 			
 			mScreen.flush();
 			unbindDeferredShader(gDeferredBlurLightProgram);
 
 			bindDeferredShader(gDeferredBlurLightProgram, 1);
-			mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 			mDeferredLight.bindTarget();
 
 			gDeferredBlurLightProgram.uniform2f(sDelta, 0.f, 1.f);
@@ -8099,9 +7948,7 @@ void LLPipeline::renderDeferredLighting()
 			{
 				LLGLDisable blend(GL_BLEND);
 				LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-				stop_glerror();
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-				stop_glerror();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 			}
 			mDeferredLight.flush();
 			unbindDeferredShader(gDeferredBlurLightProgram);
@@ -8136,9 +7983,7 @@ void LLPipeline::renderDeferredLighting()
 				gGL.pushMatrix();
 				gGL.loadIdentity();
 
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-				
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
 				gGL.popMatrix();
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -8371,8 +8216,7 @@ void LLPipeline::renderDeferredLighting()
 						gDeferredMultiLightProgram[idx].uniform1f(LLShaderMgr::MULTI_LIGHT_FAR_Z, far_z);
 						far_z = 0.f;
 						count = 0; 
-      mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-						mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+						drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 						unbindDeferredShader(gDeferredMultiLightProgram[idx]);
 					}
 				}
@@ -8380,8 +8224,6 @@ void LLPipeline::renderDeferredLighting()
 				bindDeferredShader(gDeferredMultiSpotLightProgram);
 
 				gDeferredMultiSpotLightProgram.enableTexture(LLShaderMgr::DEFERRED_PROJECTION);
-
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 
 				for (LLDrawable::drawable_list_t::iterator iter = fullscreen_spot_lights.begin(); iter != fullscreen_spot_lights.end(); ++iter)
 				{
@@ -8410,7 +8252,7 @@ void LLPipeline::renderDeferredLighting()
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_SIZE, s);
 					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::DIFFUSE_COLOR, 1, col.mV);
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_FALLOFF, volume->getLightFalloff()*0.5f);
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				gDeferredMultiSpotLightProgram.disableTexture(LLShaderMgr::DEFERRED_PROJECTION);
@@ -8442,7 +8284,6 @@ void LLPipeline::renderDeferredLighting()
 		mScreen.bindTarget();
 		// Apply gamma correction to the frame here.
 		gDeferredPostGammaCorrectProgram.bind();
-		mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 		S32 channel = 0;
 		channel = gDeferredPostGammaCorrectProgram.enableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mScreen.getUsage());
 		if (channel > -1)
@@ -8453,7 +8294,7 @@ void LLPipeline::renderDeferredLighting()
 		
 		gDeferredPostGammaCorrectProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mScreen.getWidth(), mScreen.getHeight());
 		
-		mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 		
 		gGL.getTexUnit(channel)->unbind(mScreen.getUsage());
 		gDeferredPostGammaCorrectProgram.unbind();
@@ -8567,15 +8408,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 		LLGLEnable cull(GL_CULL_FACE);
 		LLGLEnable blend(GL_BLEND);
 
-		glh::matrix4f mat((float*)glh_get_current_modelview().getF32ptr());
-
-		LLStrider<LLVector3> vert; 
-		mDeferredVB->getVertexStrider(vert);
-		
-		vert[0].set(-1,1,0);
-		vert[1].set(-1,-3,0);
-		vert[2].set(3,1,0);
-		
 		{
 			setupHWLights(NULL); //to set mSunDir;
 			mTransformedSunDir.load3(mSunDir.mV);
@@ -8601,12 +8433,9 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				mDeferredDownsampledDepth.clear(GL_DEPTH_BUFFER_BIT);
 				bindDeferredShader(gDeferredDownsampleDepthNearestProgram, 0);
 				gDeferredDownsampleDepthNearestProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mDeferredDownsampledDepth.flush();
 				unbindDeferredShader(gDeferredDownsampleDepthNearestProgram);
@@ -8624,12 +8453,9 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 					glViewport(0,0,mDeferredDownsampledDepth.getWidth(),mDeferredDownsampledDepth.getHeight());
 					gDeferredSSAOProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);	
 				}
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_FALSE);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mScreen.flush();
 				unbindDeferredShader(gDeferredSSAOProgram);
@@ -8642,7 +8468,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
 				LLFastTimer ftm(FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				glClearColor(1,1,1,1);
 				mDeferredLight.clear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0,0,0,0);
@@ -8661,9 +8486,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				{
 					LLGLDisable blend(GL_BLEND);
 					LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				if (channel > -1)
@@ -8706,9 +8529,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				gGL.pushMatrix();
 				gGL.loadIdentity();
 
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-				
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
 				gGL.popMatrix();
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -8905,12 +8726,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				unbindDeferredShader(gDeferredSpotLightProgram);
 			}
 
-			//reset mDeferredVB to fullscreen triangle
-			mDeferredVB->getVertexStrider(vert);
-			vert[0].set(-1,1,0);
-			vert[1].set(-1,-3,0);
-			vert[2].set(3,1,0);
-
 			{
 				LLGLDepthTest depth(GL_FALSE);
 
@@ -8954,8 +8769,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 						gDeferredMultiLightProgram[idx].uniform1f(LLShaderMgr::MULTI_LIGHT_FAR_Z, far_z);
 						far_z = 0.f;
 						count = 0; 
-						mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-						mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+						drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 					}
 				}
 				
@@ -8964,8 +8778,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				bindDeferredShader(gDeferredMultiSpotLightProgram);
 
 				gDeferredMultiSpotLightProgram.enableTexture(LLShaderMgr::DEFERRED_PROJECTION);
-
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 
 				for (LLDrawable::drawable_list_t::iterator iter = fullscreen_spot_lights.begin(); iter != fullscreen_spot_lights.end(); ++iter)
 				{
@@ -8994,7 +8806,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_SIZE, s);
 					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::DIFFUSE_COLOR, 1, col.mV);
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_FALLOFF, volume->getLightFalloff()*0.5f);
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				gDeferredMultiSpotLightProgram.disableTexture(LLShaderMgr::DEFERRED_PROJECTION);
@@ -11255,4 +11067,32 @@ void LLPipeline::restoreHiddenObject( const LLUUID& id )
 	}
 }
 */
+
+void LLPipeline::drawFullScreenRect(U32 data_mask)
+{
+	if(mAuxScreenRectVB.isNull())
+	{
+		mAuxScreenRectVB = new LLVertexBuffer(AUX_VB_MASK, 0);
+		mAuxScreenRectVB->allocateBuffer(3, 0, true);
+		LLStrider<LLVector3> vert;
+		LLStrider<LLVector2> tc0, tc1;
+		mAuxScreenRectVB->getVertexStrider(vert);
+		mAuxScreenRectVB->getTexCoord0Strider(tc0);
+		mAuxScreenRectVB->getTexCoord1Strider(tc1);
+
+		vert[0].set(-1.f,-1.f,0.f);
+		vert[1].set(3.f,-1.f,0.f);
+		vert[2].set(-1.f,3.f,0.f);
+
+		tc0[0].set(0.f, 0.f);
+		tc0[1].set(mScreen.getWidth()*2.f, 0.f);
+		tc0[2].set(0.f, mScreen.getHeight()*2.f);
+
+		tc1[0].set(0.f, 0.f);
+		tc1[1].set(2.f, 0.f);
+		tc1[2].set(0.f, 2.f);
+	}
+	mAuxScreenRectVB->setBuffer(data_mask);
+	mAuxScreenRectVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+}
 
