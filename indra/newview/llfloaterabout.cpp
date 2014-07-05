@@ -268,7 +268,7 @@ LLFloaterAbout::LLFloaterAbout()
 	support.append( (const char*) glGetString(GL_VERSION) );
 // [RLVa:KB] - Checked: 2010-04-18 (RLVa-1.2.0)
 	support.append("\n");
-	support.append("RLV Version: " + (RlvActions::isRlvEnabled()) ? RlvStrings::getVersionAbout() : "(disabled)");
+	support.append("RLV Version: " + (RlvActions::isRlvEnabled() ? RlvStrings::getVersionAbout() : "(disabled)"));
 // [/RLVa:KB]
 	support.append("\n\n");
 
