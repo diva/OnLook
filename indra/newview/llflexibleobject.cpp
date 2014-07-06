@@ -80,17 +80,10 @@ LLVolumeImplFlexible::LLVolumeImplFlexible(LLViewerObject* vo, LLFlexibleObjectD
 
 LLVolumeImplFlexible::~LLVolumeImplFlexible()
 {
-	S32 end_idx = sInstanceList.size()-1;
-	
-	if (end_idx != mInstanceIndex)
-	{
-		sInstanceList[mInstanceIndex] = sInstanceList[end_idx];
-		sInstanceList[mInstanceIndex]->mInstanceIndex = mInstanceIndex;
-		sUpdateDelay[mInstanceIndex] = sUpdateDelay[end_idx];
-	}
-
-	sInstanceList.pop_back();
-	sUpdateDelay.pop_back();
+	std::vector<LLVolumeImplFlexible*>::iterator iter = vector_replace_with_last(sInstanceList, sInstanceList.begin() + mInstanceIndex);
+	if(iter != sInstanceList.end())
+		(*iter)->mInstanceIndex = mInstanceIndex;
+	vector_replace_with_last(sUpdateDelay,sUpdateDelay.begin() + mInstanceIndex);
 }
 
 //static

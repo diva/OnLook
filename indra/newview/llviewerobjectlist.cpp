@@ -1459,15 +1459,10 @@ void LLViewerObjectList::removeFromActiveList(LLViewerObject* objectp)
 		
 		objectp->setListIndex(-1);
 
-		S32 last_index = mActiveObjects.size()-1;
+		std::vector<LLPointer<LLViewerObject> >::iterator iter = vector_replace_with_last(mActiveObjects,mActiveObjects.begin() + idx);
+		if(iter != mActiveObjects.end())
+			(*iter)->setListIndex(idx);
 
-		if (idx != last_index)
-		{
-			mActiveObjects[idx] = mActiveObjects[last_index];
-			mActiveObjects[idx]->setListIndex(idx);
-		}
-
-		mActiveObjects.pop_back();
 	}
 }
 

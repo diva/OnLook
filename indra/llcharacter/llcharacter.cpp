@@ -72,21 +72,11 @@ LLCharacter::~LLCharacter()
 		delete param;
 	}
 
-	U32 i ;
-	U32 size = sInstances.size() ;
-	for(i = 0 ; i < size ; i++)
-	{
-		if(sInstances[i] == this)
-		{
-			break ;
-		}
-	}
+	bool erased = vector_replace_with_last(sInstances,this);
 
-	llassert_always(i < size) ;
+	llassert_always(erased) ;
 
 	llassert_always(sAllowInstancesChange) ;
-	sInstances[i] = sInstances[size - 1] ;
-	sInstances.pop_back() ;
 }
 
 

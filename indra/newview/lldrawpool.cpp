@@ -297,17 +297,14 @@ LLViewerTexture *LLFacePool::getTexture()
 
 void LLFacePool::removeFaceReference(LLFace *facep)
 {
-	if (facep->getReferenceIndex() != -1)
+	S32 idx = facep->getReferenceIndex();
+	if (idx != -1)
 	{
-		if (facep->getReferenceIndex() != (S32)mReferences.size())
-		{
-			LLFace *back = mReferences.back();
-			mReferences[facep->getReferenceIndex()] = back;
-			back->setReferenceIndex(facep->getReferenceIndex());
-		}
-		mReferences.pop_back();
+		facep->setReferenceIndex(-1);
+		std::vector<LLFace*>::iterator iter = vector_replace_with_last(mReferences, mReferences.begin() + idx);
+		if(iter != mReferences.end())
+			(*iter)->setReferenceIndex(idx);
 	}
-	facep->setReferenceIndex(-1);
 }
 
 void LLFacePool::addFaceReference(LLFace *facep)
