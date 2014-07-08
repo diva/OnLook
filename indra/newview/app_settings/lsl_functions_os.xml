@@ -287,6 +287,16 @@
    <map/>
    <key>osRegexIsMatch</key>
    <map/>
+   <key>osForceCreateLink</key>
+   <map/>
+   <key>osForceBreakLink</key>
+   <map/>
+   <key>osForceBreakAllLinks</key>
+   <map/>
+   <key>osGetRegionSize</key>
+   <map/>
+   <key>osGetPhysicsEngineType</key>
+   <map/>
 
 <!-- OSSL Functions Aurora-Sim Unique -->
    <key>osReturnObject</key>
