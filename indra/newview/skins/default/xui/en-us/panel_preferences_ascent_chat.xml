@@ -152,7 +152,7 @@ The following wildcards are available to enhance your autoresponses: #n for user
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamTeleportRequests" height="16" label="Teleport Requests" name="Teleport Requests" left="14" bottom_delta="-20"/>
       <text disabled_control="_NACL_Antispam" name="Except those from:" left="21" bottom_delta="-10">Except those from:</text>
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
-      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotFriends" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
+      <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotFriend" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
       <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3" bottom_delta="-20"/>
     </panel>
 
