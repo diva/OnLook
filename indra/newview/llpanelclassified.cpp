@@ -211,14 +211,7 @@ LLPanelClassifiedInfo::LLPanelClassifiedInfo(bool in_finder, bool from_search)
 
 LLPanelClassifiedInfo::~LLPanelClassifiedInfo()
 {
-	if (mCreatorID.notNull())
-	{
-		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
-	}
-	else
-	{
-		LLAvatarPropertiesProcessor::getInstance()->removeObserver(LLUUID::null, this);
-	}
+	LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
 	sAllPanels.remove(this);
 }
 
@@ -330,7 +323,7 @@ void LLPanelClassifiedInfo::processProperties(void* data, EAvatarProcessorType t
 		LLAvatarClassifiedInfo* c_info = static_cast<LLAvatarClassifiedInfo*>(data);
 		if(c_info && mClassifiedID == c_info->classified_id)
 		{
-			LLAvatarPropertiesProcessor::getInstance()->removeObserver(LLUUID::null, this);
+			LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
 
 			// "Location text" is actually the original
 			// name that owner gave the parcel, and the location.
@@ -563,7 +556,7 @@ void LLPanelClassifiedInfo::sendClassifiedInfoRequest()
 {
 	if (mClassifiedID != mRequestedID)
 	{
-		LLAvatarPropertiesProcessor::getInstance()->addObserver(LLUUID::null, this);
+		LLAvatarPropertiesProcessor::getInstance()->addObserver(mCreatorID, this);
 		LLAvatarPropertiesProcessor::getInstance()->sendClassifiedInfoRequest(mClassifiedID);
 
 		mDataRequested = TRUE;
