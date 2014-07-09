@@ -488,7 +488,7 @@ void LLAvatarPropertiesProcessor::notifyObservers(const LLUUID& id,void* data, E
 		// only notify observers for the same agent, or if the observer
 		// didn't know the agent ID and passed a NULL id.
 		const LLUUID &agent_id = oi->first;
-		if (agent_id == id || agent_id.isNull())
+		if (agent_id == id || (type == APT_CLASSIFIED_INFO && agent_id.isNull())) // Singu Note: Classifieds are the only ones registering null ids.
 		{
 			oi->second->processProperties(data,type);
 		}
