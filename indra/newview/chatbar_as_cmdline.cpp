@@ -40,6 +40,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentui.h"
+#include "llavataractions.h"
 #include "llviewerregion.h"
 #include "llworld.h"
 #include "lleventtimer.h"
@@ -436,7 +437,14 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			{
 				if (revised_text.length() > command.length() + 1)
 				{
-					LLUrlAction::clickAction(revised_text.substr(command.length()+1));
+					const std::string sub(revised_text.substr(command.length()+1));
+					LLUUID id;
+					if (id.parseUUID(sub, &id))
+					{
+						LLAvatarActions::showProfile(id);
+						return false;
+					}
+					LLUrlAction::clickAction(sub);
 				}
 				return false;
 			}
