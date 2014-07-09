@@ -1,6 +1,6 @@
 /** 
  * @file llpanelclassified.h
- * @brief LLPanelClassified class definition
+ * @brief LLPanelClassifiedInfo class definition
  *
  * $LicenseInfo:firstyear=2005&license=viewergpl$
  * 
@@ -52,11 +52,11 @@ class LLTextEditor;
 class LLTextureCtrl;
 class LLUICtrl;
 
-class LLPanelClassified : public LLPanel, public LLAvatarPropertiesObserver
+class LLPanelClassifiedInfo : public LLPanel, public LLAvatarPropertiesObserver
 {
 public:
-    LLPanelClassified(bool in_finder, bool from_search);
-    /*virtual*/ ~LLPanelClassified();
+    LLPanelClassifiedInfo(bool in_finder, bool from_search);
+    /*virtual*/ ~LLPanelClassifiedInfo();
 
 	void reset();
 
@@ -167,7 +167,7 @@ protected:
 	LLTextBox*		mClickThroughText;
 
 	LLRect		mSnapshotSize;
-	typedef std::list<LLPanelClassified*> panel_list_t;
+	typedef std::list<LLPanelClassifiedInfo*> panel_list_t;
 	static panel_list_t sAllPanels;
 };
 

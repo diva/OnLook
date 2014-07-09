@@ -361,7 +361,7 @@ void *LLFloaterDirectory::createFindAllOld(void* userdata)
 void* LLFloaterDirectory::createClassifiedDetail(void* userdata)
 {
 	LLFloaterDirectory *self = (LLFloaterDirectory*)userdata;
-	self->mPanelClassifiedp = new LLPanelClassified(true, false);
+	self->mPanelClassifiedp = new LLPanelClassifiedInfo(true, false);
 	self->mPanelClassifiedp->setVisible(FALSE);
 	return self->mPanelClassifiedp;
 }

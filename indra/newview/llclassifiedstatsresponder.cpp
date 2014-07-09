@@ -59,7 +59,7 @@ void LLClassifiedStatsResponder::result(const LLSD& content)
 	S32 search_map = content["search_map_clicks"].asInteger();
 	S32 search_profile = content["search_profile_clicks"].asInteger();
 
-	LLPanelClassified* classified_panelp = (LLPanelClassified*)mClassifiedPanelHandle.get();
+	LLPanelClassifiedInfo* classified_panelp = (LLPanelClassifiedInfo*)mClassifiedPanelHandle.get();
 
 	if(classified_panelp)
 	{

@@ -54,7 +54,7 @@ class LLPanelAvatar;
 class LLPanelEvent;
 class LLPanelGroup;
 class LLPanelPlace;
-class LLPanelClassified;
+class LLPanelClassifiedInfo;
 
 // Floater to find people, places, things
 class LLFloaterDirectory : public LLFloater
@@ -131,7 +131,7 @@ public:
 	LLPanel*			mPanelGroupHolderp;
 	LLPanelPlace*		mPanelPlacep;
 	LLPanelPlace*		mPanelPlaceSmallp;
-	LLPanelClassified*	mPanelClassifiedp;
+	LLPanelClassifiedInfo*	mPanelClassifiedp;
 
 	static S32 sOldSearchCount; // debug
 	static S32 sNewSearchCount; // debug
