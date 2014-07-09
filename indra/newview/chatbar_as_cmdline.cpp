@@ -258,17 +258,16 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				{
 					if (i >> y)
 					{
-						if (i >> z)
+						if (!(i >> z))
+							z = gAgent.getPositionAgent().mV[VZ];
+
+						if (LLViewerRegion* agentRegionp = gAgent.getRegion())
 						{
-							LLViewerRegion* agentRegionp = gAgent.getRegion();
-							if(agentRegionp)
-							{
-								LLVector3 targetPos(x,y,z);
-								LLVector3d pos_global = from_region_handle(agentRegionp->getHandle());
-								pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
-								gAgent.teleportViaLocation(pos_global);
-								return false;
-							}
+							LLVector3 targetPos(x,y,z);
+							LLVector3d pos_global = from_region_handle(agentRegionp->getHandle());
+							pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
+							gAgent.teleportViaLocation(pos_global);
+							return false;
 						}
 					}
 				}
