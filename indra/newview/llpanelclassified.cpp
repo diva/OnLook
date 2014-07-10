@@ -218,7 +218,7 @@ LLPanelClassifiedInfo::~LLPanelClassifiedInfo()
 
 void LLPanelClassifiedInfo::reset()
 {
-	if(mCreatorID.notNull())
+	if (mInFinder || mCreatorID.notNull())
 	{
 		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
 	}
@@ -491,6 +491,7 @@ void LLPanelClassifiedInfo::initNewClassified()
 void LLPanelClassifiedInfo::setClassifiedID(const LLUUID& id)
 {
 	mClassifiedID = id;
+	if (mInFinder) mCreatorID = LLUUID::null; // Singu Note: HACKS!
 }
 
 //static
