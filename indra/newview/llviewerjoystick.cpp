@@ -109,6 +109,15 @@ enum DS3Keys
 	DS3_START_KEY,
 	DS3_LOGO_KEY
 };
+
+S32 get_joystick_type()
+{
+	if (sType == SPACE_NAV) return 0;
+	if (sType == XBOX) return isOUYA(LLViewerJoystick::getInstance()->getDescription()) ? 1 : 2;
+	if (sType == DS3) return 3;
+
+	return -1; // sType == NONE || sType == UNKNOWN
+}
 // </Singu>
 
 // These constants specify the maximum absolute value coming in from the device.
@@ -312,11 +321,12 @@ void LLViewerJoystick::init(bool autoenable)
 		{
 			sType = XBOX;
 			// It's an Xbox controller, we have defaults for it.
-			std::string controller = isOUYA(desc) ? "OUYA" : "XboxController";
+			bool ouya(isOUYA(desc));
+			std::string controller = ouya ? "OUYA" : "XboxController";
 			if (gSavedSettings.getString("JoystickInitialized") != controller)
 			{
 				// Only set the defaults if we haven't already (in case they were overridden)
-				setSNDefaults();
+				setSNDefaults(ouya ? 1 : 2);
 				gSavedSettings.setString("JoystickInitialized", controller);
 			}
 		}
@@ -327,7 +337,7 @@ void LLViewerJoystick::init(bool autoenable)
 			if (gSavedSettings.getString("JoystickInitialized") != "DualShock3")
 			{
 				// Only set the defaults if we haven't already (in case they were overridden)
-				setSNDefaults();
+				setSNDefaults(3);
 				gSavedSettings.setString("JoystickInitialized", "DualShock3");
 			}
 		}
@@ -1366,7 +1376,7 @@ bool LLViewerJoystick::isLikeSpaceNavigator() const
 }
 
 // -----------------------------------------------------------------------------
-void LLViewerJoystick::setSNDefaults()
+void LLViewerJoystick::setSNDefaults(S32 type)
 {
 #if LL_DARWIN || LL_LINUX
 	const float platformScale = 20.f;
@@ -1380,9 +1390,9 @@ void LLViewerJoystick::setSNDefaults()
 #endif
 	
 	//gViewerWindow->alertXml("CacheWillClear");
-	const bool xbox = sType == XBOX;
-	const bool ouya = xbox && isOUYA(getDescription());
-	const bool ds3 = sType == DS3;
+	const bool ouya = type == 1;
+	const bool xbox = ouya || type == 2;
+	const bool ds3 = type == 3;
 	llinfos << "restoring " << (xbox ? ouya ? "OUYA	Game Controller" : "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << llendl;
 
 	/*

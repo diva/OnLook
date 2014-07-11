@@ -79,7 +79,6 @@
 	<text name="ZoomDeadZone">
 		Zona Muerta de Zoom
 	</text>
-	<button label="Predeterminado SpaceNavigator" name="SpaceNavigatorDefaults" left="330" width="210"/>
 	<button label="OK" label_selected="OK" name="ok_btn"/>
 	<button label="Cancelar" label_selected="Cancelar" name="cancel_btn"/>
 </floater>
