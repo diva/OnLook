@@ -233,6 +233,11 @@ private:
 
 	void error(U32 status, const std::string& reason)
 	{
+		// <singu> Prevent 404s from annoying the user all the tme
+		if (status == HTTP_NOT_FOUND)
+			LL_INFOS("FloaterPermsResponder") << "Failed to send default permissions to simulator. 404, reason: " << reason << LL_ENDL;
+		else
+		// </singu>
 		// Do not display the same error more than once in a row
 		if (reason != sPreviousReason)
 		{
