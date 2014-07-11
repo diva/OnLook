@@ -227,9 +227,13 @@ void VolumeCatcherImpl::init()
 	mGotSyms = loadsyms("libpulse-mainloop-glib.so.0");
 	if (!mGotSyms) return;
 
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+#if !GLIB_CHECK_VERSION(2, 32, 0)
 	// better make double-sure glib itself is initialized properly.
 	if (!g_thread_supported ()) g_thread_init (NULL);
+#endif
 	g_type_init();
+#endif
 
 	mMainloop = llpa_glib_mainloop_new(g_main_context_default());
 	if (mMainloop)
