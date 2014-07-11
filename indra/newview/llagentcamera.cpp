@@ -1178,7 +1178,7 @@ void LLAgentCamera::updateCamera()
 
 	validateFocusObject();
 
-	bool realistic_ml(gSavedSettings.getBOOL("UseRealisticMouselook"));
+	static const LLCachedControl<bool> realistic_ml("UseRealisticMouselook");
 	if (isAgentAvatarValid() &&
 		!realistic_ml &&
 		gAgentAvatarp->isSitting() &&
@@ -1492,16 +1492,14 @@ void LLAgentCamera::updateCamera()
 		if (realistic_ml)
 		{
 			LLQuaternion agent_rot(gAgent.getFrameAgent().getQuaternion());
-			if (isAgentAvatarValid())
+			if (static_cast<LLViewerObject*>(gAgentAvatarp->getRoot())->flagCameraDecoupled())
 				if (LLViewerObject* parent = static_cast<LLViewerObject*>(gAgentAvatarp->getParent()))
-					if (static_cast<LLViewerObject*>(gAgentAvatarp->getRoot())->flagCameraDecoupled())
-						agent_rot *= parent->getRenderRotation();
+					agent_rot *= parent->getRenderRotation();
 			LLViewerCamera::getInstance()->updateCameraLocation(head_pos, mCameraUpVector, gAgentAvatarp->mHeadp->getWorldPosition() + LLVector3(1.0, 0.0, 0.0) * agent_rot);
 		}
 		else
 		{
-			LLVector3 diff = mCameraPositionAgent - head_pos;
-			diff = diff * ~gAgentAvatarp->mRoot->getWorldRotation();
+			const LLVector3 diff = (mCameraPositionAgent - head_pos) * ~gAgentAvatarp->mRoot->getWorldRotation();
 			gAgentAvatarp->mPelvisp->setPosition(gAgentAvatarp->mPelvisp->getPosition() + diff);
 		}
 

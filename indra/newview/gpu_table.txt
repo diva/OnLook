@@ -304,6 +304,10 @@ Intel HD Graphics 3000			.*Intel.*HD Graphics 3000.*					2		1
 Intel HD Graphics 3000			.*Intel.*Sandybridge.*					2		1
 Intel HD Graphics 4000			.*Intel.*HD Graphics 4000.*					2		1
 Intel HD Graphics 4000			.*Intel.*Ivybridge.*					2		1
+Intel Intel Iris Pro Graphics 5200		.*Intel.*Iris Pro Graphics 52.*		2	1
+Intel Intel Iris Graphics 5100			.*Intel.*Iris Graphics 51.*		2	1
+Intel Intel Iris OpenGL Engine			.*Intel.*Iris OpenGL.*			2	1
+Intel Intel Iris Pro OpenGL Engine			.*Intel.*Iris Pro OpenGL.*	3	1
 Intel HD Graphics 5000			.*Intel.*HD Graphics 5.*					2		1
 Intel HD Graphics 5000			.*Intel.*Haswell.*					2		1
 Intel HD Graphics				.*Intel.*HD Graphics.*						2		1

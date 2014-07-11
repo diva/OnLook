@@ -31,6 +31,7 @@
 	     left="205" name="terraform_help" width="18" />
 	<check_box bottom_delta="-20" follows="left|top" height="20" label="Block Fly" left="10"
 	     name="block_fly_check" width="80" />
+	<check_box bottom_delta="-20" follows="left|top" height="20" label="Block Parcel Fly Over" tool_tip="Extend access checks upwards to prevent flying over a parcel" left="10" name="block_fly_over_check" width="90" />
 	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
 	     left="205" name="fly_help" width="18" />
 	<check_box bottom_delta="-20" follows="left|top" height="20" label="Allow Damage"

@@ -3172,17 +3172,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>2</integer>
     </map>  
-    <key>AvatarRotateThresholdMouselook</key>
-    <map>
-      <key>Comment</key>
-      <string>Angle between avatar facing and camera facing at which avatar turns to face same direction as camera, when in mouselook (degrees)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>120</real>
-    </map>
     <key>AvatarBakedTextureUploadTimeout</key>
     <map>
       <key>Comment</key>

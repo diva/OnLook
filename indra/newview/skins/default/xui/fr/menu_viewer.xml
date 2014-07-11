@@ -148,11 +148,11 @@
 		<menu_item_call label="Région et domaine" name="Region/Estate..."/>
 		<menu_item_separator label="-----------" name="separator6"/>
 		<menu label="Environnement" name="Environment Settings">
-			<menu_item_call label="Aube" name="Sunrise"/>
-			<menu_item_call label="Midi" name="Noon"/>
-			<menu_item_call label="Coucher de soleil" name="Sunset"/>
-			<menu_item_call label="Minuit" name="Midnight"/>
-			<menu_item_call label="Revenir aux options par défaut" name="Revert to Region Default"/>
+			<menu_item_check label="Aube" name="Sunrise"/>
+			<menu_item_check label="Midi" name="Noon"/>
+			<menu_item_check label="Coucher de soleil" name="Sunset"/>
+			<menu_item_check label="Minuit" name="Midnight"/>
+			<menu_item_check label="Revenir aux options par défaut" name="Revert to Region Default"/>
 			<menu_item_separator label="-----------" name="separator"/>
 			<menu_item_call label="Editeur d&apos;environnement" name="Environment Editor"/>
             <menu_item_call label="Editeur du jour" name="Day Cycle Editor"/>

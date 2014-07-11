@@ -8762,6 +8762,44 @@ class LLWorldEnvSettings : public view_listener_t
 	}
 };
 
+class LLWorldEnableEnvSettings : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool result = false;
+		std::string tod = userdata.asString();
+
+		if (tod == "region")
+		{
+			return LLEnvManagerNew::instance().getUseRegionSettings();
+		}
+
+		if (LLEnvManagerNew::instance().getUseFixedSky())
+		{
+			if (tod == "sunrise")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Sunrise");
+			}
+			else if (tod == "noon")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Midday");
+			}
+			else if (tod == "sunset")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Sunset");
+			}
+			else if (tod == "midnight")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Midnight");
+			}
+			else
+			{
+				llwarns << "Unknown item" << llendl;
+			}
+		}
+		return result;
+	}
+};
 
 class SinguCloseAllDialogs : public view_listener_t
 {
@@ -9292,6 +9330,7 @@ void initialize_menus()
 	addMenu(new LLWorldEnableTeleportHome(), "World.EnableTeleportHome");
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
 	(new LLWorldEnvSettings())->registerListener(gMenuHolder, "World.EnvSettings");
+	(new LLWorldEnableEnvSettings())->registerListener(gMenuHolder, "World.EnableEnvSettings");
 
 
 	// Tools menu

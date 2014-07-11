@@ -3745,6 +3745,18 @@ Are you sure you want to teleport?
   </notification>
 
   <notification
+   icon="alertmodal.tga"
+   name="TeleportViaSLAPP"
+   type="alertmodal">
+Are you sure you want to teleport to [LOCATION]?
+    <usetemplate
+     ignoretext="Confirm that I want to teleport via SLAPP"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="Teleport"/>
+  </notification>
+
+  <notification
    icon="alert.tga"
    label="Message everyone in your Estate"
    name="MessageEstate"

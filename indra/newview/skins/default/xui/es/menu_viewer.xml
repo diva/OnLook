@@ -126,11 +126,11 @@
 		<menu_item_call label="Comprar Terreno..." name="Buy Land..."/>
 		<menu_item_call label="Región/Estado..." name="Region/Estate..."/>
 		<menu label="Configuración del Entorno" name="Environment Settings">
-			<menu_item_call label="Amanecer" name="Sunrise"/>
-			<menu_item_call label="Mediodía" name="Noon"/>
-			<menu_item_call label="Atardecer" name="Sunset"/>
-			<menu_item_call label="Medianoche" name="Midnight"/>
-			<menu_item_call label="Volver a los valores de la Región" name="Revert to Region Default"/>
+			<menu_item_check label="Amanecer" name="Sunrise"/>
+			<menu_item_check label="Mediodía" name="Noon"/>
+			<menu_item_check label="Atardecer" name="Sunset"/>
+			<menu_item_check label="Medianoche" name="Midnight"/>
+			<menu_item_check label="Volver a los valores de la Región" name="Revert to Region Default"/>
 			<menu_item_call label="Editor del Entorno" name="Environment Editor"/>
 			<menu_item_call label="Editor del Ciclo Diario" name="Day Cycle Editor"/>
 			<menu_item_call label="Efectos de Post-Procesado" name="Post-Processing Effects"/>
