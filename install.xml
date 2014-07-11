@@ -669,16 +669,16 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>37d1f91f486e357c9a74e6b4af91fe13</string>
+            <string>b1eda1b02e7ebf9875733303a88ca27b</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-windows-20131002.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-windows-20140606.tar.bz2</uri>
           </map>
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>b13ebfa3a82d5396709c57ad83999d83</string>
+            <string>f9072dda75012868d023c335ea5bcf88</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-windows64-20131019.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/google_breakpad-0.0.0-rev1099-windows64-20140606.tar.bz2</uri>
           </map>
         </map>
       </map>
