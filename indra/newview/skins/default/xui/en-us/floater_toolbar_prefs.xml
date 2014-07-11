@@ -80,6 +80,7 @@
   <check_box bottom="-38" label="Favorites" name="favs_btn" follows="left|right" control_name="ToolbarVisibleInventoryFavs" left_delta="160"/>
   <check_box bottom_delta="-20" label="Outbox" name="outbox_btn" follows="left|right" control_name="ToolbarVisibleOutbox"/>
   <check_box bottom_delta="-20" label="Preferences" name="preferences_btn" follows="left|right" control_name="ToolbarVisiblePreferences"/>
+  <check_box bottom_delta="-20" label="Joystick Config" name="joystick_btn" follows="left|right" control_name="ToolbarVisibleJoystick"/>
   <check_box bottom_delta="-20" label="Autoreplace" name="auto_replace_btn" follows="left|right" control_name="ToolbarVisibleAutoReplace"/>
   <check_box bottom_delta="-20" label="Display Name" name="display_name_btn" follows="left|right" control_name="ToolbarVisibleDisplayName"/>
   <check_box bottom_delta="-20" label="Floater Test" name="floater_test_btn" follows="left|right" control_name="ToolbarVisibleTest"/>
