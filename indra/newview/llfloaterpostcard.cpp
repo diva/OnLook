@@ -258,9 +258,9 @@ public:
 		LLAssetUploadResponder::uploadFailure(content);
 		LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
 	}
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		LLAssetUploadResponder::error(statusNum, reason);
+		LLAssetUploadResponder::httpFailure();
 		LLFloaterSnapshot::savePostcardDone(false, mSnapshotIndex);
 	}
 	/*virtual*/ char const* getName(void) const { return "LLSendPostcardResponder"; }

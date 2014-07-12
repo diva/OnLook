@@ -163,15 +163,15 @@ void XMLRPCResponder::completed_headers(U32 status, std::string const& reason, A
 		mTransferInfo = *info;
 	}
 	// Call base class implementation.
-	LegacyPolledResponder::completed_headers(status, reason, info);
+	ResponderWithCompleted::completed_headers(status, reason, info);
 }
 
-void XMLRPCResponder::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+void XMLRPCResponder::completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
-	if (mCode == CURLE_OK && !is_internal_http_error(status))
+	if (mCode == CURLE_OK && !is_internal_http_error(mStatus))
 	{
 		mBufferSize = buffer->count(channels.in());
-		if (200 <= status && status < 400)
+		if (200 <= mStatus && mStatus < 400)
 		{
 			char* ptr = NULL;
 			char* buf = NULL;

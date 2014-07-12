@@ -156,8 +156,8 @@ private:
 
 		void setTimeoutPolicy(std::string const& name);
     
-        /*virtual*/ void result(const LLSD& data);
-        /*virtual*/ void errorWithContent(U32 status, const std::string& reason, const LLSD& content);
+        /*virtual*/ void httpSuccess(void);
+        /*virtual*/ void httpFailure(void);
 
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return *mHTTPTimeoutPolicy; }
 		/*virtual*/ char const* getName(void) const { return "EventResponder"; }

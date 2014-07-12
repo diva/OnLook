@@ -184,27 +184,27 @@ void LLPanelScriptLimitsInfo::updateChild(LLUICtrl* child_ctr)
 // Responders
 ///----------------------------------------------------------------------------
 
-void fetchScriptLimitsRegionInfoResponder::result(const LLSD& content)
+void fetchScriptLimitsRegionInfoResponder::httpSuccess(void)
 {
 	//we don't need to test with a fake response here (shouldn't anyway)
 
 #ifdef DUMP_REPLIES_TO_LLINFOS
 
-	LLSDNotationStreamer notation_streamer(content);
+	LLSDNotationStreamer notation_streamer(mContent);
 	std::ostringstream nice_llsd;
 	nice_llsd << notation_streamer;
 
 	OSMessageBox(nice_llsd.str(), "main cap response:", 0);
 
-	llinfos << "main cap response:" << content << llendl;
+	llinfos << "main cap response:" << mContent << llendl;
 
 #endif
 
 	// at this point we have an llsd which should contain ether one or two urls to the services we want.
 	// first we look for the details service:
-	if(content.has("ScriptResourceDetails"))
+	if(mContent.has("ScriptResourceDetails"))
 	{
-		LLHTTPClient::get(content["ScriptResourceDetails"], new fetchScriptLimitsRegionDetailsResponder(mInfo));
+		LLHTTPClient::get(mContent["ScriptResourceDetails"], new fetchScriptLimitsRegionDetailsResponder(mInfo));
 	}
 	else
 	{
@@ -216,18 +216,18 @@ void fetchScriptLimitsRegionInfoResponder::result(const LLSD& content)
 	}
 
 	// then the summary service:
-	if(content.has("ScriptResourceSummary"))
+	if(mContent.has("ScriptResourceSummary"))
 	{
-		LLHTTPClient::get(content["ScriptResourceSummary"], new fetchScriptLimitsRegionSummaryResponder(mInfo));
+		LLHTTPClient::get(mContent["ScriptResourceSummary"], new fetchScriptLimitsRegionSummaryResponder(mInfo));
 	}
 }
 
-void fetchScriptLimitsRegionInfoResponder::error(U32 status, const std::string& reason)
+void fetchScriptLimitsRegionInfoResponder::httpFailure(void)
 {
-	llwarns << "fetchScriptLimitsRegionInfoResponder error [status:" << status << "]: " << reason << llendl;
+	llwarns << "fetchScriptLimitsRegionInfoResponder error [status:" << mStatus << "]: " << mReason << llendl;
 }
 
-void fetchScriptLimitsRegionSummaryResponder::result(const LLSD& content_ref)
+void fetchScriptLimitsRegionSummaryResponder::httpSuccess(void)
 {
 #ifdef USE_FAKE_RESPONSES
 
@@ -265,7 +265,7 @@ void fetchScriptLimitsRegionSummaryResponder::result(const LLSD& content_ref)
 
 #else
 
-	const LLSD& content = content_ref;
+	const LLSD& content = mContent;
 
 #endif
 
@@ -309,12 +309,12 @@ void fetchScriptLimitsRegionSummaryResponder::result(const LLSD& content_ref)
 	}
 }
 
-void fetchScriptLimitsRegionSummaryResponder::error(U32 status, const std::string& reason)
+void fetchScriptLimitsRegionSummaryResponder::httpFailure(void)
 {
-	llwarns << "fetchScriptLimitsRegionSummaryResponder error [status:" << status << "]: " << reason << llendl;
+	llwarns << "fetchScriptLimitsRegionSummaryResponder error [status:" << mStatus << "]: " << mReason << llendl;
 }
 
-void fetchScriptLimitsRegionDetailsResponder::result(const LLSD& content_ref)
+void fetchScriptLimitsRegionDetailsResponder::httpSuccess(void)
 {
 #ifdef USE_FAKE_RESPONSES
 /*
@@ -374,7 +374,7 @@ result (map)
 
 #else
 
-	const LLSD& content = content_ref;
+	const LLSD& content = mContent;
 
 #endif
 
@@ -418,12 +418,12 @@ result (map)
 	}
 }
 
-void fetchScriptLimitsRegionDetailsResponder::error(U32 status, const std::string& reason)
+void fetchScriptLimitsRegionDetailsResponder::httpFailure(void)
 {
-	llwarns << "fetchScriptLimitsRegionDetailsResponder error [status:" << status << "]: " << reason << llendl;
+	llwarns << "fetchScriptLimitsRegionDetailsResponder error [status:" << mStatus << "]: " << mReason << llendl;
 }
 
-void fetchScriptLimitsAttachmentInfoResponder::result(const LLSD& content_ref)
+void fetchScriptLimitsAttachmentInfoResponder::httpSuccess(void)
 {
 
 #ifdef USE_FAKE_RESPONSES
@@ -456,13 +456,13 @@ void fetchScriptLimitsAttachmentInfoResponder::result(const LLSD& content_ref)
 	summary["used"] = used;
 
 	fake_content["summary"] = summary;
-	fake_content["attachments"] = content_ref["attachments"];
+	fake_content["attachments"] = mContent["attachments"];
 
 	const LLSD& content = fake_content;
 
 #else
 
-	const LLSD& content = content_ref;
+	const LLSD& content = mContent;
 
 #endif
 
@@ -514,9 +514,9 @@ void fetchScriptLimitsAttachmentInfoResponder::result(const LLSD& content_ref)
 	}
 }
 
-void fetchScriptLimitsAttachmentInfoResponder::error(U32 status, const std::string& reason)
+void fetchScriptLimitsAttachmentInfoResponder::httpFailure(void)
 {
-	llwarns << "fetchScriptLimitsAttachmentInfoResponder error [status:" << status << "]: " << reason << llendl;
+	llwarns << "fetchScriptLimitsAttachmentInfoResponder error [status:" << mStatus << "]: " << mReason << llendl;
 }
 
 ///----------------------------------------------------------------------------

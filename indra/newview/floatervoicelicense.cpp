@@ -84,20 +84,20 @@ class LLIamHereVoice : public LLHTTPClient::ResponderWithResult
 			mParent = parentIn;
 		};
 		
-		/*virtual*/ void result( const LLSD& content )
+		/*virtual*/ void httpSuccess(void)
 		{
 			if ( mParent )
 				mParent->setSiteIsAlive( true );
 		};
 
-		/*virtual*/ void error( U32 status, const std::string& reason )
+		/*virtual*/ void httpFailure(void)
 		{
 			if ( mParent )
 			{
 				// *HACK: For purposes of this alive check, 302 Found
 				// (aka Moved Temporarily) is considered alive.  The web site
 				// redirects this link to a "cache busting" temporary URL. JC
-				bool alive = (status == HTTP_FOUND);
+				bool alive = (mStatus == HTTP_FOUND);
 				mParent->setSiteIsAlive( alive );
 			}
 		};

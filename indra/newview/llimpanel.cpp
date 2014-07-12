@@ -172,10 +172,10 @@ public:
 		mAgents = agents_to_invite;
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		//try an "old school" way.
-		if ( statusNum == 400 )
+		if ( mStatus == 400 )
 		{
 			start_deprecated_conference_chat(
 				mTempSessionID,
@@ -635,10 +635,10 @@ public:
 		mSessionID = session_id;
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llwarns << "Error inviting all agents to session [status:"
-				<< statusNum << "]: " << reason << llendl;
+				<< mStatus << "]: " << mReason << llendl;
 		//throw something back to the viewer here?
 	}
 

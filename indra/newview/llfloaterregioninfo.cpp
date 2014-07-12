@@ -2341,7 +2341,7 @@ public:
 	}
 	
 	// if we get a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		LL_INFOS("Windlight") << "Successfully committed estate info" << llendl;
 
@@ -2352,10 +2352,10 @@ public:
 	}
 	
 	// if we get an error response
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llinfos << "LLEstateChangeInfoResponder::error [status:"
-			<< status << "]: " << reason << llendl;
+			<< mStatus << "]: " << mReason << llendl;
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }

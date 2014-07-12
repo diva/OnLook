@@ -1942,22 +1942,22 @@ class GroupMemberDataResponder : public LLHTTPClient::ResponderWithResult
 public:
 	GroupMemberDataResponder() {}
 	virtual ~GroupMemberDataResponder() {}
-	/*virtual*/ void result(const LLSD& pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupMemberDataResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "GroupMemberDataResponder"; }
 private:
 	LLSD mMemberData;
 };
 
-void GroupMemberDataResponder::error(U32 pStatus, const std::string& pReason)
+void GroupMemberDataResponder::httpFailure(void)
 {
 	LL_WARNS("GrpMgr") << "Error receiving group member data." << LL_ENDL;
 }
 
-void GroupMemberDataResponder::result(const LLSD& content)
+void GroupMemberDataResponder::httpSuccess(void)
 {
-	LLGroupMgr::processCapGroupMembersRequest(content);
+	LLGroupMgr::processCapGroupMembersRequest(mContent);
 }
 
 

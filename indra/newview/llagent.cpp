@@ -2587,8 +2587,8 @@ public:
 	LLMaturityPreferencesResponder(LLAgent *pAgent, U8 pPreferredMaturity, U8 pPreviousMaturity);
 	virtual ~LLMaturityPreferencesResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return maturityPreferences_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMaturityPreferencesResponder"; }
@@ -2612,25 +2612,25 @@ LLMaturityPreferencesResponder::~LLMaturityPreferencesResponder()
 {
 }
 
-void LLMaturityPreferencesResponder::result(const LLSD &pContent)
+void LLMaturityPreferencesResponder::httpSuccess(void)
 {
-	U8 actualMaturity = parseMaturityFromServerResponse(pContent);
+	U8 actualMaturity = parseMaturityFromServerResponse(mContent);
 
 	if (actualMaturity != mPreferredMaturity)
 	{
 		llwarns << "while attempting to change maturity preference from '" << LLViewerRegion::accessToString(mPreviousMaturity)
 			<< "' to '" << LLViewerRegion::accessToString(mPreferredMaturity) << "', the server responded with '"
 			<< LLViewerRegion::accessToString(actualMaturity) << "' [value:" << static_cast<U32>(actualMaturity) << ", llsd:"
-			<< pContent << "]" << llendl;
+			<< mContent << "]" << llendl;
 	}
 	mAgent->handlePreferredMaturityResult(actualMaturity);
 }
 
-void LLMaturityPreferencesResponder::error(U32 pStatus, const std::string& pReason)
+void LLMaturityPreferencesResponder::httpFailure(void)
 {
 	llwarns << "while attempting to change maturity preference from '" << LLViewerRegion::accessToString(mPreviousMaturity)
 		<< "' to '" << LLViewerRegion::accessToString(mPreferredMaturity) << "', we got an error because '"
-		<< pReason << "' [status:" << pStatus << "]" << llendl;
+		<< mReason << "' [status:" << mStatus << "]" << llendl;
 	mAgent->handlePreferredMaturityError();
 }
 
@@ -2820,7 +2820,7 @@ void LLAgent::sendMaturityPreferenceToServer(U8 pPreferredMaturity)
 		// If we don't have a region, report it as an error
 		if (getRegion() == NULL)
 		{
-			responderPtr->error(0U, "region is not defined");
+			responderPtr->failureResult(0U, "region is not defined", LLSD());
 		}
 		else
 		{
@@ -2830,7 +2830,7 @@ void LLAgent::sendMaturityPreferenceToServer(U8 pPreferredMaturity)
 			// If the capability is not defined, report it as an error
 			if (url.empty())
 			{
-				responderPtr->error(0U, "capability 'UpdateAgentInformation' is not defined for region");
+				responderPtr->failureResult(0U, "capability 'UpdateAgentInformation' is not defined for region", LLSD());
 			}
 			else
 			{

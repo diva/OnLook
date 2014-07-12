@@ -69,20 +69,16 @@ public:
 	{
 	}
 
-	/*virtual*/ void completedRaw(
-		U32 status,
-		const std::string& reason,
-		const LLChannelDescriptors& channels,
-		const buffer_ptr_t& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		LLBufferStream istr(channels, buffer.get());
 		std::stringstream strstrm;
 		strstrm << istr.rdbuf();
 		const std::string body = strstrm.str();
 
-		if (status != 200)
+		if (mStatus != HTTP_OK)
 		{
-			llwarns << "Failed to get upload config (" << status << ")" << llendl;
+			llwarns << "Failed to get upload config (" << mStatus << ")" << llendl;
 			LLWebProfile::reportImageUploadStatus(false);
 			return;
 		}
@@ -133,15 +129,11 @@ class LLWebProfileResponders::PostImageRedirectResponder : public LLHTTPClient::
 	LOG_CLASS(LLWebProfileResponders::PostImageRedirectResponder);
 
 public:
-	/*virtual*/ void completedRaw(
-		U32 status,
-		const std::string& reason,
-		const LLChannelDescriptors& channels,
-		const buffer_ptr_t& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
-		if (status != 200)
+		if (mStatus != HTTP_OK)
 		{
-			llwarns << "Failed to upload image: " << status << " " << reason << llendl;
+			llwarns << "Failed to upload image: " << mStatus << " " << mReason << llendl;
 			LLWebProfile::reportImageUploadStatus(false);
 			return;
 		}
@@ -173,35 +165,33 @@ class LLWebProfileResponders::PostImageResponder : public LLHTTPClient::Responde
 public:
 	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& received_headers)
+	/*virtual*/ void completedHeaders(void)
 	{
 		// Server abuses 303 status; Curl can't handle it because it tries to resent
 		// the just uploaded data, which fails
 		// (CURLE_SEND_FAIL_REWIND: Send failed since rewinding of the data stream failed).
 		// Handle it manually.
-		if (status == HTTP_SEE_OTHER)
+		if (mStatus == HTTP_SEE_OTHER)
 		{
 			AIHTTPHeaders headers;
 			headers.addHeader("Accept", "*/*");
 			headers.addHeader("Cookie", LLWebProfile::getAuthCookie());
 			headers.addHeader("User-Agent", LLViewerMedia::getCurrentUserAgent());
 			std::string redir_url;
-			received_headers.getFirstValue("location", redir_url);
+			mReceivedHeaders.getFirstValue("location", redir_url);
 			LL_DEBUGS("Snapshots") << "Got redirection URL: " << redir_url << LL_ENDL;
 			LLHTTPClient::get(redir_url, new LLWebProfileResponders::PostImageRedirectResponder, headers);
 		}
 		else
 		{
-			llwarns << "Unexpected POST status: " << status << " " << reason << llendl;
-			LL_DEBUGS("Snapshots") << "received_headers: [" << received_headers << "]" << LL_ENDL;
+			llwarns << "Unexpected POST status: " << mStatus << " " << mReason << llendl;
+			LL_DEBUGS("Snapshots") << "received_headers: [" << mReceivedHeaders << "]" << LL_ENDL;
 			LLWebProfile::reportImageUploadStatus(false);
 		}
 	}
 
 	// Override just to suppress warnings.
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const buffer_ptr_t& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 	}
 

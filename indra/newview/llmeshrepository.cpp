@@ -240,9 +240,8 @@ public:
 		}
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer);
+	virtual void completedRaw(LLChannelDescriptors const& channels,
+							  LLIOPipe::buffer_ptr_t const& buffer);
 
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshHeaderResponder_timeout; }
@@ -279,9 +278,8 @@ public:
 		}
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer);
+	virtual void completedRaw(LLChannelDescriptors const& channels,
+							  LLIOPipe::buffer_ptr_t const& buffer);
 
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshLODResponder_timeout; }
@@ -314,9 +312,8 @@ public:
 		}
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer);
+	virtual void completedRaw(LLChannelDescriptors const& channels,
+							  LLIOPipe::buffer_ptr_t const& buffer);
 
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshSkinInfoResponder_timeout; }
@@ -349,9 +346,8 @@ public:
 		}
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer);
+	virtual void completedRaw(LLChannelDescriptors const& channels,
+							  LLIOPipe::buffer_ptr_t const& buffer);
 
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshDecompositionResponder_timeout; }
@@ -384,9 +380,8 @@ public:
 		}
 	}
 
-	virtual void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer);
+	virtual void completedRaw(LLChannelDescriptors const& channels,
+							  LLIOPipe::buffer_ptr_t const& buffer);
 
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_mesh; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return meshPhysicsShapeResponder_timeout; }
@@ -459,11 +454,9 @@ public:
 	{
 	}
 
-	virtual void completed(U32 status,
-							   const std::string& reason,
-							   const LLSD& content)
+	virtual void httpCompleted(void)
 	{
-		LLSD cc = content;
+		LLSD cc = mContent;
 		if (gSavedSettings.getS32("MeshUploadFakeErrors")&1)
 		{
 			cc = llsd_from_file("fake_upload_error.xml");
@@ -473,7 +466,7 @@ public:
 
 		LLWholeModelFeeObserver* observer = mObserverHandle.get();
 
-		if (isGoodStatus(status) &&
+		if (isGoodStatus(mStatus) &&
 			cc["state"].asString() == "upload")
 		{
 			mWholeModelUploadURL = cc["uploader"].asString();
@@ -487,12 +480,12 @@ public:
 		else
 		{
 			llwarns << "fee request failed" << llendl;
-			log_upload_error(status,cc,"fee",mModelData["name"]);
+			log_upload_error(mStatus,cc,"fee",mModelData["name"]);
 			mWholeModelUploadURL = "";
 
 			if (observer)
 			{
-				observer->setModelPhysicsFeeErrorStatus(status, reason);
+				observer->setModelPhysicsFeeErrorStatus(mStatus, mReason);
 			}
 		}
 	}
@@ -517,11 +510,9 @@ public:
 	{
 	}
 
-	virtual void completed(U32 status,
-							   const std::string& reason,
-							   const LLSD& content)
+	virtual void httpCompleted(void)
 	{
-		LLSD cc = content;
+		LLSD cc = mContent;
 		if (gSavedSettings.getS32("MeshUploadFakeErrors")&2)
 		{
 			cc = llsd_from_file("fake_upload_error.xml");
@@ -533,7 +524,7 @@ public:
 
 		// requested "mesh" asset type isn't actually the type
 		// of the resultant object, fix it up here.
-		if (isGoodStatus(status) &&
+		if (isGoodStatus(mStatus) &&
 			cc["state"].asString() == "complete")
 		{
 			mModelData["asset_type"] = "object";
@@ -548,7 +539,7 @@ public:
 		{
 			llwarns << "upload failed" << llendl;
 			std::string model_name = mModelData["name"].asString();
-			log_upload_error(status,cc,"upload",model_name);
+			log_upload_error(mStatus,cc,"upload",model_name);
 
 			if (observer)
 			{
@@ -1887,9 +1878,8 @@ void LLMeshRepository::cacheOutgoingMesh(LLMeshUploadData& data, LLSD& header)
 
 }
 
-void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+void LLMeshLODResponder::completedRaw(LLChannelDescriptors const& channels,
+							          LLIOPipe::buffer_ptr_t const& buffer)
 {
 	mProcessed = true;
 	
@@ -1901,14 +1891,14 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status >= 400)
+	if (mStatus < 200 || mStatus >= 400)
 	{
-		llwarns << status << ": " << reason << llendl;
+		llwarns << mStatus << ": " << mReason << llendl;
 	}
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
+		if (is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			llwarns << "Timeout or service unavailable, retrying." << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
@@ -1916,8 +1906,8 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 		}
 		else
 		{
-			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
-			llwarns << "Unhandled status " << status << llendl;
+			llassert(is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llwarns << "Unhandled status " << mStatus << llendl;
 		}
 		return;
 	}
@@ -1951,9 +1941,8 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 	delete [] data;
 }
 
-void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+void LLMeshSkinInfoResponder::completedRaw(LLChannelDescriptors const& channels,
+							               LLIOPipe::buffer_ptr_t const& buffer)
 {
 	mProcessed = true;
 
@@ -1965,14 +1954,14 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status >= 400)
+	if (mStatus < 200 || mStatus >= 400)
 	{
-		llwarns << status << ": " << reason << llendl;
+		llwarns << mStatus << ": " << mReason << llendl;
 	}
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
+		if (is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			llwarns << "Timeout or service unavailable, retrying loadMeshSkinInfo() for " << mMeshID << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
@@ -1980,8 +1969,8 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 		}
 		else
 		{
-			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
-			llwarns << "Unhandled status " << status << llendl;
+			llassert(is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llwarns << "Unhandled status " << mStatus << llendl;
 		}
 		return;
 	}
@@ -2015,9 +2004,8 @@ void LLMeshSkinInfoResponder::completedRaw(U32 status, const std::string& reason
 	delete [] data;
 }
 
-void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+void LLMeshDecompositionResponder::completedRaw(LLChannelDescriptors const& channels,
+							                    LLIOPipe::buffer_ptr_t const& buffer)
 {
 	mProcessed = true;
 
@@ -2028,14 +2016,14 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status >= 400)
+	if (mStatus < 200 || mStatus >= 400)
 	{
-		llwarns << status << ": " << reason << llendl;
+		llwarns << mStatus << ": " << mReason << llendl;
 	}
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
+		if (is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			llwarns << "Timeout or service unavailable, retrying loadMeshDecomposition() for " << mMeshID << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
@@ -2043,8 +2031,8 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 		}
 		else
 		{
-			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
-			llwarns << "Unhandled status " << status << llendl;
+			llassert(is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llwarns << "Unhandled status " << mStatus << llendl;
 		}
 		return;
 	}
@@ -2078,9 +2066,8 @@ void LLMeshDecompositionResponder::completedRaw(U32 status, const std::string& r
 	delete [] data;
 }
 
-void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+void LLMeshPhysicsShapeResponder::completedRaw(LLChannelDescriptors const& channels,
+							                   LLIOPipe::buffer_ptr_t const& buffer)
 {
 	mProcessed = true;
 
@@ -2092,14 +2079,14 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	if (status < 200 || status >= 400)
+	if (mStatus < 200 || mStatus >= 400)
 	{
-		llwarns << status << ": " << reason << llendl;
+		llwarns << mStatus << ": " << mReason << llendl;
 	}
 
 	if (data_size < (S32)mRequestedBytes)
 	{
-		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
+		if (is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
 			llwarns << "Timeout or service unavailable, retrying loadMeshPhysicsShape() for " << mMeshID << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
@@ -2107,8 +2094,8 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 		}
 		else
 		{
-			llassert(is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
-			llwarns << "Unhandled status " << status << llendl;
+			llassert(is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE); //intentionally trigger a breakpoint
+			llwarns << "Unhandled status " << mStatus << llendl;
 		}
 		return;
 	}
@@ -2142,9 +2129,8 @@ void LLMeshPhysicsShapeResponder::completedRaw(U32 status, const std::string& re
 	delete [] data;
 }
 
-void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const LLIOPipe::buffer_ptr_t& buffer)
+void LLMeshHeaderResponder::completedRaw(LLChannelDescriptors const& channels,
+										 LLIOPipe::buffer_ptr_t const& buffer)
 {
 	mProcessed = true;
 
@@ -2154,11 +2140,11 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 		return;
 	}
 
-	if (status < 200 || status >= 400)
+	if (mStatus < 200 || mStatus >= 400)
 	{
 		//llwarns
 		//	<< "Header responder failed with status: "
-		//	<< status << ": " << reason << llendl;
+		//	<< mStatus << ": " << mReason << llendl;
 
 		// 503 (service unavailable) or HTTP_INTERNAL_ERROR_*'s.
 		// can be due to server load and can be retried
@@ -2167,9 +2153,9 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 		// and (somewhat more optional than the others) retries
 		// again after some set period of time
 
-		llassert(status == HTTP_NOT_FOUND || status == HTTP_SERVICE_UNAVAILABLE || status == HTTP_REQUEST_TIME_OUT || is_internal_http_error_that_warrants_a_retry(status));
+		llassert(mStatus == HTTP_NOT_FOUND || mStatus == HTTP_SERVICE_UNAVAILABLE || mStatus == HTTP_REQUEST_TIME_OUT || is_internal_http_error_that_warrants_a_retry(mStatus));
 
-		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
+		if (is_internal_http_error_that_warrants_a_retry(mStatus) || mStatus == HTTP_SERVICE_UNAVAILABLE)
 		{	//retry
 			llwarns << "Timeout or service unavailable, retrying." << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
@@ -2181,7 +2167,7 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 		}
 		else
 		{
-			llwarns << "Unhandled status: " << status << llendl;
+			llwarns << "Unhandled status: " << mStatus << llendl;
 		}
 	}
 
@@ -2205,7 +2191,7 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 	{
 		llwarns
 			<< "Unable to parse mesh header: "
-			<< status << ": " << reason << llendl;
+			<< mStatus << ": " << mReason << llendl;
 	}
 	else if (data && data_size > 0)
 	{

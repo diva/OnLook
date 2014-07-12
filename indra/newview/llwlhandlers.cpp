@@ -101,7 +101,7 @@ LLEnvironmentRequestResponder::LLEnvironmentRequestResponder()
 {
 	mID = ++sCount;
 }
-/*virtual*/ void LLEnvironmentRequestResponder::result(const LLSD& unvalidated_content)
+/*virtual*/ void LLEnvironmentRequestResponder::httpSuccess(void)
 {
 	LL_INFOS("WindlightCaps") << "Received region windlight settings" << LL_ENDL;
 
@@ -113,22 +113,22 @@ LLEnvironmentRequestResponder::LLEnvironmentRequestResponder()
 	{
 		LL_WARNS("WindlightCaps") << "Ignoring responder. Current region is invalid." << LL_ENDL;
 	}
-	else if (unvalidated_content[0]["regionID"].asUUID().isNull())
+	else if (mContent[0]["regionID"].asUUID().isNull())
 	{
 		LL_WARNS("WindlightCaps") << "Ignoring responder. Response from invalid region." << LL_ENDL;
 	}
-	else if (unvalidated_content[0]["regionID"].asUUID() != gAgent.getRegion()->getRegionID())
+	else if (mContent[0]["regionID"].asUUID() != gAgent.getRegion()->getRegionID())
 	{
 		LL_WARNS("WindlightCaps") << "Not in the region from where this data was received (wanting "
-			<< gAgent.getRegion()->getRegionID() << " but got " << unvalidated_content[0]["regionID"].asUUID()
+			<< gAgent.getRegion()->getRegionID() << " but got " << mContent[0]["regionID"].asUUID()
 			<< ") - ignoring..." << LL_ENDL;
 	}
 	else
 	{
-		LLEnvManagerNew::getInstance()->onRegionSettingsResponse(unvalidated_content);
+		LLEnvManagerNew::getInstance()->onRegionSettingsResponse(mContent);
 	}
 }
-/*virtual*/ void LLEnvironmentRequestResponder::error(U32 status, const std::string& reason)
+/*virtual*/ void LLEnvironmentRequestResponder::httpFailure(void)
 {
 	LL_INFOS("WindlightCaps") << "Got an error, not using region windlight..." << LL_ENDL;
 	LLEnvManagerNew::getInstance()->onRegionSettingsResponse(LLSD());
@@ -174,33 +174,33 @@ bool LLEnvironmentApply::initiateRequest(const LLSD& content)
 /****
  * LLEnvironmentApplyResponder
  ****/
-/*virtual*/ void LLEnvironmentApplyResponder::result(const LLSD& content)
+/*virtual*/ void LLEnvironmentApplyResponder::httpSuccess(void)
 {
-	if (content["regionID"].asUUID() != gAgent.getRegion()->getRegionID())
+	if (mContent["regionID"].asUUID() != gAgent.getRegion()->getRegionID())
 	{
 		LL_WARNS("WindlightCaps") << "No longer in the region where data was sent (currently "
-			<< gAgent.getRegion()->getRegionID() << ", reply is from " << content["regionID"].asUUID()
+			<< gAgent.getRegion()->getRegionID() << ", reply is from " << mContent["regionID"].asUUID()
 			<< "); ignoring..." << LL_ENDL;
 		return;
 	}
-	else if (content["success"].asBoolean())
+	else if (mContent["success"].asBoolean())
 	{
-		LL_DEBUGS("WindlightCaps") << "Success in applying windlight settings to region " << content["regionID"].asUUID() << LL_ENDL;
+		LL_DEBUGS("WindlightCaps") << "Success in applying windlight settings to region " << mContent["regionID"].asUUID() << LL_ENDL;
 		LLEnvManagerNew::instance().onRegionSettingsApplyResponse(true);
 	}
 	else
 	{
-		LL_WARNS("WindlightCaps") << "Region couldn't apply windlight settings!  Reason from sim: " << content["fail_reason"].asString() << LL_ENDL;
+		LL_WARNS("WindlightCaps") << "Region couldn't apply windlight settings!  Reason from sim: " << mContent["fail_reason"].asString() << LL_ENDL;
 		LLSD args(LLSD::emptyMap());
-		args["FAIL_REASON"] = content["fail_reason"].asString();
+		args["FAIL_REASON"] = mContent["fail_reason"].asString();
 		LLNotificationsUtil::add("WLRegionApplyFail", args);
 		LLEnvManagerNew::instance().onRegionSettingsApplyResponse(false);
 	}
 }
-/*virtual*/ void LLEnvironmentApplyResponder::error(U32 status, const std::string& reason)
+/*virtual*/ void LLEnvironmentApplyResponder::httpFailure(void)
 {
 	std::stringstream msg;
-	msg << reason << " (Code " << status << ")";
+	msg << mReason << " (Code " << mStatus << ")";
 
 	LL_WARNS("WindlightCaps") << "Couldn't apply windlight settings to region!  Reason: " << msg.str() << LL_ENDL;
 

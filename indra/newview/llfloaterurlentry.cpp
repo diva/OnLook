@@ -65,21 +65,21 @@ public:
 
 	  LLHandle<LLFloater> mParent;
 
-	  /*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	  /*virtual*/ void completedHeaders(void)
 	  {
-		  if (200 <= status && status < 300)
+		  if (isGoodStatus(mStatus))
 		  {
 			  std::string media_type;
-			  if (headers.getFirstValue("content-type", media_type))
+			  if (mReceivedHeaders.getFirstValue("content-type", media_type))
 			  {
 				  std::string::size_type idx1 = media_type.find_first_of(";");
 				  std::string mime_type = media_type.substr(0, idx1);
-				  completeAny(status, mime_type);
+				  completeAny(mStatus, mime_type);
 				  return;
 			  }
-			  llwarns << "LLMediaTypeResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+			  llwarns << "LLMediaTypeResponder::completedHeaders: OK HTTP status (" << mStatus << ") but no Content-Type! Received headers: " << mReceivedHeaders << llendl;
 		  }
-		  completeAny(status, "none/none");
+		  completeAny(mStatus, "none/none");
 	  }
 
 	  void completeAny(U32 status, const std::string& mime_type)

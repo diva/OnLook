@@ -419,24 +419,24 @@ public:
 
 	LLAvatarPickerResponder(const LLUUID& id) : mQueryID(id) { }
 
-	/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
+	/*virtual*/ void httpCompleted(void)
 	{
 		//std::ostringstream ss;
-		//LLSDSerialize::toPrettyXML(content, ss);
+		//LLSDSerialize::toPrettyXML(mContent, ss);
 		//llinfos << ss.str() << llendl;
 
 		// in case of invalid characters, the avatar picker returns a 400
 		// just set it to process so it displays 'not found'
-		if (isGoodStatus(status) || status == 400)
+		if (isGoodStatus(mStatus) || mStatus == 400)
 		{
 			if (LLFloaterAvatarPicker::instanceExists())
 			{
-				LLFloaterAvatarPicker::getInstance()->processResponse(mQueryID, content);
+				LLFloaterAvatarPicker::getInstance()->processResponse(mQueryID, mContent);
 			}
 		}
 		else
 		{
-			llwarns << "avatar picker failed " << status << " reason " << reason << llendl;
+			llwarns << "avatar picker failed " << mStatus << " reason " << mReason << llendl;
 			
 		}
 	}
