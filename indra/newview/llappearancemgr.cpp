@@ -4465,7 +4465,9 @@ public:
 																		  LLFolderType::FT_CLOTHING,
 																		  "Quick Appearance");
 		LLSD::UUID folder_uuid = query_map["folder_id"].asUUID();
-		if ( gInventory.getCategory( folder_uuid ) != NULL )
+		if ( gInventory.getCategory( folder_uuid ) != NULL &&
+			 folder_uuid != gInventory.getRootFolderID() &&
+			 folder_uuid != gInventory.getLibraryRootFolderID() )
 		{
 			LLAppearanceMgr::getInstance()->wearInventoryCategory(category, true, false);
 
