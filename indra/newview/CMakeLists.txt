@@ -1292,6 +1292,7 @@ if (WINDOWS)
         shell32
         user32
         Vfw32
+        Wbemuuid
         winspool
         )
 

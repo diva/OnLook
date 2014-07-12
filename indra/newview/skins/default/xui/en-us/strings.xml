@@ -316,7 +316,10 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 
 	<!-- build floater -->
 	<string name="multiple_textures">Multiple</string>
+
 	<string name="use_texture">Use texture</string>
+    <string name="manip_hint1">Move mouse cursor over ruler</string>
+    <string name="manip_hint2">to snap to grid</string>
 
 	<!-- world map -->
 	<string name="texture_loading">Loading...</string>

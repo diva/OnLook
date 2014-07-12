@@ -941,6 +941,8 @@ void LLAgentCamera::cameraZoomIn(const F32 fraction)
 	F32 max_distance = /*llmin(mDrawDistance*/ INT_MAX - DIST_FUDGE//, 
 							 /*LLWorld::getInstance()->getRegionWidthInMeters() - DIST_FUDGE )*/;
 
+	max_distance = llmin(max_distance, current_distance * 4.f); //Scaled max relative to current distance.  MAINT-3154
+
 	if (new_distance > max_distance)
 	{
 		// <edit> screw cam constraints

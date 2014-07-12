@@ -160,7 +160,6 @@ public:
 	static void onClickBuyPass(void* deselect_when_done);
 	static BOOL enableBuyPass(void*);
 	static void onCommitAny(LLUICtrl* ctrl, void *userdata);
-	static void onCommitGroupCheck(LLUICtrl* ctrl, void *userdata);
 	static void finalizeCommit(void * userdata);
 	static void onForSaleChange(LLUICtrl *ctrl, void * userdata);
 	static void finalizeSetSellChange(void * userdata);
@@ -384,6 +383,7 @@ public:
 
 	static void onCommitPublicAccess(LLUICtrl* ctrl, void *userdata);
 	static void onCommitAny(LLUICtrl* ctrl, void *userdata);
+	static void onCommitGroupCheck(LLUICtrl* ctrl, void *userdata);
 	static void onClickRemoveAccess(void*);
 	static void onClickRemoveBanned(void*);
 

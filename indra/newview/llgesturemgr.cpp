@@ -1400,7 +1400,7 @@ BOOL LLGestureMgr::matchPrefix(const std::string& in_str, std::string* out_str)
 				}
 				std::string cur_rest_of_match = trigger.substr(in_str.size());
 				buf = "";
-				S32 i=0;
+				U32 i=0;
 
 				while (i<rest_of_match.length() && i<cur_rest_of_match.length())
 				{

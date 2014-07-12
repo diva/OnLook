@@ -51,6 +51,7 @@
 #include "hippogridmanager.h"
 
 // library includes
+#include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llsd.h"
 
