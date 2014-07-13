@@ -102,6 +102,17 @@
 		  <key>Value</key>
 		  <integer>1</integer>
 		</map>
+    <key>AlchemyConnectToNeighbors</key>
+    <map>
+      <key>Comment</key>
+      <string>If false, disconnect from neighboring regions and all further neighbors on teleport</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>AlchemyLookAtLines</key>
     <map>
       <key>Comment</key>
