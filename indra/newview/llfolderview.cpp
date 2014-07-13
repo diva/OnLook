@@ -1571,7 +1571,7 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 		{
 			LLFolderViewItem* last_selected = getCurSelectedItem();
 			bool shift_select = mask & MASK_SHIFT;
-			LLFolderViewItem* next = NULL;
+			LLFolderViewItem* next = last_selected->getNextOpenNode();
 
 			if (!mKeyboardSelection || (!shift_select && (!next || next == last_selected)))
 			{
