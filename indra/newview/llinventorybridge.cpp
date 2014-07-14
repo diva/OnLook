@@ -2948,12 +2948,7 @@ LLFolderType::EType LLFolderBridge::getPreferredType() const
 // Icons for folders are based on the preferred type
 LLUIImagePtr LLFolderBridge::getIcon() const
 {
-	LLFolderType::EType preferred_type = LLFolderType::FT_NONE;
-	LLViewerInventoryCategory* cat = getCategory();
-	if(cat)
-	{
-		preferred_type = cat->getPreferredType();
-	}
+	LLFolderType::EType preferred_type(getPreferredType()); // Singu Note: Duplicate code
 	return getIcon(preferred_type);
 }
 

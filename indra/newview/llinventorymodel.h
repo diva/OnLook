@@ -523,7 +523,6 @@ public:
 	// File I/O
 	//--------------------------------------------------------------------
 protected:
-	friend class LLLocalInventory;
 	static bool loadFromFile(const std::string& filename,
 							 cat_array_t& categories,
 							 item_array_t& items,

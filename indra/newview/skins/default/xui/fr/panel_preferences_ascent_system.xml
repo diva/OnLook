@@ -69,6 +69,13 @@
       <check_box label="D&#xE9;sactiver le &#x22;Pointer vers&#x22; &#xE0; l&#x22;&#xE9;dition d'un objet" tool_tip="Masque le pointeur sur l'objet  &#xE9;dit&#xE9;" name="disable_point_at_and_beams_check"/>
       <check_box label="Ne pas &#x22;Regarder vers&#x22;" tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi-m&#xEA;me" name="private_look_at_check"/>
       <check_box label="Voir quand les autres &#x22;Regardent vers&#x22;" tool_tip="Montre o&#xF9; les autres regardent." name="show_look_at_check"/>
+      <combo_box left_delta="260" name="lookat_namesystem_combobox" tool_tip="Style for displaying names on LookAt beacons">
+        <combo_item name="No Names">Aucun de Name</combo_item>
+        <combo_item name="Old Names">Anciens Names</combo_item>
+        <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+        <combo_item name="Display Names only">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
+      </combo_box>
       <check_box label="Détache automatiquement ce rodjudju de LSL Bridge" tool_tip="détache le LSL Bridge de Phoenix et/ou Firestorm viewer." name="detach_bridge"/>
       <check_box label="Prendre discr&#xE8;tement un photo, sur votre disque dur" tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d'appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." name="quiet_snapshots_check"/>
       <check_box label="En vous levant, annule les permissions que l'objet a sur votre avatar" tool_tip="Evite que l'objet garde le contr&#xF4;le de votre avatar, comme par exemple les animations." name="revoke_perms_on_stand_up_check"/>
