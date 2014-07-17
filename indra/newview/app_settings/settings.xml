@@ -345,17 +345,6 @@
       </array>
     </map>
 
-  <key>MediaEnableFilter</key>
-  <map>
-    <key>Comment</key>
-    <string>Enable media domain filtering</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>Boolean</string>
-    <key>Value</key>
-    <integer>1</integer>
-  </map>
   <key>MediaFilterRect</key>
   <map>
     <key>Comment</key>
@@ -18571,6 +18560,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>MediaFilterEnable</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable media domain filtering (0 = Off, 1 = Blacklist only, 2 = Prompt)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>2</integer>
     </map>
   </map>
 </llsd>

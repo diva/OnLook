@@ -74,6 +74,7 @@
 #include "llfloaterland.h"
 #include "llfloaterlandholdings.h"
 #include "llfloatermap.h"
+#include "llfloatermediafilter.h"
 #include "llfloatermemleak.h"
 #include "llfloatermessagelog.h"
 #include "llfloatermute.h"
@@ -112,7 +113,6 @@
 #include "rlvfloaters.h"
 // [/RLVa:LF]
 #include "shfloatermediaticker.h"
-#include "slfloatermediafilter.h"
 
 void handle_chat()
 {
@@ -231,7 +231,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterInspect>				("inspect");
 		registerFloater<LLFloaterJoystick>				("joystick");
 		registerFloater<LLFloaterLagMeter>				("lag meter");
-		registerFloater<SLFloaterMediaFilter>			("media filter");
+		registerFloater<LLFloaterMediaFilter>			("media filter");
 		registerFloater<LLFloaterMap>					("mini map");
 		registerFloater<LLFloaterMove>					("movement controls");
 		registerFloater<LLFloaterMute>					("mute list");

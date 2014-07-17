@@ -140,6 +140,7 @@
 #include "llkeyboard.h"
 #include "llloginhandler.h"			// gLoginHandler, SLURL support
 #include "llpanellogin.h"
+#include "llmediafilter.h"
 #include "llmutelist.h"
 #include "llnotify.h"
 #include "llpanelavatar.h"
@@ -1723,6 +1724,7 @@ bool idle_startup()
 	if (STATE_MULTIMEDIA_INIT == LLStartUp::getStartupState())
 	{
 		LLStartUp::multimediaInit();
+		LLMediaFilter::getInstance()->init();
 		LLStartUp::setStartupState( STATE_FONT_INIT );
 		display_startup();
 		return FALSE;
@@ -2633,7 +2635,6 @@ bool idle_startup()
 	{
 		set_startup_status(1.0, "", "");
 		display_startup();
-		LLViewerParcelMedia::loadDomainFilterList();
 
 		// Let the map know about the inventory.
 		LLFloaterWorldMap* floater_world_map = gFloaterWorldMap;

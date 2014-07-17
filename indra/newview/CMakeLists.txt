@@ -232,6 +232,7 @@ set(viewer_SOURCE_FILES
     llfloaterlandholdings.cpp
     llfloaterlandmark.cpp
     llfloatermap.cpp
+    llfloatermediafilter.cpp
     llfloatermediasettings.cpp
     llfloatermemleak.cpp
     llfloatermessagelog.cpp
@@ -334,6 +335,7 @@ set(viewer_SOURCE_FILES
     llmaterialmgr.cpp
     llmediactrl.cpp
     llmediadataclient.cpp
+    llmediafilter.cpp
     llmediaremotectrl.cpp
     llmenucommands.cpp
     llmenuoptionpathfindingrebakenavmesh.cpp
@@ -594,7 +596,6 @@ set(viewer_SOURCE_FILES
     sgversion.cpp
     shcommandhandler.cpp
     shfloatermediaticker.cpp
-    slfloatermediafilter.cpp
     wlfPanel_AdvSettings.cpp
     )
 
@@ -758,6 +759,7 @@ set(viewer_HEADER_FILES
     llfloaterlandholdings.h
     llfloaterlandmark.h
     llfloatermap.h
+    llfloatermediafilter.h
     llfloatermediasettings.h
     llfloatermemleak.h
     llfloatermessagelog.h
@@ -860,6 +862,7 @@ set(viewer_HEADER_FILES
     llmaterialmgr.h
     llmediactrl.h
     llmediadataclient.h
+    llmediafilter.h
     llmediaremotectrl.h
     llmenucommands.h
     llmenuoptionpathfindingrebakenavmesh.h
@@ -1130,7 +1133,6 @@ set(viewer_HEADER_FILES
     sgversion.h
     shcommandhandler.h
     shfloatermediaticker.h
-    slfloatermediafilter.h
     wlfPanel_AdvSettings.h
     VertexCache.h
     VorbisFramework.h
