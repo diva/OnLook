@@ -148,11 +148,7 @@ void LLMediaFilter::filterAudioUrl(const std::string& url)
 
 bool LLMediaFilter::filter(const std::string& url, EMediaList list)
 {
-	string_list_t p_list;
-	if (list == WHITELIST)
-		p_list = mWhiteList;
-	else
-		p_list = mBlackList;
+	const string_list_t p_list = (list == WHITELIST) ? mWhiteList : mBlackList;
 	string_list_t::const_iterator find_itr = std::find(p_list.begin(), p_list.end(), url);
 	return (find_itr != p_list.end());
 }
