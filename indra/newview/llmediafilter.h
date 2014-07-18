@@ -46,6 +46,7 @@ public:
 		return mMediaListUpdate.connect(cb);
 	};
 	
+	LLMediaFilter();
 	void filterMediaUrl(LLParcel* parcel);
 	void filterAudioUrl(const std::string& url);
 	//void filterSharedMediaUrl
@@ -66,7 +67,6 @@ public:
 	void setCurrentAudioURL(const std::string url ) { mCurrentAudioURL = url; };
 	void clearCurrentAudioURL() { mCurrentAudioURL.clear(); };
 	bool filter(const std::string& url, EMediaList list);
-	void init();
 	
 private:
 	void loadMediaFilterFromDisk();

@@ -1724,7 +1724,7 @@ bool idle_startup()
 	if (STATE_MULTIMEDIA_INIT == LLStartUp::getStartupState())
 	{
 		LLStartUp::multimediaInit();
-		LLMediaFilter::getInstance()->init();
+		LLMediaFilter::instance();
 		LLStartUp::setStartupState( STATE_FONT_INIT );
 		display_startup();
 		return FALSE;

@@ -4,8 +4,7 @@
 	<text bottom="-190" name="streaming_prefs_text">Streaming Preferences:</text>
 	<text bottom="-295" height="12" name="audio_prefs_text">Audio Preferences:</text>
 	<panel border="true" bottom="-172" filename="panel_audio.xml" height="165" label="Volume" left="142" name="Volume Panel" width="260"/>
-  <check_box bottom="-195" control_name="MediaEnableFilter" follows="top" height="16" initial_value="true" label="Ask for permission (enables filtering)" left="142" name="media_filter_enable"/>
-  <radio_group bottom="-195" control_name="MediaEnableFilter" follows="top" height="16" label="Media Filtering" tab_stop="true" draw_border="false">
+    <radio_group bottom="-195" control_name="MediaEnableFilter" follows="top" height="16" label="Media Filtering" tab_stop="true" draw_border="false">
 	  <radio_item enabled="true" follows="left|top" height="16" left="0" length="1" mouse_opaque="true" name="Off" label="Off" value="0" width="30" type="string" />
 	  <radio_item enabled="true" follows="left|top" height="16" left_pad="4" length="1" mouse_opaque="true" name="Blacklist" label="Blacklist Only" value="1" width="30" type="string" />
 	  <radio_item enabled="true" follows="left|top" height="16" left_pad="4" length="1" mouse_opaque="true" name="Prompt" label="Prompt" value="2" width="30" type="string" />

@@ -51,6 +51,11 @@ void reportToChat(const std::string& message)
 	LLFloaterChat::addChat(chat, FALSE, FALSE);
 }
 
+LLMediaFilter::LLMediaFilter()
+{
+	loadMediaFilterFromDisk();
+}
+
 void LLMediaFilter::filterMediaUrl(LLParcel* parcel)
 {
 	if (!parcel) return;
@@ -192,11 +197,6 @@ void LLMediaFilter::addToMediaList(const std::string& in_url, EMediaList list, b
 			break;
 	}
 	saveMediaFilterToDisk();
-}
-
-void LLMediaFilter::init()
-{
-	loadMediaFilterFromDisk();
 }
 
 void LLMediaFilter::removeFromMediaList(string_vec_t domains, EMediaList list)
@@ -364,7 +364,7 @@ bool handle_audio_filter_callback(const LLSD& notification, const LLSD& response
 		}
 		else if (command == PARCEL_MEDIA_COMMAND_TIME)
 		{
-			//LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
+			LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
 		}
 		LLMediaFilter::getInstance()->setQueuedMediaCommand(0);
 	}
@@ -431,7 +431,7 @@ bool handle_media_filter_callback(const LLSD& notification, const LLSD& response
 		}
 		else if (command == PARCEL_MEDIA_COMMAND_TIME)
 		{
-			//LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
+			LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
 		}
 		LLMediaFilter::getInstance()->setQueuedMediaCommand(0);
 	}
