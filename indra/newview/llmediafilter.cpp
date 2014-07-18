@@ -43,14 +43,6 @@ bool handle_audio_filter_callback(const LLSD& notification, const LLSD& response
 bool handle_media_filter_callback(const LLSD& notification, const LLSD& response, LLParcel* parcel);
 std::string extractDomain(const std::string& in_url);
 
-void reportToChat(const std::string& message)
-{
-	LLChat chat;
-	chat.mText = message;
-	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	LLFloaterChat::addChat(chat, FALSE, FALSE);
-}
-
 LLMediaFilter::LLMediaFilter()
 {
 	loadMediaFilterFromDisk();
