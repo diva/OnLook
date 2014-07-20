@@ -201,24 +201,10 @@ Enter a domain name to be added to the [LIST]:
   </notification>
 
   <notification
-   icon="alert.tga"
-   name="MediaListed"
-   type="alert">
-Media/audio URLs for [DOMAIN] now [LISTED]
-  </notification>
-
-  <notification
    icon="notifytip.tga"
    name="MediaBlocked"
    type="notifytip">
 Media/audio URL blocked for [DOMAIN]
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="MediaFiltersCleared"
-   type="alertmodal">
-The media filters have been cleared
   </notification>
 
   <notification

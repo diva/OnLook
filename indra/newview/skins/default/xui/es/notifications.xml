@@ -92,17 +92,9 @@ Puedes escoger aceptar o denegar el dominio correspondiente o el script en el mu
 		</form>
 	</notification>
 	
-	<notification name="MediaListed">
-		La URL del Media/audio para este  [DOMAIN] está ahora [LISTED]
-	</notification>
-	
 	<notification name="MediaBlocked">
 		La URL del Media/audio ha sido bloqueada para [DOMAIN]
-	</notification>
-	
-	<notification name="MediaFiltersCleared">
-		El Filtro de Media ha sido limpiado
-	</notification>  
+	</notification> 
 	
 	<notification label="Mensaje de alerta desconocida" name="MissingAlert">
 		Esta versión de [APP_NAME] no sabe como mostrar el mensaje de alerta que ha recibido. Por favor verifica que tienes instalada la última versión de [APP_NAME].

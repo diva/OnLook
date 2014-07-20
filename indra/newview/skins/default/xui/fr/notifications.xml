@@ -37,24 +37,10 @@ Vous pouvez choisir de permettre ou refuser:
   </notification>
 
   <notification
-   icon="alert.tga"
-   name="MediaListed"
-   type="alert">
-Media/audio URLs pour [DOMAIN] now [LISTED]
-  </notification>
-
-  <notification
    icon="notifytip.tga"
    name="MediaBlocked"
    type="notifytip">
 Media/audio sont bloqués pour [DOMAIN]
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="MediaFiltersCleared"
-   type="alertmodal">
-Filtres medias ont été reinitialisés
   </notification>
 
 	<notification functor="GenericAcknowledge" label="Message d'alerte inconnu" name="MissingAlert">
