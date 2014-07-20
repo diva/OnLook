@@ -66,7 +66,7 @@ BOOL LLFloaterMediaFilter::postBuild()
 
 void LLFloaterMediaFilter::updateLists(LLMediaFilter::EMediaList list)
 {
-	if (list == LLMediaFilter::WHITELIST && mWhitelist)
+	if (list == LLMediaFilter::WHITELIST)
 	{
 		LLMediaFilter::string_list_t list = LLMediaFilter::getInstance()->getWhiteList();
 		mWhitelist->clearRows();
@@ -78,7 +78,7 @@ void LLFloaterMediaFilter::updateLists(LLMediaFilter::EMediaList list)
 			mWhitelist->addElement(element);
 		}
 	}
-	if (list == LLMediaFilter::BLACKLIST && mBlacklist)
+	if (list == LLMediaFilter::BLACKLIST)
 	{
 		LLMediaFilter::string_list_t list = LLMediaFilter::getInstance()->getBlackList();
 		mBlacklist->clearRows();
