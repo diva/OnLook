@@ -76,6 +76,7 @@ public:
 	virtual BOOL	handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_rect);
 	virtual BOOL	handleKeyHere(KEY key, MASK mask);
 	virtual BOOL	handleUnicodeCharHere(llwchar uni_char);
+	virtual BOOL	handleScrollWheel(S32 x, S32 y, S32 clicks);
 
 	// LLUICtrl interface
 	virtual void	clear();					// select nothing
