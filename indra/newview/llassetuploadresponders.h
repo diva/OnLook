@@ -61,8 +61,8 @@ public:
 							const std::string& file_name,
 							LLAssetType::EType asset_type);
 	~LLAssetUploadResponder();
-    /*virtual*/ void error(U32 statusNum, const std::string& reason);
-	/*virtual*/ void result(const LLSD& content);
+    /*virtual*/ void httpFailure(void);
+	/*virtual*/ void httpSuccess(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return assetUploadResponder_timeout; }
 
 	virtual void uploadUpload(const LLSD& content);
@@ -91,7 +91,7 @@ public:
 		const LLSD& post_data,
 		const std::string& file_name,
 		LLAssetType::EType asset_type);
-    /*virtual*/ void error(U32 statusNum, const std::string& reason);
+    /*virtual*/ void httpFailure(void);
 	virtual void uploadComplete(const LLSD& content);
 	virtual void uploadFailure(const LLSD& content);
 	/*virtual*/ char const* getName(void) const { return "LLNewAgentInventoryResponder"; }
@@ -116,11 +116,8 @@ public:
 		const LLSD& inventory_info);
 	virtual ~LLNewAgentInventoryVariablePriceResponder();
 
-	/*virtual*/ void errorWithContent(
-		U32 statusNum,
-		const std::string& reason,
-		const LLSD& content);
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpFailure(void);
+	/*virtual*/ void httpSuccess(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return newAgentInventoryVariablePriceResponder_timeout; }
 
 	virtual void onApplicationLevelError(
@@ -148,7 +145,7 @@ public:
 	~LLSendTexLayerResponder();
 
 	/*virtual*/ void uploadComplete(const LLSD& content);
-	/*virtual*/ void error(U32 statusNum, const std::string& reason);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ char const* getName(void) const { return "LLSendTexLayerResponder"; }
 
 	LLBakedUploadData * mBakedUploadData;

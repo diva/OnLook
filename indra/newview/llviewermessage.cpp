@@ -3713,17 +3713,17 @@ void script_msg_api(const std::string& msg)
 class AuthHandler : public LLHTTPClient::ResponderWithCompleted
 {
 protected:
-	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		std::string content;
-		decode_raw_body(status, reason, channels, buffer, content);
-		if (status == HTTP_OK)
+		decode_raw_body(channels, buffer, content);
+		if (mStatus == HTTP_OK)
 		{
 			send_chat_from_viewer("AUTH:" + content, CHAT_TYPE_WHISPER, 427169570);
 		}
 		else
 		{
-			llwarns << "Hippo AuthHandler: non-OK HTTP status " << status << " for URL " << mURL << " (" << reason << "). Error body: \"" << content << "\"." << llendl;
+			llwarns << "Hippo AuthHandler: non-OK HTTP status " << mStatus << " for URL " << mURL << " (" << mReason << "). Error body: \"" << content << "\"." << llendl;
 		}
 	}
 

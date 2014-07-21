@@ -73,8 +73,8 @@ namespace
 
 		
 		void handleMessage(const LLSD& content);
-		/*virtual*/ void error(U32 status, const std::string& reason);
-		/*virtual*/ void result(const LLSD&	content);
+		/*virtual*/ void httpFailure(void);
+		/*virtual*/ void httpSuccess(void);
 		/*virtual*/ bool is_event_poll(void) const { return true; }
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return eventPollResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "LLEventPollResponder"; }
@@ -179,13 +179,13 @@ namespace
 	}
 
 	//virtual
-	void LLEventPollResponder::error(U32 status, const	std::string& reason)
+	void LLEventPollResponder::httpFailure(void)
 	{
 		if (mDone) return;
 
 		// A HTTP_BAD_GATEWAY (502) error is our standard timeout response
 		// we get this when there are no events.
-		if ( status == HTTP_BAD_GATEWAY )	
+		if ( mStatus == HTTP_BAD_GATEWAY )	
 		{
 			mErrorCount = 0;
 			makeRequest();
@@ -199,12 +199,12 @@ namespace
 										+ mErrorCount * EVENT_POLL_ERROR_RETRY_SECONDS_INC
 									, this);
 
-			llwarns << "Unexpected HTTP error.  status: " << status << ", reason: " << reason << llendl;
+			llwarns << "Unexpected HTTP error.  status: " << mStatus << ", reason: " << mReason << llendl;
 		}
 		else
 		{
 			llwarns <<	"LLEventPollResponder::error: <" << mCount << "> got "
-					<<	status << ": " << reason
+					<<	mStatus << ": " << mReason
 					<<	(mDone ? " -- done"	: "") << llendl;
 			stop();
 
@@ -226,25 +226,25 @@ namespace
 	}
 
 	//virtual
-	void LLEventPollResponder::result(const LLSD& content)
+	void LLEventPollResponder::httpSuccess(void)
 	{
 		lldebugs <<	"LLEventPollResponder::result <" << mCount	<< ">" 
-				 <<	(mDone ? " -- done"	: "") << ll_pretty_print_sd(content)  << llendl; 
+				 <<	(mDone ? " -- done"	: "") << ll_pretty_print_sd(mContent)  << llendl; 
 		
 		if (mDone) return;
 
 		mErrorCount = 0;
 
-		if (!content.get("events") ||
-			!content.get("id"))
+		if (!mContent.get("events") ||
+			!mContent.get("id"))
 		{
 			//llwarns << "received event poll with no events or id key" << llendl;
 			makeRequest();
 			return;
 		}
 		
-		mAcknowledge = content["id"];
-		LLSD events	= content["events"];
+		mAcknowledge = mContent["id"];
+		LLSD events	= mContent["events"];
 
 		if(mAcknowledge.isUndefined())
 		{

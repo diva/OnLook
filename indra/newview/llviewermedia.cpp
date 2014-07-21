@@ -194,25 +194,25 @@ public:
 		disconnectOwner();
 	}
 
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(void)
 	{
-		if ((200 <= status && status < 300) || status == 405)		// Using HEAD may result in a 405 METHOD NOT ALLOWED, but still have the right Content-Type header.
+		if ((200 <= mStatus && mStatus < 300) || mStatus == 405)		// Using HEAD may result in a 405 METHOD NOT ALLOWED, but still have the right Content-Type header.
 		{
 			std::string media_type;
-			if (headers.getFirstValue("content-type", media_type))
+			if (mReceivedHeaders.getFirstValue("content-type", media_type))
 			{
 				std::string::size_type idx1 = media_type.find_first_of(";");
 				std::string mime_type = media_type.substr(0, idx1);
-				completeAny(status, mime_type);
+				completeAny(mStatus, mime_type);
 				return;
 			}
-			if (200 <= status && status < 300)
+			if (200 <= mStatus && mStatus < 300)
 			{
-				llwarns << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << status << ") but no Content-Type! Received headers: " << headers << llendl;
+				llwarns << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << mStatus << ") but no Content-Type! Received headers: " << mReceivedHeaders << llendl;
 			}
 		}
-		llwarns << "LLMimeDiscoveryResponder::completedHeaders: Got status " << status << ". Using default mime-type: " << mDefaultMimeType << llendl;
-		completeAny(status, mDefaultMimeType);
+		llwarns << "LLMimeDiscoveryResponder::completedHeaders: Got status " << mStatus << ". Using default mime-type: " << mDefaultMimeType << llendl;
+		completeAny(mStatus, mDefaultMimeType);
 	}
 
 	void completeAny(U32 status, const std::string& mime_type)
@@ -276,18 +276,14 @@ public:
 
 	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(void)
 	{
-		LL_DEBUGS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
-		LL_DEBUGS("MediaAuth") << headers << LL_ENDL;
+		LL_DEBUGS("MediaAuth") << "status = " << mStatus << ", reason = " << mReason << LL_ENDL;
+		LL_DEBUGS("MediaAuth") << mReceivedHeaders << LL_ENDL;
 		LLViewerMedia::openIDCookieResponse(get_cookie("agni_sl_session_id"));
 	}
 
-	/*virtual*/ void completedRaw(
-		U32 status,
-		const std::string& reason,
-		const LLChannelDescriptors& channels,
-		const LLIOPipe::buffer_ptr_t& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer)
 	{
 		// This is just here to disable the default behavior (attempting to parse the response as llsd).
 		// We don't care about the content of the response, only the set-cookie header.
@@ -306,14 +302,14 @@ public:
 
 	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(void)
 	{
-		LL_INFOS("MediaAuth") << "status = " << status << ", reason = " << reason << LL_ENDL;
-		LL_INFOS("MediaAuth") << headers << LL_ENDL;
+		LL_INFOS("MediaAuth") << "status = " << mStatus << ", reason = " << mReason << LL_ENDL;
+		LL_INFOS("MediaAuth") << mReceivedHeaders << LL_ENDL;
 
 		bool found = false;
 		AIHTTPReceivedHeaders::range_type cookies;
-		if (headers.getValues("set-cookie", cookies))
+		if (mReceivedHeaders.getValues("set-cookie", cookies))
 		{
 			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
 			{
@@ -337,11 +333,7 @@ public:
 		}
 	}
 
-	/*virtual*/ void completedRaw(
-		U32 status,
-		const std::string& reason,
-		const LLChannelDescriptors& channels,
-		const LLIOPipe::buffer_ptr_t& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer)
 	{
 		// This is just here to disable the default behavior (attempting to parse the response as llsd).
 		// We don't care about the content of the response, only the set-cookie header.

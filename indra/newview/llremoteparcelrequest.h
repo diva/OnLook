@@ -49,10 +49,10 @@ public:
 	LLRemoteParcelRequestResponder(LLHandle<LLRemoteParcelInfoObserver> observer_handle);
 
 	//If we get back a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpSuccess(void);
 
 	//If we get back an error (not found, etc...), handle it here
-	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return remoteParcelRequestResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLRemoteParcelRequestResponder"; }
 

@@ -345,11 +345,11 @@ public:
 
 	/*virtual*/ bool needsHeaders(void) const { return true; }
 
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers) {
+	/*virtual*/ void completedHeaders(void) {
 		LL_DEBUGS("Texture") << "HTTP HEADERS COMPLETE: " << mID << LL_ENDL;
 
 		std::string	rangehdr;
-		if (headers.getFirstValue("content-range", rangehdr))
+		if (mReceivedHeaders.getFirstValue("content-range", rangehdr))
 		{
 			std::vector<std::string> tokens;
 			boost::split(tokens,rangehdr,boost::is_any_of(" -/"));
@@ -387,9 +387,8 @@ public:
 		}
 	}
 
-	/*virtual*/ void completedRaw(U32 status, const std::string& reason,
-							  const LLChannelDescriptors& channels,
-							  const buffer_ptr_t& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels,
+								  buffer_ptr_t const& buffer)
 	{
 		static LLCachedControl<bool> log_to_viewer_log(gSavedSettings,"LogTextureDownloadsToViewerLog");
 		static LLCachedControl<bool> log_to_sim(gSavedSettings,"LogTextureDownloadsToSimulator");
@@ -413,18 +412,18 @@ public:
 			worker->lockWorkMutex();
 			bool success = false;
 			bool partial = false;
-			if (HTTP_OK <= status &&  status < HTTP_MULTIPLE_CHOICES)
+			if (HTTP_OK <= mStatus &&  mStatus < HTTP_MULTIPLE_CHOICES)
 			{
 				success = true;
-				if (HTTP_PARTIAL_CONTENT == status) // partial information
+				if (HTTP_PARTIAL_CONTENT == mStatus) // partial information
 				{
 					partial = true;
 				}
 			}
 			if (!success)
 			{
-				worker->setGetStatus(status, reason);
- 				llwarns << "CURL GET FAILED, status:" << status << " reason:" << reason << llendl;
+				worker->setGetStatus(mStatus, mReason);
+				llwarns << "CURL GET FAILED, status:" << mStatus << " reason:" << mReason << llendl;
 			}
 			S32 data_size = worker->callbackHttpGet(mReplyOffset, mReplyLength, channels, buffer, partial, success);
 			
@@ -3333,9 +3332,9 @@ class AssetReportHandler : public LLHTTPClient::ResponderWithCompleted
 public:
 
 	// Threads:  Ttf
-	/*virtual*/ virtual void completed(U32 status, std::string const& reason, LLSD const& content)
+	/*virtual*/ virtual void httpCompleted(void)
 	{
-		if (status)
+		if (mStatus)
 		{
 			LL_DEBUGS("Texture") << "Successfully delivered asset metrics to grid."
 								<< LL_ENDL;
@@ -3343,7 +3342,7 @@ public:
 		else
 		{
 			LL_WARNS("Texture") << "Error delivering asset metrics to grid.  Reason:  "
-								<< status << LL_ENDL;
+								<< mStatus << LL_ENDL;
 		}
 	}
 	

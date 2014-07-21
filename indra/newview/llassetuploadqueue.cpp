@@ -75,10 +75,10 @@ public:
 		delete mData;
    	}
 	
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
    	{
-		llwarns << "Error: " << reason << llendl;
-		LLUpdateTaskInventoryResponder::error(statusNum, reason);
+		llwarns << "Error: " << mReason << llendl;
+		LLUpdateTaskInventoryResponder::httpFailure();
    		LLAssetUploadQueue *queue = mSupplier->get();
    		if (queue)
 		{
@@ -86,15 +86,15 @@ public:
    		}
    	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
    	{
-		LLUpdateTaskInventoryResponder::result(content);
+		LLUpdateTaskInventoryResponder::httpSuccess();
    		LLAssetUploadQueue *queue = mSupplier->get();
    		if (queue)
    		{
    			// Responder is reused across 2 phase upload,
    			// so only start next upload after 2nd phase complete.
-   			std::string state = content["state"];
+			std::string state = mContent["state"];
    			if(state == "complete")
    			{
    				queue->request(&mSupplier);

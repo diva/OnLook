@@ -44,8 +44,8 @@ extern AIHTTPTimeoutPolicy homeLocationResponder_timeout;
 /* Typedef, Enum, Class, Struct, etc. */
 class LLHomeLocationResponder : public LLHTTPClient::ResponderWithResult
 {
-	/*virtual*/ void result( const LLSD& content );
-	/*virtual*/ void error( U32 status, const std::string& reason );
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return homeLocationResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLHomeLocationResponder"; }
 };

@@ -62,7 +62,7 @@ class LLSetDisplayNameResponder : public LLHTTPClient::ResponderIgnoreBody
 {
 public:
 	// only care about errors
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		LLViewerDisplayName::sSetDisplayNameSignal(false, "", LLSD());
 		LLViewerDisplayName::sSetDisplayNameSignal.disconnect_all_slots();

@@ -738,28 +738,28 @@ public:
 		}
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llwarns
 			<< "Transport error requesting object cost "
-			<< "HTTP status: " << statusNum << ", reason: "
-			<< reason << "." << llendl;
+			<< "HTTP status: " << mStatus << ", reason: "
+			<< mReason << "." << llendl;
 
 		// TODO*: Error message to user
 		// For now just clear the request from the pending list
 		clear_object_list_pending_requests();
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
-		if ( !content.isMap() || content.has("error") )
+		if ( !mContent.isMap() || mContent.has("error") )
 		{
 			// Improper response or the request had an error,
 			// show an error to the user?
 			llwarns
 				<< "Application level error when fetching object "
-				<< "cost.  Message: " << content["error"]["message"].asString()
-				<< ", identifier: " << content["error"]["identifier"].asString()
+				<< "cost.  Message: " << mContent["error"]["message"].asString()
+				<< ", identifier: " << mContent["error"]["identifier"].asString()
 				<< llendl;
 
 			// TODO*: Adaptively adjust request size if the
@@ -780,15 +780,15 @@ public:
 			LLUUID object_id = iter->asUUID();
 
 			// Check to see if the request contains data for the object
-			if ( content.has(iter->asString()) )
+			if ( mContent.has(iter->asString()) )
 			{
 				F32 link_cost =
-					content[iter->asString()]["linked_set_resource_cost"].asReal();
+					mContent[iter->asString()]["linked_set_resource_cost"].asReal();
 				F32 object_cost =
-					content[iter->asString()]["resource_cost"].asReal();
+					mContent[iter->asString()]["resource_cost"].asReal();
 
-				F32 physics_cost = content[iter->asString()]["physics_cost"].asReal();
-				F32 link_physics_cost = content[iter->asString()]["linked_set_physics_cost"].asReal();
+				F32 physics_cost = mContent[iter->asString()]["physics_cost"].asReal();
+				F32 link_physics_cost = mContent[iter->asString()]["linked_set_physics_cost"].asReal();
 
 				gObjectList.updateObjectCost(object_id, object_cost, link_cost, physics_cost, link_physics_cost);
 			}
@@ -829,28 +829,28 @@ public:
 		}
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llwarns
 			<< "Transport error requesting object physics flags "
-			<< "HTTP status: " << statusNum << ", reason: "
-			<< reason << "." << llendl;
+			<< "HTTP status: " << mStatus << ", reason: "
+			<< mReason << "." << llendl;
 
 		// TODO*: Error message to user
 		// For now just clear the request from the pending list
 		clear_object_list_pending_requests();
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
-		if ( !content.isMap() || content.has("error") )
+		if ( !mContent.isMap() || mContent.has("error") )
 		{
 			// Improper response or the request had an error,
 			// show an error to the user?
 			llwarns
 				<< "Application level error when fetching object "
-				<< "physics flags.  Message: " << content["error"]["message"].asString()
-				<< ", identifier: " << content["error"]["identifier"].asString()
+				<< "physics flags.  Message: " << mContent["error"]["message"].asString()
+				<< ", identifier: " << mContent["error"]["identifier"].asString()
 				<< llendl;
 
 			// TODO*: Adaptively adjust request size if the
@@ -871,9 +871,9 @@ public:
 			LLUUID object_id = iter->asUUID();
 
 			// Check to see if the request contains data for the object
-			if ( content.has(iter->asString()) )
+			if ( mContent.has(iter->asString()) )
 			{
-				const LLSD& data = content[iter->asString()];
+				const LLSD& data = mContent[iter->asString()];
 
 				S32 shape_type = data["PhysicsShapeType"].asInteger();
 

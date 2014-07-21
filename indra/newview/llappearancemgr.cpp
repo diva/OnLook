@@ -3506,10 +3506,10 @@ public:
 	}
 
 	// Successful completion.
-	/* virtual */ void result(const LLSD& content)
+	/* virtual */ void httpSuccess(void)
 	{
-		LL_DEBUGS("Avatar") << "content: " << ll_pretty_print_sd(content) << LL_ENDL;
-		if (content["success"].asBoolean())
+		LL_DEBUGS("Avatar") << "content: " << ll_pretty_print_sd(mContent) << LL_ENDL;
+		if (mContent["success"].asBoolean())
 		{
 			LL_DEBUGS("Avatar") << "OK" << LL_ENDL;
 		}
@@ -3520,11 +3520,10 @@ public:
 	}
 
 	// Error
-	/*virtual*/ void errorWithContent(U32 status, const std::string& reason, const LLSD& content)
+	/*virtual*/ void httpFailure(void)
 	{
-		llwarns << "appearance update request failed, status: " << status << " reason: " << reason << " code: " << content["code"].asInteger() << " error: \"" << content["error"].asString() << "\"" << llendl;
-		LL_DEBUGS("Avatar") << "content: " << ll_pretty_print_sd(content) << LL_ENDL;
-		onFailure(status);
+		llwarns << "appearance update request failed, " << dumpResponse() << llendl;
+		onFailure(mStatus);
 	}	
 
 	void onFailure(U32 status)
@@ -4465,7 +4464,9 @@ public:
 																		  LLFolderType::FT_CLOTHING,
 																		  "Quick Appearance");
 		LLSD::UUID folder_uuid = query_map["folder_id"].asUUID();
-		if ( gInventory.getCategory( folder_uuid ) != NULL )
+		if ( gInventory.getCategory( folder_uuid ) != NULL &&
+			 folder_uuid != gInventory.getRootFolderID() &&
+			 folder_uuid != gInventory.getLibraryRootFolderID() )
 		{
 			LLAppearanceMgr::getInstance()->wearInventoryCategory(category, true, false);
 

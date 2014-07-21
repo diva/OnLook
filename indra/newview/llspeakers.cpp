@@ -287,9 +287,9 @@ public:
 		mSessionID = session_id;
 	}
 
-	virtual void error(U32 status, const std::string& reason)
+	virtual void httpFailure(void)
 	{
-		llwarns << status << ": " << reason << llendl;
+		llwarns << mStatus << ": " << mReason << llendl;
 
 		if ( gIMMgr )
 		{
@@ -298,7 +298,7 @@ public:
 
 			//403 == you're not a mod
 			//should be disabled if you're not a moderator
-			if ( 403 == status )
+			if ( 403 == mStatus )
 			{
 				floaterp->showSessionEventError(
 					"mute",

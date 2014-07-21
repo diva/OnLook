@@ -46,16 +46,15 @@ class LLProductInfoRequestResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
 	//If we get back a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
-		LLProductInfoRequestManager::instance().setSkuDescriptions(content);
+		LLProductInfoRequestManager::instance().setSkuDescriptions(mContent);
 	}
 
 	//If we get back an error (not found, etc...), handle it here
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		llwarns << "LLProductInfoRequest::error("
-		<< status << ": " << reason << ")" << llendl;
+		llwarns << "httpFailure: " << dumpResponse() << llendl;
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return productInfoRequestResponder_timeout; }

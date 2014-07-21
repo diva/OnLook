@@ -312,36 +312,36 @@ AIHTTPTimeoutPolicy const& LLHTTPClient::ResponderBase::getHTTPTimeoutPolicy(voi
 	return AIHTTPTimeoutPolicy::getDebugSettingsCurlTimeout();
 }
 
-void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content)
+void LLHTTPClient::ResponderBase::decode_llsd_body(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
 	AICurlInterface::Stats::llsd_body_count++;
-	if (is_internal_http_error(status))
+	if (is_internal_http_error(mStatus))
 	{
 		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
 		// In any case, the body if anything was received at all, can not be relied upon.
-	    content = reason;
+	    mContent = mReason;
 		return;
 	}
 	// If the status indicates success (and we get here) then we expect the body to be LLSD.
-	bool const should_be_llsd = (200 <= status && status < 300);
+	bool const should_be_llsd = isGoodStatus(mStatus);
 	if (should_be_llsd)
 	{
 		LLBufferStream istr(channels, buffer.get());
-		if (LLSDSerialize::fromXML(content, istr) == LLSDParser::PARSE_FAILURE)
+		if (LLSDSerialize::fromXML(mContent, istr) == LLSDParser::PARSE_FAILURE)
 		{
 			// Unfortunately we can't show the body of the message... I think this is a pretty serious error
 			// though, so if this ever happens it has to be investigated by making a copy of the buffer
 			// before serializing it, as is done below.
-			llwarns << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
+			llwarns << "Failed to deserialize LLSD. " << mURL << " [" << mStatus << "]: " << mReason << llendl;
 			AICurlInterface::Stats::llsd_body_parse_error++;
 		}
-		// LLSDSerialize::fromXML destructed buffer, we can't initialize content now.
+		// LLSDSerialize::fromXML destructed buffer, we can't initialize mContent now.
 		return;
 	}
-	// Put the body in content as-is.
+	// Put the body in mContent as-is.
 	std::stringstream ss;
 	buffer->writeChannelTo(ss, channels.in());
-	content = ss.str();
+	mContent = ss.str();
 #ifdef SHOW_ASSERT
 	if (!should_be_llsd)
 	{
@@ -357,7 +357,7 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 			LLSDSerialize::fromXML(dummy, ss) > 0;
 		if (server_sent_llsd_with_http_error)
 		{
-			llwarns << "The server sent us a response with http status " << status << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
+			llwarns << "The server sent us a response with http status " << mStatus << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
 		}
 		// This is not really an error, and it has been known to happen before. It just normally never happens (at the moment)
 		// and therefore warrants an investigation. Linden Lab (or other grids) might start to send error messages
@@ -370,14 +370,14 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(U32 status, std::string const
 #endif
 }
 
-void LLHTTPClient::ResponderBase::decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
+void LLHTTPClient::ResponderBase::decode_raw_body(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content)
 {
 	AICurlInterface::Stats::raw_body_count++;
-	if (is_internal_http_error(status))
+	if (is_internal_http_error(mStatus))
 	{
 		// In case of an internal error (ie, a curl error), a description of the (curl) error is the best we can do.
 		// In any case, the body if anything was received at all, can not be relied upon.
-	    content = reason;
+	    content = mReason;
 		return;
 	}
 	LLMutexLock lock(buffer->getMutex());
@@ -409,19 +409,43 @@ std::string const& LLHTTPClient::ResponderBase::get_cookie(std::string const& ke
 	return empty_dummy;
 }
 
+std::string LLHTTPClient::ResponderBase::dumpResponse(void) const
+{
+	std::ostringstream s;
+	s << "[responder:" << getName() << "] "
+	  << "[URL:" << mURL << "] "
+	  << "[status:" << mStatus << "] "
+	  << "[reason:" << mReason << "] ";
+
+	AIHTTPReceivedHeaders::range_type content_type;
+	if (mReceivedHeaders.getValues("content-type", content_type))
+	{
+		for (AIHTTPReceivedHeaders::iterator_type iter = content_type.first; iter != content_type.second; ++iter)
+		{
+			s << "[content-type:" << iter->second << "] ";
+		}
+	}
+
+	if (mContent.isDefined())
+	{
+		s << "[content:" << LLSDOStreamer<LLSDXMLFormatter>(mContent, LLSDFormatter::OPTIONS_PRETTY) << "]";
+	}
+
+	return s.str();
+}
+
 // Called with HTML body.
 // virtual
-void LLHTTPClient::ResponderWithCompleted::completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+void LLHTTPClient::ResponderWithCompleted::completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
-  LLSD content;
-  decode_llsd_body(status, reason, channels, buffer, content);
+  decode_llsd_body(channels, buffer);
 
   // Allow derived class to override at this point.
-  completed(status, reason, content);
+  httpCompleted();
 }
 
 // virtual
-void LLHTTPClient::ResponderWithCompleted::completed(U32 status, std::string const& reason, LLSD const& content)
+void LLHTTPClient::ResponderWithCompleted::httpCompleted(void)
 {
   // Either completedRaw() or this method must be overridden by the derived class. Hence, we should never get here.
   llassert_always(false);
@@ -431,36 +455,31 @@ void LLHTTPClient::ResponderWithCompleted::completed(U32 status, std::string con
 void LLHTTPClient::ResponderWithResult::finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
   mCode = code;
+  mStatus = http_status;
+  mReason = reason;
 
-  LLSD content;
-  decode_llsd_body(http_status, reason, channels, buffer, content);
+  // Fill mContent.
+  decode_llsd_body(channels, buffer);
 
   // HTTP status good?
-  if (200 <= http_status && http_status < 300)
+  if (isGoodStatus(http_status))
   {
 	// Allow derived class to override at this point.
-	result(content);
+	httpSuccess();
   }
   else
   {
 	// Allow derived class to override at this point.
-	errorWithContent(http_status, reason, content);
+	httpFailure();
   }
 
   mFinished = true;
 }
 
 // virtual
-void LLHTTPClient::ResponderWithResult::errorWithContent(U32 status, std::string const& reason, LLSD const&)
+void LLHTTPClient::ResponderWithResult::httpFailure(void)
 {
-  // Allow derived class to override at this point.
-  error(status, reason);
-}
-
-// virtual
-void LLHTTPClient::ResponderWithResult::error(U32 status, std::string const& reason)
-{
-  llinfos << mURL << " [" << status << "]: " << reason << llendl;
+  llinfos << mURL << " [" << mStatus << "]: " << mReason << llendl;
 }
 
 // Friend functions.
@@ -482,22 +501,20 @@ void intrusive_ptr_release(LLHTTPClient::ResponderBase* responder)
 // Blocking Responders.
 //
 
-class BlockingResponder : public LLHTTPClient::LegacyPolledResponder {
+class BlockingResponder : public LLHTTPClient::ResponderWithCompleted {
 private:
 	LLCondition mSignal;	// Wait condition to wait till mFinished is true.
-	static LLSD LLSD_dummy;
 	static std::string Raw_dummy;
 
 public:
 	void wait(void);		// Blocks until mFinished is true.
-	virtual LLSD const& getLLSD(void) const { llassert(false); return LLSD_dummy; }
 	virtual std::string const& getRaw(void) const { llassert(false); return Raw_dummy; }
+	/*virtual*/ LLSD const& getContent(void) const { llassert(false); return LLHTTPClient::ResponderWithCompleted::getContent(); }
 
 protected:
 	void wakeup(void);		// Call this at the end of completedRaw.
 };
 
-LLSD BlockingResponder::LLSD_dummy;
 std::string BlockingResponder::Raw_dummy;
 
 void BlockingResponder::wait(void)
@@ -532,14 +549,11 @@ void BlockingResponder::wakeup(void)
 }
 
 class BlockingLLSDResponder : public BlockingResponder {
-private:
-	LLSD mResponse;
-
 protected:
-	/*virtual*/ LLSD const& getLLSD(void) const { llassert(mFinished && mCode == CURLE_OK); return mResponse; }
-	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	/*virtual*/ LLSD const& getContent(void) const { llassert(mFinished && mCode == CURLE_OK); return LLHTTPClient::ResponderWithCompleted::getContent(); }
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
-		decode_llsd_body(status, reason, channels, buffer, mResponse);		// This puts the body asString() in mResponse in case of http error.
+		decode_llsd_body(channels, buffer);		// This puts the body asString() in mContent in case of http error.
 		wakeup();
 	}
 };
@@ -550,9 +564,9 @@ private:
 
 protected:
 	/*virtual*/ std::string const& getRaw(void) const { llassert(mFinished && mCode == CURLE_OK); return mResponse; }
-	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
-		decode_raw_body(mCode, reason, channels, buffer, mResponse);
+		decode_raw_body(channels, buffer, mResponse);
 		wakeup();
 	}
 };
@@ -632,7 +646,7 @@ static LLSD blocking_request(
 
 	LLSD response = LLSD::emptyMap();
 	CURLcode result = responder->result_code();
-	S32 http_status = responder->http_status();
+	S32 http_status = responder->getStatus();
 
 	bool http_success = http_status >= 200 && http_status < 300;
 	if (result == CURLE_OK && http_success)
@@ -643,7 +657,7 @@ static LLSD blocking_request(
 		}
 		else
 		{
-			response["body"] = responder->getLLSD();
+			response["body"] = responder->getContent();
 		}
 	}
 	else if (result == CURLE_OK && !is_internal_http_error(http_status))
@@ -665,7 +679,7 @@ static LLSD blocking_request(
 			}
 			else
 			{
-				llwarns << "CURL ERROR BODY: " << responder->getLLSD().asString() << llendl;
+				llwarns << "CURL ERROR BODY: " << responder->getContent().asString() << llendl;
 			}
 		}
 		if (method == HTTP_RAW_GET)
@@ -674,12 +688,12 @@ static LLSD blocking_request(
 		}
 		else
 		{
-			response["body"] = responder->getLLSD().asString();
+			response["body"] = responder->getContent().asString();
 		}
 	}
 	else
 	{
-		response["body"] = responder->reason();
+		response["body"] = responder->getReason();
 	}
 
 	response["status"] = http_status;

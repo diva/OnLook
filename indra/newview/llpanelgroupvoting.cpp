@@ -688,7 +688,7 @@ public:
 	}
 
 	//If we get back a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		//Ack'd the proposal initialization, now let's finish up.
 		LLPanelGroupVoting::handleResponse(
@@ -697,10 +697,10 @@ public:
 	}
 
 	//If we get back an error (not found, etc...), handle it here
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llinfos << "LLPanelGroupVotingResponder::error "
-			<< status << ": " << reason << llendl;
+			<< mStatus << ": " << mReason << llendl;
 
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}
@@ -721,20 +721,20 @@ public:
 	}
 
 	//If we get back a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		//Ack'd the proposal initialization, now let's finish up.
 		LLPanelGroupVoting::handleResponse(
 			mGroupID,
 			LLPanelGroupVoting::BALLOT,
-			content["voted"].asBoolean());
+			mContent["voted"].asBoolean());
 	}
 
 	//If we get back an error (not found, etc...), handle it here
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llinfos << "LLPanelGroupVotingResponder::error "
-			<< status << ": " << reason << llendl;
+			<< mStatus << ": " << mReason << llendl;
 
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}

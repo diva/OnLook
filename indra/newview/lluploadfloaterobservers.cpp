@@ -39,25 +39,24 @@ LLUploadModelPremissionsResponder::LLUploadModelPremissionsResponder(const LLHan
 {
 }
 
-void LLUploadModelPremissionsResponder::error(U32 status, const std::string& reason)
+void LLUploadModelPremissionsResponder::httpFailure(void)
 {
-	llwarns << "LLUploadModelPremissionsResponder::error("
-			<< status << ": " << reason << ")" << llendl;
+	llwarns << "httpFailure: " << dumpResponse() << llendl;
 
 	LLUploadPermissionsObserver* observer = mObserverHandle.get();
 
 	if (observer)
 	{
-		observer->setPermissonsErrorStatus(status, reason);
+		observer->setPermissonsErrorStatus(mStatus, mReason);
 	}
 }
 
-void LLUploadModelPremissionsResponder::result(const LLSD& content)
+void LLUploadModelPremissionsResponder::httpSuccess(void)
 {
 	LLUploadPermissionsObserver* observer = mObserverHandle.get();
 
 	if (observer)
 	{
-		observer->onPermissionsReceived(content);
+		observer->onPermissionsReceived(mContent);
 	}
 }

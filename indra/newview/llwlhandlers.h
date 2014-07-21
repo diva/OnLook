@@ -55,8 +55,8 @@ class LLEnvironmentRequestResponder: public LLHTTPClient::ResponderWithResult
 {
 	LOG_CLASS(LLEnvironmentRequestResponder);
 public:
-	/*virtual*/ void result(const LLSD& content);
-	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return environmentRequestResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLEnvironmentRequestResponder"; }
 
@@ -98,9 +98,9 @@ public:
 	 *   fail_reason : string
 	 * }
 	 */
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpSuccess(void);
 
-	/*virtual*/ void error(U32 status, const std::string& reason); // non-200 errors only
+	/*virtual*/ void httpFailure(void);
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return environmentApplyResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLEnvironmentApplyResponder"; }

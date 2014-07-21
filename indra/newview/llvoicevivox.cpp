@@ -122,11 +122,11 @@ public:
 		mRetries = retries;
 	}
 
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		LL_WARNS("Voice") << "ProvisionVoiceAccountRequest returned an error, "
 			<<  ( (mRetries > 0) ? "retrying" : "too many retries (giving up)" )
-			<< status << "]: " << reason << LL_ENDL;
+			<< mStatus << "]: " << mReason << LL_ENDL;
 
 		if ( mRetries > 0 )
 		{
@@ -138,24 +138,24 @@ public:
 		}
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 
 		std::string voice_sip_uri_hostname;
 		std::string voice_account_server_uri;
 
-		LL_DEBUGS("Voice") << "ProvisionVoiceAccountRequest response:" << ll_pretty_print_sd(content) << LL_ENDL;
+		LL_DEBUGS("Voice") << "ProvisionVoiceAccountRequest response:" << ll_pretty_print_sd(mContent) << LL_ENDL;
 
-		if(content.has("voice_sip_uri_hostname"))
-			voice_sip_uri_hostname = content["voice_sip_uri_hostname"].asString();
+		if(mContent.has("voice_sip_uri_hostname"))
+			voice_sip_uri_hostname = mContent["voice_sip_uri_hostname"].asString();
 
 		// this key is actually misnamed -- it will be an entire URI, not just a hostname.
-		if(content.has("voice_account_server_name"))
-			voice_account_server_uri = content["voice_account_server_name"].asString();
+		if(mContent.has("voice_account_server_name"))
+			voice_account_server_uri = mContent["voice_account_server_name"].asString();
 
 		LLVivoxVoiceClient::getInstance()->login(
-			content["username"].asString(),
-			content["password"].asString(),
+			mContent["username"].asString(),
+			mContent["password"].asString(),
 			voice_sip_uri_hostname,
 			voice_account_server_uri);
 
@@ -188,8 +188,8 @@ class LLVivoxVoiceClientCapResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLVivoxVoiceClientCapResponder(LLVivoxVoiceClient::state requesting_state) : mRequestingState(requesting_state) {};
 
-	/*virtual*/ void error(U32 status, const std::string& reason);	// called with bad status codes
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpFailure(void);
+	/*virtual*/ void httpSuccess(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return vivoxVoiceClientCapResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLVivoxVoiceClientCapResponder"; }
 
@@ -197,25 +197,25 @@ private:
 	LLVivoxVoiceClient::state mRequestingState;  // state
 };
 
-void LLVivoxVoiceClientCapResponder::error(U32 status, const std::string& reason)
+void LLVivoxVoiceClientCapResponder::httpFailure(void)
 {
 	LL_WARNS("Voice") << "LLVivoxVoiceClientCapResponder error [status:"
-		<< status << "]: " << reason << LL_ENDL;
+		<< mStatus << "]: " << mReason << LL_ENDL;
 	LLVivoxVoiceClient::getInstance()->sessionTerminate();
 }
 
-void LLVivoxVoiceClientCapResponder::result(const LLSD& content)
+void LLVivoxVoiceClientCapResponder::httpSuccess(void)
 {
 	LLSD::map_const_iterator iter;
 
-	LL_DEBUGS("Voice") << "ParcelVoiceInfoRequest response:" << ll_pretty_print_sd(content) << LL_ENDL;
+	LL_DEBUGS("Voice") << "ParcelVoiceInfoRequest response:" << ll_pretty_print_sd(mContent) << LL_ENDL;
 
 	std::string uri;
 	std::string credentials;
 
-	if ( content.has("voice_credentials") )
+	if ( mContent.has("voice_credentials") )
 	{
-		LLSD voice_credentials = content["voice_credentials"];
+		LLSD voice_credentials = mContent["voice_credentials"];
 		if ( voice_credentials.has("channel_uri") )
 		{
 			uri = voice_credentials["channel_uri"].asString();

@@ -104,8 +104,8 @@ public:
 
 	LLUploadModelPremissionsResponder(const LLHandle<LLUploadPermissionsObserver>& observer);
 
-	/*virtual*/ void error(U32 status, const std::string& reason);
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpFailure(void);
+	/*virtual*/ void httpSuccess(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return uploadModelPremissionsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLUploadModelPremissionsResponder"; }
 
