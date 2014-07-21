@@ -8964,7 +8964,6 @@ void LLPipeline::setupSpotLight(LLGLSLShader& shader, LLDrawable* drawablep)
 
 	LLVector4a screen_origin(LLVector4a::getZero());
 
-	assert_affine(light_to_screen);//deleteme
 	light_to_screen.affineTransform(p1,p1);
 	light_to_screen.affineTransform(p2,p2);
 	light_to_screen.affineTransform(screen_origin,screen_origin);
