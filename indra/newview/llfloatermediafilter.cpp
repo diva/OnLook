@@ -36,14 +36,16 @@
 #include "lltrans.h"
 #include "lluictrlfactory.h"
 
-bool handle_add_callback(const LLSD& notification, const LLSD& response);
+void on_add_to_list(bool white);
+bool handle_add_callback(const LLSD& notification, const LLSD& response, const bool& white);
 // TODO: Maybe add removal confirmation?
 //bool handle_remove_callback(const LLSD& notification, const LLSD& response);
 
 LLFloaterMediaFilter::LLFloaterMediaFilter(const LLSD& key)
 :	LLFloater(key)
 {
-	mCommitCallbackRegistrar.add("MediaFilter.CommitAction", boost::bind(&LLFloaterMediaFilter::onCommitAction, this, _2));
+	mCommitCallbackRegistrar.add("MediaFilter.OnAdd", boost::bind(on_add_to_list, boost::bind(&LLSD::asBoolean, _2)));
+	mCommitCallbackRegistrar.add("MediaFilter.OnRemove", boost::bind(&LLFloaterMediaFilter::onRemoveFromList, this, boost::bind(&LLSD::asBoolean, _2)));
 	mMediaListConnection = LLMediaFilter::getInstance()->setMediaListUpdateCallback(boost::bind(&LLFloaterMediaFilter::updateLists, this, _1));
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_media_lists.xml", NULL, false);
 }
@@ -60,94 +62,49 @@ BOOL LLFloaterMediaFilter::postBuild()
 	mBlacklist = getChild<LLScrollListCtrl>("blacklist");
 	updateLists(LLMediaFilter::WHITELIST);
 	updateLists(LLMediaFilter::BLACKLIST);
-	
+
 	return TRUE;
 }
 
-void LLFloaterMediaFilter::updateLists(LLMediaFilter::EMediaList list)
+void LLFloaterMediaFilter::updateLists(LLMediaFilter::EMediaList list_type)
 {
-	if (list == LLMediaFilter::WHITELIST)
+	bool white(list_type == LLMediaFilter::WHITELIST);
+	const LLMediaFilter& inst(LLMediaFilter::instance());
+	LLMediaFilter::string_list_t list = white ? inst.getWhiteList() : inst.getBlackList();
+	LLScrollListCtrl* scroll(white ? mWhitelist : mBlacklist);
+	scroll->clearRows();
+	for (LLMediaFilter::string_list_t::const_iterator itr = list.begin(); itr != list.end(); ++itr)
 	{
-		LLMediaFilter::string_list_t list = LLMediaFilter::getInstance()->getWhiteList();
-		mWhitelist->clearRows();
-		for (LLMediaFilter::string_list_t::const_iterator itr = list.begin(); itr != list.end(); ++itr)
-		{
-			LLSD element;
-			element["columns"][0]["column"] = "list";
-			element["columns"][0]["value"] = (*itr);
-			mWhitelist->addElement(element);
-		}
-	}
-	if (list == LLMediaFilter::BLACKLIST)
-	{
-		LLMediaFilter::string_list_t list = LLMediaFilter::getInstance()->getBlackList();
-		mBlacklist->clearRows();
-		for (LLMediaFilter::string_list_t::const_iterator itr = list.begin(); itr != list.end(); ++itr)
-		{
-			LLSD element;
-			element["columns"][0]["column"] = "list";
-			element["columns"][0]["value"] = (*itr);
-			mBlacklist->addElement(element);
-		}
+		LLSD element;
+		element["columns"][0]["column"] = "list";
+		element["columns"][0]["value"] = (*itr);
+		scroll->addElement(element);
 	}
 }
 
-void LLFloaterMediaFilter::onCommitAction(const LLSD& userdata)
+void on_add_to_list(bool white)
 {
-	std::string chosen_item = userdata.asString();
-	if (chosen_item == "AddToWhitelist")
-	{
-		LLSD payload, args;
-		args["LIST"] = LLTrans::getString("MediaFilterWhitelist");
-		payload = true;
-		LLNotificationsUtil::add("AddToMediaList", args, payload, &handle_add_callback);
-	}
-	else if (chosen_item == "AddToBlacklist")
-	{
-		LLSD payload, args;
-		args["LIST"] = LLTrans::getString("MediaFilterBlacklist");
-		payload = false;
-		LLNotificationsUtil::add("AddToMediaList", args, payload, &handle_add_callback);
-	}
-	else if (chosen_item == "RemoveFromWhitelist")
-	{
-		std::vector<LLScrollListItem*> selected = mWhitelist->getAllSelected();
-		if (!selected.empty())
-		{
-			LLMediaFilter::string_vec_t domains;
-			for (std::vector<LLScrollListItem*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
-			{
-				domains.push_back((*itr)->getColumn(0)->getValue().asString());
-			}
-			LLMediaFilter::getInstance()->removeFromMediaList(domains, LLMediaFilter::WHITELIST);
-		}
-	}
-	else if (chosen_item == "RemoveFromBlacklist")
-	{
-		std::vector<LLScrollListItem*> selected = mBlacklist->getAllSelected();
-		if (!selected.empty())
-		{
-			LLMediaFilter::string_vec_t domains;
-			for (std::vector<LLScrollListItem*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
-			{
-				domains.push_back((*itr)->getColumn(0)->getValue().asString());
-			}
-			LLMediaFilter::getInstance()->removeFromMediaList(domains, LLMediaFilter::BLACKLIST);
-		}
-	}
+	LLSD args;
+	args["LIST"] = LLTrans::getString(white ? "MediaFilterWhitelist" : "MediaFilterBlacklist");
+	LLNotificationsUtil::add("AddToMediaList", args, LLSD(), boost::bind(handle_add_callback, _1, _2, white));
 }
 
-bool handle_add_callback(const LLSD& notification, const LLSD& response)
+void LLFloaterMediaFilter::onRemoveFromList(bool white)
 {
-	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
-	if (option == 0)
+	std::vector<LLScrollListItem*> selected = (white ? mWhitelist : mBlacklist)->getAllSelected();
+	LLMediaFilter::string_vec_t domains;
+	for (std::vector<LLScrollListItem*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
 	{
-		std::string url = response["url"].asString();
-		if (notification["payload"].asBoolean())
-			LLMediaFilter::getInstance()->addToMediaList(url, LLMediaFilter::WHITELIST);
-		else
-			LLMediaFilter::getInstance()->addToMediaList(url, LLMediaFilter::BLACKLIST);
-		
+		domains.push_back((*itr)->getColumn(0)->getValue().asString());
+	}
+	LLMediaFilter::getInstance()->removeFromMediaList(domains, white ? LLMediaFilter::WHITELIST : LLMediaFilter::BLACKLIST);
+}
+
+bool handle_add_callback(const LLSD& notification, const LLSD& response, const bool& white)
+{
+	if (LLNotificationsUtil::getSelectedOption(notification, response) == 0)
+	{
+		LLMediaFilter::instance().addToMediaList(response["url"].asString(), white ? LLMediaFilter::WHITELIST : LLMediaFilter::BLACKLIST);
 	}
 	return false;
 }

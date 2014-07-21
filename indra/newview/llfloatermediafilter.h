@@ -32,7 +32,6 @@
 
 #include "llfloater.h"
 #include "llmediafilter.h"
-#include <boost/signals2.hpp>
 
 class LLScrollListCtrl;
 
@@ -45,8 +44,8 @@ public:
 private:
 	~LLFloaterMediaFilter();
 	void updateLists(LLMediaFilter::EMediaList list);
-	void onCommitAction(const LLSD& userdata);
-	
+	void onRemoveFromList(bool white);
+
 	LLScrollListCtrl* mWhitelist;
 	LLScrollListCtrl* mBlacklist;
 	boost::signals2::connection mMediaListConnection;

@@ -26,52 +26,51 @@
 #ifndef LL_MEDIAFILTER_H
 #define LL_MEDIAFILTER_H
 
-#include "llparcel.h"
+class LLParcel;
 
 class LLMediaFilter : public LLSingleton<LLMediaFilter>
 {
-	friend class LLSingleton<LLMediaFilter>;
 public:
 	typedef enum e_media_list {
 		WHITELIST,
 		BLACKLIST
 	} EMediaList;
-	
+
 	typedef std::list<std::string> string_list_t;
 	typedef std::vector<std::string> string_vec_t;
 	typedef boost::signals2::signal<void(EMediaList list)> media_list_signal_t;
-	media_list_signal_t mMediaListUpdate;
 	boost::signals2::connection setMediaListUpdateCallback(const media_list_signal_t::slot_type& cb)
 	{
 		return mMediaListUpdate.connect(cb);
-	};
-	
+	}
+
 	LLMediaFilter();
 	void filterMediaUrl(LLParcel* parcel);
 	void filterAudioUrl(const std::string& url);
 	//void filterSharedMediaUrl
-	
+
 	void addToMediaList(const std::string& in_url, EMediaList list, bool extract = true);
 	void removeFromMediaList(string_vec_t, EMediaList list);
-	string_list_t getWhiteList() { return mWhiteList; };
-	string_list_t getBlackList() { return mBlackList; };
-	U32 getQueuedMediaCommand() { return mMediaCommandQueue; };
-	void setQueuedMediaCommand(U32 command) { mMediaCommandQueue = command; };
-	bool isAlertActive() { return mAlertActive; };
-	void setAlertStatus(bool active) { mAlertActive = active; };
-	LLParcel* getCurrentParcel() { return mCurrentParcel; };
-	LLParcel* getQueuedMedia() { return mMediaQueue; };
-	void clearQueuedMedia() { mMediaQueue = NULL; };
-	std::string getQueuedAudio() { return mAudioQueue; };
-	void clearQueuedAudio() { mAudioQueue.clear(); };
-	void setCurrentAudioURL(const std::string url ) { mCurrentAudioURL = url; };
-	void clearCurrentAudioURL() { mCurrentAudioURL.clear(); };
+	string_list_t getWhiteList() const { return mWhiteList; }
+	string_list_t getBlackList() const { return mBlackList; }
+	U32 getQueuedMediaCommand() const { return mMediaCommandQueue; }
+	void setQueuedMediaCommand(U32 command) { mMediaCommandQueue = command; }
+	bool isAlertActive() const { return mAlertActive; }
+	void setAlertStatus(bool active) { mAlertActive = active; }
+	LLParcel* getCurrentParcel() const { return mCurrentParcel; }
+	LLParcel* getQueuedMedia() const { return mMediaQueue; }
+	void clearQueuedMedia() { mMediaQueue = NULL; }
+	std::string getQueuedAudio() const { return mAudioQueue; }
+	void clearQueuedAudio() { mAudioQueue.clear(); }
+	void setCurrentAudioURL(const std::string url ) { mCurrentAudioURL = url; }
+	void clearCurrentAudioURL() { mCurrentAudioURL.clear(); }
 	bool filter(const std::string& url, EMediaList list);
-	
+
 private:
 	void loadMediaFilterFromDisk();
-	void saveMediaFilterToDisk();
-	
+	void saveMediaFilterToDisk() const;
+
+	media_list_signal_t mMediaListUpdate;
 	string_list_t mBlackList;
 	string_list_t mWhiteList;
 	U32 mMediaCommandQueue;
@@ -86,7 +85,7 @@ private:
 	//	STOP
 	//} EAudioState;
 	//EAudioState mAudioState;
-	
+
 };
 
 #endif // LL_MEDIAFILTER_H
