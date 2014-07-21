@@ -794,6 +794,7 @@ void LLAvatarNameCache::setUseDisplayNames(bool use)
 	if (use != sUseDisplayNames)
 	{
 		sUseDisplayNames = use;
+		LL_DEBUGS("AvNameCache") << "Display names are now: " << (use ? "on" : "off") << LL_ENDL;
 		// flush our cache
 		sCache.clear();
 
