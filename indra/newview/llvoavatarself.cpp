@@ -3258,7 +3258,7 @@ LLVector3 LLVOAvatarSelf::getLegacyAvatarOffset() const
 	if(on_pose_stand)
 		offset.mV[VZ] += 7.5f;
 
-	return offset;
+	return mAvatarOffset + offset;
 }
 
 // static
