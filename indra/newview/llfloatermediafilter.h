@@ -44,6 +44,7 @@ public:
 private:
 	~LLFloaterMediaFilter();
 	void updateLists(LLMediaFilter::EMediaList list);
+	void enableButton(LLView* btn, const LLScrollListCtrl* scroll);
 	void onRemoveFromList(bool white);
 
 	LLScrollListCtrl* mWhitelist;

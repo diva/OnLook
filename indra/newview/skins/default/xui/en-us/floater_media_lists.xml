@@ -85,8 +85,8 @@
         mouse_opaque="false"
         name="add_whitelist">
         <button.commit_callback
-         function="MediaFilter.CommitAction"
-         parameter="AddToWhitelist"/>
+         function="MediaFilter.OnAdd"
+         parameter="1"/>
     </button>
 
    </layout_panel>
@@ -112,8 +112,8 @@
         mouse_opaque="false"
         name="remove_whitelist">
         <button.commit_callback
-         function="MediaFilter.CommitAction"
-         parameter="RemoveFromWhitelist"/>
+         function="MediaFilter.OnRemove"
+         parameter="1"/>
     </button>
 
     </layout_panel>
@@ -176,8 +176,7 @@
         mouse_opaque="false"
         name="add_blacklist">
         <button.commit_callback
-         function="MediaFilter.CommitAction"
-         parameter="AddToBlacklist"/>
+         function="MediaFilter.OnAdd"/>
     </button>
 
     </layout_panel>
@@ -203,8 +202,7 @@
         mouse_opaque="false"
         name="remove_blacklist">
         <button.commit_callback
-         function="MediaFilter.CommitAction"
-         parameter="RemoveFromBlacklist"/>
+         function="MediaFilter.OnRemove"/>
     </button>
 
     </layout_panel>

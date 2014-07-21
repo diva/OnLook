@@ -62,6 +62,10 @@ BOOL LLFloaterMediaFilter::postBuild()
 	mBlacklist = getChild<LLScrollListCtrl>("blacklist");
 	updateLists(LLMediaFilter::WHITELIST);
 	updateLists(LLMediaFilter::BLACKLIST);
+	mWhitelist->setCommitOnSelectionChange(true);
+	mBlacklist->setCommitOnSelectionChange(true);
+	mWhitelist->setCommitCallback(boost::bind(&LLFloaterMediaFilter::enableButton, this, getChildView("remove_whitelist"), mWhitelist));
+	mBlacklist->setCommitCallback(boost::bind(&LLFloaterMediaFilter::enableButton, this, getChildView("remove_blacklist"), mBlacklist));
 
 	return TRUE;
 }
@@ -80,6 +84,12 @@ void LLFloaterMediaFilter::updateLists(LLMediaFilter::EMediaList list_type)
 		element["columns"][0]["value"] = (*itr);
 		scroll->addElement(element);
 	}
+	enableButton(getChildView(white ? "remove_whitelist" : "remove_blacklist"), scroll);
+}
+
+void LLFloaterMediaFilter::enableButton(LLView* btn, const LLScrollListCtrl* scroll)
+{
+	btn->setEnabled(!scroll->isEmpty() && scroll->getFirstSelected());
 }
 
 void on_add_to_list(bool white)
