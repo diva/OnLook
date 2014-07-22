@@ -397,7 +397,7 @@ void LLPanelGroupBulk::addUsers(uuid_vec_t& agent_ids)
 			//looks like user try to invite offline friend
 			//for offline avatar_id gObjectList.findObject() will return null
 			//so we need to do this additional search in avatar tracker, see EXT-4732
-			if (LLAvatarTracker::instance().isBuddy(agent_id))
+			//if (LLAvatarTracker::instance().isBuddy(agent_id)) // Singu Note: We may be using this from another avatar list like group profile, disregard friendship status.
 			{
 				LLAvatarName av_name;
 				if (!LLAvatarNameCache::get(agent_id, &av_name))

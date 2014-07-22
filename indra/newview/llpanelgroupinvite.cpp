@@ -461,7 +461,7 @@ void LLPanelGroupInvite::addUsers(uuid_vec_t& agent_ids)
 			//looks like user try to invite offline friend
 			//for offline avatar_id gObjectList.findObject() will return null
 			//so we need to do this additional search in avatar tracker, see EXT-4732
-			if (LLAvatarTracker::instance().isBuddy(agent_id))
+			//if (LLAvatarTracker::instance().isBuddy(agent_id)) // Singu Note: We may be using this from another avatar list like group profile, disregard friendship status.
 			{
 				LLAvatarName av_name;
 				if (!LLAvatarNameCache::get(agent_id, &av_name))
@@ -476,7 +476,9 @@ void LLPanelGroupInvite::addUsers(uuid_vec_t& agent_ids)
 				}
 				else
 				{
-					names.push_back(av_name.getLegacyName());
+					std::string name;
+					LLAvatarNameCache::getPNSName(av_name, name);
+					names.push_back(name);
 				}
 			}
 		}
@@ -489,7 +491,9 @@ void LLPanelGroupInvite::addUserCallback(const LLUUID& id, const LLAvatarName& a
 	std::vector<std::string> names;
 	uuid_vec_t agent_ids;
 	agent_ids.push_back(id);
-	names.push_back(av_name.getLegacyName());
+	std::string name;
+	LLAvatarNameCache::getPNSName(av_name, name);
+	names.push_back(name);
 
 	mImplementation->addUsers(names, agent_ids);
 }
