@@ -9012,6 +9012,16 @@ class ListVisibleWebProfile : public view_listener_t
 	}
 };
 
+void ban_from_group(const uuid_vec_t& ids);
+class ListBanFromGroup : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		ban_from_group(get_focused_list_ids_selected());
+		return true;
+	}
+};
+
 class ListCopySLURL : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9528,6 +9538,7 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
+	addMenu(new ListBanFromGroup(), "List.BanFromGroup");
 	addMenu(new ListCopySLURL(), "List.CopySLURL");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
