@@ -1459,7 +1459,8 @@ void LLViewerObjectList::removeFromActiveList(LLViewerObject* objectp)
 		
 		objectp->setListIndex(-1);
 
-		std::vector<LLPointer<LLViewerObject> >::iterator iter = vector_replace_with_last(mActiveObjects,mActiveObjects.begin() + idx);
+		std::vector<LLPointer<LLViewerObject> >::iterator it(mActiveObjects.begin() + idx);
+		std::vector<LLPointer<LLViewerObject> >::iterator iter = vector_replace_with_last(mActiveObjects, it);
 		if(iter != mActiveObjects.end())
 			(*iter)->setListIndex(idx);
 

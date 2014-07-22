@@ -663,22 +663,28 @@ public:
 	}
 
 	//======================Logic====================
+private:
+	template<bool mins> inline void init_foos(LLMatrix4a& foos) const
+	{
+		static bool done(false);
+		if (done) return;
+		const LLVector4a delta(0.0001f);
+		foos.setIdentity();
+		foos.getRow<0>().sub(delta);
+		foos.getRow<1>().sub(delta);
+		foos.getRow<2>().sub(delta);
+		foos.getRow<3>().sub(delta);
+		done = true;
+	}
+
+public:
 	inline bool isIdentity() const
 	{
 		static LLMatrix4a mins;
 		static LLMatrix4a maxs;
-		static LLVector4a delta(0.0001f);
 
-		static bool init_mins = (	mins.setIdentity(),
-									mins.getRow<0>().sub(delta),
-									mins.getRow<1>().sub(delta),
-									mins.getRow<2>().sub(delta),
-									mins.getRow<3>().sub(delta),	true	);
-		static bool init_maxs = (	maxs.setIdentity(),
-									maxs.getRow<0>().add(delta),
-									maxs.getRow<1>().add(delta),
-									maxs.getRow<2>().add(delta),
-									maxs.getRow<3>().add(delta),	true	);
+		init_foos<false>(mins);
+		init_foos<true>(maxs);
 
 		LLVector4a mask1 = _mm_and_ps(_mm_cmpgt_ps(mMatrix[0],mins.getRow<0>()), _mm_cmplt_ps(mMatrix[0],maxs.getRow<0>()));
 		LLVector4a mask2 = _mm_and_ps(_mm_cmpgt_ps(mMatrix[1],mins.getRow<1>()), _mm_cmplt_ps(mMatrix[1],maxs.getRow<1>()));
