@@ -71,6 +71,7 @@ public:
 
 	// Outside UI widgets can spawn this floater with various tabs
 	// selected.
+	static void searchInAll(const std::string& search_text);
 	static void showFindAll(const std::string& search_text);
 	static void showClassified(const LLUUID& classified_id);
 	static void showClassified(const std::string& search_text = "");
@@ -92,6 +93,7 @@ public:
 
 private:
 	static void performQueryOn(const std::string& name, const std::string& search_text);
+	static void performQueryOn2(const std::string& name, const std::string& search_text);
 	static void showPanel(const std::string& tabname);
 	/*virtual*/ void onClose(bool app_quitting);
 	void focusCurrentPanel();

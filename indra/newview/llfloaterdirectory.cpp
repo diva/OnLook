@@ -439,6 +439,17 @@ void LLFloaterDirectory::requestClassifieds()
 	}
 }
 
+void LLFloaterDirectory::searchInAll(const std::string& search_text)
+{
+	LLPanelDirFindAllInterface::search(sInstance->mFindAllPanel, search_text);
+	performQueryOn2("classified_panel", search_text);
+	performQueryOn2("events_panel", search_text);
+	performQueryOn2("groups_panel", search_text);
+	performQueryOn2("people_panel", search_text);
+	performQueryOn2("places_panel", search_text);
+	sInstance->open();
+}
+
 void LLFloaterDirectory::showFindAll(const std::string& search_text)
 {
 	showPanel("find_all_panel");
@@ -524,6 +535,12 @@ void LLFloaterDirectory::showPlaces(const std::string& search_text)
 void LLFloaterDirectory::performQueryOn(const std::string& name, const std::string& search_text)
 {
 	showPanel(name);
+	performQueryOn2(name, search_text);
+}
+
+//static
+void LLFloaterDirectory::performQueryOn2(const std::string& name, const std::string& search_text)
+{
 	if (search_text.empty()) return; // We're done here.
 	LLPanelDirBrowser* panel = sInstance->getChild<LLPanelDirBrowser>(name);
 	panel->getChild<LLUICtrl>("name")->setValue(search_text);

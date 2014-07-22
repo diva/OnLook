@@ -160,7 +160,9 @@ void LLFloaterSearch::showInstance(const SearchQuery& search, bool web)
 	else
 	{
 		const std::string category(search.category());
-		if (category.empty() || category == "all")
+		if (category.empty())
+			LLFloaterDirectory::searchInAll(search.query);
+		else if (category == "all")
 			LLFloaterDirectory::showFindAll(search.query);
 		else if (category == "people")
 			LLFloaterDirectory::showPeople(search.query);
