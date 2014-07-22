@@ -39,10 +39,10 @@ class LLViewerObject;
 
 // This rotation matrix moves the default OpenGL reference frame 
 // (-Z at, Y up) to Cory's favorite reference frame (X at, Z up)
-static LL_ALIGN_16(const LLMatrix4a OGL_TO_CFR_ROTATION(LLVector4a( 0.f,  0.f, -1.f,  0.f), 	// -Z becomes X
+static LL_ALIGN_16(const LLMatrix4a) OGL_TO_CFR_ROTATION(LLVector4a( 0.f,  0.f, -1.f,  0.f), 	// -Z becomes X
 														LLVector4a(-1.f,  0.f,  0.f,  0.f), 	// -X becomes Y
 														LLVector4a( 0.f,  1.f,  0.f,  0.f),		//  Y becomes Z
-														LLVector4a( 0.f,  0.f,  0.f,  1.f) ));
+														LLVector4a( 0.f,  0.f,  0.f,  1.f) );
 
 const BOOL FOR_SELECTION = TRUE;
 const BOOL NOT_FOR_SELECTION = FALSE;

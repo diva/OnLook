@@ -301,7 +301,8 @@ void LLFacePool::removeFaceReference(LLFace *facep)
 	if (idx != -1)
 	{
 		facep->setReferenceIndex(-1);
-		std::vector<LLFace*>::iterator iter = vector_replace_with_last(mReferences, mReferences.begin() + idx);
+		std::vector<LLFace*>::iterator face_it(mReferences.begin() + idx);
+		std::vector<LLFace*>::iterator iter = vector_replace_with_last(mReferences, face_it);
 		if(iter != mReferences.end())
 			(*iter)->setReferenceIndex(idx);
 	}

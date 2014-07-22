@@ -968,11 +968,11 @@ public:
 #ifdef LL_OCTREE_POOLS
 	void* operator new(size_t size)
 	{
-		return getPool(size).malloc();
+		return LLOctreeNode<T>::getPool(size).malloc();
 	}
 	void operator delete(void* ptr)
 	{
-		getPool(sizeof(LLOctreeNode<T>)).free(ptr);
+		LLOctreeNode<T>::getPool(sizeof(LLOctreeNode<T>)).free(ptr);
 	}
 #else
 	void* operator new(size_t size)
