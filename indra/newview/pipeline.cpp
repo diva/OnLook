@@ -249,12 +249,12 @@ void drawBoxOutline(const LLVector3& pos, const LLVector3& size);
 U32 nhpo2(U32 v);
 LLVertexBuffer* ll_create_cube_vb(U32 type_mask, U32 usage);
 
-inline const LLMatrix4a& glh_get_current_modelview()
+const LLMatrix4a& glh_get_current_modelview()
 {
 	return gGLModelView;
 }
 
-inline const LLMatrix4a& glh_get_current_projection()
+const LLMatrix4a& glh_get_current_projection()
 {
 	return gGLProjection;
 }
@@ -269,12 +269,12 @@ inline const LLMatrix4a& glh_get_last_projection()
 	return gGLLastProjection;
 }
 
-inline void glh_set_current_modelview(const LLMatrix4a& mat)
+void glh_set_current_modelview(const LLMatrix4a& mat)
 {
 	gGLModelView = mat;
 }
 
-inline void glh_set_current_projection(const LLMatrix4a& mat)
+void glh_set_current_projection(const LLMatrix4a& mat)
 {
 	gGLProjection = mat;
 }
