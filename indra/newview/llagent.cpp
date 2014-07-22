@@ -1293,24 +1293,11 @@ F32 LLAgent::clampPitchToLimits(F32 angle)
 
 	LLVector3 skyward = getReferenceUpVector();
 
-	F32			look_down_limit;
-	F32			look_up_limit = 10.f * DEG_TO_RAD;
+	static const LLCachedControl<bool> useRealisticMouselook(gSavedSettings, "UseRealisticMouselook", false);
+	const F32 look_down_limit = (useRealisticMouselook ? 160.f : (isAgentAvatarValid() && gAgentAvatarp->isSitting() ? 130.f : 179.f)) * DEG_TO_RAD;
+	const F32 look_up_limit = (useRealisticMouselook ? 20.f : 1.f) * DEG_TO_RAD;;
 
 	F32 angle_from_skyward = acos( mFrameAgent.getAtAxis() * skyward );
-
-	if (gAgentCamera.cameraMouselook() && gSavedSettings.getBOOL("UseRealisticMouselook"))
-	{
-		look_down_limit = 160.f * DEG_TO_RAD;
-		look_up_limit = 20.f * DEG_TO_RAD;
-	}
-	else if (isAgentAvatarValid() && gAgentAvatarp->isSitting())
-	{
-		look_down_limit = 130.f * DEG_TO_RAD;
-	}
-	else
-	{
-		look_down_limit = 170.f * DEG_TO_RAD;
-	}
 
 	// clamp pitch to limits
 	if ((angle >= 0.f) && (angle_from_skyward + angle > look_down_limit))

@@ -4149,7 +4149,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			static const LLCachedControl<bool> useRealisticMouselook("UseRealisticMouselook");
 			F32 pelvis_rot_threshold = clamp_rescale(speed, 0.1f, 1.0f, useRealisticMouselook ? s_pelvis_rot_threshold_slow * 2 : s_pelvis_rot_threshold_slow, s_pelvis_rot_threshold_fast);
 						
-			if (self_in_mouselook)
+			if (self_in_mouselook && !useRealisticMouselook)
 			{
 				pelvis_rot_threshold *= MOUSELOOK_PELVIS_FOLLOW_FACTOR;
 			}
