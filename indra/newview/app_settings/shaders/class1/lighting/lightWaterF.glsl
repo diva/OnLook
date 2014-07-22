@@ -39,10 +39,10 @@ void default_lighting_water()
 {
 	vec4 color = diffuseLookup(vary_texcoord0.xy) * vertex_color;
 
-	if(color.a < .004)
+	/*if(color.a < .004)
 	{
 		discard;
-	}
+	}*/
 
 	color.rgb = atmosLighting(color.rgb);
 
