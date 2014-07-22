@@ -6,9 +6,9 @@
 	<panel border="true" bottom="-172" filename="panel_audio.xml" height="165" label="Volume" left="142" name="Volume Panel" width="260"/>
     <text bottom="-190" name="Media Filtering">Media Filtering</text>
     <radio_group bottom_delta="-20" control_name="MediaEnableFilter" follows="top" height="30" width="316" tab_stop="true" draw_border="true" name="filter_group">
-	  <radio_item bottom_delta="0" name="Off" value="0">Off</radio_item>
-	  <radio_item bottom_delta="0" left_delta="60" name="Blacklist" value="1">Blacklist Only</radio_item>
-	  <radio_item bottom_delta="0" left_delta="60" name="Prompt" value="2">Prompt</radio_item>
+	  <radio_item bottom_delta="0" name="0" value="0">Off</radio_item>
+	  <radio_item bottom_delta="0" left_delta="60" name="1" value="1">Blacklist Only</radio_item>
+	  <radio_item bottom_delta="0" left_delta="60" name="2" value="2">Prompt</radio_item>
 	</radio_group>
 	<check_box bottom_delta="-20" control_name="AudioStreamingMusic" follows="top" height="16" initial_value="true" label="Play Streaming Music When Available (uses more bandwidth)" name="streaming_music"/>
 	<check_box bottom_delta="-20" control_name="AudioStreamingMedia" follows="top" height="16" initial_value="true" label="Play Streaming Media When Available (uses more bandwidth)" name="streaming_video"/>
