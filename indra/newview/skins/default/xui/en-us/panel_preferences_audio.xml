@@ -2,12 +2,13 @@
 <panel border="true" bottom="-409" height="408" label="Audio &amp; Video" left="102" name="Media panel" width="517">
 	<text bottom="-22" height="12" left="10" name="muting_text">Volume:</text>
 	<text bottom="-190" name="streaming_prefs_text">Streaming Preferences:</text>
-	<text bottom="-295" height="12" name="audio_prefs_text">Audio Preferences:</text>
+	<text bottom="-311" height="12" name="audio_prefs_text">Audio Preferences:</text>
 	<panel border="true" bottom="-172" filename="panel_audio.xml" height="165" label="Volume" left="142" name="Volume Panel" width="260"/>
-    <radio_group bottom="-195" control_name="MediaEnableFilter" follows="top" height="16" label="Media Filtering" tab_stop="true" draw_border="false">
-	  <radio_item enabled="true" follows="left|top" height="16" left="0" length="1" mouse_opaque="true" name="Off" label="Off" value="0" width="30" type="string" />
-	  <radio_item enabled="true" follows="left|top" height="16" left_pad="4" length="1" mouse_opaque="true" name="Blacklist" label="Blacklist Only" value="1" width="30" type="string" />
-	  <radio_item enabled="true" follows="left|top" height="16" left_pad="4" length="1" mouse_opaque="true" name="Prompt" label="Prompt" value="2" width="30" type="string" />
+    <text bottom="-190" name="Media Filtering">Media Filtering</text>
+    <radio_group bottom_delta="-20" control_name="MediaEnableFilter" follows="top" height="30" width="316" tab_stop="true" draw_border="true" name="filter_group">
+	  <radio_item bottom_delta="0" name="Off" value="0">Off</radio_item>
+	  <radio_item bottom_delta="0" left_delta="60" name="Blacklist" value="1">Blacklist Only</radio_item>
+	  <radio_item bottom_delta="0" left_delta="60" name="Prompt" value="2">Prompt</radio_item>
 	</radio_group>
 	<check_box bottom_delta="-20" control_name="AudioStreamingMusic" follows="top" height="16" initial_value="true" label="Play Streaming Music When Available (uses more bandwidth)" name="streaming_music"/>
 	<check_box bottom_delta="-20" control_name="AudioStreamingMedia" follows="top" height="16" initial_value="true" label="Play Streaming Media When Available (uses more bandwidth)" name="streaming_video"/>
