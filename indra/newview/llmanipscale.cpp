@@ -452,7 +452,7 @@ void LLManipScale::highlightManipulators(S32 x, S32 y)
 		{
 			LLVector4 translation(bbox.getPositionAgent());
 			transform.initRotTrans(bbox.getRotation(), translation);
-			LLMatrix4 cfr(OGL_TO_CFR_ROTATION);
+			LLMatrix4 cfr(OGL_TO_CFR_ROTATION.getF32ptr());
 			transform *= cfr;
 			LLMatrix4 window_scale;
 			F32 zoom_level = 2.f * gAgentCamera.mHUDCurZoom;
@@ -463,8 +463,8 @@ void LLManipScale::highlightManipulators(S32 x, S32 y)
 		}
 		else
 		{
-			LLMatrix4 projMatrix = LLViewerCamera::getInstance()->getProjection();
-			LLMatrix4 modelView = LLViewerCamera::getInstance()->getModelview();
+			LLMatrix4 projMatrix( LLViewerCamera::getInstance()->getProjection().getF32ptr() );
+			LLMatrix4 modelView( LLViewerCamera::getInstance()->getModelview().getF32ptr() );
 			transform.initAll(LLVector3(1.f, 1.f, 1.f), bbox.getRotation(), bbox.getPositionAgent());
 			
 			transform *= modelView;

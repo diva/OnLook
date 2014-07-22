@@ -101,7 +101,7 @@ public:
 	}
 
 private:
-	LLVector4a mV;
+	LL_ALIGN_16(LLVector4a mV);
 } LL_ALIGN_POSTFIX(16);
 
 

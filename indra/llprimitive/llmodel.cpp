@@ -31,6 +31,7 @@
 #include "llconvexdecomposition.h"
 #include "llsdserialize.h"
 #include "llvector4a.h"
+#include "llmatrix4a.h"
 #if LL_MSVC
 #pragma warning (push)
 #pragma warning (disable : 4068)

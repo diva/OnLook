@@ -311,6 +311,16 @@ public:
 	LLModelPreview(S32 width, S32 height, LLFloater* fmp);
 	virtual ~LLModelPreview();
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	void resetPreviewTarget();
 	void setPreviewTarget(F32 distance);
 	void setTexture(U32 name) { mTextureName = name; }

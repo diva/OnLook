@@ -468,6 +468,8 @@ LLImageGL::~LLImageGL()
 	sCount--;
 }
 
+const S8 INVALID_OFFSET = -99 ;
+
 void LLImageGL::init(BOOL usemipmaps)
 {
 	// keep these members in the same order as declared in llimagehl.h
@@ -484,14 +486,12 @@ void LLImageGL::init(BOOL usemipmaps)
 	mHasExplicitFormat = FALSE;
 	mAutoGenMips = FALSE;
 
-	mCanMask = TRUE;
 	mIsMask = FALSE;
 	mMaskRMSE = 1.f ;
 
-
-	mNeedsAlphaAndPickMask = TRUE ;
+	mNeedsAlphaAndPickMask = FALSE ;
 	mAlphaStride = 0 ;
-	mAlphaOffset = 0 ;
+	mAlphaOffset = INVALID_OFFSET ;
 
 	mGLTextureCreated = FALSE ;
 	mTexName = 0;
@@ -1709,7 +1709,6 @@ void LLImageGL::setTarget(const LLGLenum target, const LLTexUnit::eTextureType b
 }
 
 //Used by media in V2
-const S8 INVALID_OFFSET = -99 ;
 void LLImageGL::setNeedsAlphaAndPickMask(BOOL need_mask) 
 {
 	if(mNeedsAlphaAndPickMask != need_mask)
@@ -1723,7 +1722,6 @@ void LLImageGL::setNeedsAlphaAndPickMask(BOOL need_mask)
 		else //do not need alpha mask
 		{
 			mAlphaOffset = INVALID_OFFSET ;
-			mCanMask = FALSE;
 		}
 	}
 }
@@ -1746,8 +1744,7 @@ void LLImageGL::calcAlphaChannelOffsetAndStride()
 		mAlphaStride = 2;
 		break;
 	case GL_RGB:
-		mNeedsAlphaAndPickMask = FALSE ;
-		mCanMask = FALSE;
+		setNeedsAlphaAndPickMask(FALSE);
 		return ; //no alpha channel.
 	case GL_RGBA:
 		mAlphaStride = 4;
@@ -1793,15 +1790,14 @@ void LLImageGL::calcAlphaChannelOffsetAndStride()
 	{
 		llwarns << "Cannot analyze alpha for image with format type " << std::hex << mFormatType << std::dec << llendl;
 
-		mNeedsAlphaAndPickMask = FALSE ;
-		mCanMask = FALSE;
+		setNeedsAlphaAndPickMask(FALSE);
 	}
 }
 
 //std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
 void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
 {
-	if(!mNeedsAlphaAndPickMask || !mCanMask)
+	if(!mNeedsAlphaAndPickMask)
 	{
 		return ;
 	}

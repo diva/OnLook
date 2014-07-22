@@ -339,7 +339,6 @@ BOOL LLVOPartGroup::updateGeometry(LLDrawable *drawable)
 			group->setState(LLSpatialGroup::GEOM_DIRTY);
 		}
 		drawable->setNumFaces(0, NULL, getTEImage(0));
-		LLPipeline::sCompiles++;
 		return TRUE;
 	}
 
@@ -482,7 +481,6 @@ BOOL LLVOPartGroup::updateGeometry(LLDrawable *drawable)
 	mScale.set(max_scale, max_scale, max_scale);
 
 	mDrawable->movePartition();
-	LLPipeline::sCompiles++;
 	return TRUE;
 }
 

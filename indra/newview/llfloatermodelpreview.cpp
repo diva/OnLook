@@ -1594,9 +1594,11 @@ bool LLModelLoader::doLoadModel()
 						mesh_scale *= normalized_transformation;
 						normalized_transformation = mesh_scale;
 
-						glh::matrix4f inv_mat((F32*) normalized_transformation.mMatrix);
-						inv_mat = inv_mat.inverse();
-						LLMatrix4 inverse_normalized_transformation(inv_mat.m);
+						LLMatrix4a inv_mat;
+						inv_mat.loadu(normalized_transformation);
+						inv_mat.invert();
+
+						LLMatrix4 inverse_normalized_transformation(inv_mat.getF32ptr());
 
 						domSkin::domBind_shape_matrix* bind_mat = skin->getBind_shape_matrix();
 
@@ -5135,9 +5137,10 @@ BOOL LLModelPreview::render()
 				}
 
 				gGL.pushMatrix();
-				LLMatrix4 mat = instance.mTransform;
+				LLMatrix4a mat;
+				mat.loadu((F32*)instance.mTransform.mMatrix);
 
-				gGL.multMatrix((GLfloat*) mat.mMatrix);
+				gGL.multMatrix(mat);
 
 				for (U32 i = 0; i < mVertexBuffer[mPreviewLOD][model].size(); ++i)
 				{
@@ -5218,9 +5221,10 @@ BOOL LLModelPreview::render()
 						}
 
 						gGL.pushMatrix();
-						LLMatrix4 mat = instance.mTransform;
+						LLMatrix4a mat;
+						mat.loadu((F32*)instance.mTransform.mMatrix);
 
-						gGL.multMatrix((GLfloat*) mat.mMatrix);
+						gGL.multMatrix(mat);
 
 
 						bool render_mesh = true;
@@ -5325,9 +5329,10 @@ BOOL LLModelPreview::render()
 						}
 
 						gGL.pushMatrix();
-						LLMatrix4 mat = instance.mTransform;
+						LLMatrix4a mat;
+						mat.loadu((F32*)instance.mTransform.mMatrix);
 
-						gGL.multMatrix((GLfloat*) mat.mMatrix);
+						gGL.multMatrix(mat);
 
 
 						LLPhysicsDecomp* decomp = gMeshRepo.mDecompThread;

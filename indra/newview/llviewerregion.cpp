@@ -321,6 +321,9 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 {
 	// Moved this up... -> mWidth = region_width_meters;
 // </FS:CR>
+
+	mRenderMatrix.setIdentity();
+
 	mImpl->mOriginGlobal = from_region_handle(handle); 
 	updateRenderMatrix();
 
@@ -547,7 +550,7 @@ void LLViewerRegion::setOriginGlobal(const LLVector3d &origin_global)
 
 void LLViewerRegion::updateRenderMatrix()
 {
-	mRenderMatrix.setTranslation(getOriginAgent());
+	mRenderMatrix.setTranslate_affine(getOriginAgent());
 }
 
 void LLViewerRegion::setTimeDilation(F32 time_dilation)

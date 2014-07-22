@@ -79,6 +79,16 @@ public:
 	LLViewerTexLayerSetBuffer(LLTexLayerSet* const owner, S32 width, S32 height);
 	virtual ~LLViewerTexLayerSetBuffer();
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 public:
 	/*virtual*/ S8          getType() const;
 	BOOL					isInitialized(void) const;

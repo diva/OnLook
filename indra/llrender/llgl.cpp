@@ -444,6 +444,7 @@ LLGLManager::LLGLManager() :
 	mHasDebugOutput(FALSE),
 
 	mHasAdaptiveVsync(FALSE),
+	mHasTextureSwizzle(FALSE),
 
 	mIsATI(FALSE),
 	mIsNVIDIA(FALSE),
@@ -1382,6 +1383,35 @@ void flush_glerror()
 	glGetError();
 }
 
+const std::string getGLErrorString(GLenum error)
+{
+	switch(error)
+	{
+	case GL_NO_ERROR:
+		return "No Error";
+	case GL_INVALID_ENUM:
+		return "Invalid Enum";
+	case GL_INVALID_VALUE:
+		return "Invalid Value";
+	case GL_INVALID_OPERATION:
+		return "Invalid Operation";
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+		return "Invalid Framebuffer Operation";
+	case GL_OUT_OF_MEMORY:
+		return "Out of Memory";
+	case GL_STACK_UNDERFLOW:
+		return "Stack Underflow";
+	case GL_STACK_OVERFLOW:
+		return "Stack Overflow";
+#ifdef GL_TABLE_TOO_LARGE
+	case GL_TABLE_TOO_LARGE:
+		return "Table too large";
+#endif
+	default:
+		return "UNKNOWN ERROR";
+	}
+}
+
 //this function outputs gl error to the log file, does not crash the code.
 void log_glerror()
 {
@@ -1394,17 +1424,8 @@ void log_glerror()
 	error = glGetError();
 	while (LL_UNLIKELY(error))
 	{
-		GLubyte const * gl_error_msg = gluErrorString(error);
-		if (NULL != gl_error_msg)
-		{
-			llwarns << "GL Error: " << error << " GL Error String: " << gl_error_msg << llendl ;			
-		}
-		else
-		{
-			// gluErrorString returns NULL for some extensions' error codes.
-			// you'll probably have to grep for the number in glext.h.
-			llwarns << "GL Error: UNKNOWN 0x" << std::hex << error << std::dec << llendl;
-		}
+		std::string gl_error_msg = getGLErrorString(error);
+		llwarns << "GL Error: 0x" << std::hex << error << std::dec << " GL Error String: " << gl_error_msg << llendl;			
 		error = glGetError();
 	}
 }
@@ -1418,27 +1439,13 @@ void do_assert_glerror()
 	while (LL_UNLIKELY(error))
 	{
 		quit = TRUE;
-		GLubyte const * gl_error_msg = gluErrorString(error);
-		if (NULL != gl_error_msg)
+		
+		std::string gl_error_msg = getGLErrorString(error);
+		LL_WARNS("RenderState") << "GL Error: 0x" << std::hex << error << std::dec << LL_ENDL;		
+		LL_WARNS("RenderState") << "GL Error String: " << gl_error_msg << LL_ENDL;
+		if (gDebugSession)
 		{
-			LL_WARNS("RenderState") << "GL Error:" << error<< LL_ENDL;
-			LL_WARNS("RenderState") << "GL Error String:" << gl_error_msg << LL_ENDL;
-
-			if (gDebugSession)
-			{
-				gFailLog << "GL Error:" << gl_error_msg << std::endl;
-			}
-		}
-		else
-		{
-			// gluErrorString returns NULL for some extensions' error codes.
-			// you'll probably have to grep for the number in glext.h.
-			LL_WARNS("RenderState") << "GL Error: UNKNOWN 0x" << std::hex << error << std::dec << LL_ENDL;
-
-			if (gDebugSession)
-			{
-				gFailLog << "GL Error: UNKNOWN 0x" << std::hex << error << std::dec << std::endl;
-			}
+			gFailLog << "GL Error: 0x" << std::hex << error << std::dec << " GL Error String: " << gl_error_msg << std::endl;
 		}
 		error = glGetError();
 	}
@@ -1662,10 +1669,6 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 
 	GLint stackDepth = 0;
 
-	glh::matrix4f mat;
-	glh::matrix4f identity;
-	identity.identity();
-
 	for (GLint i = 1; i < gGLManager.mNumTextureUnits; i++)
 	{
 		gGL.getTexUnit(i)->activate();
@@ -1685,10 +1688,11 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 			}
 		}
 
-		glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) mat.m);
+		LLMatrix4a mat;
+		glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) mat.mMatrix);
 		stop_glerror();
 
-		if (mat != identity)
+		if (!mat.isIdentity())
 		{
 			error = TRUE;
 			LL_WARNS("RenderState") << "Texture matrix in channel " << i << " corrupt." << LL_ENDL;
@@ -2179,7 +2183,7 @@ void parse_glsl_version(S32& major, S32& minor)
 	LLStringUtil::convertToS32(minor_str, minor);
 }
 
-LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const glh::matrix4f& modelview, const glh::matrix4f& projection, bool apply)
+LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const LLMatrix4a& modelview, const LLMatrix4a& projection, bool apply)
 {
 	mApply = apply;
 
@@ -2194,27 +2198,42 @@ LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const glh::matrix4f& mode
 
 void LLGLUserClipPlane::setPlane(F32 a, F32 b, F32 c, F32 d)
 {
-	glh::matrix4f& P = mProjection;
-	glh::matrix4f& M = mModelview;
-    
-	glh::matrix4f invtrans_MVP = (P * M).inverse().transpose();
-    glh::vec4f oplane(a,b,c,d);
-    glh::vec4f cplane;
-    invtrans_MVP.mult_matrix_vec(oplane, cplane);
+    LLMatrix4a& P = mProjection;
+	LLMatrix4a& M = mModelview;
 
-    cplane /= fabs(cplane[2]); // normalize such that depth is not scaled
-    cplane[3] -= 1;
+	LLMatrix4a invtrans_MVP;
+	invtrans_MVP.setMul(P,M);
+	invtrans_MVP.invert();
+	invtrans_MVP.transpose();
 
-    if(cplane[2] < 0)
-        cplane *= -1;
+	LLVector4a oplane(a,b,c,d);
+	LLVector4a cplane;
+	LLVector4a cplane_splat;
+	LLVector4a cplane_neg;
 
-    glh::matrix4f suffix;
-    suffix.set_row(2, cplane);
-    glh::matrix4f newP = suffix * P;
+	invtrans_MVP.rotate4(oplane,cplane);
+	
+	cplane_splat.splat<2>(cplane);
+	cplane_splat.setAbs(cplane_splat);
+	cplane.div(cplane_splat);
+	cplane.sub(LLVector4a(0.f,0.f,0.f,1.f));
+
+	cplane_splat.splat<2>(cplane);
+	cplane_neg = cplane;
+	cplane_neg.negate();
+
+	cplane.setSelectWithMask( cplane_splat.lessThan( _mm_setzero_ps() ), cplane_neg, cplane );
+
+	LLMatrix4a suffix;
+	suffix.setIdentity();
+	suffix.setColumn<2>(cplane);
+	LLMatrix4a newP;
+	newP.setMul(suffix,P);
+
     gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-    gGL.loadMatrix(newP.m);
-	gGLObliqueProjectionInverse = LLMatrix4(newP.inverse().transpose().m);
+    gGL.loadMatrix(newP);
+	//gGLObliqueProjectionInverse = LLMatrix4(newP.inverse().transpose().m);
     gGL.matrixMode(LLRender::MM_MODELVIEW);
 }
 
@@ -2403,19 +2422,18 @@ void LLGLDepthTest::checkState()
 	}
 }
 
-LLGLSquashToFarClip::LLGLSquashToFarClip(glh::matrix4f P, U32 layer)
+LLGLSquashToFarClip::LLGLSquashToFarClip(const LLMatrix4a& P_in, U32 layer)
 {
-
+	LLMatrix4a P = P_in;
 	F32 depth = 0.99999f - 0.0001f * layer;
 
-	for (U32 i = 0; i < 4; i++)
-	{
-		P.element(2, i) = P.element(3, i) * depth;
-	}
+	LLVector4a col = P.getColumn<3>();
+	col.mul(depth);
+	P.setColumn<2>(col);
 
 	gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-	gGL.loadMatrix(P.m);
+	gGL.loadMatrix(P);
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 }
 

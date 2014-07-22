@@ -100,8 +100,8 @@ public:
 	LLFace(LLDrawable* drawablep, LLViewerObject* objp)   { init(drawablep, objp); }
 	~LLFace()  { destroy(); }
 
-	const LLMatrix4& getWorldMatrix()	const	{ return mVObjp->getWorldMatrix(mXform); }
-	const LLMatrix4& getRenderMatrix() const;
+	const LLMatrix4a& getWorldMatrix()	const	{ return mVObjp->getWorldMatrix(mXform); }
+	const LLMatrix4a& getRenderMatrix() const;
 	U32				getIndicesCount()	const	{ return mIndicesCount; };
 	S32				getIndicesStart()	const	{ return mIndicesIndex; };
 	U16				getGeomCount()		const	{ return mGeomCount; }		// vertex count for this face
@@ -173,7 +173,7 @@ public:
 	bool canRenderAsMask(); // logic helper
 	BOOL getGeometryVolume(const LLVolume& volume,
 						const S32 &f,
-						const LLMatrix4& mat_vert, const LLMatrix3& mat_normal,
+						const LLMatrix4a& mat_vert, const LLMatrix4a& mat_normal,
 						const U16 &index_offset,
 						bool force_rebuild = false);
 
@@ -196,7 +196,7 @@ public:
 
 	void		setSize(S32 numVertices, S32 num_indices = 0, bool align = false);
 	
-	BOOL		genVolumeBBoxes(const LLVolume &volume, S32 f,const LLMatrix4& mat, BOOL global_volume = FALSE);
+	BOOL		genVolumeBBoxes(const LLVolume &volume, S32 f,const LLMatrix4a& mat, BOOL global_volume = FALSE);
 	
 	void		init(LLDrawable* drawablep, LLViewerObject* objp);
 	void		destroy();
@@ -239,7 +239,7 @@ public:
 	static U32 getRiggedDataMask(U32 type);
 
 public: //aligned members
-	LLVector4a		mExtents[2];
+	LL_ALIGN_16(LLVector4a		mExtents[2]);
 
 private:	
 	F32         adjustPartialOverlapPixelArea(F32 cos_angle_to_view_dir, F32 radius );
@@ -258,9 +258,7 @@ public:
 	F32			mLastUpdateTime;
 	F32			mLastSkinTime;
 	F32			mLastMoveTime;
-	LLMatrix4*	mTextureMatrix;
-	LLMatrix4*	mSpecMapMatrix;
-	LLMatrix4*	mNormalMapMatrix;
+	LLMatrix4a*	mTextureMatrix;
 	LLDrawInfo* mDrawInfo;
 
 	bool		mShinyInAlpha;

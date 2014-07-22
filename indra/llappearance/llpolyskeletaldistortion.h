@@ -68,7 +68,16 @@ class LLPolySkeletalDistortionInfo : public LLViewerVisualParamInfo
 {
 	friend class LLPolySkeletalDistortion;
 public:
-	
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	LLPolySkeletalDistortionInfo();
 	/*virtual*/ ~LLPolySkeletalDistortionInfo() {};
 	
@@ -77,12 +86,12 @@ public:
 protected:
 	typedef std::vector<LLPolySkeletalBoneInfo> bone_info_list_t;
 	bone_info_list_t mBoneInfoList;
-};
-
+} LL_ALIGN_POSTFIX(16);
 //-----------------------------------------------------------------------------
 // LLPolySkeletalDeformation
 // A set of joint scale data for deforming the avatar mesh
 //-----------------------------------------------------------------------------
+LL_ALIGN_PREFIX(16)
 class LLPolySkeletalDistortion : public LLViewerVisualParam
 {
 public:

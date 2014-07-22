@@ -2917,7 +2917,7 @@ void renderNormals(LLDrawable* drawablep)
 	{
 		LLVolume* volume = vol->getVolume();
 		gGL.pushMatrix();
-		gGL.multMatrix((F32*) vol->getRelativeXform().mMatrix);
+		gGL.multMatrix(vol->getRelativeXform());
 		
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
@@ -3071,7 +3071,7 @@ void renderPhysicsShape(LLDrawable* drawable, LLVOVolume* volume)
 	LLVector3 size(0.25f,0.25f,0.25f);
 
 	gGL.pushMatrix();
-	gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
+	gGL.multMatrix(volume->getRelativeXform());
 		
 	if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::USER_MESH)
 	{
@@ -3369,7 +3369,7 @@ void renderPhysicsShapes(LLSpatialGroup* group)
 			if (object && object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
 			{
 				gGL.pushMatrix();
-				gGL.multMatrix((F32*) object->getRegion()->mRenderMatrix.mMatrix);
+				gGL.multMatrix(object->getRegion()->mRenderMatrix);
 				//push face vertices for terrain
 				for (S32 i = 0; i < drawable->getNumFaces(); ++i)
 				{
@@ -3576,6 +3576,7 @@ void renderLights(LLDrawable* drawablep)
 	}
 }
 
+LL_ALIGN_PREFIX(16)
 class LLRenderOctreeRaycast : public LLOctreeTriangleRayIntersect
 {
 public:
@@ -3648,7 +3649,7 @@ public:
 			}
 		}
 	}
-};
+} LL_ALIGN_POSTFIX(16);
 
 void renderRaycast(LLDrawable* drawablep)
 {
@@ -3683,7 +3684,7 @@ void renderRaycast(LLDrawable* drawablep)
 					
 					gGL.pushMatrix();
 					gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);					
-					gGL.multMatrix((F32*) vobj->getRelativeXform().mMatrix);
+					gGL.multMatrix(vobj->getRelativeXform());
 
 					LLVector4a start, end;
 					if (transform)
@@ -3760,10 +3761,13 @@ void renderRaycast(LLDrawable* drawablep)
 			LLVector3 normal(gDebugRaycastNormal.getF32ptr());
 			LLVector3 binormal(debug_binormal.getF32ptr());
 						
+			//LLCoordFrame isn't vectorized, for now.
 			orient.lookDir(normal, binormal);
 			LLMatrix4 rotation;
 			orient.getRotMatrixToParent(rotation);
-			gGL.multMatrix((float*)rotation.mMatrix);
+			LLMatrix4a rotationa;
+			rotationa.loadu((F32*)rotation.mMatrix);
+			gGL.multMatrix(rotationa);
 			
 			gGL.diffuseColor4f(1,0,0,0.5f);
 			drawBox(LLVector3(0, 0, 0), LLVector3(0.1f, 0.022f, 0.022f));
@@ -4330,14 +4334,11 @@ public:
 
 			if (group->mSpatialPartition->isBridge())
 			{
-				LLMatrix4 local_matrix = group->mSpatialPartition->asBridge()->mDrawable->getRenderMatrix();
+				LLMatrix4a local_matrix = group->mSpatialPartition->asBridge()->mDrawable->getRenderMatrix();
 				local_matrix.invert();
 
-				LLMatrix4a local_matrix4a;
-				local_matrix4a.loadu(local_matrix);
-
-				local_matrix4a.affineTransform(mStart, local_start);
-				local_matrix4a.affineTransform(mEnd, local_end);
+				local_matrix.affineTransform(mStart, local_start);
+				local_matrix.affineTransform(mEnd, local_end);
 			}
 
 			if (LLLineSegmentBoxIntersect(local_start, local_end, center, size))

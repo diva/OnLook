@@ -52,6 +52,16 @@ protected:
  public:
 	LLImagePreviewSculpted(S32 width, S32 height);	
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	/*virtual*/ S8 getType() const ;
 
 	void setPreviewTarget(LLImageRaw *imagep, F32 distance);
@@ -84,6 +94,16 @@ protected:
 
 public:
 	LLImagePreviewAvatar(S32 width, S32 height);	
+
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
 
 	/*virtual*/ S8 getType() const ;
 

@@ -79,7 +79,7 @@ public:
 	{
 		static const LL_ALIGN_16(U32 allOnes[4]) = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
 		ll_assert_aligned(allOnes,16);
-		mQ = _mm_andnot_ps( mQ, *(LLQuad*)(allOnes) );
+		mQ = _mm_andnot_ps( mQ, _mm_load_ps((F32*)(allOnes)));
 		return *this;
 	}
 	
@@ -115,7 +115,7 @@ public:
 
 	template<int N> void setElement()
 	{
-		mQ = _mm_or_ps( mQ, *reinterpret_cast<const LLQuad*>(S_V4LOGICAL_MASK_TABLE + 4*N) );
+		mQ = _mm_or_ps( mQ, _mm_load_ps( (F32*)&S_V4LOGICAL_MASK_TABLE[4*N] ) );
 	}
 	
 private:

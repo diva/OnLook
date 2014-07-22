@@ -85,24 +85,24 @@ public:
 
 	void updateMesh();
 
-	void appendMesh(LLStrider<LLVector3>& vertices, 
-						 LLStrider<LLVector3>& normals, 
+	void appendMesh(LLStrider<LLVector4a>& vertices, 
+						 LLStrider<LLVector4a>& normals, 
 						 LLStrider<LLVector2>& tex_coords, 
 						 LLStrider<U16>& indices,
 						 U16& idx_offset,
-						 LLMatrix4& matrix,
-						 LLMatrix4& norm_mat,
+						 LLMatrix4a& matrix,
+						 LLMatrix4a& norm_mat,
 						 S32 vertex_offset,
 						 S32 vertex_count,
 						 S32 index_count,
 						 S32 index_offset);
 
-	void genBranchPipeline(LLStrider<LLVector3>& vertices, 
-								 LLStrider<LLVector3>& normals, 
+	void genBranchPipeline(LLStrider<LLVector4a>& vertices, 
+								 LLStrider<LLVector4a>& normals, 
 								 LLStrider<LLVector2>& tex_coords, 
 								 LLStrider<U16>& indices,
 								 U16& index_offset,
-								 LLMatrix4& matrix, 
+								 LLMatrix4a& matrix, 
 								 S32 trunk_LOD, 
 								 S32 stop_level, 
 								 U16 depth, 
@@ -112,9 +112,6 @@ public:
 								 F32 droop,  
 								 F32 branches, 
 								 F32 alpha);
-
-	U32 drawBranchPipeline(LLMatrix4& matrix, U16* indicesp, S32 trunk_LOD, S32 stop_level, U16 depth, U16 trunk_depth,  F32 scale, F32 twist, F32 droop,  F32 branches, F32 alpha);
- 
 
 	 /*virtual*/ BOOL lineSegmentIntersect(const LLVector4a& start, const LLVector4a& end, 
 										  S32 face = -1,                        // which face to check, -1 = ALL_SIDES
@@ -196,6 +193,8 @@ protected:
 	
 	U32 mFrameCount;
 
+	std::vector<LLPointer<LLDrawInfo> > mDrawList;
+
 	typedef std::map<U32, TreeSpeciesData*> SpeciesMap;
 	static SpeciesMap sSpeciesTable;
 
@@ -210,8 +209,8 @@ private:
 	void generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 									std::vector<LLVector3> &normals,
 									const LLVector3& view_vec,
-									const LLMatrix4& mat,
-									const LLMatrix3& norm_mat);
+									const LLMatrix4a& mat,
+									const LLMatrix4a& norm_mat);
 };
 
 #endif

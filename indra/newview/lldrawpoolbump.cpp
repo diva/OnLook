@@ -373,11 +373,7 @@ void LLDrawPoolBump::bindCubeMap(LLGLSLShader* shader, S32 shader_level, S32& di
 	{
 		if (!invisible && shader )
 		{
-			LLMatrix4 mat;
-			mat.initRows(LLVector4(gGLModelView+0),
-						 LLVector4(gGLModelView+4),
-						 LLVector4(gGLModelView+8),
-						 LLVector4(gGLModelView+12));
+			LLMatrix4 mat(gGLModelView.getF32ptr());
 			LLVector3 vec = LLVector3(gShinyOrigin) * mat;
 			LLVector4 vec4(vec, gShinyOrigin.mV[3]);
 			shader->uniform4fv(LLViewerShaderMgr::SHINY_ORIGIN, 1, vec4.mV);			
@@ -521,11 +517,7 @@ void LLDrawPoolBump::beginFullbrightShiny()
 	LLCubeMap* cube_map = gSky.mVOSkyp ? gSky.mVOSkyp->getCubeMap() : NULL;
 	if( cube_map )
 	{
-		LLMatrix4 mat;
-		mat.initRows(LLVector4(gGLModelView+0),
-					 LLVector4(gGLModelView+4),
-					 LLVector4(gGLModelView+8),
-					 LLVector4(gGLModelView+12));
+		LLMatrix4 mat(gGLModelView.getF32ptr());
 		shader->bind();
 		LLVector3 vec = LLVector3(gShinyOrigin) * mat;
 		LLVector4 vec4(vec, gShinyOrigin.mV[3]);
@@ -1497,16 +1489,16 @@ void LLDrawPoolBump::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL 
 				{
 					gGL.getTexUnit(1)->activate();
 					gGL.matrixMode(LLRender::MM_TEXTURE);
-					gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
+					gGL.loadMatrix(*params.mTextureMatrix);
 				}
 
 				gGL.getTexUnit(0)->activate();
 				gGL.matrixMode(LLRender::MM_TEXTURE);
-				gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
+				gGL.loadMatrix(*params.mTextureMatrix);
 				gPipeline.mTextureMatrixOps++;
 			}
 
-			gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
+			gGL.loadMatrix(*params.mTextureMatrix);
 			gPipeline.mTextureMatrixOps++;
 
 			tex_setup = true;

@@ -65,6 +65,16 @@ public:
 		LLWearable *wearable,
 		F32 param_weight);
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	/*virtual*/ S8 getType() const ;
 
 	BOOL					needsRender();
@@ -110,6 +120,17 @@ protected:
 	/*virtual */ ~LLVisualParamReset(){}
 public:
 	LLVisualParamReset();
+
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	/*virtual */ BOOL render();
 	/*virtual*/ S8 getType() const ;
 
