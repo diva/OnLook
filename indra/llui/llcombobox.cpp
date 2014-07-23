@@ -937,6 +937,7 @@ void LLComboBox::setTextEntry(const LLStringExplicit& text)
 	if (mTextEntry)
 	{
 		mTextEntry->setText(text);
+		mTextEntry->setCursor(0); // Singu Note: Move the cursor over to the beginning
 		mHasAutocompletedText = FALSE;
 		updateSelection();
 	}
