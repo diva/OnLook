@@ -387,7 +387,7 @@ void LLPanelGroupRoles::activate()
 		// Mildly hackish - clear all pending changes
 		cancel();
 
-		LLGroupMgr::getInstance()->sendCapGroupMembersRequest(mGroupID);
+		LLGroupMgr::getInstance()->sendGroupRoleDataRequest(mGroupID);
 	}
 
 	// Check role-member mapping data.
