@@ -3723,7 +3723,7 @@ const LLQuaternion LLViewerObject::getRenderRotation() const
 		}
 		else
 		{
-			ret = LLQuaternion(mDrawable->getWorldMatrix().getF32ptr());
+			ret = LLQuaternion(LLMatrix4(mDrawable->getWorldMatrix().getF32ptr()));
 		}
 	}
 	
