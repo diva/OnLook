@@ -288,7 +288,7 @@ public:
 		virtual AICapabilityType capability_type(void) const { return cap_other; }
 
 		// Timeout policy to use.
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const;
 
 		// The name of the derived responder object. For debugging purposes.
 		virtual char const* getName(void) const = 0;

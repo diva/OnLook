@@ -95,7 +95,7 @@ class AIHTTPTimeoutPolicy {
 	void sanity_checks(void) const;
 
 	// Accessors.
-	char const* name(void) const { return mName; }
+	char const* name(void) const { return mName ? mName : "AIHTTPTimeoutPolicyBase"; }
 	U16 getConnectTimeout(std::string const& hostname) const;
 	U16 getDNSLookup(void) const { return mDNSLookupGrace; }
 	U16 getConnect(void) const { return mMaximumConnectTime; }
