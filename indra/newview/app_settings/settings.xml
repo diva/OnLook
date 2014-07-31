@@ -243,6 +243,22 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
+  <key>FloaterAvatarRect</key>
+  <map>
+    <key>Comment</key>
+    <string>Avatar picker floater position</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Rect</string>
+    <key>Value</key>
+    <array>
+      <integer>0</integer>
+      <integer>0</integer>
+      <integer>0</integer>
+      <integer>0</integer>
+    </array>
+  </map>
   <key>FloaterAvatarTextRect</key>
   <map>
     <key>Comment</key>
@@ -3127,6 +3143,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>U32</string>
       <key>Value</key>
       <integer>2</integer>
+    </map>
+    <key>AvatarPickerURL</key>
+    <map>
+      <key>Comment</key>
+      <string>Avatar picker contents</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://lecs-viewer-web-components.s3.amazonaws.com/v3.0/[GRID_LOWERCASE]/avatars.html</string>
     </map>
     <key>AvatarRotateThresholdSlow</key>
     <map>
@@ -14709,6 +14736,17 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Show descriptive tooltip when mouse hovers over non-interactive and interactive objects.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ShowAvatarFloater</key>
+    <map>
+      <key>Comment</key>
+      <string>Display avatar picker floater on login</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

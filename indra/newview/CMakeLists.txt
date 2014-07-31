@@ -183,6 +183,7 @@ set(viewer_SOURCE_FILES
     llfloateractivespeakers.cpp
     llfloaterauction.cpp
     llfloaterautoreplacesettings.cpp
+    llfloateravatar.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
     llfloateravatarpicker.cpp
@@ -711,6 +712,7 @@ set(viewer_HEADER_FILES
     llfloateractivespeakers.h
     llfloaterauction.h
     llfloaterautoreplacesettings.h
+    llfloateravatar.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
     llfloateravatarpicker.h

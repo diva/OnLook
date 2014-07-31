@@ -384,6 +384,11 @@
         <button.commit_callback function="ShowFloater" parameter="inventory"/>
       </button>
     </layout_panel>
+    <layout_panel name="panelavatar" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleAvatar">
+      <button bottom="0" height="24" label="Default Avatars" image_overlay="icn_toolbar_avatar.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" name="avatar_btn" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="avatar"/>
+      </button>
+    </layout_panel>
     <layout_panel name="paneloutfit" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleOutfit">
       <button bottom="0" height="24" label="Make Outfit" name="make_outfit_btn" image_overlay="icn_toolbar_make_outfit.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
         <button.commit_callback function="ShowFloater" parameter="outfit"/>

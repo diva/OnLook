@@ -75,9 +75,10 @@
   <check_box bottom_delta="-20" label="Texture Category Console" name="texture_category_console_btn" follows="left|right" control_name="ToolbarVisibleTextureCategoryConsole" visibility_control="AuditTexture"/>
   <check_box bottom_delta="-20" label="Texture Size Console" name="texture_size_console_btn" follows="left|right" control_name="ToolbarVisibleTextureSizeConsole" visibility_control="AuditTexture"/>
   <check_box bottom_delta="-20" label="Inventory" name="directory_btn" follows="left|right" control_name="ToolbarVisibleInventory"/>
+  <check_box bottom_delta="-20" label="Default Avatars" name="default_avatars_btn" follows="left|right" control_name="ToolbarVisibleAvatar"/>
   <check_box bottom_delta="-20" label="Make Outfit" name="make_outfit_btn" follows="left|right" control_name="ToolbarVisibleOutfit"/>
-  <check_box bottom_delta="-20" label="Outfits" name="outfits_btn" follows="left|right" control_name="ToolbarVisibleInventoryOutfits"/>
-  <check_box bottom="-38" label="Favorites" name="favs_btn" follows="left|right" control_name="ToolbarVisibleInventoryFavs" left_delta="160"/>
+  <check_box bottom="-38" label="Outfits" name="outfits_btn" follows="left|right" control_name="ToolbarVisibleInventoryOutfits" left_delta="160"/>
+  <check_box bottom_delta="-20" label="Favorites" name="favs_btn" follows="left|right" control_name="ToolbarVisibleInventoryFavs"/>
   <check_box bottom_delta="-20" label="Outbox" name="outbox_btn" follows="left|right" control_name="ToolbarVisibleOutbox"/>
   <check_box bottom_delta="-20" label="Preferences" name="preferences_btn" follows="left|right" control_name="ToolbarVisiblePreferences"/>
   <check_box bottom_delta="-20" label="Joystick Config" name="joystick_btn" follows="left|right" control_name="ToolbarVisibleJoystick"/>

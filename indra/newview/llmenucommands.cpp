@@ -47,6 +47,7 @@
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
 #include "llfloaterautoreplacesettings.h"
+#include "llfloateravatar.h"
 #include "llfloateravatarlist.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterblacklist.h"
@@ -221,6 +222,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterActiveSpeakers>		("active speakers");
 		registerFloater<JCFloaterAreaSearch>			("areasearch");
 		registerFloater<LLFloaterAutoReplaceSettings>	("autoreplace");
+		registerFloater<LLFloaterAvatar>				("avatar");
 		registerFloater<LLFloaterBeacons>				("beacons");
 		registerFloater<LLFloaterCamera>				("camera controls");
 		registerFloater<LLFloaterChat>					("chat history");

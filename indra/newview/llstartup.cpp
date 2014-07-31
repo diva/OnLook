@@ -116,9 +116,11 @@
 #include "llfeaturemanager.h"
 #include "llfirstuse.h"
 #include "llfloateractivespeakers.h"
+#include "llfloateravatar.h"
 #include "llfloaterbeacons.h"
 #include "llfloatercamera.h"
 #include "llfloaterchat.h"
+#include "llfloaterdestinations.h"
 #include "llfloatergesture.h"
 #include "llfloaterhud.h"
 #include "llfloaterinventory.h"
@@ -1265,6 +1267,7 @@ bool idle_startup()
 		requested_options.push_back("login-flags");
 		requested_options.push_back("global-textures");
 		// <singu> Opensim requested options
+		requested_options.push_back("avatar_picker_url");
 		requested_options.push_back("destination_guide_url");
 		// </singu>
 		if(gSavedSettings.getBOOL("ConnectAsGod"))
@@ -2438,6 +2441,14 @@ bool idle_startup()
 		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
 		{
 			LLFloaterBeacons::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowAvatarFloater"))
+		{
+			LLFloaterAvatar::showInstance();
+		}
+		if (gSavedSettings.getBOOL("DestinationGuideShown"))
+		{
+			LLFloaterDestinations::showInstance();
 		}
 
 		LLMessageSystem* msg = gMessageSystem;
@@ -4199,6 +4210,9 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 	if (opensim)
 	{
 		gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
+		tmp = response["avatar_picker_url"].asString();
+		gSavedSettings.setString("AvatarPickerURL", tmp);
+		gMenuBarView->getChildView("Avatar Picker")->setVisible(!tmp.empty());
 		gSavedSettings.setString("DestinationGuideURL", response["destination_guide_url"].asString());
 	}
 	tmp = response["currency"].asString();
