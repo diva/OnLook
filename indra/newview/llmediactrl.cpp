@@ -593,7 +593,7 @@ void LLMediaCtrl::navigateToLocalPage( const std::string& subdir, const std::str
 	{
 		mCurrentNavUrl = expanded_filename;
 		mMediaSource->setSize(mTextureWidth, mTextureHeight);
-		mMediaSource->navigateTo(expanded_filename, "text/html", false);
+		mMediaSource->navigateTo(LLWeb::escapeURL(expanded_filename), "text/html", false);
 	}
 
 }
