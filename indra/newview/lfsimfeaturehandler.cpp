@@ -62,15 +62,21 @@ void LFSimFeatureHandler::setSupportedFeatures()
 	{
 		LLSD info;
 		region->getSimulatorFeatures(info);
+		bool hg(!gHippoGridManager->getCurrentGrid()->isAvination()); // Singu Note: There should be a flag for this some day.
+		static bool init(false); // This could be a grid where OpenSimExtras aren't implemented, in that case, don't alter the hg specific members.
 		if (info.has("OpenSimExtras")) // OpenSim specific sim features
 		{
 			// For definition of OpenSimExtras please see
 			// http://opensimulator.org/wiki/SimulatorFeatures_Extras
 			const LLSD& extras(info["OpenSimExtras"]);
 			mSupportsExport = extras.has("ExportSupported") ? extras["ExportSupported"].asBoolean() : false;
-			mDestinationGuideURL = extras.has("destination-guide-url") ? extras["destination-guide-url"].asString() : "";
-			mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
-			mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
+			if (hg)
+			{
+				mDestinationGuideURL = extras.has("destination-guide-url") ? extras["destination-guide-url"].asString() : "";
+				mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
+				mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
+				init = true;
+			}
 			mSayRange = extras.has("say-range") ? extras["say-range"].asInteger() : 20;
 			mShoutRange = extras.has("shout-range") ? extras["shout-range"].asInteger() : 100;
 			mWhisperRange = extras.has("whisper-range") ? extras["whisper-range"].asInteger() : 10;
@@ -78,8 +84,11 @@ void LFSimFeatureHandler::setSupportedFeatures()
 		else // OpenSim specifics are unsupported reset all to default
 		{
 			mSupportsExport = false;
-			mMapServerURL = "";
-			mSearchURL = "";
+			if (hg && init)
+			{
+				mMapServerURL = "";
+				mSearchURL = "";
+			}
 			mSayRange = 20;
 			mShoutRange = 100;
 			mWhisperRange = 10;
