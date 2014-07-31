@@ -60,6 +60,7 @@
 #include "hippolimits.h"
 #include "floaterao.h"
 #include "statemachine/aifilepicker.h"
+#include "lfsimfeaturehandler.h"
 
 #include "llares.h"
 #include "llavatarnamecache.h"
@@ -324,6 +325,12 @@ void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is
 	// TODO: Actually be intelligent about the refresh.
 	// For now, just brute force refresh the dialogs.
 	dialog_refresh_all();
+}
+
+void simfeature_debug_update(const std::string& val, const std::string& setting)
+{
+	//if (!val.empty()) // Singu Note: Should we only update the setting if not empty?
+	gSavedSettings.setString(setting, val);
 }
 
 //
@@ -1257,6 +1264,9 @@ bool idle_startup()
 		requested_options.push_back("tutorial_setting");
 		requested_options.push_back("login-flags");
 		requested_options.push_back("global-textures");
+		// <singu> Opensim requested options
+		requested_options.push_back("destination_guide_url");
+		// </singu>
 		if(gSavedSettings.getBOOL("ConnectAsGod"))
 		{
 			gSavedSettings.setBOOL("UseDebugMenus", TRUE);
@@ -1575,13 +1585,21 @@ bool idle_startup()
 			if (process_login_success_response(password, first_sim_size_x, first_sim_size_y))
 			{
 				std::string name = firstname;
-				if (!gHippoGridManager->getCurrentGrid()->isSecondLife() ||
+				bool secondlife(gHippoGridManager->getCurrentGrid()->isSecondLife());
+				if (!secondlife ||
 					!boost::algorithm::iequals(lastname, "Resident"))
 				{
 					name += " " + lastname;
 				}
 				if (gSavedSettings.getBOOL("LiruGridInTitle")) gWindowTitle += "- " + gHippoGridManager->getCurrentGrid()->getGridName() + " ";
 				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
+
+				if (!secondlife)
+				{
+					LFSimFeatureHandler& inst(LFSimFeatureHandler::instance());
+					inst.setDestinationGuideURLCallback(boost::bind(simfeature_debug_update, _1, "ShowcaseURLDefault"));
+					inst.setSearchURLCallback(boost::bind(simfeature_debug_update, _1, "SearchURL"));
+				}
 
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
@@ -4083,7 +4101,8 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 		LLWorldMap::gotMapServerURL(true);
 	}
 
-	if(gHippoGridManager->getConnectedGrid()->isOpenSimulator())
+	bool opensim = gHippoGridManager->getConnectedGrid()->isOpenSimulator();
+	if (opensim)
 	{
 		std::string web_profile_url = response["web_profile_url"];
 		//if(!web_profile_url.empty()) // Singu Note: We're using this to check if this grid supports web profiles at all, so set empty if empty.
@@ -4176,7 +4195,12 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setPasswordUrl(tmp);
 	tmp = response["search"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
-	if (gHippoGridManager->getConnectedGrid()->isOpenSimulator()) gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
+	else if (opensim) tmp = gHippoGridManager->getConnectedGrid()->getSearchUrl(); // Fallback from grid info response for setting
+	if (opensim)
+	{
+		gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
+		gSavedSettings.setString("ShowcaseURLDefault", response["destination_guide_url"].asString());
+	}
 	tmp = response["currency"].asString();
 	if (!tmp.empty())
 	{

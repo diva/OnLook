@@ -21,21 +21,22 @@
 #include "llsingleton.h"
 #include "llpermissions.h"	// ExportPolicy
 
-template<typename Type, typename Signal = boost::signals2::signal<void()> >
+template<typename Type, typename Signal = boost::signals2::signal<void(const Type&)> >
 class SignaledType
 {
 public:
 	SignaledType() : mValue() {}
 	SignaledType(Type b) : mValue(b) {}
 
-	boost::signals2::connection connect(const typename Signal::slot_type& slot) { return mSignal.connect(slot); }
+	typedef typename Signal::slot_type slot_t;
+	boost::signals2::connection connect(const slot_t& slot) { return mSignal.connect(slot); }
 
 	SignaledType& operator =(Type val)
 	{
 		if (val != mValue)
 		{
 			mValue = val;
-			mSignal();
+			mSignal(val);
 		}
 		return *this;
 	}
@@ -57,14 +58,16 @@ public:
 	void setSupportedFeatures();
 
 	// Connection setters
-	boost::signals2::connection setSupportsExportCallback(const boost::signals2::signal<void()>::slot_type& slot);
-	boost::signals2::connection setSearchURLCallback(const boost::signals2::signal<void()>::slot_type& slot);
-	boost::signals2::connection setSayRangeCallback(const boost::signals2::signal<void()>::slot_type& slot);
-	boost::signals2::connection setShoutRangeCallback(const boost::signals2::signal<void()>::slot_type& slot);
-	boost::signals2::connection setWhisperRangeCallback(const boost::signals2::signal<void()>::slot_type& slot);
+	boost::signals2::connection setSupportsExportCallback(const SignaledType<bool>::slot_t& slot);
+	boost::signals2::connection setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot);
+	boost::signals2::connection setSearchURLCallback(const SignaledType<std::string>::slot_t& slot);
+	boost::signals2::connection setSayRangeCallback(const SignaledType<U32>::slot_t& slot);
+	boost::signals2::connection setShoutRangeCallback(const SignaledType<U32>::slot_t& slot);
+	boost::signals2::connection setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot);
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }
+	std::string destinationGuideURL() const { return mDestinationGuideURL; }
 	std::string mapServerURL() const { return mMapServerURL; }
 	std::string searchURL() const { return mSearchURL; }
 	U32 sayRange() const { return mSayRange; }
@@ -75,6 +78,7 @@ public:
 private:
 	// SignaledTypes
 	SignaledType<bool> mSupportsExport;
+	SignaledType<std::string> mDestinationGuideURL;
 	std::string mMapServerURL;
 	SignaledType<std::string> mSearchURL;
 	SignaledType<U32> mSayRange;

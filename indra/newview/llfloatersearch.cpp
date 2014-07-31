@@ -144,6 +144,7 @@ BOOL LLFloaterSearch::postBuild()
 	setRectControl("FloaterSearchRect");
 	applyRectControl();
 	search(SearchQuery());
+	gSavedSettings.getControl("SearchURL")->getSignal()->connect(boost::bind(&LLFloaterSearch::search, this, SearchQuery()));
 
 	return TRUE;
 }
