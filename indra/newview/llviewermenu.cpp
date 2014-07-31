@@ -6471,6 +6471,15 @@ BOOL enable_buy_land(void*)
 				LLViewerParcelMgr::getInstance()->getParcelSelection()->getParcel(), false);
 }
 
+class LLWorldVisibleDestinations : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool visible(!LFSimFeatureHandler::instance().destinationGuideURL().empty());
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(visible);
+		return visible;
+	}
+};
 
 class LLObjectAttachToAvatar : public view_listener_t
 {
@@ -9339,6 +9348,7 @@ void initialize_menus()
 	addMenu(new LLWorldEnableSetHomeLocation(), "World.EnableSetHomeLocation");
 	addMenu(new LLWorldEnableTeleportHome(), "World.EnableTeleportHome");
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
+	addMenu(new LLWorldVisibleDestinations(), "World.VisibleDestinations");
 	(new LLWorldEnvSettings())->registerListener(gMenuHolder, "World.EnvSettings");
 	(new LLWorldEnableEnvSettings())->registerListener(gMenuHolder, "World.EnableEnvSettings");
 

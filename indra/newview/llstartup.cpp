@@ -1597,7 +1597,7 @@ bool idle_startup()
 				if (!secondlife)
 				{
 					LFSimFeatureHandler& inst(LFSimFeatureHandler::instance());
-					inst.setDestinationGuideURLCallback(boost::bind(simfeature_debug_update, _1, "ShowcaseURLDefault"));
+					inst.setDestinationGuideURLCallback(boost::bind(simfeature_debug_update, _1, "DestinationGuideURL"));
 					inst.setSearchURLCallback(boost::bind(simfeature_debug_update, _1, "SearchURL"));
 				}
 
@@ -4199,7 +4199,7 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 	if (opensim)
 	{
 		gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
-		gSavedSettings.setString("ShowcaseURLDefault", response["destination_guide_url"].asString());
+		gSavedSettings.setString("DestinationGuideURL", response["destination_guide_url"].asString());
 	}
 	tmp = response["currency"].asString();
 	if (!tmp.empty())

@@ -287,6 +287,11 @@
         <button.commit_callback function="ShowFloater" parameter="teleport history"/>
       </button>
     </layout_panel>
+    <layout_panel name="paneldestinations" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleDestinations">
+      <button bottom="0" height="24" label="Destinations" name="destinations_btn" image_overlay="icn_toolbar_destinations.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="destinations"/>
+      </button>
+    </layout_panel>
     <layout_panel name="panel11" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleWorldMap">
       <button bottom="0" height="24" label="Map" name="map_btn" image_overlay="icn_toolbar_map.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" tool_tip="Map of the world. (Ctrl-M)" width="50" follows="left|right" control_name="ShowWorldMap">
         <button.commit_callback function="ShowFloater" parameter="world map"/>

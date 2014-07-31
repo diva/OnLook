@@ -26,7 +26,7 @@
 
 LFSimFeatureHandler::LFSimFeatureHandler()
 : mSupportsExport(false)
-, mDestinationGuideURL(gSavedSettings.getString("ShowcaseURLDefault"))
+, mDestinationGuideURL(gSavedSettings.getString("DestinationGuideURL"))
 , mSearchURL(gSavedSettings.getString("SearchURL"))
 , mSayRange(20)
 , mShoutRange(100)

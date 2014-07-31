@@ -547,17 +547,6 @@
     <key>Value</key>
     <string />
   </map>
-  <key>ShowcaseURLDefault</key>
-  <map>
-    <key>Comment</key>
-    <string>URL to load for the Showcase tab in Second Life</string>
-    <key>Persist</key>
-    <integer>0</integer>
-    <key>Type</key>
-    <string>String</string>
-    <key>Value</key>
-    <string>http://secondlife.com/app/showcase/index.php?</string>
-  </map>
 
   <key>CheckForGridUpdates</key>
   <map>
@@ -6068,6 +6057,44 @@ This should be as low as possible, but too low may break functionality</string>
       <string>String</string>
       <key>Value</key>
       <string>89556747-24cb-43ed-920b-47caed15465f</string>
+    </map>
+    <key>DestinationGuideRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for destination guide</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>0</integer>
+        <integer>0</integer>
+        <integer>0</integer>
+      </array>
+    </map>
+    <key>DestinationGuideShown</key>
+    <map>
+      <key>Comment</key>
+      <string>Show destination guide</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>DestinationGuideURL</key>
+    <map>
+      <key>Comment</key>
+      <string>Destination guide contents</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://lecs-viewer-web-components.s3.amazonaws.com/v3.0/[GRID_LOWERCASE]/guide.html</string>
     </map>
     <key>DisableCameraConstraints</key>
     <map>
@@ -17886,6 +17913,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>GenericErrorPageURL</key>
+    <map>
+      <key>Comment</key>
+      <string>URL to set as a property on LLMediaControl to navigate to if the a page completes with a 400-499 HTTP status code</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://common-flash-secondlife-com.s3.amazonaws.com/viewer/v2.6/agni/404.html</string>
     </map>
     <key>WebProfileFloaterRect</key>
     <map>

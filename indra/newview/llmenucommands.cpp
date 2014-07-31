@@ -58,6 +58,7 @@
 #include "llfloaterchatterbox.h"
 #include "llfloatercustomize.h"
 #include "llfloaterdaycycle.h"
+#include "llfloaterdestinations.h"
 #include "llfloaterdisplayname.h"
 #include "llfloatereditui.h"
 #include "llfloaterenvsettings.h"
@@ -224,6 +225,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterCamera>				("camera controls");
 		registerFloater<LLFloaterChat>					("chat history");
 		registerFloater<LLFloaterChatterBox>			("communicate");
+		registerFloater<LLFloaterDestinations>			("destinations");
 		registerFloater<LLFloaterMyFriends>				("friends", 0);
 		registerFloater<LLFloaterGesture>				("gestures");
 		registerFloater<LLFloaterMyFriends>				("groups", 1);

@@ -204,6 +204,7 @@ set(viewer_SOURCE_FILES
     llfloatercolorpicker.cpp
     llfloatercustomize.cpp
     llfloaterdaycycle.cpp
+    llfloaterdestinations.cpp
     llfloaterdirectory.cpp
     llfloaterdisplayname.cpp
     llfloatereditui.cpp
@@ -731,6 +732,7 @@ set(viewer_HEADER_FILES
     llfloatercolorpicker.h
     llfloatercustomize.h
     llfloaterdaycycle.h
+    llfloaterdestinations.h
     llfloaterdirectory.h
     llfloaterdisplayname.h
     llfloatereditui.h
