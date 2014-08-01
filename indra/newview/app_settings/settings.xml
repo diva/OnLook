@@ -1015,6 +1015,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruShowTransactionThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>Threshold of money changes before which transaction notifications will not be shown.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruUseAdvancedMenuShortcut</key>
     <map>
       <key>Comment</key>
