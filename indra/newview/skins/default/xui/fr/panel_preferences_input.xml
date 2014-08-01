@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel label="Contrôle caméra" name="Input panel">
+<panel label="Contrôles &amp; caméra" name="Input panel">
 	<text name=" Mouselook Options:">Vue subjective:</text>
 	<text name=" Mouse Sensitivity:">Sensibilité de la souris:</text>
 	<check_box label="Inverser la souris" name="invert_mouse"/>
+	<text name=" Movement Options:">Options des mouvements:</text>
 	<check_box label="Voler/atterrir en appuyant sur les fl&#xEA;ches haut/bas" name="automatic_fly"/>
 	<check_box label="Permet de s'accroupir en bloquant la touche shift" name="crouch_toggle"/>
 	<text name=" Camera Options:">Options de la caméra:</text>
