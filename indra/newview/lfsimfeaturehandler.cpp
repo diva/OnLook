@@ -56,42 +56,52 @@ void LFSimFeatureHandler::handleRegionChange()
 	}
 }
 
+template<typename T>
+void has_feature_or_default(SignaledType<T>& type, const LLSD& features, const std::string& feature)
+{
+	type = (features.has(feature)) ? static_cast<T>(features[feature]) : type.getDefault();
+}
+template<>
+void has_feature_or_default(SignaledType<U32>& type, const LLSD& features, const std::string& feature)
+{
+	type = (features.has(feature)) ? features[feature].asInteger() : type.getDefault();
+}
+
 void LFSimFeatureHandler::setSupportedFeatures()
 {
 	if (LLViewerRegion* region = gAgent.getRegion())
 	{
 		LLSD info;
 		region->getSimulatorFeatures(info);
-		bool hg(!gHippoGridManager->getCurrentGrid()->isAvination()); // Singu Note: There should be a flag for this some day.
-		static bool init(false); // This could be a grid where OpenSimExtras aren't implemented, in that case, don't alter the hg specific members.
+		//bool hg(); // Singu Note: There should probably be a flag for this some day.
 		if (info.has("OpenSimExtras")) // OpenSim specific sim features
 		{
 			// For definition of OpenSimExtras please see
 			// http://opensimulator.org/wiki/SimulatorFeatures_Extras
 			const LLSD& extras(info["OpenSimExtras"]);
-			mSupportsExport = extras.has("ExportSupported") ? extras["ExportSupported"].asBoolean() : false;
-			if (hg)
+			has_feature_or_default(mSupportsExport, extras, "ExportSupported");
+			//if (hg)
 			{
-				mDestinationGuideURL = extras.has("destination-guide-url") ? extras["destination-guide-url"].asString() : "";
+				has_feature_or_default(mDestinationGuideURL, extras, "destination-guide-url");
 				mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
-				mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
-				init = true;
+				has_feature_or_default(mSearchURL, extras, "search-server-url");
 			}
-			mSayRange = extras.has("say-range") ? extras["say-range"].asInteger() : 20;
-			mShoutRange = extras.has("shout-range") ? extras["shout-range"].asInteger() : 100;
-			mWhisperRange = extras.has("whisper-range") ? extras["whisper-range"].asInteger() : 10;
+			has_feature_or_default(mSayRange, extras, "say-range");
+			has_feature_or_default(mShoutRange, extras, "shout-range");
+			has_feature_or_default(mWhisperRange, extras, "whisper-range");
 		}
 		else // OpenSim specifics are unsupported reset all to default
 		{
-			mSupportsExport = false;
-			if (hg && init)
+			mSupportsExport.reset();
+			//if (hg)
 			{
+				mDestinationGuideURL.reset();
 				mMapServerURL = "";
-				mSearchURL = "";
+				mSearchURL.reset();
 			}
-			mSayRange = 20;
-			mShoutRange = 100;
-			mWhisperRange = 10;
+			mSayRange.reset();
+			mShoutRange.reset();
+			mWhisperRange.reset();
 		}
 	}
 }

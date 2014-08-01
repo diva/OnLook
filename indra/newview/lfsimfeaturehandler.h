@@ -25,8 +25,8 @@ template<typename Type, typename Signal = boost::signals2::signal<void(const Typ
 class SignaledType
 {
 public:
-	SignaledType() : mValue() {}
-	SignaledType(Type b) : mValue(b) {}
+	SignaledType() : mValue(), mDefaultValue() {}
+	SignaledType(Type b) : mValue(b), mDefaultValue(b) {}
 
 	typedef typename Signal::slot_type slot_t;
 	boost::signals2::connection connect(const slot_t& slot) { return mSignal.connect(slot); }
@@ -41,10 +41,13 @@ public:
 		return *this;
 	}
 	operator Type() const { return mValue; }
+	void reset() { *this = mDefaultValue; }
+	const Type& getDefault() const { return mDefaultValue; }
 
 private:
 	Signal mSignal;
 	Type mValue;
+	const Type mDefaultValue;
 };
 
 class LFSimFeatureHandler : public LLSingleton<LFSimFeatureHandler>
