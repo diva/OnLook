@@ -353,7 +353,7 @@ void LLPanelDirFind::focus()
 void LLPanelDirFind::navigateToDefaultPage()
 {
 	bool showcase(mBrowserName == "showcase_browser");
-	std::string start_url = showcase ? LFSimFeatureHandler::instance().destinationGuideURL() : getSearchUrl();
+	std::string start_url = showcase ? LLWeb::expandURLSubstitutions(LFSimFeatureHandler::instance().destinationGuideURL(), LLSD()) : getSearchUrl();
 	bool secondlife(gHippoGridManager->getConnectedGrid()->isSecondLife());
 	// Note: we use the web panel in OpenSim as well as Second Life -- MC
 	if (start_url.empty() && !secondlife)
