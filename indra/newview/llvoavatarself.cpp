@@ -54,6 +54,7 @@
 #include "llviewermedia.h"
 #include "llviewermenu.h"
 #include "llviewerobjectlist.h"
+#include "llviewerparcelmgr.h"
 #include "llviewerstats.h"
 #include "llviewerregion.h"
 #include "llviewertexlayer.h"
@@ -179,6 +180,8 @@ LLVOAvatarSelf::LLVOAvatarSelf(const LLUUID& id,
 	mMotionController.mIsSelf = TRUE;
 
 	SHClientTagMgr::instance().updateAvatarTag(this);	//No TE update messages for self. Force update here.
+
+	mTeleportFinishedSlot = LLViewerParcelMgr::getInstance()->setTeleportFinishedCallback(boost::bind(&LLVOAvatarSelf::handleTeleportFinished, this));
 
 	lldebugs << "Marking avatar as self " << id << llendl;
 }
@@ -3287,5 +3290,25 @@ void LLVOAvatarSelf::setInvisible(bool invisible)
 		invalidateAll();
 		requestLayerSetUploads();
 		gAgent.sendAgentSetAppearance();
+	}
+}
+
+void LLVOAvatarSelf::handleTeleportFinished()
+{
+	for (attachment_map_t::iterator it = mAttachmentPoints.begin(); it != mAttachmentPoints.end(); ++it)
+	{
+		LLViewerJointAttachment* attachment = it->second;
+		if (attachment && attachment->getIsHUDAttachment())
+		{
+			typedef LLViewerJointAttachment::attachedobjs_vec_t object_vec_t;
+			const object_vec_t& obj_list = attachment->mAttachedObjects;
+			for (object_vec_t::const_iterator it2 = obj_list.begin(); it2 != obj_list.end(); ++it2)
+			{
+				if(*it2)
+				{
+					(*it2)->dirtySpatialGroup(true);
+				}
+			}
+		}
 	}
 }
