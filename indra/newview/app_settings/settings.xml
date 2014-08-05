@@ -253,10 +253,10 @@
     <string>Rect</string>
     <key>Value</key>
     <array>
-      <integer>0</integer>
-      <integer>0</integer>
-      <integer>0</integer>
-      <integer>0</integer>
+      <integer>30</integer>
+      <integer>505</integer>
+      <integer>580</integer>
+      <integer>275</integer>
     </array>
   </map>
   <key>FloaterAvatarTextRect</key>
@@ -6106,10 +6106,10 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Rect</string>
       <key>Value</key>
       <array>
-        <integer>0</integer>
-        <integer>0</integer>
-        <integer>0</integer>
-        <integer>0</integer>
+        <integer>30</integer>
+        <integer>505</integer>
+        <integer>580</integer>
+        <integer>275</integer>
       </array>
     </map>
     <key>DestinationGuideShown</key>
