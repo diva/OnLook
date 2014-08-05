@@ -1282,7 +1282,7 @@ void LLPanelFace::updateUI()
 
 			LLSelectedTE::getFullbright(fullbright_flag,identical_fullbright);
 
-			mCheckFullbright->setValue((S32)(fullbright_flag != 0));
+			mCheckFullbright->setValue(fullbright_flag != 0);
 			mCheckFullbright->setEnabled(editable);
 			mCheckFullbright->setTentative(!identical_fullbright);
 		}
@@ -1800,7 +1800,7 @@ void LLPanelFace::onSelectTexture(const LLSD& data)
 	LLSelectMgr::getInstance()->saveSelectedObjectTextures();
 	sendTexture();
 
-	LLGLenum image_format;
+	LLGLenum image_format(0);
 	bool identical_image_format = false;
 	LLSelectedTE::getImageFormat(image_format, identical_image_format);
 
