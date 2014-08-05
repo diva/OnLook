@@ -52,7 +52,7 @@
 
 //LLFloaterInspect* LLFloaterInspect::sInstance = NULL;
 
-LLFloaterInspect::LLFloaterInspect()
+LLFloaterInspect::LLFloaterInspect(const LLSD&)
   : LLFloater(std::string("Inspect Object")),
 	mDirty(FALSE)
 {
@@ -89,12 +89,6 @@ LLFloaterInspect::~LLFloaterInspect(void)
 	{
 		gFloaterTools->setFocus(TRUE);
 	}
-}
-
-// static
-void LLFloaterInspect::showInstance()
-{
-	getInstance()->open();
 }
 
 void LLFloaterInspect::onOpen()

@@ -61,7 +61,7 @@ const F32 HAND_MORPH_BLEND_TIME = 0.2f;
 // LLHandMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLHandMotion::LLHandMotion(const LLUUID &id) : LLMotion(id)
+LLHandMotion::LLHandMotion(LLUUID const& id, LLMotionController* controller) : AIMaskedMotion(id, controller, ANIM_AGENT_HAND_MOTION)
 {
 	mCharacter = NULL;
 	mLastTime = 0.f;
@@ -112,7 +112,7 @@ BOOL LLHandMotion::onActivate()
 		mCharacter->setVisualParamWeight(gHandPoseNames[mCurrentPose], 1.f);
 		mCharacter->updateVisualParams();
 	}
-	return TRUE;
+	return AIMaskedMotion::onActivate();
 }
 
 
@@ -233,14 +233,6 @@ BOOL LLHandMotion::onUpdate(F32 time, U8* joint_mask)
 	}
 
 	return TRUE;
-}
-
-
-//-----------------------------------------------------------------------------
-// LLHandMotion::onDeactivate()
-//-----------------------------------------------------------------------------
-void LLHandMotion::onDeactivate()
-{
 }
 
 //-----------------------------------------------------------------------------

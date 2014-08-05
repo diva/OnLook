@@ -45,7 +45,7 @@
 // class LLHandMotion
 //-----------------------------------------------------------------------------
 class LLHandMotion :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	typedef enum e_hand_pose
@@ -68,7 +68,7 @@ public:
 	} eHandPose;
 
 	// Constructor
-	LLHandMotion(const LLUUID &id);
+	LLHandMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLHandMotion();
@@ -80,7 +80,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLHandMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLHandMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -121,9 +121,6 @@ public:
 	// must return TRUE while it is active, and
 	// must return FALSE when the motion is completed.
 	virtual BOOL onUpdate(F32 time, U8* joint_mask);
-
-	// called when a motion is deactivated
-	virtual void onDeactivate();
 
 	virtual BOOL canDeprecate() { return FALSE; }
 

@@ -34,7 +34,7 @@
 #include "llwearabletype.h"
 
 class LLAccordionCtrl;
-class LLCheckBoxCtrl;
+class LLButton;
 class LLViewerWearable;
 class LLTextBox;
 class LLViewerInventoryItem;
@@ -114,7 +114,7 @@ public:
 	
 	//alpha mask checkboxes
 	void configureAlphaCheckbox(LLAvatarAppearanceDefines::ETextureIndex te, const std::string& name);
-	void onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLAvatarAppearanceDefines::ETextureIndex te);
+	void onInvisibilityCommit(LLUICtrl* checkbox_ctrl, LLAvatarAppearanceDefines::ETextureIndex te);
 	void updateAlphaCheckboxes();
 	void initPreviousAlphaTextures();
 	void initPreviousAlphaTextureEntry(LLAvatarAppearanceDefines::ETextureIndex te);
@@ -123,8 +123,8 @@ private:
 	LLFloaterCustomize*			mCustomizeFloater;
 	LLWearableType::EType		mType;
 	BOOL				mCanTakeOff;
-	typedef std::map<std::string, LLAvatarAppearanceDefines::ETextureIndex> string_texture_index_map_t;
-	string_texture_index_map_t mAlphaCheckbox2Index;
+	typedef std::map<LLUICtrl*, LLAvatarAppearanceDefines::ETextureIndex> ctrl_texture_index_map_t;
+	ctrl_texture_index_map_t mAlphaCheckbox2Index;
 
 	typedef std::map<LLAvatarAppearanceDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
 	s32_uuid_map_t mPreviousAlphaTexture;
@@ -135,6 +135,12 @@ private:
 											//so this is needed to retain focus on this wearables tab over the messy transition.
 	bool				mPendingRefresh;	//LLAgentWearables::setWearableOutfit fires a buttload of remove/wear calls which spams wearablesChanged
 											//a bazillion pointless (and not particularly valid) times. Deferring to draw effectively sorts it all out.
+
+	// Cached UI
+	LLUICtrl *mCreateNew, *mTakeOff, *mSexRadio, *mSave, *mSaveAs, *mRevert, *mNotWornT, *mNoModT, *mTitle, *mTitleLoading, *mPath, *mAvHeight;
+	LLView *mNotWornI, *mNoModI, *mSquare;
+	LLTabContainer* mTab;
+	std::vector<LLButton*> mSubpartBtns;
 public:
 	LLModalDialog*		mActiveModal;
 };

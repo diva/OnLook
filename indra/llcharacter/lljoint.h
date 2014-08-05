@@ -41,7 +41,7 @@
 #include "lldarray.h"
 
 const S32 LL_CHARACTER_MAX_JOINTS_PER_MESH = 15;
-const U32 LL_CHARACTER_MAX_JOINTS = 32; // must be divisible by 4!
+const U32 LL_CHARACTER_MAX_JOINTS = 32; // must be divisible by 16!
 const U32 LL_HAND_JOINT_NUM = 31;
 const U32 LL_FACE_JOINT_NUM = 30;
 const S32 LL_CHARACTER_MAX_PRIORITY = 7;

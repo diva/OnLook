@@ -1,3 +1,6 @@
+#ifndef SH_SHFLOATERMEDIATICKER_H
+#define SH_SHFLOATERMEDIATICKER_H
+
 #include "llfloater.h"
 
 class LLIconCtrl;
@@ -56,3 +59,4 @@ private:
 BOOL handle_ticker_enabled(void *);
 void handle_ticker_toggle(void *);
 
+#endif

@@ -31,6 +31,9 @@
  * Modified, debugged, optimized and improved by Henri Beauchamp Feb 2010.
  */
 
+#ifndef JC_FLOATERAREASEARCH_H
+#define JC_FLOATERAREASEARCH_H
+
 #include "llfloater.h"
 #include "lluuid.h"
 #include "llstring.h"
@@ -90,3 +93,5 @@ private:
 
 	std::string mFilterStrings[LIST_OBJECT_COUNT];
 };
+
+#endif

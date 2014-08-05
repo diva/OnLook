@@ -51,11 +51,14 @@
 // This is necessary because llcharacter.h includes this file.
 //-----------------------------------------------------------------------------
 class LLCharacter;
+class LLMotionController;
+class LLPauseRequestHandle;
+typedef LLPointer<LLPauseRequestHandle> LLAnimPauseRequest;
 
 //-----------------------------------------------------------------------------
 // LLMotionRegistry
 //-----------------------------------------------------------------------------
-typedef LLMotion*(*LLMotionConstructor)(const LLUUID &id);
+typedef LLMotion* (*LLMotionConstructor)(LLUUID const& id, LLMotionController*);
 
 class LLMotionRegistry
 {
@@ -72,7 +75,7 @@ public:
 
 	// creates a new instance of a named motion
 	// returns NULL motion is not registered
-	LLMotion *createMotion( const LLUUID &id );
+	LLMotion* createMotion(LLUUID const& id, LLMotionController* controller);
 
 	// initialization of motion failed, don't try to create this motion again
 	void markBad( const LLUUID& id );
@@ -115,7 +118,6 @@ public:
 
 	// unregisters a motion with the controller
 	// (actually just forwards call to motion registry)
-	// returns true if successfull
 	void removeMotion( const LLUUID& id );
 
 	// start motion
@@ -150,10 +152,20 @@ public:
 	//Flush is a liar.
 	void deactivateAllMotions();	
 
+	//<singu>
+	void activated(U32 bit) { mActiveMask |= bit; }
+	void deactivated(U32 bit) { mActiveMask &= ~bit; }
+	bool isactive(U32 bit) const { return (mActiveMask & bit) != 0; }
+	//</singu>
+
 	// pause and continue all motions
 	void pauseAllMotions();
 	void unpauseAllMotions();
 	BOOL isPaused() const { return mPaused; }
+	//<singu>
+	void requestPause(std::vector<LLAnimPauseRequest>& avatar_pause_handles);
+	void pauseAllSyncedCharacters(std::vector<LLAnimPauseRequest>& avatar_pause_handles);
+	//</singu>
 
 	void setTimeStep(F32 step);
 
@@ -180,7 +192,10 @@ protected:
 	// internal operations act on motion instances directly
 	// as there can be duplicate motions per id during blending overlap
 	void deleteAllMotions();
+	// singu: LLMotion needs access to activateMotionInstance.
+public:
 	BOOL activateMotionInstance(LLMotion *motion, F32 time);
+protected:
 	BOOL deactivateMotionInstance(LLMotion *motion);
 	void deprecateMotionInstance(LLMotion* motion);
 	BOOL stopMotionInstance(LLMotion *motion, BOOL stop_imemdiate);
@@ -205,10 +220,13 @@ protected:
 //	Life cycle of an animation:
 //
 //	Animations are instantiated and immediately put in the mAllMotions map for their entire lifetime.
+//	Singu note: that is not true, they are moved to mDeprecatedMotions (often) for the last part of their lifetime.
 //	If the animations depend on any asset data, the appropriate data is fetched from the data server,
 //	and the animation is put on the mLoadingMotions list.
 //	Once an animations is loaded, it will be initialized and put on the mLoadedMotions list.
 //	Any animation that is currently playing also sits in the mActiveMotions list.
+//	Singu note: animations are only put in mDeprecatedMotions if and while they are playing,
+//	therefore animations in mDeprecatedMotions will be (must be) active and in mActiveMotions.
 
 	typedef std::map<LLUUID, LLMotion*> motion_map_t;
 	motion_map_t	mAllMotions;
@@ -217,7 +235,13 @@ protected:
 	motion_set_t		mLoadedMotions;
 	motion_list_t		mActiveMotions;
 	motion_set_t		mDeprecatedMotions;
-	
+
+	//<singu>
+	U32					mActiveMask;
+	int					mDisableSyncing;			// Set while LLMotion::onActivate (and onDeactivate) are called for this controller.
+	bool				mHidden;					// The value of the last call to hidden().
+	bool				mHaveVisibleSyncedMotions;	// Set when we are synchronized with one or more motions of a controller that is not hidden.
+	//</singu>
 	LLFrameTimer		mTimer;
 	F32					mPrevTimerElapsed;
 	F32					mAnimTime;
@@ -230,6 +254,26 @@ protected:
 	F32					mLastInterp;
 
 	U8					mJointSignature[2][LL_CHARACTER_MAX_JOINTS];
+
+	//<singu>
+public:
+	// Internal administration for AISync.
+	void disable_syncing(void) { mDisableSyncing += 100; }
+	void enable_syncing(void) { mDisableSyncing -= 100; }
+	bool syncing_disabled(void) const { return mDisableSyncing >= 100; }
+
+	// Accessors needed for synchronization.
+	F32 getAnimTime(void) const { return mAnimTime; }
+	bool isHidden(void) const { return mHidden; }
+
+	// Called often. Should return false if we still need to keep updating our motions even if we're not visible.
+	bool hidden(bool not_visible) { if (mHidden != not_visible) toggle_hidden(); return !mHaveVisibleSyncedMotions; }
+
+private:
+	void toggle_hidden(void);
+	void refresh_hidden(void);
+	void setHaveVisibleSyncedMotions(void) { mHaveVisibleSyncedMotions = true; }
+	//</singu>
 };
 
 //-----------------------------------------------------------------------------

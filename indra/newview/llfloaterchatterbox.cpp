@@ -78,9 +78,14 @@ BOOL LLFloaterMyFriends::postBuild()
 	return TRUE;
 }
 
+void LLFloaterMyFriends::onOpen()
+{
+	gSavedSettings.setBOOL("ShowContacts", true);
+}
 
 void LLFloaterMyFriends::onClose(bool app_quitting)
 {
+	if (!app_quitting) gSavedSettings.setBOOL("ShowContacts", false);
 	setVisible(FALSE);
 }
 
@@ -122,6 +127,7 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 		removeFloater(floater_contacts);
 		// reparent to floater view
 		gFloaterView->addChild(floater_contacts);
+		if (gSavedSettings.getBOOL("ShowContacts")) floater_contacts->open();
 	}
 	else
 	{
@@ -136,11 +142,13 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 		removeFloater(floater_chat);
 		// reparent to floater view
 		gFloaterView->addChild(floater_chat);
+		if (gSavedSettings.getBOOL("ShowChatHistory")) floater_chat->open();
 	}
 	else
 	{
 		addFloater(floater_chat, FALSE);
 	}
+	if (gSavedSettings.getBOOL("ShowCommunicate")) open(); // After all floaters have been added, so we may not be hidden anyhow.
 	gSavedSettings.getControl("ShowLocalChatFloaterBar")->getSignal()->connect(boost::bind(handleLocalChatBar, floater_chat, _2));
 	mTabContainer->lockTabs();
 }
@@ -228,7 +236,7 @@ void LLFloaterChatterBox::onOpen()
 void LLFloaterChatterBox::onClose(bool app_quitting)
 {
 	setVisible(FALSE);
-	gSavedSettings.setBOOL("ShowCommunicate", FALSE);
+	if (!app_quitting) gSavedSettings.setBOOL("ShowCommunicate", false);
 }
 
 void LLFloaterChatterBox::setMinimized(BOOL minimized)

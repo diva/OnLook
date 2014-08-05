@@ -343,6 +343,13 @@ U32 LLVOVolume::processUpdateMessage(LLMessageSystem *mesgsys,
 					mTextureAnimp = new LLViewerTextureAnim(this);
 					mTexAnimMode = 0;
 				}
+				else
+				{
+					if (!(mTextureAnimp->mMode & LLTextureAnim::SMOOTH))
+					{
+						mTextureAnimp->reset();
+					}
+				}
 				
 				mTextureAnimp->unpackTAMessage(mesgsys, block_num);
 			}
@@ -3598,7 +3605,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
 		static const LLCachedControl<bool> allow_mesh_picking("SGAllowRiggedMeshSelection");
-		if (allow_mesh_picking && (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists()))
+		if (allow_mesh_picking && (gFloaterTools->getVisible() || LLFloaterInspect::findInstance()))
 		{
 			updateRiggedVolume();
 			//genBBoxes(FALSE);
@@ -3780,7 +3787,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 
 bool LLVOVolume::treatAsRigged()
 {
-	return (gFloaterTools->getVisible() || LLFloaterInspect::instanceExists()) && 
+	return (gFloaterTools->getVisible() || LLFloaterInspect::findInstance()) &&
 			isAttachment() && 
 			mDrawable.notNull() &&
 			mDrawable->isState(LLDrawable::RIGGED);

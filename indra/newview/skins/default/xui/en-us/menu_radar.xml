@@ -176,6 +176,10 @@
       <on_click function="ToggleControl" userdata="RadarColumnActivityHidden"/>
       <on_check control="RadarColumnActivityHidden"/>
     </menu_item_check>
+    <menu_item_check label="Voice" name="Voice">
+      <on_click function="ToggleControl" userdata="RadarColumnVoiceHidden"/>
+      <on_check control="RadarColumnVoiceHidden"/>
+    </menu_item_check>
     <menu_item_check label="Age" name="Age">
       <on_click function="ToggleControl" userdata="RadarColumnAgeHidden"/>
       <on_check control="RadarColumnAgeHidden"/>

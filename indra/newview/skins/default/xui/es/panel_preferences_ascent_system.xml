@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Sistema" name="ascsys">
-	<tab_container label="Sistema Singularity" name="Ascent System">
+	<tab_container label="Sistema" name="Ascent System">
 		<!-- =========================== -->
 		<panel label="General" name="User Interface">
 			<check_box label="Habilitar Teleporte con doble click" tool_tip="Haciendo doble click en un objeto o persona te transportará hacia su ubicación." name="double_click_teleport_check"/>
@@ -16,7 +16,7 @@
 			<check_box label="Permitir siempre volar" tool_tip="Te permite volar en lugares donde no está permitido. Utilizalo bajo tu responsabilidad, que puedas no significa que debas." name="always_fly_check"/>
 			<check_box label="Deshabilitar la Distancia Mínima de la Cámara" tool_tip="Permite a la cámara acercarse a los objetos." name="disable_camera_zoom_check"/>
 			<check_box label="Habilitar la funcionalidad Super Usuario" tool_tip="Agrega funciones consideradas demasiado peligrosas para un uso normal. Estas características pueden causar estragos, o hacer daño si son mal utilizadas - Principalmente para ti o tus pertenencias. Si estás seguro, activa la casilla de verificación a continuación." name="power_user_check"/>
-			<check_box label="Confirmar funcionalidad Super Usuario" tool_tip="Confirmar la activación de Super Usuario. Activalo bajo tu propio riesgo, y utiliza cualquier característica habilitada en forma responsable. Los desarrolladores de Singularity no reemplazarán nada que hayas arruinado. Te recomendamos hacer una copia de seguridad de todo aquello que será víctima de dichos poderes. A diferencia del resto de los items a marcar, debes hacer click en Aplicar o en OK después de activar esta función." name="power_user_confirm_check"/>
+			<check_box label="Confirmar funcionalidad Super Usuario" tool_tip="Confirmar la activación de Super Usuario. Activalo bajo tu propio riesgo, y utiliza cualquier característica habilitada en forma responsable. Los desarrolladores de [SHORT_APP_NAME] no reemplazarán nada que hayas arruinado. Te recomendamos hacer una copia de seguridad de todo aquello que será víctima de dichos poderes. A diferencia del resto de los items a marcar, debes hacer click en Aplicar o en OK después de activar esta función." name="power_user_confirm_check"/>
 			<check_box label="Descargar automáticamente el inventario en segundo plano al iniciar sesión" tool_tip="El inventario será precargado cuando inicies sesión, de esta manera no tienes que esperar que cargue cuando hagas una búsqueda por primera vez." name="fetch_inventory_on_login_check"/>
 			<check_box label="Activar Efectos del Viento" name="enable_wind"/>
 			<check_box label="Activar Nubes" name="enable_clouds"/>
@@ -80,7 +80,7 @@
 			</text>
 			<line_editor name="AscentCmdLineKeyToName"/>
 			<text name="cmd_line_text_12">
-				Ofrecer Teleport a otro Avatar (uso: cmd key)
+				Ofrecer Teleporte a otro Avatar (uso: cmd key)
 			</text>
 			<line_editor name="AscentCmdLineOfferTp"/>
 			<text name="cmd_line_text_7">
@@ -103,6 +103,7 @@
 			<check_box label="Desactivar Apuntar a... y Rayos" tool_tip="No apunta hacia ni muestra tus rayos de edición cuando seleccionas un objeto." name="disable_point_at_and_beams_check"/>
 			<check_box label="No mirar hacia los Objetos (anula ShowLookAt)" tool_tip="Apaga la tansmisión de los giros de cabeza y rayos lookat propios." name="private_look_at_check"/>
 			<check_box label="Mostrar las balizas LookAt de los demás" tool_tip="Te muestra hacia donde miran los demas." name="show_look_at_check"/>
+			<check_box label="Notificar en el chat cuando alguien te empuja" name="announce_bumps"/>
       <check_box label="Quitarse automáticamente el Bridge LSL" tool_tip="Quitar automáticamente el Bridge LSL de los visores Phoenix o Firestorm." name="detach_bridge"/>			
 			<check_box label="Captura silenciosa a Disco" tool_tip="Anula el sonido de la cámara y el alerta a los demás cuando realizas una captura al disco de tu PC" name="quiet_snapshots_check"/>
 			<check_box label="Al pararse, revoca el permiso de los objetos en los cuales estuvo sentado tu avatar" tool_tip="Los objetos retienen, generalmente, el permiso para tomar control y ejecutar animaciones hasta que se reinician u otro usuario le cede permisos. Activando esta opción te aseguras que los permisos serán revocados inmediatamente." name="revoke_perms_on_stand_up_check"/>
@@ -110,7 +111,9 @@
 			<check_box left_delta="280" label="Que no son de tu propiedad" tool_tip="Deshabilita sentarse con un click en objetos que no son de tu propiedad (Si se usa con control de grupo, sólo una opción es necesaria)" name="disable_click_sit_own_check"/>
 			<check_box label="Mostrar cambios del Total de Scripts en Ejecución:" name="totalscriptjumps" tool_tip="Muestra los cambios en la cuenta total de scritps en tu región, dependiendo del umbral que selecciones a la derecha."/>
 			<spinner left_delta="350" name="ScriptJumpCount" tool_tip="Umbral para el mensaje de salto de scripts [Predeterminado: 100]"/>
-			<check_box label="Soporte API Restrained Love (RLVa)" name="RestrainedLove" tool_tip="Permite a los scripts tomar control del visor, si tienes vestido un objeto compatible con RLVa."/>			
+			<check_box label="Soporte API Restrained Love (RLVa)" name="RestrainedLove" tool_tip="Permite a los scripts tomar control del visor, si tienes vestido un objeto compatible con RLVa."/>
+			<text name="EmergencyTeleportDesc" bottom_delta="-20" >Arrastra un hito para autoteleportarte en los últimos 20 segundos previos al reinicio de región</text>
+			<drop_target name="emergency_teleport_landmark_drop" bottom_delta="-15" width="450"/>
 		</panel>
 		<!-- =========================== -->
 		<panel label="Construcción" name="Building">

@@ -6,10 +6,15 @@
 	<menu_item_separator />
 	<menu_item_check name="Center on Camera" label="Centrar en Cámara"/>
 	<menu_item_check name="Rotate Mini-Map" label="Rotar Mini-Mapa"/>
-	<menu_item_check label="Mostrar Objetos" name="Show Objects"/>
+	<menu label="Mostrar" name="Minimap Show">
+		<menu_item_check label="Objetos" name="Objects"/>
+		<menu_item_check label="Líneas de Propiedad" name="Property Lines"/>
+		<menu_item_check label="Terrenos en Venta" name="Parcels for Sale"/>
+		<menu_item_check label="Anillos de rastreo del Radar" name="Radar Tracking Circles"/>
+  </menu>
 	<menu name="Chat Distance Rings" label="Anillos de Rangos de Chat">
-		<menu_item_check label="Mostrar Todos" name="Show All"/>
-		<menu_item_separator />
+			<menu_item_check label="Mostrar Todos" name="Show All"/>
+			<menu_item_separator />
 		<menu_item_check label="Mostrar rango Sururros" name="Show Whisper Ring"/>
 		<menu_item_check label="Mostrar rango Chat" name="Show Chat Ring"/>
 		<menu_item_check label="Mostrar rango Gritos" name="Show Shout Ring"/>
@@ -24,6 +29,7 @@
 		<menu_item_call name="Blue" label="Azul"/>
 		<menu_item_call name="Yellow" label="Amarillo"/>
 		<menu_item_call name="Custom" label="Personalizado..."/>
-  </menu>
-  <menu_item_call name="Unmark" label="Desmarcar"/>
+	</menu>
+	<menu_item_call name="Unmark" label="Desmarcar"/>
+	<menu_item_check label="Texturas del Mapa" name="World Map Textures"/>
 </menu>

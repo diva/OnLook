@@ -38,16 +38,85 @@
 //-----------------------------------------------------------------------------
 #include <string>
 
+#include "aisyncclient.h"
 #include "llerror.h"
 #include "llpose.h"
 #include "lluuid.h"
 
 class LLCharacter;
+class LLMotionController;
+
+//-----------------------------------------------------------------------------
+// class AISync* stuff
+//-----------------------------------------------------------------------------
+
+class AISyncKeyMotion : public AISyncKey
+{
+  private:
+	F32 mDuration;
+	bool mLoop;
+
+  public:
+	AISyncKeyMotion(AISyncKey const* from_key, F32 duration, bool loop) : AISyncKey(from_key), mDuration(duration), mLoop(loop) { }
+
+  // Virtual functions of AISyncKey.
+  public:
+	/*virtual*/ synckeytype_t getkeytype(void) const
+	{
+	  // Return a unique identifier for this class, where the low 8 bits represent the syncgroup.
+	  return synckeytype_motion;
+	}
+
+    /*virtual*/ bool equals(AISyncKey const& key) const
+	{
+	  switch (key.getkeytype())
+	  {
+		case synckeytype_motion:
+		{
+		  // The other key is of the same type.
+		  AISyncKeyMotion const& motion_key = static_cast<AISyncKeyMotion const&>(key);
+		  return mLoop == motion_key.mLoop && is_approx_equal(mDuration, motion_key.mDuration);
+		}
+		default:
+		  // The keys must be in the same syncgroup.
+		  break;
+	  }
+	  return false;
+	}
+};
+
+class AISyncClientMotion : public AISyncClient
+{
+  protected:
+	// Make sure that clients that are destroyed are first unregistered.
+	// This is needed, for example, when loading fails or when excess motions are being purged.
+	/*virtual*/ ~AISyncClientMotion() { unregister_client(); }
+
+	// AISyncClient events.
+	/*virtual*/ AISyncKey* createSyncKey(AISyncKey const* from_key = NULL) const;
+	/*virtual*/ void event1_ready(void) { }
+	/*virtual*/ void event1_not_ready(void) { }
+	/*virtual*/ void deregistered(void);
+
+  protected:
+	// This is called when the server sent us a message that it wants us to play this animation, but we can't because it isn't fully downloaded yet.
+	void aisync_loading(void);
+	// This is called when that motion is successfully loaded and it has to be re-registered because now the duration etc is known.
+	void aisync_loaded(void);
+
+  public:
+	// Virtual functions of AISyncClientMotion.
+	// These are defined by classes derived from LLMotion (which is derived from this class).
+	virtual BOOL getLoop() = 0;
+	virtual F32 getDuration() = 0;
+	virtual F32 getAnimTime(void) const  = 0;
+	virtual F32 getRuntime(void) const  = 0;
+};
 
 //-----------------------------------------------------------------------------
 // class LLMotion
 //-----------------------------------------------------------------------------
-class LLMotion
+class LLMotion : public AISyncClientMotion
 {
 	friend class LLMotionController;
 	
@@ -66,7 +135,7 @@ public:
 	};
 
 	// Constructor
-	LLMotion(const LLUUID &id);
+	LLMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLMotion();
@@ -114,7 +183,22 @@ protected:
 	BOOL isActive() { return mActive; }
 public:
 	void activate(F32 time);
-	
+
+	//<singu>
+	// Returns the time that this motion has been running.
+	virtual F32 getRuntime(void) const;
+
+	// Return the current time (in seconds since creation of the controller).
+	virtual F32 getAnimTime(void) const;
+
+	// This is called when a motion is to be activated, but might need synchronization.
+	// It adjusts the start time to match that of other motions in the same synchronization group that were already started.
+	F32 syncActivationTime(F32 time);
+
+	// Accessor.
+	LLMotionController* getController(void) const { return mController; }
+	//</singu>
+
 public:
 	//-------------------------------------------------------------------------
 	// animation callbacks to be implemented by subclasses
@@ -181,6 +265,9 @@ protected:
 	//-------------------------------------------------------------------------
 	std::string		mName;			// instance name assigned by motion controller
 	LLUUID			mID;
+	//<singu>
+	LLMotionController* mController;
+	//</singu>
 	
 	F32 mActivationTimestamp;	// time when motion was activated
 	F32 mStopTimestamp;			// time when motion was told to stop
@@ -199,9 +286,9 @@ protected:
 class LLTestMotion : public LLMotion
 {
 public:
-	LLTestMotion(const LLUUID &id) : LLMotion(id){}
+	LLTestMotion(LLUUID const& id, LLMotionController* controller) : LLMotion(id, controller){}
 	~LLTestMotion() {}
-	static LLMotion *create(const LLUUID& id) { return new LLTestMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLTestMotion(id, controller); }
 	BOOL getLoop() { return FALSE; }
 	F32 getDuration() { return 0.0f; }
 	F32 getEaseInDuration() { return 0.0f; }
@@ -223,9 +310,9 @@ public:
 class LLNullMotion : public LLMotion
 {
 public:
-	LLNullMotion(const LLUUID &id) : LLMotion(id) {}
+	LLNullMotion(LLUUID const& id, LLMotionController* controller) : LLMotion(id, controller) {}
 	~LLNullMotion() {}
-	static LLMotion *create(const LLUUID &id) { return new LLNullMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLNullMotion(id, controller); }
 
 	// motions must specify whether or not they loop
 	/*virtual*/ BOOL getLoop() { return TRUE; }
@@ -266,5 +353,41 @@ public:
 	// called when a motion is deactivated
 	/*virtual*/ void onDeactivate() {}
 };
+
+
+//-----------------------------------------------------------------------------
+// AIMaskedMotion
+//-----------------------------------------------------------------------------
+
+// These motions have a bit assigned in LLMotionController::mActiveMask
+// that is set and uset upon activation/deactivation.
+
+// This must be in the same order as ANIM_AGENT_BODY_NOISE_ID through ANIM_AGENT_WALK_ADJUST_ID in llvoavatar.cpp.
+U32 const ANIM_AGENT_BODY_NOISE		= 0x001;
+U32 const ANIM_AGENT_BREATHE_ROT	= 0x002;
+U32 const ANIM_AGENT_PHYSICS_MOTION	= 0x004;
+U32 const ANIM_AGENT_EDITING		= 0x008;
+U32 const ANIM_AGENT_EYE			= 0x010;
+U32 const ANIM_AGENT_FLY_ADJUST		= 0x020;
+U32 const ANIM_AGENT_HAND_MOTION	= 0x040;
+U32 const ANIM_AGENT_HEAD_ROT		= 0x080;
+U32 const ANIM_AGENT_PELVIS_FIX		= 0x100;
+U32 const ANIM_AGENT_TARGET			= 0x200;
+U32 const ANIM_AGENT_WALK_ADJUST	= 0x400;
+
+class AIMaskedMotion : public LLMotion
+{
+private:
+	U32 mMaskBit;
+
+public:
+	AIMaskedMotion(LLUUID const& id, LLMotionController* controller, U32 mask_bit) : LLMotion(id, controller), mMaskBit(mask_bit) { }
+
+	/*virtual*/ BOOL onActivate();
+	/*virtual*/ void onDeactivate();
+
+	U32 getMaskBit(void) const { return mMaskBit; }
+};
+
 #endif // LL_LLMOTION_H
 

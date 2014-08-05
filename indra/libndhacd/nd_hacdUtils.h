@@ -20,7 +20,6 @@
 #define ND_HACD_UTILS_H
 
 #include "nd_hacdStructs.h"
-#include "LLConvexDecomposition.h"
 
 tHACD* init( int nConcavity, int nClusters, int nMaxVerticesPerHull, double dMaxConnectDist, HACDDecoder *aData );
 DecompData decompose( tHACD *aHACD );

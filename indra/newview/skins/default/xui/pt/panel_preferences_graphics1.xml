@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Gráficos" name="Display panel">
 	<button label="?" name="GraphicsPreferencesHelpButton"/>
-	<check_box label="Execute Singularity em uma janela" name="windowed mode"/>
+	<check_box label="Execute [SHORT_APP_NAME] em uma janela" name="windowed mode"/>
 	<text_editor bottom="-56" height="40" name="FullScreenInfo" width="480">
 		Se desmarcado, o visualizador irá exibir em tela inteira quando fizer o acesso.
 	</text_editor>

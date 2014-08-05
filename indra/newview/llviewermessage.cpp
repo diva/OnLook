@@ -67,6 +67,7 @@
 #include "llfloatermute.h"
 #include "llfloaterpostcard.h"
 #include "llfloaterpreference.h"
+#include "llfloaterregionrestarting.h"
 #include "llfloaterteleporthistory.h"
 #include "llgroupactions.h"
 #include "llhudeffecttrail.h"
@@ -672,6 +673,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 			args["NAME"] = name;
 			args["INVITE"] = message;
 			LLNotificationsUtil::add("JoinedTooManyGroupsMember", args, notification["payload"]);
+			return false;
 		}
 	}
 
@@ -2293,9 +2295,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	}
 
 	// These bools are here because they would make mess of logic down below in IM_NOTHING_SPECIAL.
-	bool is_autorespond = !is_muted && (is_friend || !gSavedPerAccountSettings.getBOOL("AutoresponseAnyoneFriendsOnly")) && gSavedPerAccountSettings.getBOOL("AutoresponseAnyone");
+	bool autorespond_status = gAgent.getAFK() || !gSavedPerAccountSettings.getBOOL("AutoresponseOnlyIfAway") || gSavedSettings.getBOOL("FakeAway");
+	bool is_autorespond = !is_muted && autorespond_status && (is_friend || !gSavedPerAccountSettings.getBOOL("AutoresponseAnyoneFriendsOnly")) && gSavedPerAccountSettings.getBOOL("AutoresponseAnyone");
 	bool is_autorespond_muted = is_muted && gSavedPerAccountSettings.getBOOL("AutoresponseMuted");
-	bool is_autorespond_nonfriends = !is_friend && !is_muted && gSavedPerAccountSettings.getBOOL("AutoresponseNonFriends");
+	bool is_autorespond_nonfriends = !is_friend && !is_muted && autorespond_status && gSavedPerAccountSettings.getBOOL("AutoresponseNonFriends");
 
 	LLSD args;
 	switch(dialog)
@@ -2521,7 +2524,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{
 				if (!mute_im)
 					RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM_REMOTE), session_id);
-				message = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
+				buffer = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
 			}
 // [/RLVa:KB]
 
@@ -4051,10 +4054,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				sdQuery["name"] = chat.mFromName;
 				sdQuery["owner"] = owner_id;
 
-				/* Singu Note: We don't use this field, seems like part of llinspectremoteobject
 				if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (!is_owned_by_me) )
 					sdQuery["rlv_shownames"] = true;
-				*/
 
 				const LLViewerRegion* pRegion = LLWorld::getInstance()->getRegionFromPosAgent(chat.mPosAgent);
 				if (pRegion)
@@ -5772,7 +5773,7 @@ void process_avatar_animation(LLMessageSystem *mesgsys, void **user_data)
 		}
 	}
 
-	if (num_blocks)
+	//if (num_blocks)  Singu note: commented out; having blocks or not is totally irrelevant!
 	{
 		avatarp->processAnimationStateChanges();
 	}
@@ -6434,7 +6435,6 @@ bool handle_special_notification(std::string notificationID, LLSD& llsdBlock)
 	std::string regionMaturity = LLViewerRegion::accessToString(regionAccess);
 	LLStringUtil::toLower(regionMaturity);
 	llsdBlock["REGIONMATURITY"] = regionMaturity;
-	
 	bool returnValue = false;
 	LLNotificationPtr maturityLevelNotification;
 	std::string notifySuffix = "_Notify";
@@ -6583,6 +6583,37 @@ void home_position_set()
 	gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, FALSE);
 }
 
+void update_region_restart(const LLSD& llsdBlock)
+{
+	U32 seconds;
+	if (llsdBlock.has("MINUTES"))
+	{
+		seconds = 60U * static_cast<U32>(llsdBlock["MINUTES"].asInteger());
+	}
+	else
+	{
+		seconds = static_cast<U32>(llsdBlock["SECONDS"].asInteger());
+	}
+
+	LLFloaterRegionRestarting* restarting_floater = LLFloaterRegionRestarting::findInstance();
+
+	if (restarting_floater)
+	{
+		restarting_floater->updateTime(seconds);
+		if (!restarting_floater->isMinimized())
+			restarting_floater->center();
+	}
+	else
+	{
+		LLSD params;
+		params["NAME"] = llsdBlock["NAME"];
+		params["SECONDS"] = (LLSD::Integer)seconds;
+		LLFloaterRegionRestarting::showInstance(params);
+		if (gSavedSettings.getBOOL("LiruRegionRestartMinimized"))
+			LLFloaterRegionRestarting::findInstance()->setMinimized(true);
+	}
+}
+
 bool attempt_standard_notification(LLMessageSystem* msgsystem)
 {
 	// if we have additional alert data
@@ -6654,6 +6685,12 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 		{
 			LLViewerStats::getInstance()->incStat(LLViewerStats::ST_KILLED_COUNT);
 		}
+		else if (notificationID == "RegionRestartMinutes" || notificationID == "RegionRestartSeconds")
+		{
+			update_region_restart(llsdBlock);
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
+			return true; // Floater is enough.
+		}
 
 		LLNotificationsUtil::add(notificationID, llsdBlock);
 		return true;
@@ -6712,7 +6749,6 @@ bool handle_not_age_verified_alert(const std::string &pAlertName)
 bool handle_special_alerts(const std::string &pAlertName)
 {
 	bool isHandled = false;
-
 	if (LLStringUtil::compareStrings(pAlertName, "NotAgeVerified") == 0)
 	{
 		
@@ -6763,17 +6799,27 @@ void process_alert_core(const std::string& message, BOOL modal)
 			S32 mins = 0;
 			LLStringUtil::convertToS32(text.substr(18), mins);
 			args["MINUTES"] = llformat("%d",mins);
-			LLNotificationsUtil::add("RegionRestartMinutes", args);
+			update_region_restart(args);
+			//LLNotificationsUtil::add("RegionRestartMinutes", args); // Floater is enough.
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 		}
 		else if (text.substr(0,17) == "RESTART_X_SECONDS")
 		{
 			S32 secs = 0;
 			LLStringUtil::convertToS32(text.substr(18), secs);
 			args["SECONDS"] = llformat("%d",secs);
-			LLNotificationsUtil::add("RegionRestartSeconds", args);
+			update_region_restart(args);
+			//LLNotificationsUtil::add("RegionRestartSeconds", args); // Floater is enough.
+			LLUI::sAudioCallback(LLUUID(gSavedSettings.getString("UISndRestart")));
 		}
 		else
 		{
+			// *NOTE: If the text from the server ever changes this line will need to be adjusted.
+			if (text.substr(0, 25) == "Region restart cancelled.")
+			{
+				LLFloaterRegionRestarting::hideInstance();
+			}
+
 			std::string new_msg =LLNotificationTemplates::instance().getGlobalString(text);
 // [RLVa:KB] - Checked: 2012-02-07 (RLVa-1.4.5) | Added: RLVa-1.4.5
 			if ( (new_msg == text) && (rlv_handler_t::isEnabled()) )
@@ -6872,6 +6918,32 @@ void mean_name_callback(const LLUUID &id, const std::string& full_name, bool is_
 	}
 }
 
+void chat_mean_collision(const LLUUID& id, const LLAvatarName& avname, const EMeanCollisionType& type, const F32& mag)
+{
+	LLStringUtil::format_map_t args;
+	if (type == MEAN_BUMP)
+		args["ACT"] = LLTrans::getString("bump");
+	else if (type == MEAN_LLPUSHOBJECT)
+		args["ACT"] = LLTrans::getString("llpushobject");
+	else if (type == MEAN_SELECTED_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("selected_object_collide");
+	else if (type == MEAN_SCRIPTED_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("scripted_object_collide");
+	else if (type == MEAN_PHYSICAL_OBJECT_COLLIDE)
+		args["ACT"] = LLTrans::getString("physical_object_collide");
+	else
+		return; // How did we get here? I used to know you so well.
+	std::string name;
+	LLAvatarNameCache::getPNSName(avname, name);
+	args["NAME"] = name;
+	args["MAG"] = llformat("%f", mag);
+	LLChat chat(LLTrans::getString("BumpedYou", args));
+	chat.mFromName = name;
+	chat.mURL = llformat("secondlife:///app/agent/%s/about", id.asString().c_str());
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	LLFloaterChat::addChat(chat);
+}
+
 void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **user_data)
 {
 	if (gAgent.inPrelude())
@@ -6901,6 +6973,8 @@ void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **use
 		msgsystem->getU8Fast(_PREHASH_MeanCollision, _PREHASH_Type, u8type);
 
 		type = (EMeanCollisionType)u8type;
+		static const LLCachedControl<bool> chat_collision("AnnounceBumps");
+		if (chat_collision) LLAvatarNameCache::get(perp, boost::bind(chat_mean_collision, _1, _2, type, mag));
 
 		BOOL b_found = FALSE;
 
@@ -7676,6 +7750,39 @@ void send_lures(const LLSD& notification, const LLSD& response)
 
 		msg->nextBlockFast(_PREHASH_TargetData);
 		msg->addUUIDFast(_PREHASH_TargetID, target_id);
+		// Record the offer.
+		if (notification["payload"]["ids"].size() < 10) // Singu Note: Do NOT spam chat!
+		{
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			bool fRlvHideName = notification["payload"]["rlv_shownames"].asBoolean();
+// [/RLVa:KB]
+			std::string target_name;
+			gCacheName->getFullName(target_id, target_name);  // for im log filenames
+
+			LLSD args;
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			if (fRlvHideName)
+				target_name = RlvStrings::getAnonym(target_name);
+			else
+// [/RLVa:KB]
+				LLAvatarNameCache::getPNSName(target_id, target_name);
+			args["TO_NAME"] = target_name;
+
+			LLSD payload;
+
+			//*TODO please rewrite all keys to the same case, lower or upper
+			payload["from_id"] = target_id;
+			payload["SUPPRESS_TOAST"] = true;
+			LLNotificationsUtil::add("TeleportOfferSent", args, payload);
+
+			/* Singu TODO?
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			if (!fRlvHideName)
+				LLRecentPeople::instance().add(target_id);
+// [/RLVa:KB]
+//			LLRecentPeople::instance().add(target_id);
+			*/
+		}
 	}
 	gAgent.sendReliableMessage();
 }
@@ -7720,8 +7827,7 @@ void handle_lure(const uuid_vec_t& ids)
 
 	LLSD edit_args;
 // [RLVa:KB] - Checked: 2010-04-07 (RLVa-1.2.0d) | Modified: RLVa-1.0.0a
-	edit_args["REGION"] = 
-		(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? gAgent.getRegion()->getName() : RlvStrings::getString(RLV_STRING_HIDDEN);
+	edit_args["REGION"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? gAgent.getRegion()->getName() : RlvStrings::getString(RLV_STRING_HIDDEN);
 // [/RLVa:KB]
 	//edit_args["REGION"] = gAgent.getRegion()->getName();
 
@@ -7741,6 +7847,7 @@ void handle_lure(const uuid_vec_t& ids)
 				return;
 			}
 		}
+		payload["rlv_shownames"] = !RlvActions::canShowName(RlvActions::SNC_TELEPORTOFFER);
 // [/RLVa:KB]
 		payload["ids"].append(*it);
 	}

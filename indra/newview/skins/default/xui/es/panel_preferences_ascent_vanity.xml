@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Vanity" name="ascvan">
-	<tab_container label="Singularity Vanity" name="Ascent Vanity">
+	<tab_container label="Vanity" name="Ascent Vanity">
 		<panel label="General" name="General">
 			<check_box label="Cuando sea aplicable, guardar Ajustes Vanity por cuenta." tool_tip="Guarda ajustes individuales por cuenta, permitiendo una mas fácil personalización de Alts." name="use_account_settings_check"/>
 			<check_box label="Ocultar pantalla de progreso de Teleporte" tool_tip="Activado, el visor ocultará la pantalla de progreso de Teleportación, pemitiendo leer MIs.." name="disable_tp_screen_check"/>
@@ -41,7 +41,7 @@
 			<check_box label="Mostrar Tag de Visor de los demás" tool_tip="Activándolo mostrará el nombre de Tag de visor sobre los nombres de avatar de otros usuarios." name="show_other_tag_check"/>
 			<check_box label="Mostrar color de Tag de visor de los demás" tool_tip="Activándolo fijará el color del tag del visor de los demás a su propio color." name="show_client_tag_color_check"/>
 			<check_box label="Mostrar tiempo inactivo" tool_tip="Activándolo mostrará la cantidad de tiempo que el avatar está inactivo." name="show_idle_time_check"/>
-			<check_box label="Chequear automáticamente actualizaciones de clientes" tool_tip="Activándolo permite a Singularity descargar nuevas definiciones de clientes cuando sea necesario." name="update_tags_check"/>
+			<check_box label="Chequear automáticamente actualizaciones de clientes" tool_tip="Activándolo permite a [SHORT_APP_NAME] descargar nuevas definiciones de clientes cuando sea necesario." name="update_tags_check"/>
 			<button name="update_clientdefs" label="Actualización Manual" height="18" left_delta="310" width="150"/>
 			<!-- End of Client Tag settings -->
 			<text name="effects_color_textbox">

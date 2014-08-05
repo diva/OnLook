@@ -138,7 +138,7 @@ Detalles del error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado e
 	</notification>
 	
 	<notification name="BadInstallation">
-		Ha ocurrido un error al actualizar [APP_NAME].  Por favor, descarga la última versión desde www.singularityviewer.org.
+		Ha ocurrido un error al actualizar [APP_NAME].  Por favor, descarga la última versión desde [APP_SITE].
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
@@ -370,10 +370,6 @@ Marcando este ítem, se mostrará:
 
 ¿Ir al sitio web [SECOND_LIFE] para mayor información sobre este asunto?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Ir a la Página"/>
-	</notification>
-	
-	<notification name="ClickUploadHelpPermissions">
-		Tus permisos por defecto no funcionarán en regiones antiguas.
 	</notification>
 	
 	<notification name="ClickWebProfileHelpAvatar">
@@ -1835,9 +1831,9 @@ Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar
 	</notification>
 	
 	<notification name="WebLaunchSinguIssue">
-		Visita Singularity Issue Tracker (Seguimiento de incidencias del Visor Singularity), donde podrás informar de errores y otros asuntos del visor Singularity.
+		Visita [SHORT_APP_NAME] Issue Tracker (Seguimiento de incidencias del Visor [SHORT_APP_NAME]), donde podrás informar de errores y otros asuntos del visor [SHORT_APP_NAME].
 Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente.		
-    <usetemplate ignoretext="Cuando se abra el navegador para ir al Issue Tracker de Singularity" name="okcancelignore" notext="Cancelar" yestext="Ir a la Página"/>
+    <usetemplate ignoretext="Cuando se abra el navegador para ir al Issue Tracker de [SHORT_APP_NAME]" name="okcancelignore" notext="Cancelar" yestext="Ir a la Página"/>
 	</notification>	
   
 	<notification name="WebLaunchPublicIssueHelp">
@@ -5539,6 +5535,11 @@ porque la parcela está llena.
 	</notification>
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->
+<!-- Singu Note: RLVa notifications come first here -->
+	<notification name="RLVChangeStrings">
+		Los cambios no surtirán efecto hasta reiniciar [APP_NAME].
+  </notification>
+
 <!-- Singu TODO: Migrate our special notifications to here -->	
 	<notification name="AntiSpamBlock">
 		AntiSpam: [SOURCE] ha sido bloqueado por espamear [TYPE]s [AMOUNT] veces en [TIME] segundos.

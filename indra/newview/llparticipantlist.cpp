@@ -140,7 +140,7 @@ void LLParticipantList::handleSpeakerSelect()
 {
 	const LLUUID& speaker_id = mAvatarList->getValue().asUUID();
 	LLPointer<LLSpeaker> selected_speakerp = mSpeakerMgr->findSpeaker(speaker_id);
-	if (speaker_id.isNull() || selected_speakerp.isNull())
+	if (speaker_id.isNull() || selected_speakerp.isNull() || mAvatarList->getNumSelected() != 1)
 	{
 		// Disable normal controls
 		if (LLView* view = findChild<LLView>("mute_btn"))

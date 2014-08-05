@@ -52,8 +52,6 @@ protected:
 	void onSpellEditCustom();
 	void onSpellBaseComboBoxCommit(const LLSD& value);
 	void onCommitTimeDate(LLUICtrl* ctrl);
-	void onCommitEnableAS(const LLSD& value);
-	void onCommitDialogBlock(LLUICtrl* ctrl, const LLSD& value);
 	void onCommitKeywords(LLUICtrl* ctrl);
 
 private:
@@ -86,6 +84,7 @@ private:
 	bool mOneLineGroupButt;
 	bool mOneLineConfButt;
 	bool mOnlyComm;
+	bool mLegacyEndScroll;
 	bool mItalicizeActions;
 	bool mLegacyLogLaunch;
 	S32 mFriendNames;

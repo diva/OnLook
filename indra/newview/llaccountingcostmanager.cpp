@@ -41,9 +41,15 @@ LLAccountingCostManager::LLAccountingCostManager()
 class LLAccountingCostResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	LLAccountingCostResponder( const LLSD& objectIDs )
-	: mObjectIDs( objectIDs )
+	LLAccountingCostResponder( const LLSD& objectIDs, const LLHandle<LLAccountingCostObserver>& observer_handle )
+	: mObjectIDs( objectIDs ),
+	  mObserverHandle( observer_handle )
 	{
+		LLAccountingCostObserver* observer = mObserverHandle.get();
+		if (observer)
+		{
+			mTransactionID = observer->getTransactionID();
+		}
 	}
 		
 	void clearPendingRequests ( void )
@@ -54,19 +60,24 @@ public:
 		}
 	}
 	
-	/*virtual*/ void error( U32 statusNum, const std::string& reason )
+	void error( U32 statusNum, const std::string& reason )
 	{
-		llwarns	<< "Transport error "<<reason<<llendl;	
+		llwarns	<< "Transport error [status:" << statusNum << "]: " << reason << llendl;
 		clearPendingRequests();
+
+		LLAccountingCostObserver* observer = mObserverHandle.get();
+		if (observer && observer->getTransactionID() == mTransactionID)
+		{
+			observer->setErrorStatus(statusNum, reason);
+		}
 	}
 	
-	/*virtual*/ void result( const LLSD& content )
+	void result( const LLSD& content )
 	{
 		//Check for error
 		if ( !content.isMap() || content.has("error") )
 		{
 			llwarns	<< "Error on fetched data"<< llendl;
-			clearPendingRequests();
 		}
 		else if (content.has("selected"))
 		{
@@ -74,15 +85,17 @@ public:
 			F32 networkCost		= 0.0f;
 			F32 simulationCost	= 0.0f;
 
-			//LLTransactionID transactionID;
-				
-			//transactionID	= content["selected"][i]["local_id"].asUUID();
 			physicsCost		= content["selected"]["physics"].asReal();
 			networkCost		= content["selected"]["streaming"].asReal();
 			simulationCost	= content["selected"]["simulation"].asReal();
 				
 			SelectionCost selectionCost( /*transactionID,*/ physicsCost, networkCost, simulationCost );
-					
+
+			LLAccountingCostObserver* observer = mObserverHandle.get();
+			if (observer && observer->getTransactionID() == mTransactionID)
+			{
+				observer->onWeightsUpdate(selectionCost);
+			}
 		}
 
 		clearPendingRequests();
@@ -94,10 +107,17 @@ public:
 private:
 	//List of posted objects
 	LLSD mObjectIDs;
-};
 
+	// Current request ID
+	LLUUID mTransactionID;
+
+	// Cost update observer handle
+	LLHandle<LLAccountingCostObserver> mObserverHandle;
+};
 //===============================================================================
-void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const std::string& url )
+void LLAccountingCostManager::fetchCosts( eSelectionType selectionType,
+										  const std::string& url,
+										  const LLHandle<LLAccountingCostObserver>& observer_handle )
 {
 	// Invoking system must have already determined capability availability
 	if ( !url.empty() )
@@ -144,7 +164,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const st
 			LLSD dataToPost = LLSD::emptyMap();		
 			dataToPost[keystr.c_str()] = objectList;
 
-			LLHTTPClient::post( url, dataToPost, new LLAccountingCostResponder( objectList ));
+			LLHTTPClient::post( url, dataToPost, new LLAccountingCostResponder( objectList, observer_handle ));
 		}
 	}
 	else

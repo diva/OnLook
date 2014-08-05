@@ -132,6 +132,9 @@ private:
 	F32				mObjectMapTPM;			// texels per meter on map
 	F32				mObjectMapPixels;		// Width of object map in pixels
 	F32				mDotRadius;				// Size of avatar markers
+	// <exodus>
+	LLCachedControl<F32> mPickRadius;		// Size of the rightclick area of affect
+	// </exodus>
 
 	bool			mPanning;			// map is being dragged
 	LLVector2		mTargetPan;
@@ -148,8 +151,9 @@ private:
 	LLPointer<LLViewerTexture>	mParcelImagep;
 // [/SL:KB]
 
+	static std::map<LLUUID, LLVector3d> mClosestAgentsToCursor; // <exodus/>
+
 	LLUUID			mClosestAgentToCursor;
-	LLVector3d		mClosestAgentPosition;
 	LLUUID			mClosestAgentAtLastRightClick;
 
 	static void showAgentProfile(void*);

@@ -427,7 +427,7 @@ public:
 
 		// in case of invalid characters, the avatar picker returns a 400
 		// just set it to process so it displays 'not found'
-		if ((200 <= status && status < 300) || status == 400)
+		if (isGoodStatus(status) || status == 400)
 		{
 			if (LLFloaterAvatarPicker::instanceExists())
 			{

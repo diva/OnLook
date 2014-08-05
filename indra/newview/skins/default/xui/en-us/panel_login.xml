@@ -29,6 +29,7 @@
          follows="left|bottom" font="SansSerifSmall" height="16"
        initial_value="true" label="Remember name"
        left="0" mouse_opaque="true" name="remember_name_check" width="158" />
+      <button bottom_delta="0" left="140" height="20" width="20" follows="left|bottom" image_overlay="inv_folder_trash.tga" scale_image="true" label="" tool_tip="Delete the currently selected remembered login info, if any." name="remove_login"/>
     </layout_panel>
     <layout_panel name="password_panel" left="0" user_resize="false" auto_resize="false" width="134" min_width="0">
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"

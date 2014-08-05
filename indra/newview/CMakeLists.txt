@@ -126,6 +126,7 @@ set(viewer_SOURCE_FILES
     llassetuploadresponders.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
+    llautoreplace.cpp
     llavataractions.cpp
     llavatarpropertiesprocessor.cpp
     llbox.cpp
@@ -181,6 +182,7 @@ set(viewer_SOURCE_FILES
     llfloaterabout.cpp
     llfloateractivespeakers.cpp
     llfloaterauction.cpp
+    llfloaterautoreplacesettings.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
     llfloateravatarpicker.cpp
@@ -238,13 +240,13 @@ set(viewer_SOURCE_FILES
     llfloaternamedesc.cpp
     llfloaternotificationsconsole.cpp
     llfloaterobjectiminfo.cpp
+    llfloaterobjectweights.cpp
     llfloateropenobject.cpp
     llfloateroutbox.cpp
     llfloaterparcel.cpp
     llfloaterpathfindingcharacters.cpp
     llfloaterpathfindinglinksets.cpp
     llfloaterpathfindingobjects.cpp
-    llfloaterpermissionsmgr.cpp
     llfloaterperms.cpp
     llfloaterpostcard.cpp
     llfloaterpostprocess.cpp
@@ -252,6 +254,7 @@ set(viewer_SOURCE_FILES
     llfloaterproperties.cpp
     llfloaterregiondebugconsole.cpp
     llfloaterregioninfo.cpp
+    llfloaterregionrestarting.cpp
     llfloaterreporter.cpp
     llfloaterscriptdebug.cpp
     llfloaterscriptlimits.cpp
@@ -646,6 +649,7 @@ set(viewer_HEADER_FILES
     llassetuploadresponders.h
     llattachmentsmgr.h
     llaudiosourcevo.h
+    llautoreplace.h
     llavataractions.h
     llavatarpropertiesprocessor.h
     llbox.h
@@ -701,6 +705,7 @@ set(viewer_HEADER_FILES
     llfloaterabout.h
     llfloateractivespeakers.h
     llfloaterauction.h
+    llfloaterautoreplacesettings.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
     llfloateravatarpicker.h
@@ -758,13 +763,13 @@ set(viewer_HEADER_FILES
     llfloaternamedesc.h
     llfloaternotificationsconsole.h
     llfloaterobjectiminfo.h
+    llfloaterobjectweights.h
     llfloateropenobject.h
     llfloateroutbox.h
     llfloaterparcel.h
     llfloaterpathfindingcharacters.h
     llfloaterpathfindinglinksets.h
     llfloaterpathfindingobjects.h
-    llfloaterpermissionsmgr.h
     llfloaterperms.h
     llfloaterpostcard.h
     llfloaterpostprocess.h
@@ -772,6 +777,7 @@ set(viewer_HEADER_FILES
     llfloaterproperties.h
     llfloaterregiondebugconsole.h
     llfloaterregioninfo.h
+    llfloaterregionrestarting.h
     llfloaterreporter.h
     llfloaterscriptdebug.h
     llfloaterscriptlimits.h
@@ -1140,7 +1146,7 @@ if (DARWIN)
 
   # Add resource files to the project.
   set(viewer_RESOURCE_FILES
-    ${VIEWER_BRANDING_ID}.icns
+    ${VIEWER_BRANDING_ID}_icon.icns
     macview.r
     gpu_table.txt
     SecondLife.nib/
@@ -1702,7 +1708,7 @@ if (DARWIN)
     PROPERTIES
     OUTPUT_NAME "${product}"
     MACOSX_BUNDLE_INFO_STRING "A stable third-party Second Life viewer."
-    MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}.icns"
+    MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}_icon.icns"
     MACOSX_BUNDLE_GUI_IDENTIFIER "${VIEWER_BRANDING_NAME}"
     MACOSX_BUNDLE_LONG_VERSION_STRING "${viewer_VERSION}"
     MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_BRANDING_NAME}"
@@ -1794,7 +1800,7 @@ if (PACKAGE)
   if (LINUX)
     list(APPEND SYMBOL_SEARCH_DIRS "${CMAKE_CURRENT_BINARY_DIR}/packaged")
     set(VIEWER_SYMBOL_FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/secondlife-symbols-linux.tar.bz2")
-    set(VIEWER_EXE_GLOBS "singularity-do-not-run-directly SLPlugin")
+    set(VIEWER_EXE_GLOBS "${VIEWER_BRANDING_ID}-do-not-run-directly SLPlugin")
     set(VIEWER_LIB_GLOB "*${CMAKE_SHARED_MODULE_SUFFIX}*")
     set(VIEWER_COPY_MANIFEST copy_l_viewer_manifest)
   endif (LINUX)

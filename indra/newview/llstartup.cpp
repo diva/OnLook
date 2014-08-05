@@ -222,6 +222,7 @@
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "lldaycyclemanager.h"
 #include "llfloaterblacklist.h"
+#include "scriptcounter.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 // </edit>
@@ -372,6 +373,30 @@ void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
 {
 	process_sound_trigger(msg,NULL);
 	LLFloaterAvatarList::sound_trigger_hook(msg,NULL);
+}
+
+void convert_legacy_settings()
+{
+	// Convert legacy settings to new ones here.
+	if (!gSavedPerAccountSettings.getBOOL("DefaultUploadPermissionsConverted"))
+	{
+		gSavedSettings.setBOOL("UploadsEveryoneCopy", gSavedSettings.getBOOL("EveryoneCopy"));
+		bool val = gSavedPerAccountSettings.getBOOL("EveryoneExport");
+		gSavedPerAccountSettings.setBOOL("UploadsEveryoneExport", val);
+		gSavedPerAccountSettings.setBOOL("ObjectsEveryoneExport", val);
+		val = gSavedSettings.getBOOL("NextOwnerCopy");
+		gSavedSettings.setBOOL("UploadsNextOwnerCopy", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerCopy", val);
+		val = gSavedSettings.getBOOL("NextOwnerModify");
+		gSavedSettings.setBOOL("UploadsNextOwnerModify", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerModify", val);
+		val = gSavedSettings.getBOOL("NextOwnerTransfer");
+		gSavedSettings.setBOOL("UploadsNextOwnerTransfer", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerTransfer", val);
+		val = gSavedSettings.getBOOL("NextOwnerTransfer");
+		gSavedSettings.setBOOL("UploadsShareWithGroup", gSavedSettings.getBOOL("ShareWithGroup"));
+		gSavedPerAccountSettings.setBOOL("DefaultUploadPermissionsConverted", true);
+	}
 }
 
 void init_audio()
@@ -1039,6 +1064,8 @@ bool idle_startup()
 			gSavedPerAccountSettings.setU32("LastLogoff", time_corrected());
 		}
 
+		convert_legacy_settings();
+
 		//Default the path if one isn't set.
 		if (gSavedPerAccountSettings.getString("InstantMessageLogPath").empty())
 		{
@@ -1554,6 +1581,7 @@ bool idle_startup()
 				}
 				if (gSavedSettings.getBOOL("LiruGridInTitle")) gWindowTitle += "- " + gHippoGridManager->getCurrentGrid()->getGridName() + " ";
 				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
+
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
 				// create the default proximal channel
@@ -1758,45 +1786,6 @@ bool idle_startup()
 		LLRect window(0, gViewerWindow->getWindowHeight(), gViewerWindow->getWindowWidth(), 0);
 		gViewerWindow->adjustControlRectanglesForFirstUse(window);
 
-		if (gSavedSettings.getBOOL("ShowMiniMap"))
-		{
-			LLFloaterMap::showInstance();
-		}
-		if (gSavedSettings.getBOOL("ShowRadar"))
-		{
-			LLFloaterAvatarList::showInstance();
-		}
-		// <edit>
-		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
-		{
-			LLFloaterAvatarList::getInstance()->close();
-		}
-		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
-		{
-			SHFloaterMediaTicker::showInstance();
-		}
-		// </edit>
-		if (gSavedSettings.getBOOL("ShowCameraControls"))
-		{
-			LLFloaterCamera::showInstance();
-		}
-		if (gSavedSettings.getBOOL("ShowMovementControls"))
-		{
-			LLFloaterMove::showInstance();
-		}
-
-		if (gSavedSettings.getBOOL("ShowActiveSpeakers"))
-		{
-			LLFloaterActiveSpeakers::showInstance();
-		}
-
-		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
-		{
-			LLFloaterBeacons::showInstance();
-		}
-		
-
-		
 		if (!gNoRender)
 		{
 			//Set up cloud rendertypes. Passed argument is unused.
@@ -2394,6 +2383,43 @@ bool idle_startup()
 		gDisplaySwapBuffers = TRUE;
 		display_startup();
 
+		if (gSavedSettings.getBOOL("ShowMiniMap"))
+		{
+			LLFloaterMap::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowRadar"))
+		{
+			LLFloaterAvatarList::showInstance();
+		}
+		// <edit>
+		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
+		{
+			LLFloaterAvatarList::getInstance()->close();
+		}
+		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
+		{
+			SHFloaterMediaTicker::showInstance();
+		}
+		// </edit>
+		if (gSavedSettings.getBOOL("ShowCameraControls"))
+		{
+			LLFloaterCamera::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowMovementControls"))
+		{
+			LLFloaterMove::showInstance();
+		}
+
+		if (gSavedSettings.getBOOL("ShowActiveSpeakers"))
+		{
+			LLFloaterActiveSpeakers::showInstance();
+		}
+
+		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
+		{
+			LLFloaterBeacons::showInstance();
+		}
+
 		LLMessageSystem* msg = gMessageSystem;
 		msg->setHandlerFuncFast(_PREHASH_SoundTrigger,				hooked_process_sound_trigger);
 		msg->setHandlerFuncFast(_PREHASH_PreloadSound,				process_preload_sound);
@@ -2936,6 +2962,22 @@ void pass_processObjectPropertiesFamily(LLMessageSystem *msg, void**)
 	JCFloaterAreaSearch::processObjectPropertiesFamily(msg, NULL);
 }
 
+void process_script_running_reply(LLMessageSystem* msg, void** v)
+{
+	LLLiveLSLEditor::processScriptRunningReply(msg, v);
+	if (ScriptCounter::sCheckMap.size())
+	{
+		LLUUID item_id;
+		msg->getUUIDFast(_PREHASH_Script, _PREHASH_ItemID, item_id);
+		std::map<LLUUID,ScriptCounter*>::iterator it = ScriptCounter::sCheckMap.find(item_id);
+		if (it != ScriptCounter::sCheckMap.end())
+		{
+			it->second->processRunningReply(msg);
+			ScriptCounter::sCheckMap.erase(it);
+		}
+	}
+}
+
 void register_viewer_callbacks(LLMessageSystem* msg)
 {
 	msg->setHandlerFuncFast(_PREHASH_LayerData,				process_layer_data );
@@ -2986,8 +3028,7 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	msg->setHandlerFuncFast(_PREHASH_CoarseLocationUpdate,		LLWorld::processCoarseUpdate, NULL);
 	msg->setHandlerFuncFast(_PREHASH_ReplyTaskInventory, 		LLViewerObject::processTaskInv,	NULL);
 	msg->setHandlerFuncFast(_PREHASH_DerezContainer,			process_derez_container, NULL);
-	msg->setHandlerFuncFast(_PREHASH_ScriptRunningReply,
-						&LLLiveLSLEditor::processScriptRunningReply);
+	msg->setHandlerFuncFast(_PREHASH_ScriptRunningReply, process_script_running_reply);
 
 	msg->setHandlerFuncFast(_PREHASH_DeRezAck, process_derez_ack);
 

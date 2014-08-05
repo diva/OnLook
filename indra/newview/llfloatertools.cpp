@@ -47,6 +47,7 @@
 #include "llfloaterbuildoptions.h"
 #include "llfloatermediasettings.h"
 #include "llfloateropenobject.h"
+#include "llfloaterobjectweights.h"
 #include "llfocusmgr.h"
 #include "llmediaentry.h"
 #include "llmediactrl.h"
@@ -99,7 +100,6 @@
 // Globals
 LLFloaterTools *gFloaterTools = NULL;
 
-
 const std::string PANEL_NAMES[LLFloaterTools::PANEL_COUNT] =
 {
 	std::string("General"), 	// PANEL_GENERAL,
@@ -124,10 +124,27 @@ void commit_radio_group_focus(LLUICtrl* ctrl);
 void commit_radio_group_move(LLUICtrl* ctrl);
 void commit_radio_group_edit(LLUICtrl* ctrl);
 void commit_radio_group_land(LLUICtrl* ctrl);
-
 void commit_slider_zoom(LLUICtrl *ctrl);
 void commit_select_tool(LLUICtrl *ctrl, void *data);
 
+/**
+ * Class LLLandImpactsObserver
+ *
+ * An observer class to monitor parcel selection and update
+ * the land impacts data from a parcel containing the selected object.
+ */
+class LLLandImpactsObserver : public LLParcelObserver
+{
+public:
+	virtual void changed()
+	{
+		LLFloaterTools* tools_floater = gFloaterTools;
+		if(tools_floater)
+		{
+			tools_floater->updateLandImpacts();
+		}
+	}
+};
 
 //static
 void*	LLFloaterTools::createPanelPermissions(void* data)
@@ -249,13 +266,13 @@ BOOL	LLFloaterTools::postBuild()
 	mRadioStretch			= getChild<LLCheckBoxCtrl>("radio stretch");
 	mRadioSelectFace		= getChild<LLCheckBoxCtrl>("radio select face");
 	mRadioAlign				= getChild<LLCheckBoxCtrl>("radio align");
+	mBtnGridOptions			= getChild<LLButton>("Options...");
 	mTitleMedia			= getChild<LLMediaCtrl>("title_media");
 	
 	mCheckSelectIndividual	= getChild<LLCheckBoxCtrl>("checkbox edit linked parts");
 	getChild<LLUICtrl>("checkbox edit linked parts")->setValue((BOOL)gSavedSettings.getBOOL("EditLinkedParts"));
 	mCheckSnapToGrid		= getChild<LLCheckBoxCtrl>("checkbox snap to grid");
 	getChild<LLUICtrl>("checkbox snap to grid")->setValue((BOOL)gSavedSettings.getBOOL("SnapEnabled"));
-	mBtnGridOptions			= getChild<LLButton>("Options...");
 	mCheckStretchUniform	= getChild<LLCheckBoxCtrl>("checkbox uniform");
 	getChild<LLUICtrl>("checkbox uniform")->setValue((BOOL)gSavedSettings.getBOOL("ScaleUniform"));
 	mCheckStretchTexture	= getChild<LLCheckBoxCtrl>("checkbox stretch textures");
@@ -267,6 +284,7 @@ BOOL	LLFloaterTools::postBuild()
 
 	mCheckShowHighlight = getChild<LLCheckBoxCtrl>("checkbox show highlight");
 	mCheckActualRoot = getChild<LLCheckBoxCtrl>("checkbox actual root");
+
 	//
 	// Create Buttons
 	//
@@ -283,7 +301,7 @@ BOOL	LLFloaterTools::postBuild()
 		}
 	}
 	if ((mComboTreesGrass = findChild<LLComboBox>("trees_grass")))
-		childSetCommitCallback("trees_grass", onSelectTreesGrass, (void*)0);
+		mComboTreesGrass->setCommitCallback(boost::bind(&LLFloaterTools::onSelectTreesGrass, this));
 	mCheckCopySelection = getChild<LLCheckBoxCtrl>("checkbox copy selection");
 	getChild<LLUICtrl>("checkbox copy selection")->setValue((BOOL)gSavedSettings.getBOOL("CreateToolCopySelection"));
 	mCheckSticky = getChild<LLCheckBoxCtrl>("checkbox sticky");
@@ -303,7 +321,6 @@ BOOL	LLFloaterTools::postBuild()
 
 	mSliderDozerSize		= getChild<LLSlider>("slider brush size");
 	getChild<LLUICtrl>("slider brush size")->setValue(gSavedSettings.getF32("LandBrushSize"));
-
 	mSliderDozerForce		= getChild<LLSlider>("slider force");
 	// the setting stores the actual force multiplier, but the slider is logarithmic, so we convert here
 	getChild<LLUICtrl>("slider force")->setValue(log10(gSavedSettings.getF32("LandBrushForce")));
@@ -404,6 +421,8 @@ LLFloaterTools::LLFloaterTools()
 	mPanelFace(NULL),
 	mPanelLandInfo(NULL),
 
+	mLandImpactsObserver(NULL),
+
 	mDirty(TRUE),
 	mNeedMediaTitle(TRUE)
 {
@@ -434,12 +453,24 @@ LLFloaterTools::LLFloaterTools()
 	mCommitCallbackRegistrar.add("BuildTool.DeleteMedia",		boost::bind(&LLFloaterTools::onClickBtnDeleteMedia,this));
 	mCommitCallbackRegistrar.add("BuildTool.EditMedia",			boost::bind(&LLFloaterTools::onClickBtnEditMedia,this));
 	
+	mLandImpactsObserver = new LLLandImpactsObserver();
+	LLViewerParcelMgr::getInstance()->addObserver(mLandImpactsObserver);
+
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_tools.xml",&factory_map,FALSE);
+	if (LLTextBox* text = findChild<LLTextBox>("selection_count"))
+	{
+		text->setClickedCallback(boost::bind(LLFloaterObjectWeights::toggleInstance, LLSD()));
+		text->setColor(gSavedSettings.getColor4("HTMLLinkColor"));
+	}
 }
 
 LLFloaterTools::~LLFloaterTools()
 {
 	// children automatically deleted
+	gFloaterTools = NULL;
+
+	LLViewerParcelMgr::getInstance()->removeObserver(mLandImpactsObserver);
+	delete mLandImpactsObserver;
 }
 
 void LLFloaterTools::setStatusText(const std::string& text)
@@ -480,62 +511,114 @@ void LLFloaterTools::refresh()
 
 	// Refresh object and prim count labels
 	LLLocale locale(LLLocale::USER_LOCALE);
-	// Added in Link Num value -HgB
-	S32 object_count = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();
-	S32 prim_count = LLSelectMgr::getInstance()->getEditSelection()->getObjectCount();
-	std::string value_string;
-	std::string desc_string;
-	if ((gSavedSettings.getBOOL("EditLinkedParts"))&&(prim_count == 1)) //Selecting a single prim in "Edit Linked" mode, show link number
+#if 0
+	if (!gMeshRepo.meshRezEnabled())
 	{
-		desc_string = "Link number:";
+		std::string obj_count_string;
+		LLResMgr::getInstance()->getIntegerString(obj_count_string, LLSelectMgr::getInstance()->getSelection()->getRootObjectCount());
+		getChild<LLUICtrl>("selection_count")->setTextArg("[OBJ_COUNT]", obj_count_string);
+		std::string prim_count_string;
+		LLResMgr::getInstance()->getIntegerString(prim_count_string, LLSelectMgr::getInstance()->getSelection()->getObjectCount());
+		getChild<LLUICtrl>("selection_count")->setTextArg("[PRIM_COUNT]", prim_count_string);
 
-		LLViewerObject* selected = LLSelectMgr::getInstance()->getSelection()->getFirstObject();
-		if (selected && selected->getRootEdit())
+		// calculate selection rendering cost
+		if (sShowObjectCost)
 		{
-			LLViewerObject::child_list_t children = selected->getRootEdit()->getChildren();
-			if (children.empty())
+			std::string prim_cost_string;
+			S32 render_cost = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectRenderCost();
+			LLResMgr::getInstance()->getIntegerString(prim_cost_string, render_cost);
+			getChild<LLUICtrl>("RenderingCost")->setTextArg("[COUNT]", prim_cost_string);
+		}
+
+		// disable the object and prim counts if nothing selected
+		bool have_selection = ! LLSelectMgr::getInstance()->getSelection()->isEmpty();
+		getChildView("obj_count")->setEnabled(have_selection);
+		getChildView("prim_count")->setEnabled(have_selection);
+		getChildView("RenderingCost")->setEnabled(have_selection && sShowObjectCost);
+	}
+	else
+#endif
+	{
+		F32 link_cost  = LLSelectMgr::getInstance()->getSelection()->getSelectedLinksetCost();
+		S32 link_count = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();
+
+		// Added in Link Num value -HgB
+		S32 prim_count = LLSelectMgr::getInstance()->getEditSelection()->getObjectCount();
+		std::string value_string;
+		if ((prim_count == 1) && gSavedSettings.getBOOL("EditLinkedParts")) //Selecting a single prim in "Edit Linked" mode, show link number
+		{
+			childSetTextArg("link_num_obj_count", "[DESC]", std::string("Link number:"));
+
+			LLViewerObject* selected = LLSelectMgr::getInstance()->getSelection()->getFirstObject();
+			if (selected && selected->getRootEdit())
 			{
-				value_string = "0"; // An unlinked prim is "link 0".
-			}
-			else
-			{
-				children.push_front(selected->getRootEdit()); // need root in the list too
-				S32 index = 0;
-				for (LLViewerObject::child_list_t::iterator iter = children.begin(); iter != children.end(); ++iter)
+				LLViewerObject::child_list_t children = selected->getRootEdit()->getChildren();
+				if (children.empty())
 				{
-					index++;
-					if ((*iter)->isSelected())
+					value_string = "0"; // An unlinked prim is "link 0".
+				}
+				else
+				{
+					children.push_front(selected->getRootEdit()); // need root in the list too
+					S32 index = 1;
+					for (LLViewerObject::child_list_t::iterator iter = children.begin(); iter != children.end(); ++iter, ++index)
 					{
-						LLResMgr::getInstance()->getIntegerString(value_string, index);
-						break;
+						if ((*iter)->isSelected())
+						{
+							LLResMgr::getInstance()->getIntegerString(value_string, index);
+							break;
+						}
 					}
 				}
 			}
 		}
-	}
-	else
-	{
-		desc_string = "Selected objects:";
-		LLResMgr::getInstance()->getIntegerString(value_string, object_count);
-	}
-	childSetTextArg("link_num_obj_count",  "[DESC]", desc_string);	
-	childSetTextArg("link_num_obj_count",  "[NUM]", value_string);
+		else
+		{
+			childSetTextArg("link_num_obj_count", "[DESC]", std::string("Selected objects:"));
+			LLResMgr::getInstance()->getIntegerString(value_string, link_count);
+		}
+		childSetTextArg("link_num_obj_count", "[NUM]", value_string);
 
-	LLStringUtil::format_map_t selection_args;
-	selection_args["COUNT"] = llformat("%.1d", (S32)prim_count);
-	if(gMeshRepo.meshRezEnabled())
-	{
-		F32 link_cost  = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
-		LLStringUtil::format_map_t prim_equiv_args;
-		prim_equiv_args["SEL_WEIGHT"] = llformat("%.0f", link_cost);
-		selection_args["PE_STRING"] = getString("status_selectprimequiv", prim_equiv_args);
+		/* Singu Note: We're not using this yet because we have no place to put it
+		LLCrossParcelFunctor func;
+		if (LLSelectMgr::getInstance()->getSelection()->applyToRootObjects(&func, true))
+		{
+			// Selection crosses parcel bounds.
+			// We don't display remaining land capacity in this case.
+			const LLStringExplicit empty_str("");
+			childSetTextArg("remaining_capacity", "[CAPACITY_STRING]", empty_str);
+		}
+		else
+		*/
+		{
+			LLViewerObject* selected_object = mObjectSelection->getFirstObject();
+			if (selected_object)
+			{
+				// Select a parcel at the currently selected object's position.
+				LLViewerParcelMgr::getInstance()->selectParcelAt(selected_object->getPositionGlobal());
+			}
+			else
+			{
+				//LL_WARNS() << "Failed to get selected object" << LL_ENDL;
+			}
+		}
+
+		LLStringUtil::format_map_t selection_args;
+		selection_args["OBJ_COUNT"] = llformat("%.1d", prim_count);
+		selection_args["LAND_IMPACT"] = llformat("%.1d", (S32)link_cost);
+
+		std::ostringstream selection_info;
+
+		selection_info << getString("status_selectcount", selection_args);
+
+		getChild<LLTextBox>("selection_count")->setText(selection_info.str());
+
+		bool have_selection = !LLSelectMgr::getInstance()->getSelection()->isEmpty();
+		childSetVisible("selection_count",  have_selection);
+		//childSetVisible("remaining_capacity", have_selection);
+		childSetVisible("selection_empty", !have_selection);
 	}
-	else
-	{
-		selection_args["PE_STRING"] = "";
-	}
-	std::string prim_count_string = getString("status_selectcount",selection_args);
-	childSetText("prim_count", prim_count_string);
+
 
 	// Refresh child tabs
 	mPanelPermissions->refresh();
@@ -546,6 +629,12 @@ void LLFloaterTools::refresh()
 		refreshMedia();
 	mPanelContents->refresh();
 	mPanelLandInfo->refresh();
+
+	// Refresh the advanced weights floater
+	if (LLFloaterObjectWeights::instanceVisible())
+	{
+		LLFloaterObjectWeights::getInstance()->refresh();
+	}
 }
 
 void LLFloaterTools::draw()
@@ -606,8 +695,8 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	mRadioZoom	->setVisible( focus_visible );
 	mRadioOrbit	->setVisible( focus_visible );
 	mRadioPan	->setVisible( focus_visible );
-	childSetVisible("slider zoom", focus_visible);
-	childSetEnabled("slider zoom", gCameraBtnZoom);
+	getChildView("slider zoom")->setVisible(focus_visible);
+	getChildView("slider zoom")->setEnabled(gCameraBtnZoom);
 
 	mRadioZoom	->set(!gCameraBtnOrbit &&
 						!gCameraBtnPan &&
@@ -625,7 +714,7 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 						(mask == (MASK_PAN | MASK_ALT)) );
 
 	// multiply by correction factor because volume sliders go [0, 0.5]
-	childSetValue( "slider zoom", gAgentCamera.getCameraZoomFraction() * 0.5f);
+	getChild<LLUICtrl>("slider zoom")->setValue(gAgentCamera.getCameraZoomFraction() * 0.5f);
 
 	// Move buttons
 	BOOL move_visible = (tool == LLToolGrab::getInstance());
@@ -699,7 +788,6 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 			case SELECT_TYPE_HUD:
 				mComboGridMode->add(getString("grid_screen_text"));
 				mComboGridMode->add(getString("grid_local_text"));
-				//mComboGridMode->add(getString("grid_reference_text"));
 				break;
 			case SELECT_TYPE_WORLD:
 				mComboGridMode->add(getString("grid_world_text"));
@@ -772,10 +860,8 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 
 	if (mBtnLand)	mBtnLand	->setToggleState( land_visible );
 
-	//	mRadioEditLand	->set( tool == LLToolBrushLand::getInstance() );
 	if (mRadioSelectLand)	mRadioSelectLand->set( tool == LLToolSelectLand::getInstance() );
 
-	//	mRadioEditLand	->setVisible( land_visible );
 	if (mRadioSelectLand)	mRadioSelectLand->setVisible( land_visible );
 
 	S32 dozer_mode = gSavedSettings.getS32("RadioLandBrushAction");
@@ -810,6 +896,7 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 		mRadioDozerRevert	->set( tool == LLToolBrushLand::getInstance() && dozer_mode == 5);
 		mRadioDozerRevert	->setVisible( land_visible );
 	}
+
 	if (mBtnApplyToSelection)
 	{
 		mBtnApplyToSelection->setVisible( land_visible );
@@ -826,9 +913,14 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 		mSliderDozerForce	->setVisible( land_visible );
 		getChildView("Strength:")->setVisible( land_visible);
 	}
-	
-	childSetVisible("link_num_obj_count", !land_visible);
-	childSetVisible("prim_count", !land_visible);
+
+	bool have_selection = !LLSelectMgr::getInstance()->getSelection()->isEmpty();
+
+	getChildView("link_num_obj_count")->setVisible(!land_visible && have_selection);
+	getChildView("selection_count")->setVisible(!land_visible && have_selection);
+	//getChildView("remaining_capacity")->setVisible(!land_visible && have_selection);
+	getChildView("selection_empty")->setVisible(!land_visible && !have_selection);
+
 	static const LLCachedControl<bool> mini("LiruMiniBuildFloater");
 	mTab->setVisible(!mini && !land_visible);
 	getChildView("mini_button")->setVisible(!land_visible);
@@ -909,9 +1001,12 @@ void LLFloaterTools::onClose(bool app_quitting)
 
 	// gMenuBarView->setItemVisible(std::string("Tools"), FALSE);
 	// gMenuBarView->arrange();
-	
+
 	if(LLFloaterMediaSettings::instanceExists())
 		LLFloaterMediaSettings::getInstance()->close();
+
+	// hide the advanced object weights floater
+	LLFloaterObjectWeights::hideInstance();
 }
 
 void LLFloaterTools::showPanel(EInfoPanel panel)
@@ -922,7 +1017,6 @@ void LLFloaterTools::showPanel(EInfoPanel panel)
 
 void click_popup_info(void*)
 {
-//	gBuildView->setPropertiesPanelOpen(TRUE);
 }
 
 void click_popup_done(void*)
@@ -1094,7 +1188,6 @@ void commit_grid_mode(LLUICtrl *ctrl)
 
 void LLFloaterTools::onClickGridOptions()
 {
-	//LLFloaterTools* floaterp = (LLFloaterTools*)data;
 	LLFloaterBuildOptions::show(NULL);
 	// RN: this makes grid options dependent on build tools window
 	//floaterp->addDependentFloater(LLFloaterBuildOptions::getInstance(), FALSE);
@@ -1176,6 +1269,39 @@ bool LLFloaterTools::selectedMediaEditable()
 	
 	return selected_Media_editable;
 }
+
+void LLFloaterTools::updateLandImpacts()
+{
+	LLParcel *parcel = mParcelSelection->getParcel();
+	if (!parcel)
+	{
+		return;
+	}
+
+	/* Singu Note: We're not using this yet because we have no place to put it
+	S32 rezzed_prims = parcel->getSimWidePrimCount();
+	S32 total_capacity = parcel->getSimWideMaxPrimCapacity();
+
+	std::string remaining_capacity_str = "";
+
+	bool show_mesh_cost = gMeshRepo.meshRezEnabled();
+	if (show_mesh_cost)
+	{
+		LLStringUtil::format_map_t remaining_capacity_args;
+		remaining_capacity_args["LAND_CAPACITY"] = llformat("%d", total_capacity - rezzed_prims);
+		remaining_capacity_str = getString("status_remaining_capacity", remaining_capacity_args);
+	}
+
+	childSetTextArg("remaining_capacity", "[CAPACITY_STRING]", remaining_capacity_str);
+	*/
+
+	// Update land impacts info in the weights floater
+	if (LLFloaterObjectWeights::instanceVisible())
+	{
+		LLFloaterObjectWeights::getInstance()->updateLandImpacts(parcel);
+	}
+}
+
 void LLFloaterTools::getMediaState()
 {
 	LLObjectSelectionHandle selected_objects =LLSelectMgr::getInstance()->getSelection();
@@ -1962,10 +2088,9 @@ void LLFloaterTools::updateMediaSettings()
     mMediaSettings[ base_key + std::string( LLPanelContents::TENTATIVE_SUFFIX ) ] = ! identical;
 }
 
-// static
-void LLFloaterTools::onSelectTreesGrass(LLUICtrl*, void*)
+void LLFloaterTools::onSelectTreesGrass()
 {
-	const std::string &selected = gFloaterTools->mComboTreesGrass->getValue();
+	const std::string& selected = mComboTreesGrass->getValue();
 	LLPCode pcode = LLToolPlacer::getObjectType();
 	if (pcode == LL_PCODE_LEGACY_TREE)
 	{

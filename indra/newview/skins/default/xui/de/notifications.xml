@@ -210,8 +210,6 @@ Dieses Kontrollk&#xE4;stchen zeigt Folgendes an:
 
 Die Second Life Website f&#xFC;r weitere Informationen &#xFC;ber Partnerschaften &#xF6;ffnen?<usetemplate name="okcancelbuttons" yestext="Gehe zu Seite"/></notification>
 
-  <notification name="ClickUploadHelpPermissions">Ihre Standardberechtigung funktionieren in &#xE4;lteren Regionen m&#xF6;glicherweise nicht.</notification>
-
   <notification name="ClickWebProfileHelpAvatar">Wenn dieser Einwohner einen Webprofil-URL angegeben hat, k&#xF6;nnen Sie:
  * Auf &#x201E;Laden&#x201C; klicken und die Seite in dieser Web-Registerkarte anzeigen.
  * Auf Laden &gt; &#x201E;In externem Browser&#x201C; klicken und die Seite im Standard-Browser anzeigen.
@@ -1050,7 +1048,7 @@ In Ihren Anwendungsordner herunterladen?<usetemplate name="okcancelbuttons" yest
 
   <notification name="WebLaunchPublicIssue">Im [SECOND_LIFE] Allgemeine-Fragen-Tracker k&#xF6;nnen Sie Fehler und andere Probleme melden.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>
 
-  <notification name="WebLaunchSinguIssue">Besuche den Singularity Issue Tracker, um Fehler und Bugs mit dem Singularity Viewer zu berichten.
+  <notification name="WebLaunchSinguIssue">Besuche den [SHORT_APP_NAME] Issue Tracker, um Fehler und Bugs mit dem [SHORT_APP_NAME] Viewer zu berichten.
 Achte bitte da drauf das deine Meldung nicht schon existiert.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>
 
   <notification name="WebLaunchPublicIssueHelp">Informieren Sie sich im [SECOND_LIFE] Wiki &#xFC;ber den Allgemeine Fragen-Tracker.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>

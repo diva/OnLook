@@ -50,7 +50,6 @@
 #include "llviewerstats.h"
 #include "llviewerregion.h"
 #include "sgversion.h"
-#include "llviewerbuild.h"
 #include "lluictrlfactory.h"
 #include "lluri.h"
 #include "llweb.h"
@@ -141,7 +140,7 @@ LLFloaterAbout::LLFloaterAbout()
 		+ " (64 bit)"
 #endif
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
-		gVersionMajor, gVersionMinor, gVersionPatch, LL_VIEWER_BUILD,
+		gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild,
 		__DATE__, __TIME__,
 		gVersionChannel));
 	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
@@ -269,7 +268,7 @@ LLFloaterAbout::LLFloaterAbout()
 	support.append( (const char*) glGetString(GL_VERSION) );
 // [RLVa:KB] - Checked: 2010-04-18 (RLVa-1.2.0)
 	support.append("\n");
-	support.append("RLV Version: " + (RlvActions::isRlvEnabled()) ? RlvStrings::getVersionAbout() : "(disabled)");
+	support.append("RLV Version: " + (RlvActions::isRlvEnabled() ? RlvStrings::getVersionAbout() : "(disabled)"));
 // [/RLVa:KB]
 	support.append("\n\n");
 

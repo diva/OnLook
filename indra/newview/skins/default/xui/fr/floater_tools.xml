@@ -96,9 +96,6 @@
 	<text name="Strength:">
 		Force
 	</text>
-	<text name="prim_count">
-		Prims : [COUNT]
-	</text>
 
 <!-- Sub-tabs -->
 

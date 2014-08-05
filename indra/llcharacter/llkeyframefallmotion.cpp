@@ -49,7 +49,7 @@
 // LLKeyframeFallMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLKeyframeFallMotion::LLKeyframeFallMotion(const LLUUID &id) : LLKeyframeMotion(id)
+LLKeyframeFallMotion::LLKeyframeFallMotion(LLUUID const& id, LLMotionController* controller) : LLKeyframeMotion(id, controller)
 {
 	mVelocityZ = 0.f;
 	mCharacter = NULL;

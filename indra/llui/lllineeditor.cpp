@@ -921,6 +921,23 @@ void LLLineEditor::addChar(const llwchar uni_char)
 
 		mText.insert(getCursor(), w_buf);
 		setCursor(getCursor() + 1);
+
+		if (!mReadOnly && mAutoreplaceCallback != NULL)
+		{
+			// autoreplace the text, if necessary
+			S32 replacement_start;
+			S32 replacement_length;
+			LLWString replacement_string;
+			S32 new_cursor_pos = getCursor();
+			mAutoreplaceCallback(replacement_start, replacement_length, replacement_string, new_cursor_pos, mText);
+
+			if (replacement_length > 0 || !replacement_string.empty())
+			{
+				mText.erase(replacement_start, replacement_length);
+				mText.insert(replacement_start, replacement_string);
+				setCursor(new_cursor_pos);
+			}
+		}
 	}
 	else
 	{

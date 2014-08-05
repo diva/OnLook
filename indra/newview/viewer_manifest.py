@@ -741,13 +741,13 @@ class LinuxManifest(ViewerManifest):
         self.path("featuretable_linux.txt")
 
     def wrapper_name(self):
-        return 'singularity'
+        return self.viewer_branding_id()
 
     def binary_name(self):
-        return 'singularity-do-not-run-directly'
+        return self.viewer_branding_id() + '-do-not-run-directly'
 
     def icon_name(self):
-        return "singularity_icon.png"
+        return self.viewer_branding_id() + "_icon.png"
 
     def package_finish(self):
         if 'installer_name' in self.args:
@@ -772,9 +772,9 @@ class LinuxManifest(ViewerManifest):
         self.run_command("""
                 find '%(dst)s' -type d -print0 | xargs -0 --no-run-if-empty chmod 755;
                 find '%(dst)s' -type f -perm 0700 -print0 | xargs -0 --no-run-if-empty chmod 0755;
-                find '%(dst)s' -type f -perm 0500 -print0 | xargs -0 --no-run-if-empty chmod 0555;
+                find '%(dst)s' -type f -perm 0500 -print0 | xargs -0 --no-run-if-empty chmod 0755;
                 find '%(dst)s' -type f -perm 0600 -print0 | xargs -0 --no-run-if-empty chmod 0644;
-                find '%(dst)s' -type f -perm 0400 -print0 | xargs -0 --no-run-if-empty chmod 0444;
+                find '%(dst)s' -type f -perm 0400 -print0 | xargs -0 --no-run-if-empty chmod 0644;
                 true""" %  {'dst':self.get_dst_prefix() })
         self.package_file = installer_name + '.tar.bz2'
 

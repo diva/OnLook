@@ -358,6 +358,7 @@ void init_default_trans_args()
 	default_trans_args.insert("APP_NAME");
 	default_trans_args.insert("SHORT_APP_NAME");
 	default_trans_args.insert("CAPITALIZED_APP_NAME");
+	default_trans_args.insert("APP_SITE");
 	default_trans_args.insert("SECOND_LIFE_GRID");
 	default_trans_args.insert("SUPPORT_SITE");
 	default_trans_args.insert("CURRENCY");
@@ -587,6 +588,18 @@ public:
 		return LLTrans::getString(xml_desc);
 	}
 };
+
+void load_default_bindings(bool zqsd)
+{
+	gViewerKeyboard.unloadBindings();
+	const std::string keys(zqsd ? "keysZQSD.ini" : "keys.ini");
+	if (!gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, keys)))
+	{
+		LL_ERRS("InitInfo") << "Unable to open " << keys << LL_ENDL;
+	}
+	// Load Custom bindings (override defaults)
+	gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"custom_keys.ini"));
+}
 
 bool LLAppViewer::init()
 {	
@@ -872,12 +885,7 @@ bool LLAppViewer::init()
 	bind_keyboard_functions();
 
 	// Load Default bindings
-	if (!gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"keys.ini")))
-	{
-		LL_ERRS("InitInfo") << "Unable to open keys.ini" << LL_ENDL;
-	}
-	// Load Custom bindings (override defaults)
-	gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"custom_keys.ini"));
+	load_default_bindings(gSavedSettings.getBOOL("LiruUseZQSDKeys"));
 
 	// If we don't have the right GL requirements, exit.
 	if (!gGLManager.mHasRequirements && !gNoRender)
@@ -1508,8 +1516,6 @@ bool LLAppViewer::cleanup()
 		llinfos << "HUD Objects cleaned up" << llendflush;
 	}
 
-	LLKeyframeDataCache::clear();
-	
  	// End TransferManager before deleting systems it depends on (Audio, VFS, AssetStorage)
 #if 0 // this seems to get us stuck in an infinite loop...
 	gTransferManager.cleanup();
@@ -1940,6 +1946,7 @@ void errorCallback(const std::string &error_string)
 	}
 }
 
+bool init_logging();
 bool LLAppViewer::initLogging()
 {
 	//
@@ -1949,6 +1956,10 @@ bool LLAppViewer::initLogging()
 				gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, ""));
 	LLError::setFatalFunction(errorCallback);
 	
+	return init_logging();
+}
+bool init_logging()
+{
 	// Remove the last ".old" log file.
 	std::string old_log_file = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, OLD_LOG_FILE);
 	LLFile::remove(old_log_file);
@@ -2208,6 +2219,19 @@ bool LLAppViewer::initConfiguration()
 	}
 	
 	// - selectively apply settings 
+
+	// <singu> Portability Mode!
+	if (clp.hasOption("portable"))
+	{
+		const std::string log = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, LOG_FILE);
+		llinfos	<< "Attempting to use portable settings and cache!" << llendl;
+		gDirUtilp->makePortable();
+		init_logging(); // Switch to portable log file
+		llinfos	<< "Portable viewer configuration initialized!" << llendl;
+		LLFile::remove(log);
+		llinfos << "Cleaned up local log file to keep this computer untouched." << llendl;
+	}
+	// </singu>
 
 	// If the user has specified a alternate settings file name.
 	// Load	it now before loading the user_settings/settings.xml
@@ -4685,6 +4709,12 @@ void LLAppViewer::handleLoginComplete()
 	}
 
 	mOnLoginCompleted();
+	// Singu Note: Due to MAINT-4001, we must do this here, it lives in LLSidepanelInventory::updateInbox upstream.
+	// Consolidate Received items
+	// We shouldn't have to do that but with a client/server system relying on a "well known folder" convention,
+	// things can get messy and conventions broken. This call puts everything back together in its right place.
+	LLUUID id(gInventory.findCategoryUUIDForType(LLFolderType::FT_INBOX, true));
+	if (id.notNull()) gInventory.consolidateForType(id, LLFolderType::FT_INBOX);
 
 	writeDebugInfo();
 }

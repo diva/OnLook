@@ -1177,7 +1177,9 @@ void LLAgentCamera::updateCamera()
 
 	validateFocusObject();
 
-	if (isAgentAvatarValid() && 
+	bool realistic_ml(gSavedSettings.getBOOL("UseRealisticMouselook"));
+	if (isAgentAvatarValid() &&
+		!realistic_ml &&
 		gAgentAvatarp->isSitting() &&
 		camera_mode == CAMERA_MODE_MOUSELOOK)
 	{
@@ -1460,13 +1462,11 @@ void LLAgentCamera::updateCamera()
 	}
 	gAgent.setLastPositionGlobal(global_pos);
 	
-	if (LLVOAvatar::sVisibleInFirstPerson && isAgentAvatarValid() && !gAgentAvatarp->isSitting() && cameraMouselook())
+	if (LLVOAvatar::sVisibleInFirstPerson && isAgentAvatarValid() && (realistic_ml || !gAgentAvatarp->isSitting()) && cameraMouselook())
 	{
 		LLVector3 head_pos = gAgentAvatarp->mHeadp->getWorldPosition() + 
 			LLVector3(0.08f, 0.f, 0.05f) * gAgentAvatarp->mHeadp->getWorldRotation() + 
 			LLVector3(0.1f, 0.f, 0.f) * gAgentAvatarp->mPelvisp->getWorldRotation();
-		LLVector3 diff = mCameraPositionAgent - head_pos;
-		diff = diff * ~gAgentAvatarp->mRoot->getWorldRotation();
 
 		LLJoint* torso_joint = gAgentAvatarp->mTorsop;
 		LLJoint* chest_joint = gAgentAvatarp->mChestp;
@@ -1488,7 +1488,21 @@ void LLAgentCamera::updateCamera()
 			diff.mV[VZ] = 0.f;
 		}*/
 
-		gAgentAvatarp->mPelvisp->setPosition(gAgentAvatarp->mPelvisp->getPosition() + diff);
+		if (realistic_ml)
+		{
+			LLQuaternion agent_rot(gAgent.getFrameAgent().getQuaternion());
+			if (isAgentAvatarValid())
+				if (LLViewerObject* parent = static_cast<LLViewerObject*>(gAgentAvatarp->getParent()))
+					if (static_cast<LLViewerObject*>(gAgentAvatarp->getRoot())->flagCameraDecoupled())
+						agent_rot *= parent->getRenderRotation();
+			LLViewerCamera::getInstance()->updateCameraLocation(head_pos, mCameraUpVector, gAgentAvatarp->mHeadp->getWorldPosition() + LLVector3(1.0, 0.0, 0.0) * agent_rot);
+		}
+		else
+		{
+			LLVector3 diff = mCameraPositionAgent - head_pos;
+			diff = diff * ~gAgentAvatarp->mRoot->getWorldRotation();
+			gAgentAvatarp->mPelvisp->setPosition(gAgentAvatarp->mPelvisp->getPosition() + diff);
+		}
 
 		gAgentAvatarp->mRoot->updateWorldMatrixChildren();
 
@@ -2432,9 +2446,12 @@ void LLAgentCamera::changeCameraToCustomizeAvatar()
 		at.normalize();
 		gAgent.resetAxes(at);
 
-		gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
-		gAgent.setCustomAnim(TRUE);
-		gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		if (gSavedSettings.getBOOL("LiruCustomizeAnim"))
+		{
+			gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
+			gAgent.setCustomAnim(TRUE);
+			gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		}
 		LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
 
 		if (turn_motion)

@@ -267,7 +267,7 @@ void LLKeyboardWin32::scanKeyboard()
 				// ...translate back to windows key
 				U16 virtual_key = inverseTranslateExtendedKey(key);
 				// keydown in highest bit
-				if (!pending_key_events && !(GetAsyncKeyState(virtual_key) & 0x8000))
+				if (!mControllerKeys[key] && !pending_key_events && !(GetAsyncKeyState(virtual_key) & 0x8000))
 				{
  					//llinfos << "Key up event missed, resetting" << llendl;
 					mKeyLevel[key] = FALSE;

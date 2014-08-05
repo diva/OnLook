@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ can_close="true"
+ can_tear_off="false"
+ height="290"
+ help_topic="object_weights"
+ name="object_weights"
+ save_rect="true"
+ single_instance="true"
+ title="Advanced Object Weights"
+ width="200">
+    <floater.string
+     name="nothing_selected"
+     value="--"/>
+
+    <text
+     follows="left|top"
+     height="16"
+     left="10"
+     name="selected_text"
+     font-style="BOLD"
+     bottom="-36"
+     value="SELECTED"
+     width="180" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="objects"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="objects_label"
+     bottom_delta="0"
+     value="Objects"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="prims"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="prims_label"
+     bottom_delta="0"
+     value="Prims"
+     width="130" />
+    <view_border
+     bevel_style="none"
+     follows="top|left"
+     height="0"
+     left="10"
+     name="selected_text_border"
+     bottom_delta="-6"
+     width="180"/>
+
+
+    <text
+     follows="left|top"
+     height="16"
+     left="10"
+     name="weights_of_selected_text"
+     font-style="BOLD"
+     bottom_delta="-22"
+     value="WEIGHTS OF SELECTED"
+     width="180" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="download"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="download_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="download_label"
+     bottom_delta="0"
+     value="Download"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="physics"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="physics_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="physics_label"
+     bottom_delta="0"
+     value="Physics"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="server"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="server_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="server_label"
+     bottom_delta="0"
+     value="Server"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="display"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="display_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="display_label"
+     bottom_delta="0"
+     value="Display"
+     width="130" />
+    <view_border
+     bevel_style="none"
+     follows="top|left"
+     height="0"
+     left="10"
+     name="weights_text_border"
+     bottom_delta="-6"
+     width="180"/>
+
+
+    <text
+     follows="left|top"
+     height="16"
+     left="10"
+     name="land_impacts_text"
+     font-style="BOLD"
+     bottom_delta="-24"
+     value="LAND IMPACTS"
+     width="180" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="selected"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="selected_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="selected_label"
+     bottom_delta="0"
+     value="Selected"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="rezzed_on_land"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="rezzed_on_land_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="rezzed_on_land_label"
+     bottom_delta="0"
+     value="Rezzed on land"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="remaining_capacity"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="34"
+     name="remaining_capacity_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="remaining_capacity_label"
+     bottom_delta="0"
+     value="Remaining capacity"
+     width="130" />
+    <text
+     follows="left|top"
+     halign="right"
+     height="16"
+     left="10"
+     name="total_capacity"
+     bottom_delta="-19"
+     value="--"
+     width="40" />
+    <!-- Singu TODO: loading_indicators.
+    <loading_indicator
+     follows="left|top"
+     height="16"
+     left="34"
+     name="total_capacity_loading_indicator"
+     bottom_delta="0"
+     width="16" />
+     -->
+    <text
+     follows="left|top"
+     height="16"
+     left_delta="50"
+     name="total_capacity_label"
+     bottom_delta="0"
+     value="Total capacity"
+     width="130" />
+    <!-- Singu TODO: Help stuffs
+    Singu Note: Add 25 to the height of this floater when uncommenting
+    <view_border
+     bevel_style="none"
+     follows="top|left"
+     height="0"
+     left="10"
+     name="land_impacts_text_border"
+     bottom_delta="-6"
+     width="180"/>
+
+    <text
+     follows="left|top"
+     height="16"
+     left="10"
+     name="help_SLURL"
+     bottom_delta="-24"
+     value="[secondlife:///app/help/object_weights What is all this?...]"
+     width="180" />
+     -->
+</floater>

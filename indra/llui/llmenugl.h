@@ -79,16 +79,6 @@ typedef void (*label_callback)(std::string&,void*);
 class LLMenuItemGL : public LLUICtrl
 {
 public:
-	// static functions to control the global color scheme.
-	/*static void setEnabledColor( const LLColor4& color ) { sEnabledColor = color; }
-	static const LLColor4& getEnabledColor() { return sEnabledColor; }
-	static void setDisabledColor( const LLColor4& color ) { sDisabledColor = color; }
-	static const LLColor4& getDisabledColor() { return sDisabledColor; }
-	static void setHighlightBGColor( const LLColor4& color ) { sHighlightBackground = color; }
-	static const LLColor4& getHighlightBGColor() { return sHighlightBackground; }
-	static void setHighlightFGColor( const LLColor4& color ) { sHighlightForeground = color; }
-	static const LLColor4& getHighlightFGColor() { return sHighlightForeground; }*/
-
 	LLMenuItemGL( const std::string& name, const std::string& label, KEY key = KEY_NONE, MASK = MASK_NONE );
 	virtual ~LLMenuItemGL();
 
@@ -148,7 +138,7 @@ public:
 	// lead to visual errors if the state of the object changes
 	// without the knowledge of the menu item. For example, if a
 	// boolean being watched is changed outside of the menu item's
-	// doIt() function, the draw buffer will not be updated and will
+	// onCommit() function, the draw buffer will not be updated and will
 	// reflect the wrong value. If this ever becomes an issue, there
 	// are ways to fix this.
 	// Returns the enabled state of the item.
@@ -157,8 +147,7 @@ public:
 	// for branching menu items, bring sub menus up to root level of menu hierarchy
 	virtual void updateBranchParent( LLView* parentp ){};
 	
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 	virtual void setHighlight( BOOL highlight );
 	virtual BOOL getHighlight() const { return mHighlight; }
@@ -190,6 +179,7 @@ protected:
 	// the current accelerator key and mask to the provided string.
 	void appendAcceleratorString( std::string& st ) const;
 
+protected:
 	KEY mAcceleratorKey;
 	MASK mAcceleratorMask;
 	// mLabel contains the actual label specified by the user.
@@ -245,15 +235,14 @@ public:
 
 	virtual std::string getType() const	{ return "separator"; }
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void ) {}
+	virtual void onCommit( void ) {}
 
-	virtual void draw( void );
-	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
-	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask);
-	virtual BOOL handleHover(S32 x, S32 y, MASK mask);
+	/*virtual*/ void draw( void );
+	/*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
+	/*virtual*/ BOOL handleHover(S32 x, S32 y, MASK mask);
 
-	virtual U32 getNominalHeight( void ) const;
+	/*virtual*/ U32 getNominalHeight( void ) const;
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -323,8 +312,7 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 	virtual BOOL handleAcceleratorKey(KEY key, MASK mask);
 	virtual BOOL handleKeyHere(KEY key, MASK mask);
@@ -419,8 +407,8 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	// onCommit() - do the primary funcationality of the menu item.
+	virtual void onCommit( void );
 
 	// LLView Functionality
 	//virtual void draw( void );
@@ -428,7 +416,6 @@ public:
 private:
 	BOOL* mToggle;
 };
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLMenuGL
@@ -453,6 +440,15 @@ public:
 	static const std::string ARROW_UP;
 	static const std::string ARROW_DOWN;
 	
+	// for scrollable menus
+	typedef enum e_scrolling_direction
+	{
+		SD_UP = 0,
+		SD_DOWN = 1,
+		SD_BEGIN = 2,
+		SD_END = 3
+	} EScrollingDirection;
+
 protected:
 	// let branching menu items use my protected traversal methods
 	friend class LLMenuItemBranchGL;
@@ -470,13 +466,11 @@ public:
 	/*virtual*/ BOOL handleHover( S32 x, S32 y, MASK mask );
 	/*virtual*/ BOOL handleScrollWheel( S32 x, S32 y, S32 clicks );
 	/*virtual*/ void draw( void );
-	virtual void drawBackground(LLMenuItemGL* itemp, LLColor4& color);
+	/*virtual*/ void drawBackground(LLMenuItemGL* itemp, LLColor4& color);
 	/*virtual*/ void setVisible(BOOL visible);
 	/*virtual*/ bool addChild(LLView* view, S32 tab_group = 0);
 	/*virtual*/ void removeChild( LLView* ctrl);
 	/*virtual*/ BOOL postBuild();
-
-	bool addChild(LLView* view, LLView* insert_before, S32 tab_group = 0);
 
 	virtual BOOL handleAcceleratorKey(KEY key, MASK mask);
 
@@ -531,6 +525,16 @@ public:
 	// remove all items on the menu
 	void empty( void );
 
+	// erase group of items from menu
+	void erase(S32 begin, S32 end, bool arrange = true);
+
+	// add new item at position
+	void insert(S32 begin, LLView* ctrl, bool arrange = true);
+	void insert(std::list<LLMenuItemGL*>::iterator position_iter, LLMenuItemGL* item, bool arrange = true);
+
+	// find an item's position
+	std::list<LLMenuItemGL*>::iterator find(LLMenuItemGL* item) { return std::find(mItems.begin(), mItems.end(), item); }
+
 	void			setItemLastSelected(LLMenuItemGL* item);	// must be in menu
 	U32				getItemCount();				// number of menu items
 	LLMenuItemGL*	getItem(S32 number);		// 0 = first item
@@ -545,7 +549,7 @@ public:
 	// Show popup in global screen space based on last mouse location.
 	static void showPopup(LLMenuGL* menu);
 
-	// Show popup at a specific location.
+	// Show popup at a specific location, in the spawn_view's coordinate frame
 	static void showPopup(LLView* spawning_view, LLMenuGL* menu, S32 x, S32 y);
 
 	// Whether to drop shadow menu bar 
@@ -566,27 +570,29 @@ public:
 	static BOOL getKeyboardMode() { return sKeyboardMode; }
 
 	S32 getShortcutPad() { return mShortcutPad; }
-	BOOL isScrollable() const { return FALSE; }
+
+	bool scrollItems(EScrollingDirection direction);
+	BOOL isScrollable() const { return mScrollable; }
+	void setScrollable(bool b);
 
 	static class LLMenuHolderGL* sMenuContainer;
 	
-	bool isScrollPositionOnShowReset() { return false; }
+	void resetScrollPositionOnShow(bool reset_scroll_pos) { mResetScrollPositionOnShow = reset_scroll_pos; }
+	bool isScrollPositionOnShowReset() { return mResetScrollPositionOnShow; }
 protected:
 	void createSpilloverBranch();
 	void cleanupSpilloverBranch();
-
 	// Add the menu item to this menu.
 	virtual BOOL append( LLMenuItemGL* item );
-	BOOL append(LLMenuItemGL* item, LLView* insert_before);
 
 	// add a menu - this will create a cascading menu
 	virtual BOOL appendMenu( LLMenuGL* menu );
-	BOOL appendMenu(LLMenuGL* menu, LLView* insert_before);
 
 	// TODO: create accessor methods for these?
 	typedef std::list< LLMenuItemGL* > item_list_t;
 	item_list_t mItems;
 	LLMenuItemGL*mFirstVisibleItem;
+	LLMenuItemGL *mArrowUpItem, *mArrowDownItem;
 
 	typedef std::map<KEY, LLMenuItemGL*> navigation_key_map_t;
 	navigation_key_map_t mJumpKeys;
@@ -594,11 +600,15 @@ protected:
 	S32				mLastMouseY;
 	S32				mMouseVelX;
 	S32				mMouseVelY;
+	U32				mMaxScrollableItems;
 	BOOL			mHorizontalLayout;
+	BOOL			mScrollable;
 	BOOL			mKeepFixedSize;
 	BOOL			mNeedsArrange;
 
 private:
+
+
 	static LLColor4 sDefaultBackgroundColor;
 	static BOOL		sKeyboardMode;
 
@@ -609,12 +619,15 @@ private:
 	BOOL mDropShadowed; 	//  Whether to drop shadow 
 	bool			mHasSelection;
 	LLFrameTimer	mFadeTimer;
+	LLTimer			mScrollItemsTimer;
 	BOOL			mTornOff;
 	class LLMenuItemTearOffGL* mTearOffItem;
 	class LLMenuItemBranchGL* mSpilloverBranch;
 	LLMenuGL*		mSpilloverMenu;
 	KEY				mJumpKey;
+	BOOL			mCreateJumpKeys;
 	S32				mShortcutPad;
+	bool			mResetScrollPositionOnShow;
 }; // end class LLMenuGL
 
 
@@ -648,8 +661,7 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	virtual void onCommit( void );
 
 	virtual BOOL handleKey(KEY key, MASK mask, BOOL called_from_parent);
 	virtual BOOL handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
@@ -684,11 +696,11 @@ private:
 }; // end class LLMenuItemBranchGL
 
 
-
 //-----------------------------------------------------------------------------
 // class LLContextMenu
 // A context menu
 //-----------------------------------------------------------------------------
+
 class LLContextMenu
 : public LLMenuGL
 {
@@ -792,8 +804,8 @@ public:
 		return TRUE;
 	}
 
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void );
+	// onCommit() - do the primary funcationality of the menu item.
+	virtual void	onCommit( void );
 
 	LLContextMenu* getBranch() { return mBranch; }
 	void setHighlight( BOOL highlight );
@@ -904,7 +916,8 @@ class LLTearOffMenu : public LLFloater
 {
 public:
 	static LLTearOffMenu* create(LLMenuGL* menup);
-	virtual ~LLTearOffMenu() {}
+	virtual ~LLTearOffMenu();
+
 	virtual void onClose(bool app_quitting);
 	virtual void draw(void);
 	virtual void onFocusReceived();
@@ -935,7 +948,7 @@ public:
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	virtual std::string getType() const { return "tearoff_menu"; }
 
-	virtual void doIt(void);
+	virtual void onCommit(void);
 	virtual void draw(void);
 	virtual U32 getNominalHeight() const;
 

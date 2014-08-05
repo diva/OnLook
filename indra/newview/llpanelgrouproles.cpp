@@ -764,6 +764,14 @@ LLPanelGroupMembersSubTab::LLPanelGroupMembersSubTab(const std::string& name, co
 
 LLPanelGroupMembersSubTab::~LLPanelGroupMembersSubTab()
 {
+	for (avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.begin(); it != mAvatarNameCacheConnections.end(); ++it)
+	{
+		if (it->second.connected())
+		{
+			it->second.disconnect();
+		}
+	}
+	mAvatarNameCacheConnections.clear();
 }
 
 BOOL LLPanelGroupMembersSubTab::postBuildSubTab(LLView* root)
@@ -1554,8 +1562,18 @@ void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 	mHasMatch = TRUE;
 }
 
-void LLPanelGroupMembersSubTab::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name)
+void LLPanelGroupMembersSubTab::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name, const LLUUID& av_id)
 {
+	avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.find(av_id);
+	if (it != mAvatarNameCacheConnections.end())
+	{
+		if (it->second.connected())
+		{
+			it->second.disconnect();
+		}
+		mAvatarNameCacheConnections.erase(it);
+	}
+
 	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 	if (!gdatap
 		|| gdatap->getMemberVersion() != update_id
@@ -1629,8 +1647,16 @@ void LLPanelGroupMembersSubTab::updateMembers()
 		else
 		{
 			// If name is not cached, onNameCache() should be called when it is cached and add this member to list.
-			LLAvatarNameCache::get(mMemberProgress->first, boost::bind(&LLPanelGroupMembersSubTab::onNameCache,
-									this, gdatap->getMemberVersion(), mMemberProgress->second, _2));
+			avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.find(mMemberProgress->first);
+			if (it != mAvatarNameCacheConnections.end())
+			{
+				if (it->second.connected())
+				{
+					it->second.disconnect();
+				}
+				mAvatarNameCacheConnections.erase(it);
+			}
+			mAvatarNameCacheConnections[mMemberProgress->first] = LLAvatarNameCache::get(mMemberProgress->first, boost::bind(&LLPanelGroupMembersSubTab::onNameCache, this, gdatap->getMemberVersion(), mMemberProgress->second, _2, _1));
 		}
 	}
 

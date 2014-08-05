@@ -253,6 +253,12 @@
       <string>UserConnectionPort</string>
     </map>
 
+    <key>portable</key>
+    <map>
+      <key>count</key>
+      <integer>0</integer>
+    </map>
+
     <key>purge</key>
     <map>
       <key>desc</key>

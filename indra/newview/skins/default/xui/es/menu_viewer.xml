@@ -10,6 +10,7 @@
 		<menu_item_call label="Importar con Texturas" name="Import2"/>
 		<menu_item_call label="Cambiar Texturas Locales" name="Change Local Textures"/>
 		<menu_item_call label="Definir Permisos por Defecto..." name="perm prefs"/>
+		<!--menu_item_check mouse_opaque="true" label="Mostrar Efectos de Voz" name="voice effect"/-->
 		<menu_item_call label="Minimizar todas las Ventanas" name="Minimize All Windows"/>	
 		<menu_item_call label="Cerrar Ventana" name="Close Window"/>
 		<menu_item_call label="Cerrar todas las Ventanas" name="Close All Windows"/>
@@ -63,18 +64,17 @@
 		<menu_item_check label="Construir" name="Build"/>
 		<menu_item_check label="Flycam del Joystick" name="Joystick Flycam"/>
 		<menu_item_call label="Volver a Vista por Defecto" name="Reset View"/>
-		<menu_item_check label="Movimiento Reestablece la Cámara" name="Motion Resets Camera" shortcut="alt|shift|R">
-			<on_click function="ToggleControl" userdata="SinguMotionResetsCamera"/>
-			<on_check control="SinguMotionResetsCamera"/>
-		</menu_item_check>
+		<menu_item_check label="Movimiento Restablece la Cámara" name="Motion Resets Camera"/>
+		<menu_item_call label="Restablecer Ángulo de Cámara a Predeterminado" name="Reset Camera Preset Angle"/>
 		<menu_item_call label="Mirar al último que habló" name="Look at Last Chatter"/>
 		<menu_item_check label="Barra de Herramientas" name="Toolbar"/>
+		<menu_item_call label="Cambiar botones en Barra de Herramientas" name="toolbar_prefs"/>
 		<menu_item_check label="Chat Local" name="Chat History"/>
 		<menu_item_check label="Comunicación" name="Instant Message"/>
 		<menu_item_check label="Inventario" name="Inventory"/>
 		<menu_item_check label="Participantes Activos" name="Active Speakers"/>
 		<menu_item_check label="Lista de Ignorados" name="Mute List"/>
-		<menu_item_check label="Historial de Teleport" name="Teleport History"/>
+		<menu_item_check label="Historial de Teleporte" name="Teleport History"/>
 		<menu_item_check label="Filtro de Media" name="Media Filter"/>
 		<menu_item_check label="Controles de Cámara" name="Camera Controls"/>
 		<menu_item_check label="Controles de Movimiento" name="Movement Controls"/>
@@ -169,6 +169,7 @@
 		<menu_item_call label="Foco en la Selección" name="Focus on Selection"/>
 		<menu_item_call label="Zoom en lo Seleccionado" name="Zoom to Selection"/>
 		<menu_item_call label="Comprar Objeto" name="Menu Object Take">
+			<on_click function="Tools.BuyOrTake" userdata="" />
 			<on_enable function="Tools.EnableBuyOrTake" userdata="Comprar,Recoger" name="EnableBuyOrTake"/>
 		</menu_item_call>			
 		<menu_item_call label="Recoger una Copia" name="Take Copy"/>
@@ -176,7 +177,7 @@
 		<menu_item_call label="Devolver Objeto al Contenido de Objetos" name="Save Object Back to Object Contents"/>
 		<menu_item_call label="Administrador: Borrar" name="Admin Delete"/>
 		<menu_item_call label="Mostrar ventana de avisos/errores de Script " name="Show Script Warning/Error Window"/>
-		<menu label="Recompilar Scripts de la Selección" name="Recompile Scripts in Selection">
+		<menu label="Recompilar Scripts de la Selección" name="Recompilar Scripts in Selection">
 			<menu_item_call label="Mono" name="Mono"/>
 			<menu_item_call label="LSL" name="LSL"/>
 		</menu>
@@ -203,18 +204,18 @@
 		<menu label="Informe de Fallos" name="Bug Reporting" >
 			<menu_item_call label="Seguimiento de Problemas Público..." name="Public Issue Tracker..."/>
 			<menu_item_call label="Ayuda del Seguimiento de Problemas Público..." name="Publc Issue Tracker Help..."/>
-			<menu_item_call label="Seguimiento de Problemas de Singularity..." name="Singularity Issue Tracker..."/>
+			<menu_item_call label="Seguimiento de Problemas de [SHORT_APP_NAME]..." name="Singularity Issue Tracker..."/>
 			<menu_item_call label="Informe de Fallos 101..." name="Bug Reporting 101..."/>
 			<menu_item_call label="Problemas de Seguridad..." name="Security Issues..."/>
 			<menu_item_call label="Wiki de QA..." name="QA Wiki..."/>
 			<menu_item_call label="Informar Fallos..." name="Report Bug..."/>
-			<menu_item_call label="Informar Fallos de Singularity..." name="Report Singularity Bug..."/>
+			<menu_item_call label="Informar Fallos de [SHORT_APP_NAME]..." name="Report Singularity Bug..."/>
 			<menu_item_call label="Solicitar Nueva Característica..." name="Request New Feature..."/>			
 		</menu>
 		<menu_item_call label="Acerca de [APP_NAME]..." name="About Second Life..."/>
 	</menu>
 	<!-- ============================= -->
-	<menu label="Singularity" name="Singularity">
+	<menu label="[SHORT_APP_NAME]" name="Singularity">
 		<menu_item_call label="Cerrar todos los diálogos" name="Close All Dialogs"/>
 		<menu_item_call label="Falso Estado Ausente" name="Fake Away Status"/>
 		<menu_item_call label="Forzar Sentarse en el Piso" name="Force Ground Sit"/>

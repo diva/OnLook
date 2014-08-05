@@ -156,8 +156,6 @@ LLDir_Win32::LLDir_Win32()
 	mAppRODataDir = mWorkingDir;	
 
 
-//	if (mExecutableDir.find("indra") == std::string::npos)
-	
 	// *NOTE:Mani - It is a mistake to put viewer specific code in
 	// the LLDir implementation. The references to 'skins' and 
 	// 'llplugin' need to go somewhere else.
@@ -172,7 +170,18 @@ LLDir_Win32::LLDir_Win32()
 
 	llinfos << "mAppRODataDir = " << mAppRODataDir << llendl;
 
-	mSkinBaseDir = mAppRODataDir + mDirDelimiter + "skins";
+	std::string::size_type build_dir_pos = mExecutableDir.rfind("indra" + mDirDelimiter);
+	if (build_dir_pos != std::string::npos)
+	{
+		// ...we're in a dev checkout
+		mSkinBaseDir = mExecutableDir.substr(0, build_dir_pos) + "indra" + mDirDelimiter + "newview" + mDirDelimiter + "skins";
+		llinfos << "Running in dev checkout with mSkinBaseDir " << mSkinBaseDir << llendl;
+	}
+	else
+	{
+		// ...normal installation running
+		mSkinBaseDir = mAppRODataDir + mDirDelimiter + "skins";
+	}
 
 	// Build the default cache directory
 	mDefaultCacheDir = buildSLOSCacheDir();

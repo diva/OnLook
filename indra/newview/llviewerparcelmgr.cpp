@@ -2228,7 +2228,7 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 void LLViewerParcelMgr::startBuyLand(BOOL is_for_group)
 {
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-	if (RlvActions::isRlvEnabled() && RlvActions::canShowLocation())
+	if (RlvActions::isRlvEnabled() && !RlvActions::canShowLocation())
 		return;
 // [/RLVa:KB]
 	if (selectionEmpty()) selectParcelAt(gAgent.getPositionGlobal());

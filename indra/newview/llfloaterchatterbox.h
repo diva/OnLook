@@ -126,7 +126,8 @@ public:
 
 	virtual BOOL postBuild();
 
-	void onClose(bool app_quitting);
+	virtual void onOpen();
+	virtual void onClose(bool app_quitting);
 
 	static void* createFriendsPanel(void* data);
 	static void* createGroupsPanel(void* data);

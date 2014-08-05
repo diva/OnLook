@@ -111,7 +111,7 @@ public:
 	////////////////////////////
 	/// @name Channel stuff
 	//@{
-	// returns true if the user is currently in a proximal (local spatial) channel.
+	// returns true iff the user is currently in a proximal (local spatial) channel.
 	// Note that gestures should only fire if this returns true.
 	virtual bool inProximalChannel();
 
@@ -640,6 +640,8 @@ private:
 	LLSocket::ptr_t mSocket;
 	bool mConnected;
 
+	// We should kill the voice daemon in case of connection alert
+	bool mTerminateDaemon;
 
 	LLPumpIO *mPump;
 	friend class LLVivoxProtocolParser;

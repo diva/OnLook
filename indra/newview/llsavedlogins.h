@@ -158,7 +158,7 @@ public:
 	 * @brief	Deletes a login history entry by looking up its name and grid.
 	 * @param	firstname	First name to find and delete.
 	 * @param	lastname	Last name to find and delete.
-	 * @param	grid	grif nickname to find and delete.
+	 * @param	grid		grid nickname to find and delete.
 	 */
 	void deleteEntry(const std::string& firstname, const std::string& lastname, const std::string& grid);
 	/**

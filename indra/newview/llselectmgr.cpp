@@ -5709,7 +5709,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	if (mSelectedObjects->getNumNodes())
 	{
 		LLUUID inspect_item_id= LLUUID::null;
-		LLFloaterInspect* inspect_instance = LLFloaterInspect::instanceExists() ? LLFloaterInspect::getInstance() : NULL;
+		LLFloaterInspect* inspect_instance = LLFloaterInspect::findInstance();
 		if(inspect_instance && inspect_instance->getVisible())
 		{
 			inspect_item_id = inspect_instance->getSelectedUUID();
@@ -6447,7 +6447,7 @@ void dialog_refresh_all()
 
 	LLFloaterProperties::dirtyAll();
 
-	LLFloaterInspect* inspect_instance = LLFloaterInspect::instanceExists() ? LLFloaterInspect::getInstance() : NULL;
+	LLFloaterInspect* inspect_instance = LLFloaterInspect::findInstance();
 	if(inspect_instance)
 	{
 		inspect_instance->dirty();
@@ -6506,7 +6506,7 @@ void LLSelectMgr::updateSelectionCenter()
 		mSelectionCenterGlobal.clearVec();
 		mShowSelection = FALSE;
 		mSelectionBBox = LLBBox(); 
-		mPauseRequest = NULL;
+		mPauseRequests.clear();
 		resetAgentHUDZoom();
 
 	}
@@ -6516,27 +6516,18 @@ void LLSelectMgr::updateSelectionCenter()
 
 		if (mSelectedObjects->mSelectType == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 		{
-			// Singu Note: Chalice Yao's pause agent on attachment selection
-			if (object->permYouOwner())
+			// Freeze avatars with a selected attachment, and all avatars with synchronized motions, if any.
+			LLVOAvatar* avatar = object->getAvatar();
+			// It is possible that 'avatar' is NULL despite this being an attachment because of some race condition.
+			// In that case just don't freeze the avatar.
+			if (avatar)
 			{
-				mPauseRequest = gAgentAvatarp->requestPause();
-			}
-			else if (LLViewerObject* objectp = mSelectedObjects->getPrimaryObject())
-			{
-				while (objectp && !objectp->isAvatar())
-				{
-					objectp = (LLViewerObject*)objectp->getParent();
-				}
-
-				if (objectp)
-				{
-					mPauseRequest = objectp->asAvatar()->requestPause();
-				}
+				avatar->pauseAllSyncedCharacters(mPauseRequests);
 			}
 		}
 		else
 		{
-			mPauseRequest = NULL;
+			mPauseRequests.clear();
 		}
 
 		if (mSelectedObjects->mSelectType != SELECT_TYPE_HUD && isAgentAvatarValid())

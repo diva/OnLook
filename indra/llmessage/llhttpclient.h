@@ -55,6 +55,17 @@ typedef struct _xmlrpc_request* XMLRPC_REQUEST;
 typedef struct _xmlrpc_value* XMLRPC_VALUE;
 extern AIEngine gMainThreadEngine;
 
+// In Viewer 3 this definition is in indra/newview/lltexturefetch.cpp,
+// but we need it in two .cpp files, so it's moved here.
+//
+// BUG-3323/SH-4375
+// *NOTE:  This is a heuristic value.  Texture fetches have a habit of using a
+// value of 32MB to indicate 'get the rest of the image'.  Certain ISPs and
+// network equipment get confused when they see this in a Range: header.  So,
+// if the request end is beyond this value, we issue an open-ended Range:
+// request (e.g. 'Range: <start>-') which seems to fix the problem.
+static const S32 HTTP_REQUESTS_RANGE_END_MAX = 20000000;
+
 // Output parameter of AICurlPrivate::CurlEasyRequest::getResult.
 // Used in XMLRPCResponder.
 struct AITransferInfo {
@@ -132,6 +143,14 @@ public:
 	class ResponderBase : public AIBufferedCurlEasyRequestEvents {
 	public:
 		typedef boost::shared_ptr<LLBufferArray> buffer_ptr_t;
+
+		/**
+		 * @brief return true if the status code indicates success.
+		 */
+		static bool isGoodStatus(U32 status)
+		{
+			return((200 <= status) && (status < 300));
+		}
 
 	protected:
 		ResponderBase(void);
@@ -452,9 +471,9 @@ public:
 	static void head(std::string const& url, ResponderHeadersOnly* responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
 	    { AIHTTPHeaders headers; head(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
-	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
-	static void getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
-	    { AIHTTPHeaders headers; getByteRange(url, offset, bytes, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
+	static bool getByteRange(std::string const& url, AIHTTPHeaders& headers, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static bool getByteRange(std::string const& url, S32 offset, S32 bytes, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+		{ AIHTTPHeaders headers; return getByteRange(url, headers, offset, bytes, responder/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
 	static void get(std::string const& url, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 	static void get(std::string const& url, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))

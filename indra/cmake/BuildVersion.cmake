@@ -52,6 +52,29 @@ if (DARWIN)
    )
 endif (DARWIN)
 
+if (LINUX)
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/wrapper.sh.in
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/wrapper.sh
+       @ONLY
+   )
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/handle_secondlifeprotocol.sh.in
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/handle_secondlifeprotocol.sh
+       @ONLY
+   )
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/install.sh.in
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/install.sh
+       @ONLY
+   )
+   configure_file(
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/refresh_desktop_app_entry.sh.in
+       ${CMAKE_SOURCE_DIR}/newview/linux_tools/refresh_desktop_app_entry.sh
+       @ONLY
+   )
+endif (LINUX)
+
 # Compose the version.
 set(viewer_VERSION "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}")
 if (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")

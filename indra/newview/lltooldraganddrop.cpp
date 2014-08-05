@@ -1591,7 +1591,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	case LLAssetType::AT_CALLINGCARD:
 		// Calling Cards in object are disabled for now
 		// because of incomplete LSL support. See STORM-1117.
-		return ACCEPT_NO;
+		//return ACCEPT_NO;
 	default:
 			break;
 	}

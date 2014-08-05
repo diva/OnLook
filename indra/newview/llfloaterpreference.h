@@ -76,9 +76,6 @@ public:
 	void setPersonalInfo(const std::string& visibility, bool im_via_email, const std::string&  email);
 
 	static void onTabChanged(LLUICtrl* ctrl);
-	
-	// refresh all the graphics preferences menus
-	void refreshEnabledGraphics();
 
 private:
 	LLTabContainer	*mTabContainer;
@@ -113,9 +110,6 @@ public:
 
 	// static data update, called from message handler
 	static void updateUserInfo(const std::string& visibility, bool im_via_email, const std::string& email);
-
-	// refresh all the graphics preferences menus
-	static void refreshEnabledGraphics();
 	
 	static void switchTab(S32 i);
 
@@ -129,16 +123,11 @@ protected:
 
 	/*virtual*/ void		onClose(bool app_quitting);
 
-	LLButton*	mAboutBtn;
-	LLButton	*mOKBtn;
-	LLButton	*mCancelBtn;
-	LLButton	*mApplyBtn;
 	bool		mExitWithoutSaving;
 
-	static void		onClickAbout(void*);
-	static void		onBtnOK(void*);
-	static void		onBtnCancel(void*);
-	static void		onBtnApply(void*);
+	void		onBtnOK();
+	void		onBtnCancel();
+	void		onBtnApply();
 
 	static LLFloaterPreference* sInstance;
 };

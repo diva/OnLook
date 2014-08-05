@@ -2709,7 +2709,8 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		(MASK_CONTROL & mask) &&
 		('D' == key || 'd' == key))
 	{
-		toggle_debug_menus(NULL);
+		if (gSavedSettings.getBOOL("LiruUseAdvancedMenuShortcut"))
+			toggle_debug_menus(NULL);
 	}
 
 	// handle shift-escape key (reset camera view)
@@ -5484,7 +5485,7 @@ void LLViewerWindow::restartDisplay(BOOL show_progress_bar)
 
 BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, const S32 vsync_mode, BOOL show_progress_bar)
 {
-	BOOL was_maximized = gSavedSettings.getBOOL("WindowMaximized");
+	BOOL was_maximized = mWindow->getMaximized();
 	mWantFullscreen = fullscreen;
 	mShowFullscreenProgress = show_progress_bar;
 	gSavedSettings.setBOOL("FullScreen", mWantFullscreen);

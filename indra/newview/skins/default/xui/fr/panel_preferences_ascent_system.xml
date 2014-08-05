@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Syst&#xE8;me" name="ascsys">
-  <tab_container label="Singularity System" name="Ascent System">
+  <tab_container label="System" name="Ascent System">
 
     <panel label="G&#xE9;n&#xE9;ral" name="User Interface">
       <check_box label="Activer le TP avec le double-clic" tool_tip="Activer le TP sur un objet/une personne avec le double-clic" name="double_click_teleport_check"/>
@@ -16,7 +16,7 @@
       <check_box label="Toujours permettre le mode vol (Fly)" tool_tip="Permet de voler quelques soient les droits de la sim, &#xE0; vos risques et p&#xE9;rils." name="always_fly_check"/>
       <check_box label="D&#xE9;sactiver la distance minimum de la cam&#xE9;ra" tool_tip="La cam&#xE9;ra zoome de tr&#xE9;s pr&#xE8;s." name="disable_camera_zoom_check"/>
       <check_box label="Activer les fonctions Power User - &#xE0; vos risques et p&#xE9;rils !" tool_tip="Ajoute des fonctions consid&#xE9;r&#xE9;es trop dangereuses pour une utilisation normale. Ces fonctions peuvent faire des ravages si employ&#xE9;es improprement." name="power_user_check"/>
-      <check_box label="Confirmer les fonctions Power User" tool_tip="Confirme les fonctions Power User. A vos risques et p&#xE9;rils. Singularity n'est pas responsable de cette utilisation." name="power_user_confirm_check"/>
+      <check_box label="Confirmer les fonctions Power User" tool_tip="Confirme les fonctions Power User. A vos risques et p&#xE9;rils. [SHORT_APP_NAME] n'est pas responsable de cette utilisation." name="power_user_confirm_check"/>
       <check_box label="Pr&#xE9;charger l'inventaire &#xE0; la connection" tool_tip="R&#xE9;duit l'attente lors de votre recherche initiale dans l'inventaire" name="fetch_inventory_on_login_check"/>
       <check_box label="Activer les effets de vent" name="enable_wind"/>
       <check_box label="Activer les nuages" name="enable_clouds"/>

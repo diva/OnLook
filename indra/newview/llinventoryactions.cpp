@@ -34,6 +34,7 @@
 
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
+#include "llfloaterperms.h"
 #include "llfoldervieweventlistener.h"
 #include "llimview.h"
 #include "llinventorybridge.h"
@@ -304,7 +305,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							parent_id,
 							LLAssetType::AT_LSL_TEXT,
 							LLInventoryType::IT_LSL,
-							PERM_MOVE | PERM_TRANSFER);
+							LLFloaterPerms::getNextOwnerPerms("Scripts"));
 	}
 	else if ("notecard" == type)
 	{
@@ -313,7 +314,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							parent_id,
 							LLAssetType::AT_NOTECARD,
 							LLInventoryType::IT_NOTECARD,
-							PERM_ALL);
+							LLFloaterPerms::getNextOwnerPerms("Notecards"));
 	}
 	else if ("gesture" == type)
 	{
@@ -322,7 +323,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 							parent_id,
 							LLAssetType::AT_GESTURE,
 							LLInventoryType::IT_GESTURE,
-							PERM_ALL);
+							LLFloaterPerms::getNextOwnerPerms("Gestures"));
 	}
 	else if ("outfit" == type || ("update outfit" == type && !LLAppearanceMgr::getInstance()->updateBaseOutfit())) // If updateBaseOutfit fails, prompt to make a new outfit
 	{

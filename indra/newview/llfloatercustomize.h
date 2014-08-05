@@ -69,10 +69,6 @@ public:
 
 
 private:
-	// Initialization
-	void			initWearablePanels();
-	void			initScrollingPanelList();
-
 	// Destruction
 	void			delayedClose(bool proceed, bool app_quitting);
 
@@ -123,6 +119,9 @@ private:
 
 	LLScrollingPanelList*			mScrollingPanelList;
 	LLScrollContainer*		mScrollContainer;
+	LLView *mMetricHeight, *mImperialHeight;
+	LLUICtrl *mMakeOutfitBtn, *mSaveOutfitBtn;
+	LLTabContainer* mTabContainer;
 	LLPointer<LLVisualParamReset>	mResetParams;
 
 	LLInventoryObserver*			mInventoryObserver;

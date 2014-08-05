@@ -44,7 +44,7 @@
       <check_box label="Boutons sur la même ligne que les noms pour les IMs" name="im_concise_butt"/>
       <check_box label="Boutons sur la ligne des noms des chats de groupe" name="group_concise_butt"/>
       <check_box label="Boutons sur la ligne de titre des conférences" name="conf_concise_butt"/>
-      <check_box label="Ouvre les logs avec un éditeur de texte externe (windows)" name="legacy_log_launch"/>
+      <check_box label="Ouvre les logs avec un éditeur de texte externe (windows/mac)" name="legacy_log_launch"/>
       <check_box label="Désactive le raccourci ouvrant détacher la liste d'amis" name="only_comm"/>
       <check_box label="Ecrit en Italiques le /me" name="italicize_actions"/>
     </panel>

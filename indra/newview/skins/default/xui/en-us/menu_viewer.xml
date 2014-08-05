@@ -5,17 +5,17 @@
 	<menu bottom="273" create_jump_keys="true" drop_shadow="true" enabled="true"
 	    height="263" label="File" left="0" mouse_opaque="false" name="File"
 	    opaque="true" tear_off="true" width="243">
-    <menu_item_call enabled="true" label="Image ([UPLOADFEE])..."
+    <menu_item_call enabled="true" label="Upload Image ([UPLOADFEE])..."
         mouse_opaque="true" name="Upload Image" shortcut="control|U" >
 		<on_click function="File.UploadImage" userdata="" />
 		<on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Sound ([UPLOADFEE])..." name="Upload Sound"
+    <menu_item_call label="Upload Sound ([UPLOADFEE])..." name="Upload Sound"
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadSound" userdata="" />
         <on_enable function="File.EnableUpload" />
     </menu_item_call>
-    <menu_item_call label="Animation ([UPLOADFEE])..." name="Upload Animation"
+    <menu_item_call label="Upload Animation ([UPLOADFEE])..." name="Upload Animation"
         mouse_opaque="true" enabled="true"  >
         <on_click function="File.UploadAnim" userdata="" />
         <on_enable function="File.EnableUpload" />
@@ -25,11 +25,11 @@
         <on_click function="File.UploadModel" userdata="" />
         <on_enable function="File.EnableUploadModel" />
     </menu_item_call>
-    <menu_item_call label="Bulk ([UPLOADFEE] per file)..." name="Bulk Upload"
+    <menu_item_call label="Bulk Upload ([UPLOADFEE] per file)..." name="Bulk Upload"
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadBulk" userdata="" />
     </menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Import XML" mouse_opaque="true" name="Import">
+	<menu_item_call enabled="false" hidden="false" label="Import Object XML" mouse_opaque="true" name="Import">
 		<on_click function="Object.Import" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
@@ -279,7 +279,7 @@
 		</menu_item_call>
 	</menu>
 	<menu bottom="-1" create_jump_keys="true" drop_shadow="true" enabled="true"
-	     height="537" label="View" left="80" mouse_opaque="false" name="View"
+	     height="537" label="View" left="80" mouse_opaque="false" name="View" scrollable="true"
 	     opaque="true" tear_off="true" width="211">
 		<tearoff_menu bottom="-10" enabled="true" height="10" label="~~~~~~~~~~~" left="0"
 		     mouse_opaque="true" name="~~~~~~~~~~~" width="211" />
@@ -321,9 +321,12 @@
 		     mouse_opaque="true" name="separator" width="211" />
 		<menu_item_check bottom="-113" enabled="true" height="19" label="Toolbar" left="0"
 		     mouse_opaque="true" name="Toolbar" width="211">
-			<on_click function="ShowFloater" userdata="toolbar" />
-			<on_check function="FloaterVisible" userdata="toolbar" />
+			<on_click function="ToggleControl" userdata="ShowToolBar"/>
+			<on_check control="ShowToolBar"/>
 		</menu_item_check>
+		<menu_item_call label="Change toolbar buttons" name="toolbar_prefs">
+			<on_click function="ShowFloater" userdata="floater_toolbar_prefs.xml"/>
+		</menu_item_call>
 		<menu_item_check bottom="-132" enabled="true" height="19" label="Local Chat" left="0"
 		     mouse_opaque="true" name="Chat History" shortcut="control|H" width="211">
              <on_click function="ShowFloater" userdata="chat history"/>
@@ -614,22 +617,27 @@
 			<menu_item_call bottom="-29" enabled="true" height="19" label="Sunrise" left="0"
 			     mouse_opaque="true" name="Sunrise" width="169">
 				<on_click function="World.EnvSettings" userdata="sunrise" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-48" enabled="true" height="19" label="Midday" left="0"
 			     mouse_opaque="true" name="Noon" shortcut="control|shift|Y" width="169">
 				<on_click function="World.EnvSettings" userdata="noon" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-67" enabled="true" height="19" label="Sunset" left="0"
 			     mouse_opaque="true" name="Sunset" shortcut="control|shift|N" width="169">
 				<on_click function="World.EnvSettings" userdata="sunset" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-86" enabled="true" height="19" label="Midnight" left="0"
 			     mouse_opaque="true" name="Midnight" width="169">
 				<on_click function="World.EnvSettings" userdata="midnight" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_call bottom="-105" enabled="false" height="19" label="Revert to Region Default"
 			     left="0" mouse_opaque="true" name="Revert to Region Default" width="169">
 				<on_click function="World.EnvSettings" userdata="default" />
+				<on_enable function="RLV.EnableIfNot" userdata="setenv"/>
 			</menu_item_call>
 			<menu_item_separator bottom="-113" enabled="true" height="8" label="-----------" left="0"
 			     mouse_opaque="true" name="separator" width="169" />

@@ -62,7 +62,6 @@
 #include "llui.h"
 #include "lluiconstants.h"
 #include "llurlhistory.h" // OGPX : regionuri text box has a history of region uris (if FN/LN are loaded at startup)
-#include "llviewerbuild.h"
 #include "llviewertexturelist.h"
 #include "llviewermenu.h"			// for handle_preferences()
 #include "llviewernetwork.h"
@@ -155,7 +154,6 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-
 //---------------------------------------------------------------------------
 // Public methods
 //---------------------------------------------------------------------------
@@ -191,6 +189,8 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 	// STEAM-14: When user presses Enter with this field in focus, initiate login
 	password_edit->setCommitCallback(mungePassword, this);
 	password_edit->setDrawAsterixes(TRUE);
+
+	getChild<LLUICtrl>("remove_login")->setCommitCallback(boost::bind(&LLPanelLogin::confirmDelete, this));
 
 	// change z sort of clickable text to be behind buttons
 	sendChildToBack(getChildView("channel_text"));
@@ -254,7 +254,7 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 		gVersionMajor,
 		gVersionMinor,
 		gVersionPatch,
-		LL_VIEWER_BUILD );
+		gVersionBuild );
 	LLTextBox* channel_text = getChild<LLTextBox>("channel_text");
 	channel_text->setTextArg("[CHANNEL]", channel); // though not displayed
 	channel_text->setTextArg("[VERSION]", version);
@@ -355,6 +355,8 @@ void LLPanelLogin::reshapeBrowser()
 
 LLPanelLogin::~LLPanelLogin()
 {
+	std::string login_hist_filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
+	LLSavedLogins::saveFile(mLoginHistoryData, login_hist_filepath);
 	LLPanelLogin::sInstance = NULL;
 
 	if ( gFocusMgr.getDefaultKeyboardFocus() == this )
@@ -463,6 +465,7 @@ void LLPanelLogin::giveFocus()
 {
 	if( sInstance )
 	{
+		if (!sInstance->getVisible()) sInstance->setVisible(true);
 		// Grab focus and move cursor to first blank input field
 		std::string username = sInstance->getChild<LLUICtrl>("username_combo")->getValue().asString();
 		std::string pass = sInstance->getChild<LLUICtrl>("password_edit")->getValue().asString();
@@ -1126,4 +1129,24 @@ void LLPanelLogin::clearPassword()
 	sInstance->childSetText("password_edit", blank);
 	sInstance->mIncomingPassword = blank;
 	sInstance->mMungedPassword = blank;
+}
+
+void LLPanelLogin::confirmDelete()
+{
+	LLNotificationsUtil::add("ConfirmDeleteUser", LLSD(), LLSD(), boost::bind(&LLPanelLogin::removeLogin, this, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
+}
+
+void LLPanelLogin::removeLogin(bool knot)
+{
+	if (knot) return;
+	LLComboBox* combo(getChild<LLComboBox>("username_combo"));
+	const std::string label(combo->getTextEntry());
+	if (combo->isTextDirty() || !combo->itemExists(label)) return; // Text entries aren't in the list
+	const LLSD& selected = combo->getSelectedValue();
+	if (!selected.isUndefined())
+	{
+		mLoginHistoryData.deleteEntry(selected.get("firstname").asString(), selected.get("lastname").asString(), selected.get("grid").asString());
+		combo->remove(label);
+		combo->selectFirstItem();
+	}
 }

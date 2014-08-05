@@ -44,7 +44,20 @@
 			<on_enable function="Object.EnableReturn" />
 		</menu_item_call>
 		<pie_menu more="true" label="More" name="Rate Menu">
-			<menu_item_separator />
+			<pie_menu label="Export" name="Export Menu">
+				<menu_item_call label="XML" mouse_opaque="true" name="XML">
+					<on_click function="Object.Export" />
+					<on_enable function="Object.EnableExport" />
+				</menu_item_call>
+				<menu_item_call label="OBJ..." mouse_opaque="true" name="Save OBJ...">
+					<on_click function="Object.SaveAsOBJ" />
+					<on_enable function="Object.EnableExport" />
+				</menu_item_call>
+				<menu_item_call label="DAE..." mouse_opaque="true" name="Save DAE...">
+					<on_click function="Object.SaveAsDAE" />
+					<on_enable function="Object.EnableExport" />
+				</menu_item_call>
+			</pie_menu>
 			<pie_menu label="Tools" name="Rate Menu">
 				<menu_item_call enabled="false" label="Destroy" mouse_opaque="true" name="Destroy">
 					<on_click function="Object.Destroy" />
@@ -60,18 +73,9 @@
 				<menu_item_call enabled="true" hidden="false" label="Data" mouse_opaque="true" name="Data">
 					<on_click function="Object.Data" />
 				</menu_item_call>
-        <menu_item_call label="Export" mouse_opaque="true" name="Export">
-          <on_click function="Object.Export" />
-          <on_enable function="Object.EnableExport" />
-        </menu_item_call>
-        <menu_item_call label="Save OBJ..." mouse_opaque="true" name="Save OBJ...">
-          <on_click function="Object.SaveAsOBJ" />
-          <on_enable function="Object.EnableExport" />
-        </menu_item_call>
-        <menu_item_call label="Save DAE..." mouse_opaque="true" name="Save DAE...">
-          <on_click function="Object.SaveAsDAE" />
-          <on_enable function="Object.EnableExport" />
-        </menu_item_call>
+				<menu_item_separator />
+				<menu_item_separator />
+				<menu_item_separator />
         <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
           <on_click function="Object.ReloadTextures" />
         </menu_item_call>
@@ -81,7 +85,7 @@
 				<on_enable function="Object.EnableMute" />
 			</menu_item_call>
 			<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
-				<on_click function="ShowFloater" userdata="inspect" />
+				<on_click function="ShowFloater" userdata="show inspect" />
 				<on_enable function="Object.EnableInspect" />
 			</menu_item_call>
 			<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">

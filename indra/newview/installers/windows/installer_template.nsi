@@ -805,6 +805,8 @@ CreateShortCut "$DESKTOP\$INSTSHORTCUT.lnk" \
         "$INSTDIR\$INSTEXE" "$INSTFLAGS $SHORTCUT_LANG_PARAM"
 CreateShortCut "$INSTDIR\$INSTSHORTCUT.lnk" \
         "$INSTDIR\$INSTEXE" "$INSTFLAGS $SHORTCUT_LANG_PARAM"
+CreateShortCut "$INSTDIR\$INSTSHORTCUT Portable.lnk" \
+        "$INSTDIR\$INSTEXE" "$INSTFLAGS $SHORTCUT_LANG_PARAM --portable"
 CreateShortCut "$INSTDIR\Uninstall $INSTSHORTCUT.lnk" \
 				'"$INSTDIR\uninst.exe"' ''
 

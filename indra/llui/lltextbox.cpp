@@ -395,8 +395,14 @@ void LLTextBox::initFromXML(LLXMLNodePtr node, LLView* parent)
 	LLFontGL* font = LLView::selectFont(node);
 	if(font)
 		mFontGL = font;
-		
-	setText(node->getTextContents());
+
+	if (node->hasAttribute("value"))
+	{
+		std::string text;
+		node->getAttributeString("value", text);
+		setText(text);
+	}
+	else setText(node->getTextContents());
 	
 	LLFontGL::HAlign halign = LLView::selectFontHAlign(node);
 	setHAlign(halign);

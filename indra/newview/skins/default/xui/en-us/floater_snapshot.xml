@@ -104,6 +104,9 @@
 	</combo_box>
 	<combo_box bottom_delta="0" follows="left|top" height="20" label="Resolution" left="10"
 	     name="texture_size_combo" width="115">
+		<combo_item name="CurrentWindow" value="[i0,i0]">
+			Current Window
+		</combo_item>
 		<combo_item name="512x512" value="[i512,i512]">
 			512x512 (1:1)
 		</combo_item>
@@ -130,6 +133,9 @@
 		</combo_item>
 		<combo_item name="128x512" value="[i128,i512]">
 			128x512 (1:4)
+		</combo_item>
+		<combo_item name="Custom" value="[i-1,i-1]">
+			Custom
 		</combo_item>
 	</combo_box>
 	<combo_box bottom_delta="0" follows="left|top" height="20" label="Resolution" left="10"

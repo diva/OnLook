@@ -34,6 +34,7 @@
 #include "scriptcounter.h"
 
 #include "llavatarnamecache.h"
+#include "llviewerregion.h"
 #include "llselectmgr.h"
 #include "lltrans.h"
 #include "llvoavatar.h"
@@ -54,13 +55,19 @@ namespace
 	}
 }
 
+std::map<LLUUID, ScriptCounter*> ScriptCounter::sCheckMap;
+
 ScriptCounter::ScriptCounter(bool do_delete, LLViewerObject* object)
-:	doDelete(do_delete)
+:	LLInstanceTracker<ScriptCounter, LLUUID>(object->getID())
+,	doDelete(do_delete)
 ,	foo(object)
 ,	inventories()
 ,	objectCount()
 ,	requesting(true)
 ,	scriptcount()
+,	checking()
+,	mRunningCount()
+,	mMonoCount()
 {
 	llassert(foo); // Object to ScriptCount must not be null
 }
@@ -152,15 +159,47 @@ void ScriptCounter::inventoryChanged(LLViewerObject* obj, LLInventoryObject::obj
 							end = inv->end();
 						}
 					}
+					else
+					{
+						const LLUUID& id = asset->getUUID();
+						LLMessageSystem* msg = gMessageSystem;
+						msg->newMessageFast(_PREHASH_GetScriptRunning);
+						msg->nextBlockFast(_PREHASH_Script);
+						msg->addUUIDFast(_PREHASH_ObjectID, obj->getID());
+						msg->addUUIDFast(_PREHASH_ItemID, id);
+						msg->sendReliable(obj->getRegion()->getHost());
+						sCheckMap[id] = this;
+						++checking;
+					}
 				}
 	}
 
+	summarize();
+}
+
+void ScriptCounter::processRunningReply(LLMessageSystem* msg)
+{
+	BOOL is;
+	msg->getBOOLFast(_PREHASH_Script, _PREHASH_Running, is);
+	if (is) ++mRunningCount;
+	msg->getBOOLFast(_PREHASH_Script, "Mono", is);
+	if (is) ++mMonoCount;
+	--checking;
+
+	summarize();
+}
+
+void ScriptCounter::summarize()
+{
 	// Done requesting and there are no more inventories to receive
-	if (!requesting && !inventories)
+	// And we're not checking any scripts for running/mono properties
+	if (!requesting && !inventories && !checking)
 	{
 		LLStringUtil::format_map_t args;
 		args["SCRIPTS"] = stringize(scriptcount);
 		args["OBJECTS"] = stringize(objectCount);
+		args["RUNNING"] = stringize(mRunningCount);
+		args["MONO"] = stringize(mMonoCount);
 		if (foo->isAvatar())
 			LLAvatarNameCache::get(foo->getID(), boost::bind(countedScriptsOnAvatar, args, _2));
 		else

@@ -29,3 +29,9 @@ qtcreator-build/
 /indra/newview/res/viewerRes.rc
 /indra/newview/res/viewerRes_bc.rc
 /indra/newview/English.lproj/InfoPlist.strings
+/indra/newview/linux_tools/handle_secondlifeprotocol.sh
+/indra/newview/linux_tools/install.sh
+/indra/newview/linux_tools/refresh_desktop_app_entry.sh
+/indra/newview/linux_tools/wrapper.sh
+
+

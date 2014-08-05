@@ -48,6 +48,7 @@
 #include "llfloateravatarlist.h"
 #include "llfloaterworldmap.h"
 #include "llmenugl.h"
+#include "lltoolbar.h"
 #include "lluictrlfactory.h"
 #include "llviewerregion.h"
 
@@ -251,6 +252,8 @@ void RlvUIEnabler::onToggleShowInv(bool fQuitting)
 		LLMenuGL::sMenuContainer->childSetEnabled("My Outfits", true);
 		LLMenuGL::sMenuContainer->childSetEnabled("Favorites", true);
 	}
+	gToolBar->childSetEnabled("outfits_btn", fEnable);
+	gToolBar->childSetEnabled("favs_btn", fEnable);
 }
 
 // Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
@@ -258,8 +261,12 @@ void RlvUIEnabler::onToggleShowLoc()
 {
 	bool fEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC);
 
-	// RELEASE-RLVa: [SL-2.0.1] Check that the code below still evaluates to *only* LLNavigationBar::instance().mCmbLocation->refresh()
-	//LLAppViewer::instance()->handleLoginComplete();
+	/* Singu TODO: LLNavigationBar
+	if (LLNavigationBar::instanceExists())
+		LLNavigationBar::instance().refreshLocationCtrl();
+	if (LLPanelTopInfoBar::instanceExists())
+		LLPanelTopInfoBar::instance().update();
+	*/
 
 	if (!fEnable)
 	{

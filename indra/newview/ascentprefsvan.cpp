@@ -61,14 +61,7 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 
 	getChild<LLUICtrl>("tag_spoofing_combobox")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitClientTag, this, _1));
 
-	getChild<LLUICtrl>("show_my_tag_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
-	getChild<LLUICtrl>("show_self_tag_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
-	getChild<LLUICtrl>("show_self_tag_color_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
-	getChild<LLUICtrl>("customize_own_tag_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
-	getChild<LLUICtrl>("show_friend_tag_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
-	getChild<LLUICtrl>("use_status_check")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitCheckBox, this, _1, _2));
-
-	getChild<LLUICtrl>("custom_tag_label_box")->setCommitCallback(boost::bind(&LLPrefsAscentVan::onCommitTextModified, this, _1, _2));
+	getChild<LLUICtrl>("custom_tag_label_box")->setCommitCallback(boost::bind(&LLControlGroup::setString, boost::ref(gSavedSettings), "AscentCustomTagLabel", _2));
 
 	getChild<LLUICtrl>("update_clientdefs")->setCommitCallback(boost::bind(LLPrefsAscentVan::onManualClientUpdate));
 
@@ -104,14 +97,6 @@ void LLPrefsAscentVan::onCommitClientTag(LLUICtrl* ctrl)
 	}
 }
 
-void LLPrefsAscentVan::onCommitTextModified(LLUICtrl* ctrl, const LLSD& value)
-{
-    if (ctrl->getName() == "custom_tag_label_box")
-    {
-		gSavedSettings.setString("AscentCustomTagLabel", value);
-    }
-}
-
 //static
 void LLPrefsAscentVan::onManualClientUpdate()
 {
@@ -127,29 +112,6 @@ void LLPrefsAscentVan::onManualClientUpdate()
 	LLFloaterChat::addChat(chat);
 }
 
-void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value)
-{
-//	llinfos << "Control named " << ctrl->getControlName() << llendl;
-
-    if (ctrl->getName() == "use_status_check")
-    {
-		bool showCustomColors = value.asBoolean();
-		childSetEnabled("friends_color_textbox", showCustomColors);
-		childSetEnabled("friend_color_swatch", showCustomColors || gSavedSettings.getBOOL("ColorFriendChat"));
-		childSetEnabled("estate_owner_color_swatch", showCustomColors || gSavedSettings.getBOOL("ColorEstateOwnerChat"));
-		childSetEnabled("linden_color_swatch", showCustomColors || gSavedSettings.getBOOL("ColorLindenChat"));
-		childSetEnabled("muted_color_swatch", showCustomColors || gSavedSettings.getBOOL("ColorMutedChat"));
-    }
-    else if (ctrl->getName() == "customize_own_tag_check")
-    {
-		bool showCustomOptions = value.asBoolean();
-		childSetEnabled("custom_tag_label_text", showCustomOptions);
-		childSetEnabled("custom_tag_label_box", showCustomOptions);
-		childSetEnabled("custom_tag_color_text", showCustomOptions);
-		childSetEnabled("custom_tag_color_swatch", showCustomOptions);
-    }
-}
-
 // Store current settings for cancel
 void LLPrefsAscentVan::refreshValues()
 {
@@ -161,6 +123,7 @@ void LLPrefsAscentVan::refreshValues()
 	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
 	mAddNotReplace = gSavedSettings.getBOOL("LiruAddNotReplace");
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
+	mCustomizeAnim = gSavedSettings.getBOOL("LiruCustomizeAnim");
 	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 	mUnfocusedFloatersOpaque = gSavedSettings.getBOOL("FloaterUnfocusedBackgroundOpaque");
@@ -211,10 +174,6 @@ void LLPrefsAscentVan::refresh()
     combo->setCurrentByIndex(mSelectedClient);
 
     childSetEnabled("friends_color_textbox",     mUseStatusColors);
-    childSetEnabled("friend_color_swatch",       mUseStatusColors || mColorFriendChat);
-    childSetEnabled("estate_owner_color_swatch", mUseStatusColors || mColorEOChat);
-    childSetEnabled("linden_color_swatch",       mUseStatusColors || mColorLindenChat);
-    childSetEnabled("muted_color_swatch",        mUseStatusColors || mColorMutedChat);
 
     childSetEnabled("custom_tag_label_text",   mCustomTagOn);
     childSetEnabled("custom_tag_label_box",    mCustomTagOn);
@@ -234,6 +193,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("SGDisableChatAnimation",		mDisableChatAnimation);
 	gSavedSettings.setBOOL("LiruAddNotReplace", mAddNotReplace);
 	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
+	gSavedSettings.setBOOL("LiruCustomizeAnim", mCustomizeAnim);
 	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 	gSavedSettings.setBOOL("FloaterUnfocusedBackgroundOpaque", mUnfocusedFloatersOpaque);

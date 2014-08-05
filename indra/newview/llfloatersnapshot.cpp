@@ -109,7 +109,7 @@ F32 FALL_TIME = 0.6f;
 S32 BORDER_WIDTH = 6;
 
 const S32 MAX_POSTCARD_DATASIZE = 1024 * 1024; // one megabyte
-const S32 MAX_TEXTURE_SIZE = 512 ; //max upload texture size 512 * 512
+const S32 MAX_TEXTURE_SIZE = 1024; //max upload texture size 1024 * 1024
 
 static std::string snapshotKeepAspectName();
 
@@ -1185,7 +1185,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::generateFormatt
 	if (mSnapshotType == SNAPSHOT_TEXTURE)
 	{
 		// 'scaled' must be a power of two.
-		scaled->biasedScaleToPowerOfTwo(mWidth, mHeight, 512);
+		scaled->biasedScaleToPowerOfTwo(mWidth, mHeight, 1024);
 	}
 	else
 	{
@@ -1434,8 +1434,8 @@ void LLSnapshotLivePreview::saveTexture()
 				LLFolderType::FT_SNAPSHOT_CATEGORY,
 				LLInventoryType::IT_SNAPSHOT,
 				PERM_ALL,  // Note: Snapshots to inventory is a special case of content upload
-				LLFloaterPerms::getGroupPerms(), // that is more permissive than other uploads
-				LLFloaterPerms::getEveryonePerms(),
+				LLFloaterPerms::getGroupPerms("Uploads"), // that is more permissive than other uploads
+				LLFloaterPerms::getEveryonePerms("Uploads"),
 				"Snapshot : " + pos_string,
 				callback, expected_upload_cost, user_data, &LLSnapshotLivePreview::saveTextureDone2))
 	{
@@ -2488,8 +2488,7 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 	LLSpinCtrl* width_spinner = view->getChild<LLSpinCtrl>("snapshot_width");
 	LLSpinCtrl* height_spinner = view->getChild<LLSpinCtrl>("snapshot_height");
 
-	if (gSavedSettings.getS32("LastSnapshotType") == LLSnapshotLivePreview::SNAPSHOT_TEXTURE ||
-		gSavedSettings.getBOOL("RenderUIInSnapshot") ||
+	if (	gSavedSettings.getBOOL("RenderUIInSnapshot") ||
 		gSavedSettings.getBOOL("RenderHUDInSnapshot"))
 	{
 		// Disable without making label gray.
@@ -2693,7 +2692,6 @@ void LLFloaterSnapshot::Impl::onCommitSnapshotType(LLUICtrl* ctrl, void* data)
 	}
 }
 
-
 //static
 void LLFloaterSnapshot::Impl::onCommitSnapshotFormat(LLUICtrl* ctrl, void* data)
 {
@@ -2705,14 +2703,11 @@ void LLFloaterSnapshot::Impl::onCommitSnapshotFormat(LLUICtrl* ctrl, void* data)
 	}
 }
 
-
-
 // Sets the named size combo to "custom" mode.
 // static
 void LLFloaterSnapshot::Impl::comboSetCustom(LLFloaterSnapshot* floater, const std::string& comboname)
 {
 	LLComboBox* combo = floater->getChild<LLComboBox>(comboname);
-
 	combo->setCurrentByIndex(combo->getItemCount() - 1); // "custom" is always the last index
 	storeAspectSetting(combo, comboname);
 }
@@ -2955,25 +2950,25 @@ BOOL LLFloaterSnapshot::postBuild()
 	childSetCommitCallback("keep_aspect", Impl::onClickKeepAspect, this);
 
 	childSetCommitCallback("ui_check", Impl::onClickUICheck, this);
-	childSetValue("ui_check", gSavedSettings.getBOOL("RenderUIInSnapshot"));
+	getChild<LLUICtrl>("ui_check")->setValue(gSavedSettings.getBOOL("RenderUIInSnapshot"));
 
 	childSetCommitCallback("hud_check", Impl::onClickHUDCheck, this);
-	childSetValue("hud_check", gSavedSettings.getBOOL("RenderHUDInSnapshot"));
+	getChild<LLUICtrl>("hud_check")->setValue(gSavedSettings.getBOOL("RenderHUDInSnapshot"));
 
 	childSetCommitCallback("keep_open_check", Impl::onClickKeepOpenCheck, this);
 	childSetValue("keep_open_check", !gSavedSettings.getBOOL("CloseSnapshotOnKeep"));
 
 	childSetCommitCallback("layer_types", Impl::onCommitLayerTypes, this);
-	childSetValue("layer_types", "colors");
-	childSetEnabled("layer_types", FALSE);
+	getChild<LLUICtrl>("layer_types")->setValue("colors");
+	getChildView("layer_types")->setEnabled(FALSE);
 
 	childSetValue("snapshot_width", gSavedSettings.getS32(lastSnapshotWidthName()));
 	childSetValue("snapshot_height", gSavedSettings.getS32(lastSnapshotHeightName()));
 
-	childSetValue("freeze_time_check", gSavedSettings.getBOOL("SnapshotOpenFreezeTime"));
+	getChild<LLUICtrl>("freeze_time_check")->setValue(gSavedSettings.getBOOL("SnapshotOpenFreezeTime"));
 	childSetCommitCallback("freeze_time_check", Impl::onCommitFreezeTime, this);
 
-	childSetValue("auto_snapshot_check", gSavedSettings.getBOOL("AutoSnapshot"));
+	getChild<LLUICtrl>("auto_snapshot_check")->setValue(gSavedSettings.getBOOL("AutoSnapshot"));
 	childSetCommitCallback("auto_snapshot_check", Impl::onClickAutoSnap, this);
 	childSetCommitCallback("temp_check", Impl::onClickTemporaryImage, this);
 
@@ -3038,7 +3033,7 @@ void LLFloaterSnapshot::draw()
 			S32 offset_y = (thumb_area.mBottom + thumb_area.mTop - previewp->getThumbnailHeight()) / 2;
 
 			gGL.matrixMode(LLRender::MM_MODELVIEW);
-			gl_rect_2d(thumb_area, LLColor4::grey4, true);
+			gl_rect_2d(thumb_area, LLColor4::transparent, true);
 			gl_draw_scaled_image(offset_x, offset_y, 
 					previewp->getThumbnailWidth(), previewp->getThumbnailHeight(), 
 					previewp->getThumbnailImage(), LLColor4::white);	

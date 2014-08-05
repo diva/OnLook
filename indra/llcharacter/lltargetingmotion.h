@@ -48,11 +48,11 @@
 // class LLTargetingMotion
 //-----------------------------------------------------------------------------
 class LLTargetingMotion :
-	public LLMotion
+	public AIMaskedMotion
 {
 public:
 	// Constructor
-	LLTargetingMotion(const LLUUID &id);
+	LLTargetingMotion(LLUUID const& id, LLMotionController* controller);
 
 	// Destructor
 	virtual ~LLTargetingMotion();
@@ -64,7 +64,7 @@ public:
 
 	// static constructor
 	// all subclasses must implement such a function and register it
-	static LLMotion *create(const LLUUID &id) { return new LLTargetingMotion(id); }
+	static LLMotion* create(LLUUID const& id, LLMotionController* controller) { return new LLTargetingMotion(id, controller); }
 
 public:
 	//-------------------------------------------------------------------------
@@ -96,18 +96,10 @@ public:
 	// must return true to indicate success and be available for activation
 	virtual LLMotionInitStatus onInitialize(LLCharacter *character);
 
-	// called when a motion is activated
-	// must return TRUE to indicate success, or else
-	// it will be deactivated
-	virtual BOOL onActivate();
-
 	// called per time step
 	// must return TRUE while it is active, and
 	// must return FALSE when the motion is completed.
 	virtual BOOL onUpdate(F32 time, U8* joint_mask);
-
-	// called when a motion is deactivated
-	virtual void onDeactivate();
 
 public:
 

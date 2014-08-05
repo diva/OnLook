@@ -11,9 +11,9 @@ groups inside Second Life, with an appropriate headset/microphone.
 Linux Voice Support is currently EXPERIMENTAL and is known to still
 have some compatibility issues.
 
-SINGULARITY MULTI-VOICE
+MULTI-VOICE
 -=-=-=-=-=-=-=-=-=-=-=-
-Singularity multi-voice is an experimental feature that allows you to run multiple
+Multi-voice is an experimental feature that allows you to run multiple
 SLVoice daemons at the same time, in order to do this, the debug setting VoiceMultiInstance
 must be TRUE, this allows multiple instances of the viewer to run concurrently and
 each connect to voice.

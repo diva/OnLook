@@ -247,19 +247,19 @@
 		<menu label="Fehlermeldungen" name="Bug Reporting">
 			<menu_item_call label="Allgemeiner Probleme-Tracker..." name="Public Issue Tracker..."/>
 			<menu_item_call label="Hilfe zum Allgemeinen Probleme-Tracker..." name="Publc Issue Tracker Help..."/>
-			<menu_item_call label="Singularity Probleme-Tracker..." name="Singularity Issue Tracker..."/>
+			<menu_item_call label="[SHORT_APP_NAME] Probleme-Tracker..." name="Singularity Issue Tracker..."/>
 			<menu_item_separator label="-----------" name="separator7"/>
 			<menu_item_call label="Fehlermeldungs 101..." name="Bug Reporting 101..."/>
 			<menu_item_call label="Sicherheitsprobleme..." name="Security Issues..."/>
 			<menu_item_call label="QA-Wiki..." name="QA Wiki..."/>
 			<menu_item_separator label="-----------" name="separator9"/>
 			<menu_item_call label="Fehler melden..." name="Report Bug..."/>
-			<menu_item_call label="Singularity Problem berichten..." name="Report Singularity Bug..."/>
+			<menu_item_call label="[SHORT_APP_NAME] Problem berichten..." name="Report Singularity Bug..."/>
 			<menu_item_call label="Neue Funktionalität nachfragen..." name="Request New Feature..."/>
 		</menu>
 		<menu_item_call label="Über [APP_NAME]..." name="About Second Life..."/>
 	</menu>
-	<menu label="Singularity" name="Singularity">
+	<menu label="[SHORT_APP_NAME]" name="Singularity">
 		<menu_item_call label="Alle Dialoge schließen" name="Close All Dialogs"/>
 		
 		<menu_item_call label="Täusche Abwesend-Status vor" name="Fake Away Status"/>

@@ -1416,7 +1416,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			// Call LLHTTPClient::request directly instead of LLHTTPClient::getByteRange, because we want to pass a NULL AIEngine.
 			if (mRequestedOffset > 0 || mRequestedSize > 0)
 			{
-				headers.addHeader("Range", llformat("bytes=%d-%d", mRequestedOffset, mRequestedOffset + mRequestedSize - 1));
+				int const range_end = mRequestedOffset + mRequestedSize - 1;
+				char const* const range_format = (range_end >= HTTP_REQUESTS_RANGE_END_MAX) ? "bytes=%d-" : "bytes=%d-%d";
+				headers.addHeader("Range", llformat(range_format, mRequestedOffset, range_end));
 			}
 			LLHTTPClient::request(mUrl, LLHTTPClient::HTTP_GET, NULL,
 				new HTTPGetResponder(mFetcher, mID, LLTimer::getTotalTime(), mRequestedSize, mRequestedOffset),
@@ -1496,7 +1498,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				HTTP_CASE(HTTP_INTERNAL_ERROR_CURL_OTHER)
 				HTTP_CASE(HTTP_INTERNAL_ERROR_OTHER)
 				default:
-					LL_DEBUGS("TexDebug") << mID << " status = " << mGetStatus << " (??)" << " Failcount = " << mHTTPFailCount << llendl; break; 
+					LL_DEBUGS("TexDebug") << mID << " status = " << mGetStatus << " (?)" << " Failcount = " << mHTTPFailCount << llendl; break;
 				}
 				
 				if (mGetStatus == HTTP_NOT_FOUND || mGetStatus == HTTP_INTERNAL_ERROR_CURL_TIMEOUT || mGetStatus == HTTP_INTERNAL_ERROR_LOW_SPEED)

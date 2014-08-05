@@ -851,6 +851,14 @@ S32 LLViewerKeyboard::loadBindings(const std::string& filename)
 	return binding_count;
 }
 
+void LLViewerKeyboard::unloadBindings()
+{
+	for (S32 mode = 0; mode < MODE_COUNT; ++mode)
+	{
+		mRemapKeys[mode].clear();
+		mBindingCount[mode] = 0;
+	}
+}
 
 EKeyboardMode LLViewerKeyboard::getMode()
 {
