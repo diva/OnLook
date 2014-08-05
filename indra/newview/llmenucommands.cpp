@@ -279,7 +279,7 @@ void show_floater(const std::string& floater_name)
 	if (it == MenuFloaterDict::instance().mEntries.end()) // Simple codeless floater
 	{
 		if (LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name))
-			gFloaterView->bringToFront(floater);
+			floater->isFrontmost() ? floater->close() : gFloaterView->bringToFront(floater);
 		else
 			LLUICtrlFactory::getInstance()->buildFloater(new LLFloater(), floater_name);
 	}
