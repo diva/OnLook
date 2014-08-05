@@ -1222,7 +1222,7 @@ void LLViewerJoystick::scanJoystick()
 		bool ds3 = sType == DS3;
 		// Special command keys ...
 		// - Back = toggle flycam
-		U8 key = ds3 ? DS3_SELECT_KEY : XBOX_BACK_KEY;
+		U8 key = ds3 ? (U8)DS3_SELECT_KEY : (U8)XBOX_BACK_KEY;
 		if (mBtn[key] == 1)
 		{
 			if (!toggle_flycam) toggle_flycam = toggleFlycam();
@@ -1233,7 +1233,7 @@ void LLViewerJoystick::scanJoystick()
 		}
 
 		// - Start = toggle cursor/camera control
-		key = ds3 ? DS3_START_KEY : XBOX_START_KEY;
+		key = ds3 ? (U8)DS3_START_KEY : (U8)XBOX_START_KEY;
 		if (mBtn[key] == 1)
 		{
 			if (!toggle_cursor) toggle_cursor = toggleCursor();
@@ -1245,7 +1245,7 @@ void LLViewerJoystick::scanJoystick()
 
 		// Toggle mouselook ...
 		static bool right_stick_click_down = false;
-		key = ds3 ? DS3_R_STICK_CLICK : XBOX_R_STICK_CLICK;
+		key = ds3 ? (U8)DS3_R_STICK_CLICK : (U8)XBOX_R_STICK_CLICK;
 		if (!!mBtn[key] != right_stick_click_down)
 		{
 			if (right_stick_click_down = mBtn[key]) // Note: Setting, not comparing.
@@ -1255,7 +1255,7 @@ void LLViewerJoystick::scanJoystick()
 		MASK mask = gKeyboard->currentMask(TRUE);
 		// Esc
 		static bool esc_down = false;
-		key = ds3 ? DS3_TRIANGLE_KEY : XBOX_Y_KEY;
+		key = ds3 ? (U8)DS3_TRIANGLE_KEY : (U8)XBOX_Y_KEY;
 		if (!!mBtn[key] != esc_down)
 		{
 			esc_down = mBtn[key];
@@ -1264,7 +1264,7 @@ void LLViewerJoystick::scanJoystick()
 
 		// Alt
 		static bool alt_down = false;
-		key = ds3 ? DS3_X_KEY : XBOX_A_KEY;
+		key = ds3 ? (U8)DS3_X_KEY : (U8)XBOX_A_KEY;
 		if (!!mBtn[key] != alt_down)
 		{
 			gKeyboard->setControllerKey(KEY_ALT, alt_down = mBtn[key]);
@@ -1272,7 +1272,7 @@ void LLViewerJoystick::scanJoystick()
 
 		// Ctrl
 		static bool ctrl_down = false;
-		key = ds3 ? DS3_SQUARE_KEY : XBOX_X_KEY;
+		key = ds3 ? (U8)DS3_SQUARE_KEY : (U8)XBOX_X_KEY;
 		if (!!mBtn[key] != ctrl_down)
 		{
 			gKeyboard->setControllerKey(KEY_CONTROL, ctrl_down = mBtn[key]);
@@ -1280,7 +1280,7 @@ void LLViewerJoystick::scanJoystick()
 
 		// Shift
 		static bool shift_down = false;
-		key = ds3 ? DS3_CIRCLE_KEY : XBOX_B_KEY;
+		key = ds3 ? (U8)DS3_CIRCLE_KEY : (U8)XBOX_B_KEY;
 		if (!!mBtn[key] != shift_down)
 		{
 			gKeyboard->setControllerKey(KEY_SHIFT, shift_down = mBtn[key]);
@@ -1291,7 +1291,7 @@ void LLViewerJoystick::scanJoystick()
 		LLUI::getMousePositionScreen(&coord.mX, &coord.mY);
 		static bool m1_down = false;
 		static F32 last_m1 = 0;
-		key = ds3 ? DS3_L1_KEY : XBOX_L_BUMP_KEY;
+		key = ds3 ? (U8)DS3_L1_KEY : (U8)XBOX_L_BUMP_KEY;
 		if (!!mBtn[key] != m1_down)
 		{
 			m1_down = mBtn[key];
@@ -1301,7 +1301,7 @@ void LLViewerJoystick::scanJoystick()
 			last_m1 = gFrameTimeSeconds;
 		}
 		static bool m2_down = false;
-		key = ds3 ? DS3_R1_KEY : XBOX_R_BUMP_KEY;
+		key = ds3 ? (U8)DS3_R1_KEY : (U8)XBOX_R_BUMP_KEY;
 		if (!!mBtn[key] != m2_down)
 		{
 			m2_down = mBtn[key];
