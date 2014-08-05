@@ -571,6 +571,9 @@ void LLFloater::open()	/* Flawfinder: ignore */
 		setVisibleAndFrontmost(mAutoFocus);
 	}
 
+	if (!getControlName().empty())
+		setControlValue(true);
+
 	onOpen();
 }
 
@@ -632,6 +635,9 @@ void LLFloater::close(bool app_quitting)
 				}
 			}
 		}
+
+		if (!app_quitting && !getControlName().empty())
+			setControlValue(false);
 
 		// Let floater do cleanup.
 		onClose(app_quitting);
