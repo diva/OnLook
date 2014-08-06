@@ -257,6 +257,8 @@ LLFloaterLand::~LLFloaterLand()
 // public
 void LLFloaterLand::refresh()
 {
+	if (LLViewerParcelMgr::getInstance()->selectionEmpty())
+		LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
 	mPanelGeneral->refresh();
 	mPanelObjects->refresh();
 	mPanelOptions->refresh();
