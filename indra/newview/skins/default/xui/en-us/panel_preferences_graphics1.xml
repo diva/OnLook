@@ -145,6 +145,9 @@ when the Atmospheric Shaders are enabled.
     <slider bottom_delta="-18" follows="top|left" height="16" width="298" control_name="CameraMaxCoF" can_edit_text="true" decimal_digits="1" increment="0.1" label_width="110" max_val="100" min_val="0" name="CameraCoF" label="Circle of Confusion:" tool_tip="Set the Camera circle of confusion"/>
     <slider bottom_delta="-18" follows="top|left" height="16" width="298" control_name="CameraFocusTransitionTime" can_edit_text="true" decimal_digits="2" increment="0.01" label_width="110" max_val="20" min_val="0.01" name="CameraFocusTrans" label="Transition Time(secs):" tool_tip="Time taken to alter focus from one place to the next"/>
     <slider bottom_delta="-18" follows="top|left" height="16" width="298" control_name="CameraDoFResScale" can_edit_text="true" decimal_digits="2" increment="0.01" label_width="110" val_width="35" max_val="1" min_val="0.25" name="CameraDoFRes" label="Resolution:" tool_tip="Set the Resolution (Quality) of each DoF pixel"/>
+    <button bottom_delta="-24" follows="top|left" height="20" width="298" name="reset_dof" label="Reset Depth of Field Settings">
+      <button.commit_callback function="Graphics.ResetTab" parameter="DoF"/>
+    </button>
   </panel>
  </tab_container>
  <string name="resolution_format">[RES_X] x [RES_Y]</string>
