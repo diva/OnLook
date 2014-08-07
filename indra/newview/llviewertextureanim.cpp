@@ -49,8 +49,7 @@ LLViewerTextureAnim::LLViewerTextureAnim(LLVOVolume* vobj) : LLTextureAnim()
 
 LLViewerTextureAnim::~LLViewerTextureAnim()
 {
-	std::vector<LLViewerTextureAnim*>::iterator it(sInstanceList.begin() + mInstanceIndex);
-	std::vector<LLViewerTextureAnim*>::iterator iter = vector_replace_with_last(sInstanceList, it);
+	std::vector<LLViewerTextureAnim*>::iterator iter = vector_replace_with_last(sInstanceList, sInstanceList.begin() + mInstanceIndex);
 	if(iter != sInstanceList.end())
 		(*iter)->mInstanceIndex = mInstanceIndex;
 }
