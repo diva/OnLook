@@ -75,7 +75,6 @@
 		<menu_item_check label="Participantes Activos" name="Active Speakers"/>
 		<menu_item_check label="Lista de Ignorados" name="Mute List"/>
 		<menu_item_check label="Historial de Teleporte" name="Teleport History"/>
-		<menu_item_check label="Filtro de Media" name="Media Filter"/>
 		<menu_item_check label="Controles de Cámara" name="Camera Controls"/>
 		<menu_item_check label="Controles de Movimiento" name="Movement Controls"/>
 		<menu_item_check label="Mapa del Mundo" name="World Map"/>
@@ -215,7 +214,7 @@
 		<menu_item_call label="Acerca de [APP_NAME]..." name="About Second Life..."/>
 	</menu>
 	<!-- ============================= -->
-	<menu label="[SHORT_APP_NAME]" name="Singularity">
+	<menu name="Singularity">
 		<menu_item_call label="Cerrar todos los diálogos" name="Close All Dialogs"/>
 		<menu_item_call label="Falso Estado Ausente" name="Fake Away Status"/>
 		<menu_item_call label="Forzar Sentarse en el Piso" name="Force Ground Sit"/>
@@ -224,9 +223,10 @@
 		<menu_item_check label="Búsqueda en Área" name="Object Area Search"/>
 		<menu_item_check label="Explorador de Sonidos" name="Sound Explorer"/>
 		<menu_item_check label="Lista Negra de Assets" name="Asset Blacklist"/>
+		<menu_item_check label="Filtro de Media" name="Media Filter"/>
 		<menu_item_check label="Mostrar Información de Audio" name="Streaming Audio Display"/>
 		<menu_item_check label="Pose Stand" name="Pose Stand"/>
 		<menu_item_check label="Consola de Depuración de Región" name="Region Debug Console"/>
 		<menu_item_call label="Redibujar" name="Rebake"/>
-	</menu>		
+	</menu>
 </menu_bar>
