@@ -418,7 +418,7 @@ std::string extractDomain(const std::string& in_url)
 
 	if (pos != std::string::npos)
 	{
-		S32 count = url.size()-pos+1;
+		size_t count = url.size()-pos+1;
 		url = url.substr(pos+1, count);
 	}
 
