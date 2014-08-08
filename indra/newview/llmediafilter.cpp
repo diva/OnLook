@@ -41,6 +41,10 @@ bool handle_media_filter_callback(const LLSD& notification, const LLSD& response
 std::string extractDomain(const std::string& in_url);
 
 LLMediaFilter::LLMediaFilter()
+: mMediaCommandQueue(0)
+, mCurrentParcel(NULL)
+, mMediaQueue(NULL)
+, mAlertActive(false)
 {
 	loadMediaFilterFromDisk();
 }
