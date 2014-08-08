@@ -74,7 +74,7 @@ void LLFloaterMediaFilter::updateLists(LLMediaFilter::EMediaList list_type)
 {
 	bool white(list_type == LLMediaFilter::WHITELIST);
 	const LLMediaFilter& inst(LLMediaFilter::instance());
-	LLMediaFilter::string_list_t list = white ? inst.getWhiteList() : inst.getBlackList();
+	const LLMediaFilter::string_list_t& list = white ? inst.getWhiteList() : inst.getBlackList();
 	LLScrollListCtrl* scroll(white ? mWhitelist : mBlacklist);
 	scroll->clearRows();
 	for (LLMediaFilter::string_list_t::const_iterator itr = list.begin(); itr != list.end(); ++itr)
