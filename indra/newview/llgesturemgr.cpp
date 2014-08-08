@@ -1358,8 +1358,10 @@ BOOL LLGestureMgr::matchPrefix(const std::string& in_str, std::string* out_str)
 {
 	S32 in_len = in_str.length();
 
+#ifdef MATCH_COMMON_CHARS
 	std::string rest_of_match = "";
 	std::string buf = "";
+#endif
 	item_map_t::iterator it;
 	for (it = mActive.begin(); it != mActive.end(); ++it)
 	{
@@ -1367,18 +1369,26 @@ BOOL LLGestureMgr::matchPrefix(const std::string& in_str, std::string* out_str)
 		if (gesture)
 		{
 			const std::string& trigger = gesture->getTrigger();
+#ifdef MATCH_COMMON_CHARS
 			//return whole trigger, if received text equals to it
 			if (!LLStringUtil::compareInsensitive(in_str, trigger))
 			{
 				*out_str = trigger;
 				return TRUE;
 			}
+#else
+			if (in_len > (S32)trigger.length()) continue; 	// too short, bail out
+#endif
 
 			//return common chars, if more than one trigger matches the prefix
 			std::string trigger_trunc = trigger;
 			LLStringUtil::truncate(trigger_trunc, in_len);
 			if (!LLStringUtil::compareInsensitive(in_str, trigger_trunc))
 			{
+#ifndef MATCH_COMMON_CHARS
+				*out_str = trigger;
+				return TRUE;
+#else
 				if (rest_of_match.compare("") == 0)
 				{
 					rest_of_match = trigger.substr(in_str.size());
@@ -1411,16 +1421,18 @@ BOOL LLGestureMgr::matchPrefix(const std::string& in_str, std::string* out_str)
 				{
 					rest_of_match = buf;
 				}
-
+#endif
 			}
 		}
 	}
 
+#ifdef MATCH_COMMON_CHARS
 	if (!rest_of_match.empty())
 	{
 		*out_str = in_str + rest_of_match;
 		return TRUE;
 	}
+#endif
 
 	return FALSE;
 }
