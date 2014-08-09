@@ -74,6 +74,11 @@ set(llrender_HEADER_FILES
 set_source_files_properties(${llrender_HEADER_FILES}
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 
+# Workaround hack for clang bugs
+if (DARWIN)
+    set_property(SOURCE llgl.cpp PROPERTY COMPILE_FLAGS -O1)
+endif (DARWIN)
+
 list(APPEND llrender_SOURCE_FILES ${llrender_HEADER_FILES})
 
 add_library (llrender ${llrender_SOURCE_FILES})
