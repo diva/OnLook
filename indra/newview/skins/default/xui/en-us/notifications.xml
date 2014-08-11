@@ -151,7 +151,7 @@
    icon="alert.tga"
    name="MediaAlert"
    type="alert">
-The owner of this parcel has requested the following [TYPE] URL to be loaded by your viewer:
+The owner of this parcel has requested the following [MEDIA_TYPE] URL to be loaded by your viewer:
 
 [URL]
 

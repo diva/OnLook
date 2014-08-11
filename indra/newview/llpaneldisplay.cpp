@@ -97,8 +97,22 @@ const F32 MIN_USER_FAR_CLIP = 64.f;
 
 const S32 ASPECT_RATIO_STR_LEN = 100;
 
+void reset_to_default(const std::string& control);
+void reset_all_to_default(const LLView* panel)
+{
+	LLView::child_list_const_iter_t	end(panel->endChild());
+	for (LLView::child_list_const_iter_t i = panel->beginChild(); i != end; ++i)
+	{
+		const std::string& control_name((*i)->getControlName());
+		if (control_name.empty()) continue;
+		if (control_name == "RenderDepthOfField") continue; // Don't touch render settings *sigh* hack
+		reset_to_default(control_name);
+	}
+}
+
 LLPanelDisplay::LLPanelDisplay()
 {
+	mCommitCallbackRegistrar.add("Graphics.ResetTab", boost::bind(reset_all_to_default, boost::bind(&LLView::getChildView, this, _2, true, false)));
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_graphics1.xml");
 }
 

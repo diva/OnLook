@@ -41,6 +41,10 @@ bool handle_media_filter_callback(const LLSD& notification, const LLSD& response
 std::string extractDomain(const std::string& in_url);
 
 LLMediaFilter::LLMediaFilter()
+: mMediaCommandQueue(0)
+, mCurrentParcel(NULL)
+, mMediaQueue(NULL)
+, mAlertActive(false)
 {
 	loadMediaFilterFromDisk();
 }
@@ -56,7 +60,7 @@ void LLMediaFilter::filterMediaUrl(LLParcel* parcel)
 
 	const std::string domain = extractDomain(url);
 	mCurrentParcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-    U32 enabled = gSavedSettings.getU32("MediaFilterEnable");
+	U32 enabled = gSavedSettings.getU32("MediaFilterEnable");
 
 	if (enabled > 1 && (filter(domain, WHITELIST) || filter(url, WHITELIST)))
 	{
@@ -104,7 +108,7 @@ void LLMediaFilter::filterAudioUrl(const std::string& url)
 
 	const std::string domain = extractDomain(url);
 	mCurrentParcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-    U32 enabled = gSavedSettings.getU32("MediaFilterEnable");
+	U32 enabled = gSavedSettings.getU32("MediaFilterEnable");
 	
 	if (enabled > 1 && (filter(domain, WHITELIST) || filter(url, WHITELIST)))
 	{
@@ -141,7 +145,7 @@ void LLMediaFilter::filterAudioUrl(const std::string& url)
 
 bool LLMediaFilter::filter(const std::string& url, EMediaList list)
 {
-	const string_list_t p_list = (list == WHITELIST) ? mWhiteList : mBlackList;
+	const string_list_t& p_list = (list == WHITELIST) ? mWhiteList : mBlackList;
 	string_list_t::const_iterator find_itr = std::find(p_list.begin(), p_list.end(), url);
 	return (find_itr != p_list.end());
 }
@@ -149,60 +153,34 @@ bool LLMediaFilter::filter(const std::string& url, EMediaList list)
 // List bizznizz
 void LLMediaFilter::addToMediaList(const std::string& in_url, EMediaList list, bool extract)
 {
-	std::string url = extract ? extractDomain(in_url) : in_url;
+	const std::string url = extract ? extractDomain(in_url) : in_url;
 	if (url.empty())
 	{
 		LL_INFOS("MediaFilter") << "No url found. Can't add to list." << LL_ENDL;
 		return;
 	}
 
-	switch (list)
+	string_list_t& p_list(list == WHITELIST ? mWhiteList : mBlackList);
+	// Check for duplicates
+	for (string_list_t::const_iterator itr = p_list.begin(); itr != p_list.end(); ++itr)
 	{
-		case WHITELIST:
-			// Check for duplicates
-			for (string_list_t::const_iterator itr = mWhiteList.begin(); itr != mWhiteList.end(); ++itr)
-			{
-				if (url == *itr)
-				{
-					LL_INFOS("MediaFilter") << "URL " << url << " already in list!" << LL_ENDL;
-					return;
-				}
-			}
-			mWhiteList.push_back(url);
-			mMediaListUpdate(WHITELIST);
-			break;
-		case BLACKLIST:
-			for (string_list_t::const_iterator itr = mBlackList.begin(); itr != mBlackList.end(); ++itr)
-			{
-				if (url == *itr)
-				{
-					LL_INFOS("MediaFilter") << "URL " << url << "already in list!" << LL_ENDL;
-					return;
-				}
-			}
-			mBlackList.push_back(url);
-			mMediaListUpdate(BLACKLIST);
-			break;
+		if (url == *itr)
+		{
+			LL_INFOS("MediaFilter") << "URL " << url << " already in list!" << LL_ENDL;
+			return;
+		}
 	}
+	p_list.push_back(url);
+	mMediaListUpdate(list);
 	saveMediaFilterToDisk();
 }
 
 void LLMediaFilter::removeFromMediaList(string_vec_t domains, EMediaList list)
 {
 	if (domains.empty()) return;
-	switch (list)
-	{
-		case WHITELIST:
-			for (string_vec_t::const_iterator itr = domains.begin(); itr != domains.end(); ++itr)
-				mWhiteList.remove(*itr);
-			mMediaListUpdate(WHITELIST);
-			break;
-		case BLACKLIST:
-			for (string_vec_t::const_iterator itr = domains.begin(); itr != domains.end(); ++itr)
-				mBlackList.remove(*itr);
-			mMediaListUpdate(BLACKLIST);
-			break;
-	}
+	for (string_vec_t::const_iterator itr = domains.begin(); itr != domains.end(); ++itr)
+		(list == WHITELIST ? mWhiteList : mBlackList).remove(*itr);
+	mMediaListUpdate(list);
 	saveMediaFilterToDisk();
 }
 
@@ -242,30 +220,53 @@ void LLMediaFilter::loadMediaFilterFromDisk()
 	}
 }
 
+void medialist_to_llsd(const LLMediaFilter::string_list_t& list, LLSD& list_llsd, const LLSD& action)
+{
+	for (LLMediaFilter::string_list_t::const_iterator itr = list.begin(); itr != list.end(); ++itr)
+	{
+		LLSD item;
+		item["domain"] = *itr;
+		item["action"] = action;
+		list_llsd.append(item);
+	}
+}
+
 void LLMediaFilter::saveMediaFilterToDisk() const
 {
 	const std::string medialist_filename = gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, MEDIALIST_XML);
 
 	LLSD medialist_llsd;
-	for (string_list_t::const_iterator itr = mWhiteList.begin(); itr != mWhiteList.end(); ++itr)
-	{
-		LLSD item;
-		item["domain"] = *itr;
-		item["action"] = "allow"; // <- $*#@()&%@
-		medialist_llsd.append(item);
-	}
-	for (string_list_t::const_iterator itr = mBlackList.begin(); itr != mBlackList.end(); ++itr)
-	{
-		LLSD item;
-		item["domain"] = *itr;
-		item["action"] = "deny"; // sigh.
-		medialist_llsd.append(item);
-	}
+	medialist_to_llsd(mWhiteList, medialist_llsd, "allow"); // <- $*#@()&%@
+	medialist_to_llsd(mBlackList, medialist_llsd, "deny"); // sigh.
 
 	llofstream medialist;
 	medialist.open(medialist_filename);
 	LLSDSerialize::toPrettyXML(medialist_llsd, medialist);
 	medialist.close();
+}
+
+void perform_queued_command(LLMediaFilter& inst)
+{
+	if (U32 command = inst.getQueuedMediaCommand())
+	{
+		if (command == PARCEL_MEDIA_COMMAND_STOP)
+		{
+			LLViewerParcelMedia::stop();
+		}
+		else if (command == PARCEL_MEDIA_COMMAND_PAUSE)
+		{
+			LLViewerParcelMedia::pause();
+		}
+		else if (command == PARCEL_MEDIA_COMMAND_UNLOAD)
+		{
+			LLViewerParcelMedia::stop();
+		}
+		else if (command == PARCEL_MEDIA_COMMAND_TIME)
+		{
+			LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
+		}
+		inst.setQueuedMediaCommand(0);
+	}
 }
 
 bool handle_audio_filter_callback(const LLSD& notification, const LLSD& response, const std::string& url)
@@ -335,26 +336,9 @@ bool handle_audio_filter_callback(const LLSD& notification, const LLSD& response
 		if (queued_media)
 			inst.filterMediaUrl(queued_media);
 	}
-	else if (inst.getQueuedMediaCommand())
+	else
 	{
-		U32 command = inst.getQueuedMediaCommand();
-		if (command == PARCEL_MEDIA_COMMAND_STOP)
-		{
-			LLViewerParcelMedia::stop();
-		}
-		else if (command == PARCEL_MEDIA_COMMAND_PAUSE)
-		{
-			LLViewerParcelMedia::pause();
-		}
-		else if (command == PARCEL_MEDIA_COMMAND_UNLOAD)
-		{
-			LLViewerParcelMedia::stop();
-		}
-		else if (command == PARCEL_MEDIA_COMMAND_TIME)
-		{
-			LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
-		}
-		inst.setQueuedMediaCommand(0);
+		perform_queued_command(inst);
 	}
 
 	return false;
@@ -365,7 +349,7 @@ bool handle_media_filter_callback(const LLSD& notification, const LLSD& response
 	LLMediaFilter& inst(LLMediaFilter::instance());
 	inst.setAlertStatus(false);
 	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
-	const std::string url = notification["payload"].asString();
+	const std::string& url = notification["payload"].asString();
 	LLParcel* queue = inst.getQueuedMedia();
 	switch(option)
 	{
@@ -403,26 +387,9 @@ bool handle_media_filter_callback(const LLSD& notification, const LLSD& response
 		inst.clearQueuedAudio();
 		inst.filterAudioUrl(audio_queue);
 	}
-	else if (inst.getQueuedMediaCommand())
+	else
 	{
-		U32 command = inst.getQueuedMediaCommand();
-		if (command == PARCEL_MEDIA_COMMAND_STOP)
-		{
-			LLViewerParcelMedia::stop();
-		}
-		else if (command == PARCEL_MEDIA_COMMAND_PAUSE)
-		{
-			LLViewerParcelMedia::pause();
-		}
-		else if (command == PARCEL_MEDIA_COMMAND_UNLOAD)
-		{
-			LLViewerParcelMedia::stop();
-		}
-		else if (command == PARCEL_MEDIA_COMMAND_TIME)
-		{
-			LLViewerParcelMedia::seek(LLViewerParcelMedia::sMediaCommandTime);
-		}
-		inst.setQueuedMediaCommand(0);
+		perform_queued_command(inst);
 	}
 
 	return false;
@@ -437,7 +404,7 @@ std::string extractDomain(const std::string& in_url)
 
 	if (pos != std::string::npos)
 	{
-		S32 count = url.size()-pos+2;
+		size_t count = url.size()-pos+2;
 		url = url.substr(pos+2, count);
 	}
 
@@ -455,7 +422,7 @@ std::string extractDomain(const std::string& in_url)
 
 	if (pos != std::string::npos)
 	{
-		S32 count = url.size()-pos+1;
+		size_t count = url.size()-pos+1;
 		url = url.substr(pos+1, count);
 	}
 
@@ -471,6 +438,6 @@ std::string extractDomain(const std::string& in_url)
 
 	// Now map the whole thing to lowercase, since domain names aren't
 	//  case sensitive.
-	std::transform(url.begin(), url.end(),url.begin(), ::tolower);
+	std::transform(url.begin(), url.end(), url.begin(), ::tolower);
 	return url;
 }

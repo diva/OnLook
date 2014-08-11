@@ -178,7 +178,7 @@ BOOL LLInventoryObject::importLegacyStream(std::istream& input_stream)
 	while(input_stream.good())
 	{
 		input_stream.getline(buffer, MAX_STRING);
-		sscanf(buffer, " %254s %254s", keyword, valuestr);	/* Flawfinder: ignore */
+		if (sscanf(buffer, " %254s %254s", keyword, valuestr) < 1) continue;
 		if(0 == strcmp("{",keyword))
 		{
 			continue;
@@ -610,7 +610,7 @@ BOOL LLInventoryItem::importFile(LLFILE* fp)
 			buffer[0] = '\0';
 		}
 		
-		sscanf(buffer, " %254s %254s", keyword, valuestr);	/* Flawfinder: ignore */
+		if (sscanf(buffer, " %254s %254s", keyword, valuestr) < 1) continue;
 		if(0 == strcmp("{",keyword))
 		{
 			continue;
@@ -813,10 +813,10 @@ BOOL LLInventoryItem::importLegacyStream(std::istream& input_stream)
 	while(success && input_stream.good())
 	{
 		input_stream.getline(buffer, MAX_STRING);
-		sscanf(	/* Flawfinder: ignore */
+		if (sscanf(
 			buffer,
 			" %254s %254s",
-			keyword, valuestr);
+			keyword, valuestr) < 1) continue;
 		if(0 == strcmp("{",keyword))
 		{
 			continue;
@@ -1489,10 +1489,10 @@ BOOL LLInventoryCategory::importFile(LLFILE* fp)
 			buffer[0] = '\0';
 		}
 		
-		sscanf(	/* Flawfinder: ignore */
+		if (sscanf(
 			buffer,
 			" %254s %254s",
-			keyword, valuestr);
+			keyword, valuestr) < 1) continue;
 		if(0 == strcmp("{",keyword))
 		{
 			continue;
@@ -1568,10 +1568,10 @@ BOOL LLInventoryCategory::importLegacyStream(std::istream& input_stream)
 	while(input_stream.good())
 	{
 		input_stream.getline(buffer, MAX_STRING);
-		sscanf(	/* Flawfinder: ignore */
+		if (sscanf(
 			buffer,
 			" %254s %254s",
-			keyword, valuestr);
+			keyword, valuestr) < 1) continue;
 		if(0 == strcmp("{",keyword))
 		{
 			continue;

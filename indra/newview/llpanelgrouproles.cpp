@@ -3048,7 +3048,7 @@ void LLPanelGroupBanListSubTab::populateBanList()
 		ban_entry.columns.add().column("name").font/*.name*/("SANSSERIF_SMALL").font_style("NORMAL");
 
 		// Singu Note: We have special date columns, so our code is unique here
-		ban_entry.columns.add().column("ban_date").value(bd.mBanDate).format("%Y/%m%d").font/*.name*/("SANSSERIF_SMALL").font_style("NORMAL");
+		ban_entry.columns.add().column("ban_date").value(bd.mBanDate).type("date").format("%Y/%m%d").font/*.name*/("SANSSERIF_SMALL").font_style("NORMAL");
 
 		mBanList->addNameItemRow(ban_entry);
 	}
