@@ -14,10 +14,7 @@
 	<check_box label="Incluir MI en la consola de Chat" name="include_im_in_chat_console"/>
 	<check_box label="Mostrar horario en los IMI" name="show_timestamps_check"/>
 	<check_box label="Mostrar notificaciones cuando los amigos inician/terminan sesión" name="friends_online_notify_checkbox"/>
-	<text name="text_box3" heigh="42">
-		Respuesta en 
-Modo Ocupado:
-	</text>
+    <check_box label="Bloquear conferencias entrantes" name="block_conferences_checkbox"/>
 	<text name="text_box4">
 		Opciones de Registro:
 	</text>

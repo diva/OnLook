@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater  name="Destinations" title="Destinos" width="550">
+    <web_browser name="destination_guide_contents"/>
+</floater>

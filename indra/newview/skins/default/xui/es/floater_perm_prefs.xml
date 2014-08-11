@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="perm prefs" title="Permisos de subida por defecto">
+<floater name="perm prefs" title="Permisos de Objetos por defecto">
 	<panel label="Permisos" name="permissions">
-		<button label="?" label_selected="?" name="help"/>
-		<check_box label="Compartir con el Grupo" name="share_with_group"/>
-		<check_box label="Permitir copiar a cualquiera" name="everyone_copy"/>
-		<check_box label="Permitir Exportar" name="everyone_export"/>
-		<text name="NextOwnerLabel">
-			El Próximo propietario puede:
-		</text>
-		<check_box label="Modificarlo" name="next_owner_modify"/>
-		<check_box label="Copiarlo" name="next_owner_copy"/>
-		<check_box label="Transferirlo" name="next_owner_transfer"/>
+		<text name="NextOwnerLabel">Próximo Propietario:</text>
+		<text name="NextOwnerCopyLabel">Copiar</text>
+		<text name="NextOwnerModifyLabel">Modificar</text>
+		<text name="NextOwnerTransferLabel">Transferir</text>
+		<text name="ShareWithGroupLabel">Compartir c/Grupo</text>
+		<text name="AnyoneCopyLabel">Permitir copiar a cualquiera</text>
+		<text name="ExportationLabel">Permitir Exportar</text>
+
+		<text name="ObjectsLabel" tool_tip="Definir permisos por defecto al crear objetos">Objetos</text>
+		<text name="UploadsLabel" tool_tip="Definir permisos por defecto para los ítems subidos">Subidas</text>
+		<text name="ScriptsLabel" tool_tip="Definir permisos por defecto al crear scripts">Scripts</text>
+		<text name="NotecardsLabel" tool_tip="Definir permisos por defecto al crear notas">Notas</text>
+		<text name="GesturesLabel" tool_tip="Definir permisos por defecto al crear gestos">Gestos</text>
+		<text name="WearablesLabel" tool_tip="Definir permisos por defecto al crear Ropas o partes del cuerpo">Vestimentas</text>
 	</panel>
 	<button label="OK" label_selected="OK" name="ok"/>
 	<button label="Cancelar" label_selected="Cancelar" name="cancel"/>

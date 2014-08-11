@@ -338,7 +338,7 @@
 					Cualquier Categoría
 				</combo_item>
 				<combo_item name="LindenLocation">
-					Localización Linden
+					Localización Oficial
 				</combo_item>
 				<combo_item name="Arts&amp;Cultures">
 					Arte y Cultura
@@ -487,14 +487,19 @@
 			<button label="" name="back_btn"/>
 			<button label="" name="forward_btn"/>
 			<button label="" name="reload_btn"/>
+			<button label="" tool_tip="reiniciar" name="reset_btn"/>
 			<web_browser name="market_browser"/>
 			<text name="status_text"/>
 			<string name="loading_text">Cargando...</string>
 			<string name="done_text">Hecho</string>
+			<string name="redirect_404_url">[APP_SITE]/404</string>
 			<string name="default_search_page">https://marketplace.secondlife.com/?lang=es-ES</string>
 		</panel>
 		<!-- ======================== -->
 		<panel label="Web" name="web_panel">
+			<button label="" name="back_btn"/>
+			<button label="" name="forward_btn"/>
+			<button label="" name="reload_btn"/>
 			<button left_delta="27" width="200" label="Abrir Búsqueda en Navegador Web" name="web_search_floater_btn"/>
 			<string name="loading_text">Cargando...</string>
 			<string name="done_text">Hecho</string>

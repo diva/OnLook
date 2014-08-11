@@ -91,6 +91,16 @@ Puedes escoger aceptar o denegar el dominio correspondiente o el script en el mu
 			<button index="3" name="Whitelist" text="Lista Blanca"/>
 		</form>
 	</notification>
+
+	<notification name="AddToMediaList">
+Ingresa el dominio a añadir en la [LIST]:
+		<tag>confirm</tag>
+		<form name="form">
+			<input name="url" type="text" default="true" />
+			<button name="Add" text="Añadir"/>
+			<button name="Cancel" text="Cancelar"/>
+		</form>
+	</notification>
 	
 	<notification name="MediaBlocked">
 		La URL del Media/audio ha sido bloqueada para [DOMAIN]
@@ -289,7 +299,7 @@ Hubo un problema al subir la foto por la siguiente razón: [REASON]
 	</notification>
 	
 	<notification name="AddGroupOwnerWarning">
-		Estas por agregar miembros del gurpo al rol de [ROLE_NAME].
+		Estás por agregar miembros del gurpo al rol de [ROLE_NAME].
 Estos miembros no pueden ser removidos de este rol.
 Los miembros deberán abandonar el rol por si mismos.
 ¿Estás seguro que quieres continuar?
@@ -297,7 +307,7 @@ Los miembros deberán abandonar el rol por si mismos.
 	</notification>
 	
 	<notification name="AssignDangerousActionWarning">
-		Estas por agregar la capacidad &apos;[ACTION_NAME]&apos; al rol &apos;[ROLE_NAME]&apos;.
+		Estás por agregar la capacidad &apos;[ACTION_NAME]&apos; al rol &apos;[ROLE_NAME]&apos;.
 
 *ADVERTENCIA*
   Todos los miembros con esta capacidad podrán asignarse a sí mismos -y a otros miembros- roles con mayores poderes de los que actualmente tienen. Potencialmente, podrían elevarse hasta poderes cercanos a los del propietario. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad.
@@ -307,13 +317,31 @@ Los miembros deberán abandonar el rol por si mismos.
 	</notification>
 	
 	<notification name="AssignDangerousAbilityWarning">
-		Estas por agregar la capacidad &apos;[ACTION_NAME]&apos; al rol &apos;[ROLE_NAME]&apos;.
+		Estás por agregar la capacidad &apos;[ACTION_NAME]&apos; al rol &apos;[ROLE_NAME]&apos;.
 
 *ADVERTENCIA*
   Todos los miembros con esta capacidad podrán asignarse a sí mismos -y a otros miembros- todas las capacidades, elevándose hasta poderes cercanos a los del propietario. 
 
 ¿Añadir esta capacidad al rol &apos;[ROLE_NAME]&apos;?
 		<usetemplate name="okcancelbuttons" notext="No" yestext="Sí"/>
+	</notification>
+
+	<notification name="AssignBanAbilityWarning">
+		Estás por agregar la capacidad &apos;[ACTION_NAME]&apos; al rol &apos;[ROLE_NAME]&apos;.
+
+ *ADVERTENCIA*
+Todos los miembros en el rol con esta capacidad también pueden asignarla las capacidades &apos;[ACTION_NAME_2]&apos; y &apos;[ACTION_NAME_3]&apos;
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
+	<notification name="RemoveBanAbilityWarning">
+		Estás quitando la capacidad &apos;[ACTION_NAME]&apos;  al Rol &apos;[ROLE_NAME]&apos;.
+
+ *ADVERTENCIA*
+Quitar esta capacidad NO quitará las capacidades &apos;[ACTION_NAME_2]&apos; ni &apos;[ACTION_NAME_3]&apos;.
+
+Si no quieres que estás capacidades estén asignadas a este rol, ¡desactívalas inmediatamente!
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
 	<notification name="AttachmentDrop">
@@ -869,6 +897,11 @@ Temporalmente, será incapaz de moverse, usar el chat, o interactuar con el mund
 		¿Expulsar a [AVATAR_NAME] de su terreno?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Expulsar"/>
 	</notification>
+
+	<notification name="EjectAvatarFromGroup">
+		Has expulsado a [AVATAR_NAME] del grupo [GROUP_NAME]
+		<tag>group</tag>
+	</notification>
 	
 	<notification name="AcquireErrorTooManyObjects">
 		ERROR OBTENIDO: Hay demasiados objetos seleccionados.
@@ -1416,6 +1449,32 @@ No tienes el permiso de comprar terreno para el grupo que tienes activado actual
 		¿Quieres quitar a varios amigos de tu lista de amigos?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
 	</notification>
+
+	<notification label="Añadir Lista de Auto Reemplazo" name="AddAutoReplaceList">
+		<tag>addlist</tag>
+			Nombre para la nueva lista:
+		<tag>confirm</tag>
+		<form name="form">
+			<input name="listname"/>
+				<button name="SetName" text="OK"/>
+		</form>
+	</notification>
+
+	<notification label="Renombrar Lista de Auto Reemplazo" name="RenameAutoReplaceList">
+		El nombre '[DUPNAME]' está en uso
+		Ingresa un nombre único:
+		<tag>confirm</tag>
+		<form name="form">
+			<input name="listname"/>
+			<button name="ReplaceList" text="Renombrar Lista actual"/>
+			<button name="SetName" text="Usar Nuevo Nombre"/>
+		</form>
+	</notification>
+
+	<notification name="InvalidAutoReplaceEntry">
+		La clave tiene que ser una sola palabra y su reemplazo no puede estar vacío.
+		<tag>fail</tag>
+	</notification>
 	
 	<notification name="GodDeleteAllScriptedPublicObjectsByUser">
 		¿Estás seguro de que quieres borrar todos los objetos con script propiedad de
@@ -1860,6 +1919,24 @@ Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente
 ¿Dejar el grupo?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
 	</notification>
+
+	<notification name="OwnerCannotLeaveGroup">
+		Incapaz de abandonar el grupo. No puedes dejar el grupo debido a que eres el único propietario del mismo. Por favor, designa a otro miembro para este rol antes de abandonar el grupo.
+		<tag>group</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
+	<notification name="GroupDepartError">
+		Incapaz de abandonar el grupo: [reason].
+		<tag>reason</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
+	<notification name="GroupDepart">
+		Has abandonado el grupo [group_name].
+		<tag>group_name</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
 	
 	<notification name="ConfirmKick">
 		¿REALMENTE quieres expulsar a todos los usuarios de este grid?
@@ -2054,6 +2131,11 @@ lo cual excede el límite de [LIMIT].
 	<notification name="TeleportFromLandmark">
 		¿Estás seguro de que quieres teleportarte?
 		<usetemplate ignoretext="Cuando estás teleportando desde un hito del inventario" name="okcancelignore" notext="Cancelar" yestext="Teleportar"/>
+	</notification>
+
+	<notification name="TeleportViaSLAPP">
+		¿Estás seguro que quieres teleportarte vía SLAPP?
+		<usetemplate ignoretext="Confirma que quieres teleportarte vía SLAPP" name="okcancelignore" notext="Cancelar" yestext="Teleportar"/>
 	</notification>
 	
 	<notification label="Mensaje a todo el estado" name="MessageEstate">
@@ -3780,6 +3862,10 @@ Por favor, reinténtalo en unos momentos.
 			<button name="Cancel" text="Cancelar"/>
 			<button name="Profile" text="Perfil"/>
 		</form>
+	</notification>
+
+	<notification name="TeleportOfferSent">
+		Oferta de Teleporte enviada a [TO_NAME]
 	</notification>
 	
 	<notification name="TeleportRequest">
@@ -5526,6 +5612,12 @@ porque la parcela está llena.
 			No se pueden crear mega prims que intersectan con otros agentes.  Por favor reintenta cuando los otros agentes se hayan movido.
 	</notification>
 
+	<notification name="DefaultObjectPermissions">
+		Ha habido un problema grabando los permisos por defecto debido al siguiente motivo: [REASON].  Por favor, intenta definir los permisos por defecto mas tarde.
+		<tag>fail</tag>
+		<usetemplate name="okbutton" yestext="OK"/>
+	</notification>
+
 <!-- Singularity Specific notifications should go below here, alphabetically -->
 <!-- Singu Note: RLVa notifications come first here -->
 	<notification name="RLVChangeStrings">
@@ -5539,6 +5631,11 @@ porque la parcela está llena.
 
 	<notification name="AntiSpamNewlineFlood">
 		AntiSpam: Se ha bloqueado newline flood de [SOURCE] ( [AMOUNT] newlines).
+	</notification>
+
+	<notification name="ConfirmDeleteUser">
+		¿Estás seguro que quieres borrar al usuario seleccionado?
+		<usetemplate name="okcancelbuttonscanceldefault" yestext="Si" notext="No"/>
 	</notification>
 
 	<notification name="RadarChatKeysRequest">

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater  name="Avatar"  title="Selecciona un Avatar"  width="700">
+    <web_browser name="avatar_picker_contents"/>
+</floater>

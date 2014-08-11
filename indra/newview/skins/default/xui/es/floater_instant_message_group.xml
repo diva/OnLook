@@ -33,7 +33,8 @@
 	<layout_stack name="panels">
 		<layout_panel name="im_contents_panel">
 			<button label="Info del Grupo" name="group_info_btn" width="100"/>
-			<button label="Historial" name="history_btn" left_delta="100"/>			
+			<button label="Historial" name="history_btn" left_delta="100"/>
+			<button name="ding_btn" label="Timbre">
 			<button label="Unirse" name="start_call_btn"/>
 			<button label="Finalizar" name="end_call_btn"/>
 			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Pulsa aquí para mostrar/ocultar la lista de participantes activos en esta sesión de MI."/>
