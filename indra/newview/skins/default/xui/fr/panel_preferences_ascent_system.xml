@@ -67,16 +67,18 @@
     <panel label="S&#xE9;curit&#xE9;" name="Security">
       <check_box label="Emettre les effets du viewer (Excluant les rayons)" name="broadcast_viewer_effects"/>
       <check_box label="D&#xE9;sactiver le &#x22;Pointer vers&#x22; &#xE0; l&#x22;&#xE9;dition d'un objet" tool_tip="Masque le pointeur sur l'objet  &#xE9;dit&#xE9;" name="disable_point_at_and_beams_check"/>
-      <check_box label="Ne pas &#x22;Regarder vers&#x22;" tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi-m&#xEA;me" name="private_look_at_check"/>
-      <check_box label="Voir quand les autres &#x22;Regardent vers&#x22;" tool_tip="Montre o&#xF9; les autres regardent." name="show_look_at_check"/>
-      <combo_box left_delta="260" name="lookat_namesystem_combobox" tool_tip="Style for displaying names on LookAt beacons">
+      <check_box label="Ne pas &#x22;Regarder vers&#x22; (defeat look at)" tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi-m&#xEA;me" name="private_look_at_check"/>
+      <check_box label="Voir quand les autres &#x22;Regardent vers&#x22; (look at Beacons)" tool_tip="Montre o&#xF9; les autres regardent." name="show_look_at_check"/>
+      <combo_box left_delta="320" name="lookat_namesystem_combobox" tool_tip="Style for displaying names on LookAt beacons">
         <combo_item name="No Names">Aucun de Name</combo_item>
         <combo_item name="Old Names">Anciens Names</combo_item>
         <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
         <combo_item name="Display Names only">Display Names only</combo_item>
         <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
       </combo_box>
-      <check_box label="Détache automatiquement ce rodjudju de LSL Bridge" tool_tip="détache le LSL Bridge de Phoenix et/ou Firestorm viewer." name="detach_bridge"/>
+    <check_box label="Montre une ligne de la cible du 'look at' à l'avatar et inversement" name="lineslookat"/>
+    <check_box label="Annonce dans le chat quand on vous bouscule" name="announce_bumps"/>
+    <check_box label="Détache automatiquement ce rodjudju de LSL Bridge" tool_tip="détache le LSL Bridge de Phoenix et/ou Firestorm viewer." name="detach_bridge"/>
       <check_box label="Prendre discr&#xE8;tement un photo, sur votre disque dur" tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d'appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." name="quiet_snapshots_check"/>
       <check_box label="En vous levant, annule les permissions que l'objet a sur votre avatar" tool_tip="Evite que l'objet garde le contr&#xF4;le de votre avatar, comme par exemple les animations." name="revoke_perms_on_stand_up_check"/>
       <check_box label="D&#xE9;sactive le &#x22;Click to sit&#x22; automatique" tool_tip="D&#xE9;sactive llSitTarget. Vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l'objet." name="disable_click_sit_check"/>
@@ -84,7 +86,11 @@
       <check_box label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion." name="totalscriptjumps" tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
       <spinner left_delta="350" name="ScriptJumpCount"/>
       <check_box label="RLVa (Restrained Love API)" name="RestrainedLove" tool_tip="Active le RLVa"/>
-    </panel>
+      <check_box label="Reduit automatiquement la notice de redémarrage de la sim" name="region_restart_minimized"/>
+      <text name="EmergencyTeleportDesc">Glissez un landmark ci dessous pour y être téléporté 20 sec avant le redémarrage de la sim</text>
+      <text name="EmergencyTeleportBackupDesc">Glissez ci dessous un second landmark de 'secours'</text>
+      <text name="UISndRestartText">Alerte sonore du redémarrage:</text>
+   </panel>
 
     <panel label="Build/Cr&#xE9;ation" name="Building">
       <text name="text_box6">Point de Pivot</text>

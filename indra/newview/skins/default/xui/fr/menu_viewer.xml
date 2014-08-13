@@ -140,6 +140,7 @@
 		<menu_item_separator label="-----------" name="separator5"/>
         <menu_item_call label="Mes Ensembles" name="My Outfits"/>
         <menu_item_call label="Favoris" name="Favorites"/>
+        <menu_item_check label="Avatars de Base" name="Avatar Picker"/>
         <menu_item_separator label="-----------" name="separator5"/>
 		<menu_item_call label="Mes terrains" name="My Land..."/>
 		<menu_item_call label="À propos du terrain" name="About Land..."/>
@@ -243,6 +244,18 @@
 		<menu_item_call label="A propos de [APP_NAME]" name="About Second Life..."/>
 	</menu>
 	<menu name="Singularity">
-		<menu_item_check label="Filtre Médias" name="Media Filter"/>
+		<menu_item_call label="Fermer toutes les Notices des Groupes" name="Close All Dialogs"/>
+		<menu_item_call label="Faux Absent (Simuler qu'on est ... Aplula)" name="Fake Away Status"/>
+		<menu_item_call label="Force le 'Ground Sit' (Assis par terre, plus bouger !)" name="Force Ground Sit"/>
+		<menu_item_call label="AO Intégré" name="Animation Override ..."/>
+		<menu_item_check label="Nimble/Super Saut ? (Dur à traduire, littéralement...Agile !)" name="Nimble"/>
+		<menu_item_check label="Object Area Search/Recherche par Zone des Objets" name="Object Area Search"/>
+		<menu_item_check label="Sound Explorer/Panneau des Sons" name="Sound Explorer"/>
+		<menu_item_check label="Asset Blacklist/Liste des Derenders" name="Asset Blacklist"/>
+		<menu_item_check label="Filtre des Médias" name="Media Filter"/>
+		<menu_item_check label="Affichage des Titres de la Radio + Egaliseur (joli)" name="Streaming Audio Display"/>
+		<menu_item_check label="Pose Stand (En français quel intérêt ? Pose Stand et puis voilà)" name="Pose Stand"/>
+		<menu_item_check label="Console de 'Debug' pour la région" name="Region Debug Console"/>
+		<menu_item_call label="Rebake/Rafraîchir" name="Rebake"/>
 	</menu>
 </menu_bar>
