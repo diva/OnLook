@@ -14,11 +14,11 @@
 para prohibirles el acceso al grupo. Pulsa &apos;Abrir
 Selector de Residentes&apos; para comenzar.
     </text>
-    <button label="Abrir Selector de Residentes" name="add_button" bottom_delta="-10" width="200" />
-    <name_list left_delta="0" name="banned_agent_list" tool_tip="Mantén presionada la tecla Ctrl y pulsa sobre el nombre del residente para selección múltiple" bottom_delta="-178" width="200" />
-    <button label="Quitar seleccionado de la lista" name="remove_button" tool_tip="Eliminar de la lista de prohibición a los residentes seleccionados" bottom_delta="-24" width="200" />
-    <button label="Prohibir Residentes" name="ban_button" bottom_delta="-26" width="135" />
-    <button label="Cancelar" name="cancel_button" bottom_delta="0" width="65" />
+    <button label="Abrir Selector de Residentes" name="add_button"/>
+    <name_list name="banned_agent_list" tool_tip="Mantén presionada la tecla Ctrl y pulsa sobre el nombre del residente para selección múltiple"/>
+    <button label="Quitar seleccionado de la lista" name="remove_button" tool_tip="Eliminar de la lista de prohibición a los residentes seleccionados"/>
+    <button label="Prohibir Residentes" name="ban_button"/>
+    <button label="Cancelar" name="cancel_button"/>
     <string name="GroupBulkBan">
         Prohibición al Grupo
     </string>

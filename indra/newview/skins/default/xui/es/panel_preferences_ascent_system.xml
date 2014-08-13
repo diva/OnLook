@@ -107,12 +107,12 @@
 			<check_box label="Desactivar Apuntar a... y Rayos" tool_tip="No apunta hacia ni muestra tus rayos de edición cuando seleccionas un objeto." name="disable_point_at_and_beams_check"/>
 			<check_box label="No mirar hacia los Objetos (anula ShowLookAt)" tool_tip="Apaga la tansmisión de los giros de cabeza y rayos lookat propios." name="private_look_at_check"/>
 			<check_box label="Mostrar las balizas Mirar A de los demás" tool_tip="Te muestra hacia donde miran los demas." name="show_look_at_check"/>
-			<combo_box name="lookat_namesystem_combobox" tool_tip="Estilo para mostrar nombres en balizas Mirar A" left_delta="220"  width="200">
+			<combo_box name="lookat_namesystem_combobox" tool_tip="Estilo para mostrar nombres en balizas Mirar A" left_delta="220" width="200">
 				<combo_item name="No Names">Sin Nombres</combo_item>
 				<combo_item name="Old Names">Nombre antiguos</combo_item>
 				<combo_item name="Display Names (with Username)">Nombres Mostrados (c/Nombre de usuario)</combo_item>
-				<combo_item name="Display Names only" value="2">Solo Nombres Mostrados</combo_item>
-				<combo_item name="Old Names (with Display Names)" value="3">Nombres Antiguos (c/Nombres Mostrados)</combo_item>
+				<combo_item name="Display Names only">Solo Nombres Mostrados</combo_item>
+				<combo_item name="Old Names (with Display Names)">Nombres Antiguos (c/Nombres Mostrados)</combo_item>
 			</combo_box>
 			<check_box label="Mostrar una línea desde la baliza Mirar a hasta el avatar" tool_tip="Ver una línea conectando el foco de la cámara a su avatar. Útil para encontrar donde se encuentra el avatar." name="lineslookat"/>
 			<check_box label="Notificar en el chat cuando alguien te empuja" name="announce_bumps"/>
