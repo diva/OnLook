@@ -154,13 +154,13 @@ BOOL LLPolySkeletalDistortion::setInfo(LLPolySkeletalDistortionInfo *info)
                 for (LLJoint::child_list_t::iterator iter = joint->mChildren.begin();
                      iter != joint->mChildren.end(); ++iter)
                 {
-                        LLAvatarJoint* child_joint = (LLAvatarJoint*)(*iter);
-                        if (child_joint->inheritScale())
-                        {
-                                LLVector3 childDeformation = LLVector3(child_joint->getScale());
-                                childDeformation.scaleVec(bone_info->mScaleDeformation);
-                                mJointScales[child_joint] = childDeformation;
-                        }
+					LLAvatarJoint* child_joint = dynamic_cast<LLAvatarJoint*>(*iter);
+					if (child_joint && child_joint->inheritScale())
+                    {
+                            LLVector3 childDeformation = LLVector3(child_joint->getScale());
+                            childDeformation.scaleVec(bone_info->mScaleDeformation);
+                            mJointScales[child_joint] = childDeformation;
+                    }
                 }
 
                 if (bone_info->mHasPositionDeformation)
