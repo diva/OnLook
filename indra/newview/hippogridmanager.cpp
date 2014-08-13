@@ -153,7 +153,7 @@ void HippoGridInfo::setGridNick(std::string gridNick)
 	{
 		mIsInProductionGrid = true;
 	}
-	if(gridNick == "avination")
+	else if(gridNick == "avination")
 	{
 		mIsInAvination = true;
 	}
@@ -177,12 +177,12 @@ void HippoGridInfo::setLoginUri(const std::string& loginUri)
 		useHttps();
 		setPlatform(PLATFORM_SECONDLIFE);
 	}
-	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.aditi.lindenlab.com")
+	else if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.aditi.lindenlab.com")
 	{
 		useHttps();
 		setPlatform(PLATFORM_SECONDLIFE);
 	}
-	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.com" ||
+	else if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.com" ||
 		utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.net")
 	{
 		mIsInAvination = true;
