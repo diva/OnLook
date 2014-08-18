@@ -775,7 +775,7 @@ std::string LLMeshRepoThread::constructUrl(LLUUID mesh_id)
 	return http_url;
 }
 
-bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
+bool LLMeshRepoThread::getMeshHeaderInfo(const LLUUID& mesh_id, const char* block_name, MeshHeaderInfo& info)
 {	//protected by mMutex
 
 	if (!mHeaderMutex)
@@ -783,229 +783,141 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 		return false;
 	}
 
-	mHeaderMutex->lock();
+	LLMutexLock lock(mHeaderMutex);
 
 	if (mMeshHeader.find(mesh_id) == mMeshHeader.end())
 	{ //we have no header info for this mesh, do nothing
-		mHeaderMutex->unlock();
 		return false;
 	}
 
-	bool ret = true ;
-	U32 header_size = mMeshHeaderSize[mesh_id];
-	
-	if (header_size > 0)
+	if ((info.mHeaderSize = mMeshHeaderSize[mesh_id]) > 0)
 	{
-		S32 version = mMeshHeader[mesh_id]["version"].asInteger();
-		S32 offset = header_size + mMeshHeader[mesh_id]["skin"]["offset"].asInteger();
-		S32 size = mMeshHeader[mesh_id]["skin"]["size"].asInteger();
+		info.mVersion = mMeshHeader[mesh_id]["version"].asInteger();
+		info.mOffset = info.mHeaderSize + mMeshHeader[mesh_id][block_name]["offset"].asInteger();
+		info.mSize = mMeshHeader[mesh_id][block_name]["size"].asInteger();
+	}
+	return true;
+}
 
-		mHeaderMutex->unlock();
+bool LLMeshRepoThread::loadInfoFromVFS(const LLUUID& mesh_id, MeshHeaderInfo& info, boost::function<bool(const LLUUID&, U8*, S32)> fn)
+{
+	//check VFS for mesh skin info
+	LLVFile file(gVFS, mesh_id, LLAssetType::AT_MESH);
+	if (file.getSize() >= info.mOffset + info.mSize)
+	{
+		LLMeshRepository::sCacheBytesRead += info.mSize;
 
-		if (version <= MAX_MESH_VERSION && offset >= 0 && size > 0)
+		file.seek(info.mOffset);
+		U8* buffer = new U8[info.mSize];
+		file.read(buffer, info.mSize);
+
+		//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
+		bool zero = true;
+		for (S32 i = 0; i < llmin(info.mSize, S32(1024)) && zero; ++i)
 		{
-			//check VFS for mesh skin info
-			LLVFile file(gVFS, mesh_id, LLAssetType::AT_MESH);
-			if (file.getSize() >= offset+size)
+			zero = buffer[i] > 0 ? false : true;
+		}
+
+		if (!zero)
+		{	//attempt to parse
+			if (fn(mesh_id, buffer, info.mSize))
 			{
-				LLMeshRepository::sCacheBytesRead += size;
-				file.seek(offset);
-				U8* buffer = new U8[size];
-				file.read(buffer, size);
-
-				//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
-				bool zero = true;
-				for (S32 i = 0; i < llmin(size, 1024) && zero; ++i)
-				{
-					zero = buffer[i] > 0 ? false : true;
-				}
-
-				if (!zero)
-				{	//attempt to parse
-					if (skinInfoReceived(mesh_id, buffer, size))
-					{
-						delete[] buffer;
-						return true;
-					}
-				}
-
 				delete[] buffer;
-			}
-
-			//reading from VFS failed for whatever reason, fetch from sim
-			AIHTTPHeaders headers("Accept", "application/octet-stream");
-
-			std::string http_url = constructUrl(mesh_id);
-			if (!http_url.empty())
-			{				
-				ret = LLHTTPClient::getByteRange(http_url, headers, offset, size,
-												 new LLMeshSkinInfoResponder(mesh_id, offset, size));
-				if (ret)
-				{
-					LLMeshRepository::sHTTPRequestCount++;
-				}
+				return true;
 			}
 		}
+
+		delete[] buffer;
 	}
-	else
-	{	
-		mHeaderMutex->unlock();
+	return false;
+}
+
+bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
+{
+	MeshHeaderInfo info;
+	if (!getMeshHeaderInfo(mesh_id, "skin", info))
+	{
+		return false;
+	}
+
+	if (info.mHeaderSize > 0 && info.mVersion <= MAX_MESH_VERSION && info.mOffset >= 0 && info.mSize > 0)
+	{
+		//check VFS for mesh skin info
+		if (loadInfoFromVFS(mesh_id, info, boost::bind(&LLMeshRepoThread::skinInfoReceived, this, _1, _2, _3 )))
+			return true;
+
+		//reading from VFS failed for whatever reason, fetch from sim
+		AIHTTPHeaders headers("Accept", "application/octet-stream");
+
+		std::string http_url = constructUrl(mesh_id);
+		if (!http_url.empty())
+		{				
+			if (!LLHTTPClient::getByteRange(http_url, headers, info.mOffset, info.mSize,
+				new LLMeshSkinInfoResponder(mesh_id, info.mOffset, info.mSize)))
+				return false;
+			LLMeshRepository::sHTTPRequestCount++;
+		}
 	}
 
 	//early out was not hit, effectively fetched
-	return ret;
+	return true;
 }
 
 bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
-{	//protected by mMutex
-	if (!mHeaderMutex)
+{
+	MeshHeaderInfo info;
+	if (!getMeshHeaderInfo(mesh_id, "physics_convex", info))
 	{
 		return false;
 	}
 
-	mHeaderMutex->lock();
-
-	if (mMeshHeader.find(mesh_id) == mMeshHeader.end())
-	{ //we have no header info for this mesh, do nothing
-		mHeaderMutex->unlock();
-		return false;
-	}
-
-	U32 header_size = mMeshHeaderSize[mesh_id];
-	bool ret = true ;
-	
-	if (header_size > 0)
+	if (info.mHeaderSize > 0 && info.mVersion <= MAX_MESH_VERSION && info.mOffset >= 0 && info.mSize > 0)
 	{
-		S32 version = mMeshHeader[mesh_id]["version"].asInteger();
-		S32 offset = header_size + mMeshHeader[mesh_id]["physics_convex"]["offset"].asInteger();
-		S32 size = mMeshHeader[mesh_id]["physics_convex"]["size"].asInteger();
+		if (loadInfoFromVFS(mesh_id, info, boost::bind(&LLMeshRepoThread::decompositionReceived, this, _1, _2, _3 )))
+			return true;
 
-		mHeaderMutex->unlock();
+		//reading from VFS failed for whatever reason, fetch from sim
+		AIHTTPHeaders headers("Accept", "application/octet-stream");
 
-		if (version <= MAX_MESH_VERSION && offset >= 0 && size > 0)
-		{
-			//check VFS for mesh skin info
-			LLVFile file(gVFS, mesh_id, LLAssetType::AT_MESH);
-			if (file.getSize() >= offset+size)
-			{
-				LLMeshRepository::sCacheBytesRead += size;
-
-				file.seek(offset);
-				U8* buffer = new U8[size];
-				file.read(buffer, size);
-
-				//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
-				bool zero = true;
-				for (S32 i = 0; i < llmin(size, 1024) && zero; ++i)
-				{
-					zero = buffer[i] > 0 ? false : true;
-				}
-
-				if (!zero)
-				{	//attempt to parse
-					if (decompositionReceived(mesh_id, buffer, size))
-					{
-						delete[] buffer;
-						return true;
-					}
-				}
-
-				delete[] buffer;
-			}
-
-			//reading from VFS failed for whatever reason, fetch from sim
-			AIHTTPHeaders headers("Accept", "application/octet-stream");
-
-			std::string http_url = constructUrl(mesh_id);
-			if (!http_url.empty())
-			{				
-				ret = LLHTTPClient::getByteRange(http_url, headers, offset, size,
-											new LLMeshDecompositionResponder(mesh_id, offset, size));
-				if(ret)
-				{
-					LLMeshRepository::sHTTPRequestCount++;
-				}
-			}
+		std::string http_url = constructUrl(mesh_id);
+		if (!http_url.empty())
+		{				
+			if (!LLHTTPClient::getByteRange(http_url, headers, info.mOffset, info.mSize,
+				new LLMeshDecompositionResponder(mesh_id, info.mOffset, info.mSize)))
+				return false;
+			LLMeshRepository::sHTTPRequestCount++;
 		}
-	}
-	else
-	{	
-		mHeaderMutex->unlock();
 	}
 
 	//early out was not hit, effectively fetched
-	return ret;
+	return true;
 }
 
 bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
-{	//protected by mMutex
-	if (!mHeaderMutex)
+{
+	MeshHeaderInfo info;
+	if (!getMeshHeaderInfo(mesh_id, "physics_mesh", info))
 	{
 		return false;
 	}
 
-	mHeaderMutex->lock();
-
-	if (mMeshHeader.find(mesh_id) == mMeshHeader.end())
-	{ //we have no header info for this mesh, do nothing
-		mHeaderMutex->unlock();
-		return false;
-	}
-
-	U32 header_size = mMeshHeaderSize[mesh_id];
-	bool ret = true ;
-
-	if (header_size > 0)
+	if (info.mHeaderSize > 0)
 	{
-		S32 version = mMeshHeader[mesh_id]["version"].asInteger();
-		S32 offset = header_size + mMeshHeader[mesh_id]["physics_mesh"]["offset"].asInteger();
-		S32 size = mMeshHeader[mesh_id]["physics_mesh"]["size"].asInteger();
-
-		mHeaderMutex->unlock();
-
-		if (version <= MAX_MESH_VERSION && offset >= 0 && size > 0)
+		if (info.mVersion <= MAX_MESH_VERSION && info.mOffset >= 0 && info.mSize > 0)
 		{
-			//check VFS for mesh physics shape info
-			LLVFile file(gVFS, mesh_id, LLAssetType::AT_MESH);
-			if (file.getSize() >= offset+size)
-			{
-				LLMeshRepository::sCacheBytesRead += size;
-				file.seek(offset);
-				U8* buffer = new U8[size];
-				file.read(buffer, size);
-
-				//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
-				bool zero = true;
-				for (S32 i = 0; i < llmin(size, 1024) && zero; ++i)
-				{
-					zero = buffer[i] > 0 ? false : true;
-				}
-
-				if (!zero)
-				{	//attempt to parse
-					if (physicsShapeReceived(mesh_id, buffer, size))
-					{
-						delete[] buffer;
-						return true;
-					}
-				}
-
-				delete[] buffer;
-			}
+			if (loadInfoFromVFS(mesh_id, info, boost::bind(&LLMeshRepoThread::physicsShapeReceived, this, _1, _2, _3 )))
+				return true;
 
 			//reading from VFS failed for whatever reason, fetch from sim
 			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
-			{				
-				ret = LLHTTPClient::getByteRange(http_url, headers, offset, size,
-												 new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
-
-				if(ret)
-				{
-					LLMeshRepository::sHTTPRequestCount++;
-				}
+			{
+				if (!LLHTTPClient::getByteRange(http_url, headers, info.mOffset, info.mSize,
+					new LLMeshPhysicsShapeResponder(mesh_id, info.mOffset, info.mSize)))
+					return false;
+				LLMeshRepository::sHTTPRequestCount++;
 			}
 		}
 		else
@@ -1013,13 +925,9 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 			physicsShapeReceived(mesh_id, NULL, 0);
 		}
 	}
-	else
-	{	
-		mHeaderMutex->unlock();
-	}
-
+	
 	//early out was not hit, effectively fetched
-	return ret;
+	return true;
 }
 
 //static
@@ -1095,72 +1003,34 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& c
 
 //return false if failed to get mesh lod.
 bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count)
-{ //protected by mMutex
-	if (!mHeaderMutex)
+{ 
+	LLUUID mesh_id = mesh_params.getSculptID();
+	MeshHeaderInfo info;
+
+	if (!getMeshHeaderInfo(mesh_id, header_lod[lod].c_str(), info))
 	{
 		return false;
 	}
-
-	mHeaderMutex->lock();
-
-	bool retval = true;
-
-	LLUUID mesh_id = mesh_params.getSculptID();
-	
-	U32 header_size = mMeshHeaderSize[mesh_id];
-
-	if (header_size > 0)
+			
+	if (info.mHeaderSize > 0)
 	{
-		S32 version = mMeshHeader[mesh_id]["version"].asInteger();
-		S32 offset = header_size + mMeshHeader[mesh_id][header_lod[lod]]["offset"].asInteger();
-		S32 size = mMeshHeader[mesh_id][header_lod[lod]]["size"].asInteger();
-		mHeaderMutex->unlock();
-				
-		if (version <= MAX_MESH_VERSION && offset >= 0 && size > 0)
+		if(info.mVersion <= MAX_MESH_VERSION && info.mOffset >= 0 && info.mSize > 0)
 		{
-
-			//check VFS for mesh asset
-			LLVFile file(gVFS, mesh_id, LLAssetType::AT_MESH);
-			if (file.getSize() >= offset+size)
-			{
-				LLMeshRepository::sCacheBytesRead += size;
-				file.seek(offset);
-				U8* buffer = new U8[size];
-				file.read(buffer, size);
-
-				//make sure buffer isn't all 0's by checking the first 1KB (reserved block but not written)
-				bool zero = true;
-				for (S32 i = 0; i < llmin(size, 1024) && zero; ++i)
-				{
-					zero = buffer[i] > 0 ? false : true;
-				}
-
-				if (!zero)
-				{	//attempt to parse
-					if (lodReceived(mesh_params, lod, buffer, size))
-					{
-						delete[] buffer;
-						return true;
-					}
-				}
-
-				delete[] buffer;
-			}
+			if (loadInfoFromVFS(mesh_id, info, boost::bind(&LLMeshRepoThread::lodReceived, this, mesh_params, lod, _2, _3 )))
+				return true;
 
 			//reading from VFS failed for whatever reason, fetch from sim
 			AIHTTPHeaders headers("Accept", "application/octet-stream");
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
-			{				
-				retval = LLHTTPClient::getByteRange(constructUrl(mesh_id), headers, offset, size,
-										   new LLMeshLODResponder(mesh_params, lod, offset, size));
-
-				if (retval)
-				{
-					LLMeshRepository::sHTTPRequestCount++;
-				}
-				count++;
+			{		
+				count++;		
+				if (!LLHTTPClient::getByteRange(constructUrl(mesh_id), headers, info.mOffset, info.mSize,
+						new LLMeshLODResponder(mesh_params, lod, info.mOffset, info.mSize)))
+					return false;
+				LLMeshRepository::sHTTPRequestCount++;
+			
 			}
 			else
 			{
@@ -1172,12 +1042,8 @@ bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, 
 			mUnavailableQ.push(LODRequest(mesh_params, lod));
 		}
 	}
-	else
-	{
-		mHeaderMutex->unlock();
-	}
-
-	return retval;
+	
+	return true;
 }
 
 bool LLMeshRepoThread::headerReceived(const LLVolumeParams& mesh_params, U8* data, S32 data_size)
