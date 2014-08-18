@@ -450,6 +450,8 @@ public:
 
 	void setWholeModelUploadURL(std::string const& whole_model_upload_url) { mWholeModelUploadURL = whole_model_upload_url; }
 
+	/*virtual*/ const char* getName() const { return "AIMeshUpload"; }
+
 protected:
 	// Implement AIStateMachine.
 	/*virtual*/ const char* state_str_impl(state_type run_state) const;

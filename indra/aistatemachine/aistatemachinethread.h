@@ -232,6 +232,13 @@ class AIStateMachineThread : public AIStateMachineThreadBase {
 	// Accessor.
 	THREAD_IMPL& thread_impl(void) { return mThreadImpl; }
 
+	/*virtual*/ const char* getName() const
+	{
+#define STRIZE(arg) #arg
+		return "AIStateMachineThread<"STRIZE(THREAD_IMPL)">";
+#undef STRIZE
+	}
+
   protected:
 	/*virtual*/ AIThreadImpl& impl(void) { return mThreadImpl; }
 };

@@ -1245,16 +1245,21 @@ bool LLMeshRepoThread::headerReceived(const LLVolumeParams& mesh_params, U8* dat
 
 bool LLMeshRepoThread::lodReceived(const LLVolumeParams& mesh_params, S32 lod, U8* data, S32 data_size)
 {
+	AIStateMachine::StateTimer timer("lodReceived");
 	LLPointer<LLVolume> volume = new LLVolume(mesh_params, LLVolumeLODGroup::getVolumeScaleFromDetail(lod));
 	std::string mesh_string((char*) data, data_size);
 	std::istringstream stream(mesh_string);
 
+	AIStateMachine::StateTimer timer2("unpackVolumeFaces");
 	if (volume->unpackVolumeFaces(stream, data_size))
 	{
+		AIStateMachine::StateTimer timer("getNumFaces");
 		if (volume->getNumFaces() > 0)
 		{
+			AIStateMachine::StateTimer timer("LoadedMesh");
 			LoadedMesh mesh(volume, mesh_params, lod);
 			{
+				AIStateMachine::StateTimer timer("LLMutexLock");
 				LLMutexLock lock(mMutex);
 				mLoadedQ.push(mesh);
 			}
@@ -1910,6 +1915,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 	{
 		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//timeout or service unavailable, try again
+			AIStateMachine::StateTimer timer("loadMeshLOD");
 			llwarns << "Timeout or service unavailable, retrying." << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
 			gMeshRepo.mThread->loadMeshLOD(mMeshParams, mLOD);
@@ -1928,12 +1934,14 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 
 	if (data_size > 0)
 	{
+		AIStateMachine::StateTimer timer("readAfter");
 		data = new U8[data_size];
 		buffer->readAfter(channels.in(), NULL, data, data_size);
 	}
 
 	if (gMeshRepo.mThread->lodReceived(mMeshParams, mLOD, data, data_size))
 	{
+		AIStateMachine::StateTimer timer("FileOpen");
 		//good fetch from sim, write to VFS for caching
 		LLVFile file(gVFS, mMeshParams.getSculptID(), LLAssetType::AT_MESH, LLVFile::WRITE);
 
@@ -1942,6 +1950,7 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 
 		if (file.getSize() >= offset+size)
 		{
+			AIStateMachine::StateTimer timer("WriteData");
 			file.seek(offset);
 			file.write(data, size);
 			LLMeshRepository::sCacheBytesWritten += size;
@@ -2171,6 +2180,7 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 
 		if (is_internal_http_error_that_warrants_a_retry(status) || status == HTTP_SERVICE_UNAVAILABLE)
 		{	//retry
+			AIStateMachine::StateTimer timer("Retry");
 			llwarns << "Timeout or service unavailable, retrying." << llendl;
 			LLMeshRepository::sHTTPRetryCount++;
 			LLMeshRepoThread::HeaderRequest req(mMeshParams);
@@ -2191,12 +2201,14 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 
 	if (data_size > 0)
 	{
+		AIStateMachine::StateTimer timer("readAfter");
 		data = new U8[data_size];
 		buffer->readAfter(channels.in(), NULL, data, data_size);
 	}
 
 	LLMeshRepository::sBytesReceived += llmin(data_size, 4096);
 
+	AIStateMachine::StateTimer timer("headerReceived");
 	bool success = gMeshRepo.mThread->headerReceived(mMeshParams, data, data_size);
 	
 	llassert(success);
@@ -2239,11 +2251,13 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 			//only allocate as much space in the VFS as is needed for the local cache
 			data_size = llmin(data_size, bytes);
 
+			AIStateMachine::StateTimer timer("FileOpen");
 			LLVFile file(gVFS, mesh_id, LLAssetType::AT_MESH, LLVFile::WRITE);
 			if (file.getMaxSize() >= bytes || file.setMaxSize(bytes))
 			{
 				LLMeshRepository::sCacheBytesWritten += data_size;
 
+				AIStateMachine::StateTimer timer("WriteData");
 				file.write((const U8*) data, data_size);
 			
 				//zero out the rest of the file 
