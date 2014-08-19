@@ -2851,6 +2851,14 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
 		restoreItem();
 		return;
 	}
+	// <singu> Move displaced inventory to lost and found
+	else if ("move_to_lost_and_found" == action)
+	{
+		gInventory.changeCategoryParent(getCategory(), gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND), TRUE);
+		gInventory.addChangedMask(LLInventoryObserver::REBUILD, mUUID);
+		gInventory.notifyObservers();
+	}
+	// </singu>
 #ifdef DELETE_SYSTEM_FOLDERS
 	else if ("delete_system_folder" == action)
 	{
@@ -3365,6 +3373,14 @@ void LLFolderBridge::buildContextMenuBaseOptions(U32 flags)
 			mWearables=TRUE;
 		}
 	}
+	// <singu> Move displaced inventory to lost and found
+	else if (!isAgentInventory())
+	{
+		const LLUUID& library(gInventory.getLibraryRootFolderID());
+		if (library == mUUID || gInventory.isObjectDescendentOf(mUUID, library))
+			 mItems.push_back(std::string("Move to Lost And Found"));
+	}
+	// </singu>
 
 	// Preemptively disable system folder removal if more than one item selected.
 	if ((flags & FIRST_SELECTED_ITEM) == 0)
