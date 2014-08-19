@@ -37,26 +37,6 @@
 #include "llcheckboxctrl.h"
 #include "llctrlselectioninterface.h"
 
-
-/*
- * A checkbox control with use_radio_style == true.
- */
-class LLRadioCtrl : public LLCheckBoxCtrl 
-{
-public:
-	LLRadioCtrl(const std::string& name, const LLRect& rect, const std::string& label, const LLFontGL* font = NULL,
-		commit_callback_t commit_callback = NULL) :
-				LLCheckBoxCtrl(name, rect, label, font, commit_callback, FALSE, RADIO_STYLE)
-	{
-		setTabStop(FALSE);
-	}
-	/*virtual*/ ~LLRadioCtrl();
-
-	virtual LLXMLNodePtr getXML(bool save_children = true) const;
-	/*virtual*/ void setValue(const LLSD& value);
-};
-
-
 /*
  * An invisible view containing multiple mutually exclusive toggling 
  * buttons (usually radio buttons).  Automatically handles the mutex
@@ -66,14 +46,23 @@ class LLRadioGroup
 :	public LLUICtrl, public LLCtrlSelectionInterface
 {
 public:
-	// Radio group constructor. Doesn't rely on
-	// needing a control
+
+	// Radio group constructor. Doesn't rely on needing a control
 	LLRadioGroup(const std::string& name, const LLRect& rect,
 				 S32 initial_index,
 				 commit_callback_t commit_callback,
-				 BOOL border = TRUE);
+				 bool border = true, bool allow_deselect = false);
+
+protected:
+	friend class LLUICtrlFactory;
+
+public:
 
 	virtual ~LLRadioGroup();
+
+	virtual BOOL postBuild();
+
+	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
 
 	virtual BOOL handleKeyHere(KEY key, MASK mask);
 
@@ -81,10 +70,8 @@ public:
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 	void setIndexEnabled(S32 index, BOOL enabled);
-	
 	// return the index value of the selected item
 	S32 getSelectedIndex() const { return mSelectedIndex; }
-	
 	// set the index value programatically
 	BOOL setSelectedIndex(S32 index, BOOL from_event = FALSE);
 
@@ -92,14 +79,10 @@ public:
 	virtual void	setValue(const LLSD& value );
 	virtual LLSD	getValue() const;
 
-	// Draw the group, but also fix the highlighting based on the control.
-	void draw();
-
 	// You must use this method to add buttons to a radio group.
 	// Don't use addChild -- it won't set the callback function
 	// correctly.
-	LLRadioCtrl* addRadioButton(const std::string& name, const std::string& label, const LLRect& rect, const LLFontGL* font);
-	LLRadioCtrl* getRadioButton(const S32& index) { return mRadioButtons[index]; }
+	class LLRadioCtrl* addRadioButton(const std::string& name, const std::string& label, const LLRect& rect, const LLFontGL* font, const std::string& payload = "");
 	// Update the control as needed.  Userdata must be a pointer to the button.
 	void onClickButton(LLUICtrl* clicked_radio);
 	
@@ -123,14 +106,15 @@ public:
 
 private:
 	// protected function shared by the two constructors.
-	void init(BOOL border);
+	void init(bool border);
 
 	S32 mSelectedIndex;
-	typedef std::vector<LLRadioCtrl*> button_list_t;
+
+	typedef std::vector<class LLRadioCtrl*> button_list_t;
 	button_list_t mRadioButtons;
 
-	BOOL mHasBorder;
+	bool mHasBorder;
+	bool				mAllowDeselect;	// user can click on an already selected option to deselect it
 };
-
 
 #endif
