@@ -14,6 +14,7 @@
 			</text>
 			<combo_box name="username_combo"/>
 			<check_box label="Recordar Nombre" name="remember_name_check"/>
+			<button label="" tool_tip="Borrar la información de inicio de sesión de este usuario, si la hubiera." name="remove_login"/>
 		</layout_panel>
 		<layout_panel name="password_panel">
 			<text name="password_text">
@@ -26,7 +27,7 @@
 			<text name="grids_combo_text">
 				Grid:
 			</text>
-			<combo_box name="grids_combo" tool_tip="Ingresa el nombre/nick de un grid conocido o el uri de inicio de seión del mismo, o selecciona uno de la lista"/>
+			<combo_box name="grids_combo" tool_tip="Ingresa el nombre/nick de un grid conocido o el uri de inicio de sesión del mismo, o selecciona uno de la lista"/>
 			<button name="grids_btn" label="Administrar Grid"/>
 		</layout_panel>
 		<layout_panel name="location_panel">

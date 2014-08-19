@@ -67,6 +67,8 @@ class LLNameListCtrl
 :	public LLScrollListCtrl, public LLInstanceTracker<LLNameListCtrl>
 {
 public:
+	typedef boost::signals2::signal<void(bool)> namelist_complete_signal_t;
+
 	typedef enum e_name_type
 	{
 		INDIVIDUAL,
@@ -155,6 +157,16 @@ private:
 	const LLCachedControl<S32> mNameSystem;
 	typedef std::map<LLUUID, boost::signals2::connection> avatar_name_cache_connection_map_t;
 	avatar_name_cache_connection_map_t mAvatarNameCacheConnections;
+
+	S32 mPendingLookupsRemaining;
+	namelist_complete_signal_t mNameListCompleteSignal;
+
+public:
+	boost::signals2::connection setOnNameListCompleteCallback(boost::function<void(bool)> onNameListCompleteCallback)
+	{
+		return mNameListCompleteSignal.connect(onNameListCompleteCallback);
+	}
+
 };
 
 

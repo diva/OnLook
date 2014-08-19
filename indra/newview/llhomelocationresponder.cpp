@@ -39,7 +39,7 @@
 #include "llagent.h"
 #include "llviewerregion.h"
 
-void LLHomeLocationResponder::result( const LLSD& content )
+void LLHomeLocationResponder::httpSuccess(void)
 {
   LLVector3 agent_pos;
   bool      error = true;
@@ -48,48 +48,48 @@ void LLHomeLocationResponder::result( const LLSD& content )
 	
     // was the call to /agent/<agent-id>/home-location successful?
     // If not, we keep error set to true
-    if( ! content.has("success") )
+    if( ! mContent.has("success") )
     {
       break;
     }
 		
-    if( 0 != strncmp("true", content["success"].asString().c_str(), 4 ) )
+    if( 0 != strncmp("true", mContent["success"].asString().c_str(), 4 ) )
     {
       break;
     }
 		
     // did the simulator return a "justified" home location?
     // If no, we keep error set to true
-    if( ! content.has( "HomeLocation" ) )
+    if( ! mContent.has( "HomeLocation" ) )
     {
       break;
     }
 		
-    if( ! content["HomeLocation"].has("LocationPos") )
+    if( ! mContent["HomeLocation"].has("LocationPos") )
     {
       break;
     }
 		
-    if( ! content["HomeLocation"]["LocationPos"].has("X") )
+    if( ! mContent["HomeLocation"]["LocationPos"].has("X") )
     {
       break;
     }
 
-    agent_pos.mV[VX] = content["HomeLocation"]["LocationPos"]["X"].asInteger();
+    agent_pos.mV[VX] = mContent["HomeLocation"]["LocationPos"]["X"].asInteger();
 		
-    if( ! content["HomeLocation"]["LocationPos"].has("Y") )
+    if( ! mContent["HomeLocation"]["LocationPos"].has("Y") )
     {
       break;
     }
 
-    agent_pos.mV[VY] = content["HomeLocation"]["LocationPos"]["Y"].asInteger();
+    agent_pos.mV[VY] = mContent["HomeLocation"]["LocationPos"]["Y"].asInteger();
 		
-    if( ! content["HomeLocation"]["LocationPos"].has("Z") )
+    if( ! mContent["HomeLocation"]["LocationPos"].has("Z") )
     {
       break;
     }
 
-    agent_pos.mV[VZ] = content["HomeLocation"]["LocationPos"]["Z"].asInteger();
+    agent_pos.mV[VZ] = mContent["HomeLocation"]["LocationPos"]["Z"].asInteger();
 		
     error = false;
   } while( 0 );
@@ -103,8 +103,8 @@ void LLHomeLocationResponder::result( const LLSD& content )
   }
 }
 
-void LLHomeLocationResponder::error( U32 status, const std::string& reason )
+void LLHomeLocationResponder::httpFailure(void)
 {
-  llinfos << "received error(" << reason  << ")" << llendl;
+  llinfos << "httpFailure: " << dumpResponse() << llendl;
 }
 

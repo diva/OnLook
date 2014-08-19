@@ -909,6 +909,19 @@ BOOL LLComboBox::handleUnicodeCharHere(llwchar uni_char)
 	return result;
 }
 
+BOOL LLComboBox::handleScrollWheel(S32 x, S32 y, S32 clicks)
+{
+	if (mList->getVisible()) return mList->handleScrollWheel(x, y, clicks);
+	if (mAllowTextEntry) // We might be editable
+		if (!mList->getFirstSelected()) // We aren't in the list, don't kill their text
+			return false;
+
+	setCurrentByIndex(llclamp(getCurrentIndex() + clicks, 0, getItemCount() - 1));
+	prearrangeList();
+	onCommit();
+	return true;
+}
+
 void LLComboBox::setAllowTextEntry(BOOL allow, S32 max_chars, BOOL set_tentative)
 {
 	mAllowTextEntry = allow;
@@ -924,6 +937,7 @@ void LLComboBox::setTextEntry(const LLStringExplicit& text)
 	if (mTextEntry)
 	{
 		mTextEntry->setText(text);
+		mTextEntry->setCursor(0); // Singu Note: Move the cursor over to the beginning
 		mHasAutocompletedText = FALSE;
 		updateSelection();
 	}

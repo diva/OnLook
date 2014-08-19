@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ positioning="cascading"
+ legacy_header_height="225"
+ can_minimize="true"
+ can_close="true"
+ can_resize="true"
+ min_height="230"
+ min_width="350"
+ height="235"
+ layout="topleft"
+ name="Destinations"
+ single_instance="true"
+ help_topic="destinations"
+ rect_control="DestinationGuideRect"
+ control_name="DestinationGuideShown"
+ title="Destinations"
+ width="550">
+    <web_browser
+      bottom="-235"
+      height="215"
+      width="550"
+      follows="all"
+      name="destination_guide_contents"
+      trusted_content="true"/>
+</floater>

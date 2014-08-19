@@ -541,24 +541,24 @@ public:
 	{
 	}
 
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		LL_WARNS("InvAPI") << "CreateInventoryCategory failed.   status = " << status << ", reasion = \"" << reason << "\"" << LL_ENDL;
+		LL_WARNS("InvAPI") << "CreateInventoryCategory failed.   status = " << mStatus << ", reason = \"" << mReason << "\"" << LL_ENDL;
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		//Server has created folder.
 
-		LLUUID category_id = content["folder_id"].asUUID();
+		LLUUID category_id = mContent["folder_id"].asUUID();
 
 
 		// Add the category to the internal representation
 		LLPointer<LLViewerInventoryCategory> cat =
 		new LLViewerInventoryCategory( category_id,
-									  content["parent_id"].asUUID(),
-									  (LLFolderType::EType)content["type"].asInteger(),
-									  content["name"].asString(),
+									  mContent["parent_id"].asUUID(),
+									  (LLFolderType::EType)mContent["type"].asInteger(),
+									  mContent["name"].asString(),
 									  gAgent.getID() );
 		cat->setVersion(LLViewerInventoryCategory::VERSION_INITIAL);
 		cat->setDescendentCount(0);
@@ -568,7 +568,7 @@ public:
 		
 		if (mCallback && mData)
 		{
-			mCallback(content, mData);
+			mCallback(mContent, mData);
 		}
 
 	}
@@ -1469,12 +1469,12 @@ void LLInventoryModel::addChangedMask(U32 mask, const LLUUID& referent)
 }
 
 // If we get back a normal response, handle it here
-void  LLInventoryModel::fetchInventoryResponder::result(const LLSD& content)
+void  LLInventoryModel::fetchInventoryResponder::httpSuccess(void)
 {	
 	start_new_inventory_observer();
 
 	/*LLUUID agent_id;
-	agent_id = content["agent_id"].asUUID();
+	agent_id = mContent["agent_id"].asUUID();
 	if(agent_id != gAgent.getID())
 	{
 		llwarns << "Got a inventory update for the wrong agent: " << agent_id
@@ -1483,13 +1483,13 @@ void  LLInventoryModel::fetchInventoryResponder::result(const LLSD& content)
 	}*/
 	item_array_t items;
 	update_map_t update;
-	S32 count = content["items"].size();
+	S32 count = mContent["items"].size();
 	LLUUID folder_id;
 	// Does this loop ever execute more than once?
 	for(S32 i = 0; i < count; ++i)
 	{
 		LLPointer<LLViewerInventoryItem> titem = new LLViewerInventoryItem;
-		titem->unpackMessage(content["items"][i]);
+		titem->unpackMessage(mContent["items"][i]);
 		
 		lldebugs << "LLInventoryModel::messageUpdateCore() item id:"
 				 << titem->getUUID() << llendl;
@@ -1529,10 +1529,10 @@ void  LLInventoryModel::fetchInventoryResponder::result(const LLSD& content)
 }
 
 //If we get back an error (not found, etc...), handle it here
-void LLInventoryModel::fetchInventoryResponder::error(U32 status, const std::string& reason)
+void LLInventoryModel::fetchInventoryResponder::httpFailure(void)
 {
 	llinfos << "fetchInventory::error "
-		<< status << ": " << reason << llendl;
+		<< mStatus << ": " << mReason << llendl;
 	gInventory.notifyObservers();
 }
 

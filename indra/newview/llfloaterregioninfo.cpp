@@ -412,6 +412,7 @@ void LLFloaterRegionInfo::processRegionInfo(LLMessageSystem* msg)
 
 	panel->getChild<LLUICtrl>("block_terraform_check")->setValue((region_flags & REGION_FLAGS_BLOCK_TERRAFORM) ? TRUE : FALSE );
 	panel->getChild<LLUICtrl>("block_fly_check")->setValue((region_flags & REGION_FLAGS_BLOCK_FLY) ? TRUE : FALSE );
+	panel->getChild<LLUICtrl>("block_fly_over_check")->setValue((region_flags & REGION_FLAGS_BLOCK_FLYOVER) ? TRUE : FALSE );
 	panel->getChild<LLUICtrl>("allow_damage_check")->setValue((region_flags & REGION_FLAGS_ALLOW_DAMAGE) ? TRUE : FALSE );
 	panel->getChild<LLUICtrl>("restrict_pushobject")->setValue((region_flags & REGION_FLAGS_RESTRICT_PUSHOBJECT) ? TRUE : FALSE );
 	panel->getChild<LLUICtrl>("allow_land_resell_check")->setValue((region_flags & REGION_FLAGS_BLOCK_LAND_RESELL) ? FALSE : TRUE );
@@ -712,6 +713,7 @@ BOOL LLPanelRegionGeneralInfo::postBuild()
 	// Enable the "Apply" button if something is changed. JC
 	initCtrl("block_terraform_check");
 	initCtrl("block_fly_check");
+	initCtrl("block_fly_over_check");
 	initCtrl("allow_damage_check");
 	initCtrl("allow_land_resell_check");
 	initCtrl("allow_parcel_changes_check");
@@ -877,6 +879,7 @@ BOOL LLPanelRegionGeneralInfo::sendUpdate()
 	{
 		body["block_terraform"] = getChild<LLUICtrl>("block_terraform_check")->getValue();
 		body["block_fly"] = getChild<LLUICtrl>("block_fly_check")->getValue();
+		body["block_fly_over"] = getChild<LLUICtrl>("block_fly_over_check")->getValue();
 		body["allow_damage"] = getChild<LLUICtrl>("allow_damage_check")->getValue();
 		body["allow_land_resell"] = getChild<LLUICtrl>("allow_land_resell_check")->getValue();
 		body["agent_limit"] = getChild<LLUICtrl>("agent_limit_spin")->getValue();
@@ -2341,7 +2344,7 @@ public:
 	}
 	
 	// if we get a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		LL_INFOS("Windlight") << "Successfully committed estate info" << llendl;
 
@@ -2352,10 +2355,10 @@ public:
 	}
 	
 	// if we get an error response
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llinfos << "LLEstateChangeInfoResponder::error [status:"
-			<< status << "]: " << reason << llendl;
+			<< mStatus << "]: " << mReason << llendl;
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }

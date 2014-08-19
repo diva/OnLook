@@ -2,7 +2,7 @@
  * @file llfloaterclassified.h
  * @brief Classified information as shown in a floating window from 
  * secondlife:// command handler.  
- * Just a wrapper for LLPanelClassified.
+ * Just a wrapper for LLPanelClassifiedInfo.
  *
  * $LicenseInfo:firstyear=2002&license=viewergpl$
  * 
@@ -37,7 +37,7 @@
 
 #include "llfloater.h"
 
-class LLPanelClassified;
+class LLPanelClassifiedInfo;
 
 class LLFloaterClassifiedInfo : LLFloater
 {
@@ -53,7 +53,7 @@ public:
 
 private:
 
-	LLPanelClassified*	mClassifiedPanel;
+	LLPanelClassifiedInfo*	mClassifiedPanel;
 	LLUUID				mClassifiedID;
 
 };

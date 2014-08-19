@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel label="Invitar a un Miembro" name="invite_panel">
-	<text name="help_text">
+<panel label="Invitar a un Miembro" name="invite_panel" height="400" >
+	<text name="help_text" bottom_delta="-90" >
 		Puedes seleccionar a varios residentes
 para invitarles a tu grupo. Para
-empezar, pulsa 'Abrir el selector de
-residentes'.	
+empezar, pulsa 'Abrir Selector de
+Residentes'.	
 	</text>
-	<button label="Abrir el Selector de Residentes" name="add_button" tool_tip=""/>
-	<name_list name="invitee_list" tool_tip="Para seleccionar a varios residentes, mantén pulsada la tecla Ctrl y pulsa sus nombres" />
+	<button label="Abrir Selector de Residentes" name="add_button" tool_tip="" bottom_delta="-22" />
+	<name_list name="invitee_list" tool_tip="Para seleccionar a varios residentes, mantén pulsada la tecla Ctrl y pulsa sus nombres"  bottom_delta="-190" height="186" />
 	<button label="Eliminar de la lista a los seleccionados" name="remove_button" tool_tip="Elimina los residentes seleccionados de la lista de invitaciones" />
 	<text name="role_text">
 		Elegir qué rol asignarles:
 	</text>
 	<combo_box name="role_name" tool_tip="Elige de la lista de roles cuál asignar a los miembros."/>
-	<button label="Enviar Invitaciones" name="ok_button"/>
+	<button label="Enviar Invitaciones" name="invite_button"/>
 	<button label="Cancelar" name="cancel_button"/>
 	<string name="confirm_invite_owner_str">
 		¿Estás seguro de que quieres invitar a un nuevo propietario/s? ¡Esta acción es permanente!

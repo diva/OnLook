@@ -60,17 +60,15 @@ public :
 		{
 		}
 
-		/*virtual*/ void error(U32 status, const std::string& reason)
+		/*virtual*/ void httpFailure(void)
 		{
 			LL_WARNS("Translate") << "URL Request error: " << reason << LL_ENDL;
 			handleFailure();
 		}
 
 		/*virtual*/ void completedRaw(
-			U32 status,
-			const std::string& reason,
-			const LLChannelDescriptors& channels,
-			const LLIOPipe::buffer_ptr_t& buffer)
+			LLChannelDescriptors const& channels,
+			LLIOPipe::buffer_ptr_t const& buffer)
 		{
 			LLBufferStream istr(channels, buffer.get());
 

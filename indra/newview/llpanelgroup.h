@@ -168,11 +168,15 @@ public:
 
 	virtual BOOL isVisibleByAgent(LLAgent* agentp);
 
+	virtual void setGroupID(const LLUUID& id) { mGroupID = id; }
+
 	void setAllowEdit(BOOL v) { mAllowEdit = v; }
 
 	void addObserver(LLPanelGroupTabObserver *obs);
 	void removeObserver(LLPanelGroupTabObserver *obs);
 	void notifyObservers();
+
+	const LLUUID& getGroupID() const { return mGroupID; }
 
 protected:
 	LLUUID	mGroupID;

@@ -76,11 +76,7 @@
 	<button name="Whitelist" text="Immer erlauben"/>
    </form></notification>
 
-  <notification name="MediaListed">Media/audio URLs f&#xFC;r [DOMAIN] jetzt [LISTED]</notification>
-
   <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
-
-  <notification name="MediaFiltersCleared">Die Medienfilter sind gel&#xF6;scht worden</notification>
 
   <notification name="MissingAlert" label="Unbekannter Warnhinweis">Ihre Version von Second Life kann den gerade empfangenen Warnhinweis nicht anzeigen.
 

@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="directory" title="Suchen">
 	<tab_container name="Directory Tabs">
+		 <panel label="Alle (klassisch)" name="find_all_old_panel">
+			 <string name="searching_text">Suchen...</string>
+			 <string name="not_found_text">Nicht gefunden.</string>
+			 <button label="&lt; Vorherige" label_selected="&lt; Vorherige" name="&lt; Prev"/>
+			 <button label="Weiter &gt;" label_selected="Weiter &gt;" name="Next &gt;"/>
+			 <text name="find">Suchen:</text>
+
+			 <button label="Suchen" label_selected="Suchen" name="Search"/>
+			 <check_box label="PG-Inhalt" name="incpg"/>
+			 <check_box label="Mature-Inhalt" name="incmature"/>
+			 <check_box label="Adult-Inhalt" name="incadult"/>
+            <check_box name="filter_gaming" label="Verstecke Glücksspiel"/>
+			 <scroll_list name="results">
+
+				 <column label="Name" name="name"/>
+				 <column label="Preis" name="price"/>
+				 <column label="Zeit (PT)" name="date"/>
+				 <column label="Uhrzeit" name="time"/>
+				 <column label="Traffic" name="dwell"/>
+				 <column label="Größe" name="area"/>
+				 <column label="L$/sq.m" name="per_meter"/>
+				 <column label="Online" name="online"/>
+				 <column label="Mitglieder" name="members"/>
+			 </scroll_list>
+		</panel>
 		<panel label="Alle" name="find_all_panel">
 			<string name="searching_text">Suchen...</string>
 			<string name="not_found_text">Nicht gefunden.</string>
@@ -254,30 +279,17 @@ Um direkt zu kaufen, klicken Sie auf dem betreffenden Land in der Titelleiste au
       
       
       
+      <button tool_tip="Zurücksetzen" name="reset_btn"/>
       <web_browser name="market_browser" trusted_content="true"/>
       
       <string name="loading_text">Wird geladen...</string>
       <string name="done_text">Fertig</string>
-      <string name="redirect_404_url">https://marketplace.secondlife.com/notfound</string>
-      <string name="default_search_page">http://marketplace.secondlife.com/</string>
     </panel>
     <panel label="Web" name="web_panel">
-      
-      
-      
-	  <button label="Öffne Web Search Dialog" name="web_search_floater_btn"/>
+      <button label="Öffne Web Search Dialog" name="web_search_floater_btn"/>
       <web_browser name="web_search_browser" trusted_content="true"/>
-      
       <string name="loading_text">Wird geladen...</string>
       <string name="done_text">Fertig</string>
-      <string name="redirect_404_url">http://search.secondlife.com/</string>
-      <string name="default_search_page">http://search.secondlife.com/</string>
     </panel>
 	</tab_container>
-	
-	
-	
-	
-	
-	
 </floater>

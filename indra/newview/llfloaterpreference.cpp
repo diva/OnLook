@@ -341,9 +341,15 @@ void LLPreferenceCore::setPersonalInfo(const std::string& visibility, bool im_vi
 //////////////////////////////////////////////
 // LLFloaterPreference
 
+void reset_to_default(const std::string& control)
+{
+	LLUI::getControlControlGroup(control).getControl(control)->resetToDefault(true);
+}
+
 LLFloaterPreference::LLFloaterPreference()
 {
 	mExitWithoutSaving = false;
+	mCommitCallbackRegistrar.add("Prefs.Reset", boost::bind(reset_to_default, _2));
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_preferences.xml");
 }
 

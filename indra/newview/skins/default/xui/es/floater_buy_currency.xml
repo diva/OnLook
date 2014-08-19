@@ -14,10 +14,10 @@
 	</text>
 	<button label="Ir al sitio web" name="error_web"/>
 	<text name="contacting">
-		Contactando con LindeX...
+		Contactando con Cambio de Divisa...
 	</text>
 	<text name="buy_action_unknown">
-		Comprar [CURRENCY] en el sistema LindeX de cambio
+		Comprar [CURRENCY] en el sistema de cambio de divisa
 	</text>
 	<text name="buy_action">
 		[NAME] [CURRENCY] [PRICE]

@@ -9,6 +9,9 @@
 		<action description="Eject Members from this Group"
 		     longdescription="Eject Members from this Group using the &apos;Eject From Group&apos; button in the Members &amp; Roles tab &gt; Members sub-tab. An Owner can eject anyone except another Owner. If you&apos;re not an Owner, a Member can be ejected from a group if, and only if, they&apos;re only in the Everyone Role, and NO other Roles. To remove Members from Roles, you need to have the &apos;Remove Members from Roles&apos; Ability."
 		     name="member eject" value="2" />
+		<action description="Manage ban list"
+			longdescription="Allows the group member to ban / un-ban Residents from this group."
+			name="allow ban" value="51" />
 		<action
 		     description="Toggle &apos;Open Enrollment&apos; and change &apos;Signup Fee&apos;"
 		     longdescription="Toggle &apos;Open Enrollment&apos; to let new Members join without an invitation, and change &apos;Signup Fee&apos; in the Group Preferences section of the General tab."

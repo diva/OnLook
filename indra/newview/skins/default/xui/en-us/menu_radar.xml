@@ -137,6 +137,10 @@
       <on_enable function="List.EnableMute"/>
       <on_visible function="List.EnableAnySelected"/>
     </menu_item_call>
+    <menu_item_call label="Ban From Group" name="Ban From Group">
+      <on_click function="List.BanFromGroup"/>
+      <on_visible function="List.EnableAnySelected"/>
+    </menu_item_call>
     <menu_item_call label="Report Abuse" name="Report Abuse">
       <on_click function="List.AbuseReport"/>
       <on_visible function="List.EnableSingleSelected"/>

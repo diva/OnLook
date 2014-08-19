@@ -96,13 +96,25 @@
 				Cambiar falso estado Ausente (uso: cmd)
 			</text>
 			<line_editor name="SinguCmdLineAway"/>
+			<text name="cmd_line_text_15">
+				Enviar mensaje a la Región (uso: cmd mensaje)
+			</text>
+			<line_editor name="SinguCmdLineRegionSay" tool_tip="Sólo funciona en regiones permisivas (Sólo Administradores de Estado"/>
 		</panel>
 		<!-- =========================== -->
 		<panel label="Seguridad" name="Security">
 			<check_box label="Transmitir efectos del Visor (No incluye rayos)" name="broadcast_viewer_effects"/>
 			<check_box label="Desactivar Apuntar a... y Rayos" tool_tip="No apunta hacia ni muestra tus rayos de edición cuando seleccionas un objeto." name="disable_point_at_and_beams_check"/>
 			<check_box label="No mirar hacia los Objetos (anula ShowLookAt)" tool_tip="Apaga la tansmisión de los giros de cabeza y rayos lookat propios." name="private_look_at_check"/>
-			<check_box label="Mostrar las balizas LookAt de los demás" tool_tip="Te muestra hacia donde miran los demas." name="show_look_at_check"/>
+			<check_box label="Mostrar las balizas Mirar A de los demás" tool_tip="Te muestra hacia donde miran los demas." name="show_look_at_check"/>
+			<combo_box name="lookat_namesystem_combobox" tool_tip="Estilo para mostrar nombres en balizas Mirar A" left_delta="220" width="200">
+				<combo_item name="No Names">Sin Nombres</combo_item>
+				<combo_item name="Old Names">Nombre antiguos</combo_item>
+				<combo_item name="Display Names (with Username)">Nombres Mostrados (c/Nombre de usuario)</combo_item>
+				<combo_item name="Display Names only">Solo Nombres Mostrados</combo_item>
+				<combo_item name="Old Names (with Display Names)">Nombres Antiguos (c/Nombres Mostrados)</combo_item>
+			</combo_box>
+			<check_box label="Mostrar una línea desde la baliza Mirar a hasta el avatar" tool_tip="Ver una línea conectando el foco de la cámara a su avatar. Útil para encontrar donde se encuentra el avatar." name="lineslookat"/>
 			<check_box label="Notificar en el chat cuando alguien te empuja" name="announce_bumps"/>
       <check_box label="Quitarse automáticamente el Bridge LSL" tool_tip="Quitar automáticamente el Bridge LSL de los visores Phoenix o Firestorm." name="detach_bridge"/>			
 			<check_box label="Captura silenciosa a Disco" tool_tip="Anula el sonido de la cámara y el alerta a los demás cuando realizas una captura al disco de tu PC" name="quiet_snapshots_check"/>
@@ -110,10 +122,18 @@
 			<check_box label="Desactivar click del ratón para sentarse en los objetos" tool_tip="Algunas herramientas de griefer se basan en forzarte o engañarte para que hagas click en un objeto el cual te hará sentar, dándole automáticamente al objeto permisos para ejecutar una animación entre de otras cosas. Esta opción desactivará la función llSitTarget - Esto significa que deberás seleccionar la opción 'Sentarse' en las bolas de animación o muebles." name="disable_click_sit_check"/>
 			<check_box left_delta="280" label="Que no son de tu propiedad" tool_tip="Deshabilita sentarse con un click en objetos que no son de tu propiedad (Si se usa con control de grupo, sólo una opción es necesaria)" name="disable_click_sit_own_check"/>
 			<check_box label="Mostrar cambios del Total de Scripts en Ejecución:" name="totalscriptjumps" tool_tip="Muestra los cambios en la cuenta total de scritps en tu región, dependiendo del umbral que selecciones a la derecha."/>
-			<spinner left_delta="350" name="ScriptJumpCount" tool_tip="Umbral para el mensaje de salto de scripts [Predeterminado: 100]"/>
+			<spinner left_delta="270" name="ScriptJumpCount" tool_tip="Umbral para el mensaje de salto de scripts [Predeterminado: 100]"/>
 			<check_box label="Soporte API Restrained Love (RLVa)" name="RestrainedLove" tool_tip="Permite a los scripts tomar control del visor, si tienes vestido un objeto compatible con RLVa."/>
+			<check_box label="Minimizar automáticamente aviso de reinicio de región" name="region_restart_minimized" tool_tip="Útil para dueños de sim y personas que necesitan recoger sus cosas antes de salir"/>
 			<text name="EmergencyTeleportDesc" bottom_delta="-20" >Arrastra un hito para autoteleportarte en los últimos 20 segundos previos al reinicio de región</text>
 			<drop_target name="emergency_teleport_landmark_drop" bottom_delta="-15" width="450"/>
+			<text name="EmergencyTeleportBackupDesc" width="440" bottom_delta="-30" >
+				Suelta aquí un hito de resguardo para autoteleportarte, si ya tienes uno en el ítem anterior</text>
+			<drop_target name="emergency_teleport_landmark_backup_drop"/>
+			<text name="UISndRestartText"  bottom_delta="-36" >
+				Ejecutar sonido cuando la región esté por reiniciarse:
+			</text>
+			<line_editor name="UISndRestart" tool_tip="Dejar vacío para no ejecutar sonidos" left_delta="258" />
 		</panel>
 		<!-- =========================== -->
 		<panel label="Construcción" name="Building">
@@ -130,10 +150,10 @@
 			<spinner label="Tam.X" name="X size"/>
 			<spinner label="Tam. Y" name="Y size"/>
 			<spinner label="Tam.Z" name="Z size"/>					
-			<text left_delta="46" name="Material">
+			<text left_delta="30" name="Material">
 				Material:
 			</text>
-			<combo_box name="material">
+			<combo_box name="material"  left_delta="45" width="64" >
 				<combo_item name="Stone">
 					Piedra
 				</combo_item>
@@ -157,11 +177,16 @@
 				</combo_item>
 			</combo_box>
 			<text name="text_box7">
-				Permitir sig. propietario:
+				Permisos próximo propietario:
 			</text>
-			<check_box label="Permiso de Copia" tool_tip="El próximo propietario puede realizar copias de las creaciones" name="next_owner_copy"/>
-			<check_box label="Permiso de Modific." tool_tip="El próximo propietario puede editar y modificar las creaciones" name="next_owner_modify"/>
-			<check_box label="Permiso de Transf." tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer"/>
+			<text name="text_box8" >Objetos</text>
+			<check_box label="Copia" tool_tip="El próximo propietario puede realizar copias de las creaciones" name="next_owner_copy"/>
+			<check_box label="Modificar" tool_tip="El próximo propietario puede editar y modificar las creaciones" name="next_owner_modify"/>
+			<check_box label="Transferir" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer"/>
+			<text name="text_box9" >Scripts</text>
+			<check_box label="Copiar" tool_tip="El próximo propietario puede crear copias de los scripts" name="script_next_owner_copy"/>
+			<check_box label="Modificar" tool_tip="El próximo propietario puede editar los scripts" name="script_next_owner_modify"/>
+			<check_box label="Transferir" tool_tip="El próximo propietario puede dar (o vender) los scripts" name="script_next_owner_transfer"/>
 			<check_box label="Inmaterial" name="EmPhantomToggle"/>
 			<check_box label="Material" name="EmPhysicalToggle"/>
 			<check_box label="Temporal" name="EmTemporaryToggle"/>
@@ -190,7 +215,7 @@
 			<check_box name="EmeraldBuildPrefsEmbedItem" label="Colocar un item dentro del nuevo objeto"/>
 			<drop_target name="build_item_add_disp_rect"/>
 			<check_box label="Activar resaltado de prims seleccionados" name="EmBuildPrefsRenderHighlight_toggle" />
-			<check_box label="Mostrar Ejes en la posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>
+			<check_box label="Mostrar Ejes en posición del Prim Base" tool_tip="El comportamiento por defecto es mostrar el eje en el centro del conjunto de prims. Si está activado, el eje se muestra en la prim raíz del conjunto de enlaces." name="EmBuildPrefsActualRoot_toggle"/>
 		</panel>
 	</tab_container>
 </panel>

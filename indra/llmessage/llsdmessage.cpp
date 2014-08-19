@@ -99,14 +99,14 @@ void LLSDMessage::EventResponder::setTimeoutPolicy(std::string const& name)
 	mHTTPTimeoutPolicy = AIHTTPTimeoutPolicy::getTimeoutPolicyByName(name);
 }
 
-void LLSDMessage::EventResponder::result(const LLSD& data)
+void LLSDMessage::EventResponder::httpSuccess(void)
 {
     // If our caller passed an empty replyPump name, they're not
     // listening: this is a fire-and-forget message. Don't bother posting
     // to the pump whose name is "".
     if (! mReplyPump.empty())
     {
-        LLSD response(data);
+        LLSD response(mContent);
         mReqID.stamp(response);
         mPumps.obtain(mReplyPump).post(response);
     }
@@ -118,7 +118,7 @@ void LLSDMessage::EventResponder::result(const LLSD& data)
     }
 }
 
-void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string& reason, const LLSD& content)
+void LLSDMessage::EventResponder::httpFailure(void)
 {
     // If our caller passed an empty errorPump name, they're not
     // listening: "default error handling is acceptable." Only post to an
@@ -129,9 +129,9 @@ void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string
         info["target"]  = mTarget;
         info["message"] = mMessage;
         info["code"] = mCode;
-        info["status"]  = LLSD::Integer(status);
-        info["reason"]  = reason;
-        info["content"] = content;
+        info["status"]  = LLSD::Integer(mStatus);
+        info["reason"]  = mReason;
+        info["content"] = mContent;
         mPumps.obtain(mErrorPump).post(info);
     }
     else                        // default error handling
@@ -139,8 +139,8 @@ void LLSDMessage::EventResponder::errorWithContent(U32 status, const std::string
         // convention seems to be to use llinfos, but that seems a bit casual?
         LL_WARNS("LLSDMessage::EventResponder")
             << "'" << mMessage << "' to '" << mTarget
-            << "' failed with code " << status << ": " << reason << '\n'
-            << ll_pretty_print_sd(content)
+            << "' failed with code " << mStatus << ": " << mReason << '\n'
+            << ll_pretty_print_sd(mContent)
             << LL_ENDL;
     }
 }
@@ -165,15 +165,15 @@ bool LLSDMessage::ResponderAdapter::listener(const LLSD& payload, bool success)
     LLHTTPClient::ResponderWithResult* responder = dynamic_cast<LLHTTPClient::ResponderWithResult*>(mResponder.get());
     // If this assertion fails then ResponderAdapter has been used for a ResponderWithCompleted derived class,
     // which is not allowed because ResponderAdapter can only work for classes derived from Responder that
-    // implement result() and errorWithContent (or just error).
+    // implement httpSuccess() and httpFailure().
     llassert_always(responder);
     if (success)
     {
-        responder->pubResult(payload);
+        responder->successResult(payload);
     }
     else
     {
-        responder->pubErrorWithContent((CURLcode)payload["code"].asInteger(), payload["status"].asInteger(), payload["reason"], payload["content"]);
+        responder->failureResult(payload["status"].asInteger(), payload["reason"], payload["content"], (CURLcode)payload["code"].asInteger());
     }
 
     /*---------------- MUST BE LAST STATEMENT BEFORE RETURN ----------------*/

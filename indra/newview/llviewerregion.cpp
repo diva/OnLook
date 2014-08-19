@@ -224,9 +224,9 @@ public:
 	virtual ~BaseCapabilitiesComplete()
 	{ }
 
-    void error(U32 statusNum, const std::string& reason)
+    void httpFailure(void)
     {
-		LL_WARNS2("AppInit", "Capabilities") << statusNum << ": " << reason << LL_ENDL;
+		LL_WARNS2("AppInit", "Capabilities") << mStatus << ": " << mReason << LL_ENDL;
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if (regionp)
 		{
@@ -234,7 +234,7 @@ public:
 		}
     }
 
-    void result(const LLSD& content)
+    void httpSuccess(void)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region was removed
@@ -249,7 +249,7 @@ public:
 		}
 
 		LLSD::map_const_iterator iter;
-		for(iter = content.beginMap(); iter != content.endMap(); ++iter)
+		for(iter = mContent.beginMap(); iter != mContent.endMap(); ++iter)
 		{
 			regionp->setCapability(iter->first, iter->second);
 			LL_DEBUGS2("AppInit", "Capabilities") << "got capability for " 
@@ -1722,6 +1722,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
 	capabilityNames.append("GetTexture");
+	capabilityNames.append("GroupAPIv1");
 	capabilityNames.append("GroupMemberData");
 	capabilityNames.append("GroupProposalBallot");
 	capabilityNames.append("HomeLocation");
@@ -1852,13 +1853,13 @@ public:
     { }
 	
 	
-    void error(U32 statusNum, const std::string& reason)
+    void httpFailure(void)
     {
-		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
+		LL_WARNS2("AppInit", "SimulatorFeatures") << mStatus << ": " << mReason << LL_ENDL;
 		retry();
     }
 
-    void result(const LLSD& content)
+    void httpSuccess(void)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region is removed or responder is not created.
@@ -1867,7 +1868,7 @@ public:
 			return ;
 		}
 		
-		regionp->setSimulatorFeatures(content);
+		regionp->setSimulatorFeatures(mContent);
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
@@ -1898,16 +1899,16 @@ public:
 	: mRetryURL(retry_url), mRegionHandle(region_handle), mAttempt(attempt), mMaxAttempts(max_attempts)
 	{}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		LL_WARNS2("AppInit", "GamingData") << statusNum << ": " << reason << LL_ENDL;
+		LL_WARNS2("AppInit", "GamingData") << mStatus << ": " << mReason << LL_ENDL;
 		retry();
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
-		if(regionp) regionp->setGamingData(content);
+		if(regionp) regionp->setGamingData(mContent);
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return gamingDataReceived_timeout; }

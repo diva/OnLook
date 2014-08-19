@@ -65,6 +65,7 @@ private:
 	bool mUnfocusedFloatersOpaque;
 	bool mCompleteNameProfiles;
 	bool mScriptErrorsStealFocus;
+	bool mConnectToNeighbors;
 	//Tags\Colors
 	bool mAscentBroadcastTag;
 	std::string mReportClientUUID;

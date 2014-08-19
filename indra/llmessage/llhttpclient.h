@@ -147,7 +147,7 @@ public:
 		/**
 		 * @brief return true if the status code indicates success.
 		 */
-		static bool isGoodStatus(U32 status)
+		static bool isGoodStatus(S32 status)
 		{
 			return((200 <= status) && (status < 300));
 		}
@@ -156,11 +156,11 @@ public:
 		ResponderBase(void);
 		virtual ~ResponderBase();
 
-		// Read body from buffer and put it into content. If status indicates success, interpret it as LLSD, otherwise copy it as-is.
-		void decode_llsd_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, LLSD& content);
+		// Read body from buffer and put it into mContent. If mStatus indicates success, interpret it as LLSD, otherwise copy it as-is.
+		void decode_llsd_body(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 
 		// Read body from buffer and put it into content. Always copy it as-is.
-		void decode_raw_body(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content);
+		void decode_raw_body(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer, std::string& content);
 
 	protected:
 		// Associated URL, used for debug output.
@@ -171,6 +171,15 @@ public:
 
 		// The curl result code.
 		CURLcode mCode;
+
+		// HTTP status code, if any.
+		S32 mStatus;
+
+		// Reason for error if mStatus is not good.
+		std::string mReason;
+
+		// Content interpreted as LLSD.
+		LLSD mContent;
 
 		// Set when the transaction finished (with or without errors).
 		bool mFinished;
@@ -184,6 +193,29 @@ public:
 		std::string const& getURL(void) const { return mURL; }
 		CURLcode result_code(void) const { return mCode; }
 
+	protected:
+		// Short cut.
+		void setResult(S32 status, std::string const& reason, LLSD const& content) { mStatus = status; mReason = reason; mContent = content; mFinished = true; }
+
+		// Call these only from the httpSuccess/httpFailure/httpComplete methods of derived classes.
+
+		LLSD const& getContent(void) const { return mContent; }
+		// You can just access mReceivedHeaders directly from derived classes, but added this accessor
+		// for convenience because upstream introduced this method as part of a new API.
+		AIHTTPReceivedHeaders const& getResponseHeaders(void) const
+		{
+			// If this fails then you need to add '/*virtual*/ bool needsHeaders(void) const { return true; }' to the most derived class.
+			llassert(needsHeaders());
+			return mReceivedHeaders;
+		}
+		// Another convenience method to match upstream.
+		std::string dumpResponse(void) const;
+	public:
+		// The next two are public because blocking_request() needs access too.
+		S32 getStatus(void) const { return mStatus; }
+		std::string const& getReason(void) const { return mReason; }
+
+	public:
 		// Called by BufferedCurlEasyRequest::timed_out or BufferedCurlEasyRequest::processOutput.
 		virtual void finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer) = 0;
 
@@ -226,7 +258,9 @@ public:
 		// Called when the whole transaction is completed (also the body was received), but before the body is processed.
 		/*virtual*/ void completed_headers(U32 status, std::string const& reason, AITransferInfo* info)
 		{
-			completedHeaders(status, reason, mReceivedHeaders);
+			mStatus = status;
+			mReason = reason;
+			completedHeaders();
 		}
 
 		// Extract cookie 'key' from mReceivedHeaders and return the string 'key=value', or an empty string if key does not exists.
@@ -254,7 +288,7 @@ public:
 		virtual AICapabilityType capability_type(void) const { return cap_other; }
 
 		// Timeout policy to use.
-		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const = 0;
+		virtual AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const;
 
 		// The name of the derived responder object. For debugging purposes.
 		virtual char const* getName(void) const = 0;
@@ -262,7 +296,7 @@ public:
 	protected:
 		// Derived classes can override this to get the HTML headers that were received, when the message is completed.
 		// Only actually called for classes that implement a needsHeaders() that returns true.
-		virtual void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+		virtual void completedHeaders(void)
 		{
 			// The default does nothing.
 		}
@@ -289,8 +323,10 @@ public:
 		/*virtual*/ void finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 		{
 			mCode = code;
+			mStatus = http_status;
+			mReason = reason;
 			// Allow classes derived from ResponderHeadersOnly to override completedHeaders.
-			completedHeaders(http_status, reason, mReceivedHeaders);
+			completedHeaders();
 			mFinished = true;
 		}
 
@@ -302,10 +338,9 @@ public:
 		// warning when a class accidently tries to override them.
 		enum YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS { };
 		virtual void completedRaw(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
-		virtual void completed(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
-		virtual void result(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
-		virtual void errorWithContent(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
-		virtual void error(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void httpCompleted(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void httpSuccess(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
+		virtual void httpFailure(YOU_MAY_ONLY_OVERRIDE_COMPLETED_HEADERS) { }
 #endif
 	};
 
@@ -321,9 +356,11 @@ public:
 		/*virtual*/ void finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 		{
 			mCode = code;
+			mStatus = http_status;
+			mReason = reason;
 			// Allow classes derived from ResponderWithCompleted to override completedRaw
 			// (if not they should override completed or be derived from ResponderWithResult instead).
-			completedRaw(http_status, reason, channels, buffer);
+			completedRaw(channels, buffer);
 			mFinished = true;
 		}
 
@@ -331,13 +368,17 @@ public:
 		// Events generated by this class.
 
 		// Derived classes can override this to get the raw data of the body of the HTML message that was received.
-		// The default is to interpret the content as LLSD and call completed().
-		virtual void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+		// The default is to interpret the content as LLSD and call httpCompleted().
+		virtual void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 
 		// ... or, derived classes can override this to get LLSD content when the message is completed.
 		// The default aborts, as it should never be called (can't make it pure virtual though, so
 		// classes that override completedRaw don't need to implement this function, too).
-		virtual void completed(U32 status, std::string const& reason, LLSD const& content);
+		virtual void httpCompleted(void);
+
+    public:
+		// Ugly LL API...
+		void completeResult(S32 status, std::string const& reason, LLSD const& content) { mCode = CURLE_OK; setResult(status, reason, content); httpCompleted(); }
 
 #ifdef SHOW_ASSERT
 		// Responders derived from this class must override either completedRaw or completed.
@@ -345,9 +386,8 @@ public:
 		// Define those functions here with different parameters in order to cause a compile
 		// warning when a class accidently tries to override them.
 		enum YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS { };
-		virtual void result(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
-		virtual void errorWithContent(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
-		virtual void error(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+		virtual void httpSuccess(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+		virtual void httpFailure(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
 #endif
 	};
 
@@ -366,22 +406,18 @@ public:
 		// Events generated by this class.
 
 		// Derived classes must override this to receive the content of a body upon success.
-		virtual void result(LLSD const& content) = 0;
-
-		// Derived classes can override this to get informed when a bad HTML status code is received.
-		// The default calls error().
-		virtual void errorWithContent(U32 status, std::string const& reason, LLSD const& content);
+		virtual void httpSuccess(void) = 0;
 
 		// ... or, derived classes can override this to get informed when a bad HTML status code is received.
 		// The default prints the error to llinfos.
-		virtual void error(U32 status, std::string const& reason);
+		virtual void httpFailure(void);
 
 	public:
 		// Called from LLSDMessage::ResponderAdapter::listener.
 		// LLSDMessage::ResponderAdapter is a hack, showing among others by fact that it needs these functions.
 
-		void pubErrorWithContent(CURLcode code, U32 status, std::string const& reason, LLSD const& content) { mCode = code; errorWithContent(status, reason, content); mFinished = true; }
-		void pubResult(LLSD const& content) { mCode = CURLE_OK; result(content); mFinished = true; }
+		void failureResult(U32 status, std::string const& reason, LLSD const& content, CURLcode code = CURLE_OK) { mCode = code; setResult(status, reason, content); httpFailure(); }
+		void successResult(LLSD const& content) { mCode = CURLE_OK; setResult(HTTP_OK, "", content); httpSuccess(); }
 
 #ifdef SHOW_ASSERT
 		// Responders derived from this class must override result, and either errorWithContent or error.
@@ -390,40 +426,8 @@ public:
 		// warning when a class accidently tries to override them.
 		enum YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS { };
 		virtual void completedRaw(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
-		virtual void completed(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
+		virtual void httpCompleted(YOU_ARE_DERIVING_FROM_THE_WRONG_CLASS) { }
 #endif
-	};
-
-	/**
-	 * @class LegacyPolledResponder
-	 * @brief As ResponderWithCompleted but caches the result for polling.
-	 *
-	 * This class allows old polling code to poll if the transaction finished
-	 * by calling is_finished() (from the main the thread) and then access the
-	 * results-- as opposed to immediately digesting the results when any of
-	 * the virtual functions are called.
-	 */
-	class LegacyPolledResponder : public ResponderWithCompleted {
-	protected:
-		U32 mStatus;
-		std::string mReason;
-
-	protected:
-		// The responder finished. Do not override this function in derived classes.
-		/*virtual*/ void finished(CURLcode code, U32 http_status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
-		{
-			mStatus = http_status;
-			mReason = reason;
-			// Call base class implementation.
-			ResponderWithCompleted::finished(code, http_status, reason, channels, buffer);
-		}
-
-	public:
-		LegacyPolledResponder(void) : mStatus(HTTP_INTERNAL_ERROR_OTHER) { }
-
-		// Accessors.
-		U32 http_status(void) const { return mStatus; }
-		std::string const& reason(void) const { return mReason; }
 	};
 
 	/**
@@ -431,7 +435,7 @@ public:
 	 * @brief Base class for responders that ignore the result body.
 	 */
 	class ResponderIgnoreBody : public ResponderWithResult {
-		void result(LLSD const&) { }
+		void httpSuccess(void) { }
 	};
 
 	/**

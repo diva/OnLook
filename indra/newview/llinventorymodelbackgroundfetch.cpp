@@ -393,21 +393,21 @@ class LLInventoryModelFetchItemResponder : public LLInventoryModel::fetchInvento
 {
 public:
 	LLInventoryModelFetchItemResponder(const LLSD& request_sd) : LLInventoryModel::fetchInventoryResponder(request_sd) {};
-	/*virtual*/ void result(const LLSD& content);			
-	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchItemResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLInventoryModelFetchItemResponder"; }
 };
 
-void LLInventoryModelFetchItemResponder::result( const LLSD& content )
+void LLInventoryModelFetchItemResponder::httpSuccess(void)
 {
-	LLInventoryModel::fetchInventoryResponder::result(content);
+	LLInventoryModel::fetchInventoryResponder::httpSuccess();
 	LLInventoryModelBackgroundFetch::instance().incrFetchCount(-1);
 }
 
-void LLInventoryModelFetchItemResponder::error( U32 status, const std::string& reason )
+void LLInventoryModelFetchItemResponder::httpFailure(void)
 {
-	LLInventoryModel::fetchInventoryResponder::error(status, reason);
+	LLInventoryModel::fetchInventoryResponder::httpFailure();
 	LLInventoryModelBackgroundFetch::instance().incrFetchCount(-1);
 }
 
@@ -418,8 +418,8 @@ class LLInventoryModelFetchDescendentsResponder : public LLHTTPClient::Responder
 		mRequestSD(request_sd),
 		mRecursiveCatUUIDs(recursive_cats)
 	{};
-	/*virtual*/ void result(const LLSD& content);
-	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AICapabilityType capability_type(void) const { return cap_inventory; }
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return inventoryModelFetchDescendentsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLInventoryModelFetchDescendentsResponder"; }
@@ -432,14 +432,14 @@ private:
 };
 
 // If we get back a normal response, handle it here.
-void LLInventoryModelFetchDescendentsResponder::result(const LLSD& content)
+void LLInventoryModelFetchDescendentsResponder::httpSuccess(void)
 {
 	LLInventoryModelBackgroundFetch *fetcher = LLInventoryModelBackgroundFetch::getInstance();
-	if (content.has("folders"))	
+	if (mContent.has("folders"))	
 	{
 
-		for(LLSD::array_const_iterator folder_it = content["folders"].beginArray();
-			folder_it != content["folders"].endArray();
+		for(LLSD::array_const_iterator folder_it = mContent["folders"].beginArray();
+			folder_it != mContent["folders"].endArray();
 			++folder_it)
 		{	
 			LLSD folder_sd = *folder_it;
@@ -535,10 +535,10 @@ void LLInventoryModelFetchDescendentsResponder::result(const LLSD& content)
 		}
 	}
 		
-	if (content.has("bad_folders"))
+	if (mContent.has("bad_folders"))
 	{
-		for(LLSD::array_const_iterator folder_it = content["bad_folders"].beginArray();
-			folder_it != content["bad_folders"].endArray();
+		for(LLSD::array_const_iterator folder_it = mContent["bad_folders"].beginArray();
+			folder_it != mContent["bad_folders"].endArray();
 			++folder_it)
 		{	
 			LLSD folder_sd = *folder_it;
@@ -561,16 +561,16 @@ void LLInventoryModelFetchDescendentsResponder::result(const LLSD& content)
 }
 
 //If we get back an error (not found, etc...), handle it here
-void LLInventoryModelFetchDescendentsResponder::error(U32 status, const std::string& reason)
+void LLInventoryModelFetchDescendentsResponder::httpFailure(void)
 {
 	LLInventoryModelBackgroundFetch *fetcher = LLInventoryModelBackgroundFetch::getInstance();
 
 	llinfos << "LLInventoryModelFetchDescendentsResponder::error "
-		<< status << ": " << reason << llendl;
+		<< mStatus << ": " << mReason << llendl;
 						
 	fetcher->incrFetchCount(-1);
 
-	if (is_internal_http_error_that_warrants_a_retry(status)) // timed out
+	if (is_internal_http_error_that_warrants_a_retry(mStatus)) // timed out
 	{
 		for(LLSD::array_const_iterator folder_it = mRequestSD["folders"].beginArray();
 			folder_it != mRequestSD["folders"].endArray();

@@ -2903,7 +2903,7 @@ BOOL LLViewerObject::loadTaskInvFile(const std::string& filename)
 		while(ifs.good())
 		{
 			ifs.getline(buffer, MAX_STRING);
-			sscanf(buffer, " %254s", keyword);	/* Flawfinder: ignore */
+			if (sscanf(buffer, " %254s", keyword) < 1) continue;
 			if(0 == strcmp("inv_item", keyword))
 			{
 				LLPointer<LLInventoryObject> inv = new LLViewerInventoryItem;

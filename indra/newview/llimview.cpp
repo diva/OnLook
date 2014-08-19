@@ -117,7 +117,7 @@ public:
 		mInvitiationType = invitation_type;
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		if ( gIMMgr)
 		{
@@ -137,7 +137,7 @@ public:
 				//but unfortunately, our base that we are receiving here
 				//may not be the most up to date.  It was accurate at
 				//some point in time though.
-				speaker_mgr->setSpeakers(content);
+				speaker_mgr->setSpeakers(mContent);
 
 				//we now have our base of users in the session
 				//that was accurate at some point, but maybe not now
@@ -167,10 +167,10 @@ public:
 		}
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llwarns << "LLViewerChatterBoxInvitationAcceptResponder error [status:"
-				<< statusNum << "]: " << reason << llendl;
+				<< mStatus << "]: " << mReason << llendl;
 		//throw something back to the viewer here?
 		if ( gIMMgr )
 		{
@@ -181,7 +181,7 @@ public:
 
 			if ( floaterp )
 			{
-				if ( 404 == statusNum )
+				if ( 404 == mStatus )
 				{
 					std::string error_string;
 					error_string = "session_does_not_exist_error";

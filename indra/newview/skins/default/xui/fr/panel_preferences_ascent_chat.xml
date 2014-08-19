@@ -40,6 +40,36 @@
       <check_box label="Signale les nouveaux IM entrants" name="chat_steal_focus"/>
       <check_box label="Montre la barre du chat local séparée (Déco Reco)" tool_tip="" name="show_local_chat_floater_bar"/>
       <check_box label="boutons horizontaux pour les contacts (Déco Reco)" tool_tip="Activé, les boutons amis/groupes seront en bas et horizontaux et non plus verticaux et à droite." name="horiz_butt"/>
+      <combo_box name="friends_namesystem_combobox">
+        <combo_item name="Old Names">Anciens Names</combo_item>
+        <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+        <combo_item name="Display Names only">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
+      </combo_box>
+      <combo_box name="group_members_namesystem_combobox">
+        <combo_item name="Old Names">Anciens Names</combo_item>
+        <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+        <combo_item name="Display Names only">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
+      </combo_box>
+      <combo_box name="land_management_namesystem_combobox">
+        <combo_item name="Old Names">Anciens Names</combo_item>
+        <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+        <combo_item name="Display Names only">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
+      </combo_box>
+      <combo_box name="radar_namesystem_combobox">
+        <combo_item name="Old Names">Anciens Names</combo_item>
+        <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+        <combo_item name="Display Names only">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
+      </combo_box>
+      <combo_box name="speaker_namesystem_combobox">
+        <combo_item name="Old Names">Anciens Names</combo_item>
+        <combo_item name="Display Names (with Username)">Display Names(w/Username)</combo_item>
+        <combo_item name="Display Names only">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)">Anciens Names (w/Display)</combo_item>
+      </combo_box>
       <check_box label="Utilise les anciens noms pour la liste des voices actives" tool_tip="Aide à une meilleure modération en ne montrant que le nom àl'ancienne" name="legacy_speaker_names"/>
       <check_box label="Boutons sur la même ligne que les noms pour les IMs" name="im_concise_butt"/>
       <check_box label="Boutons sur la ligne des noms des chats de groupe" name="group_concise_butt"/>

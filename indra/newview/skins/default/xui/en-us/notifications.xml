@@ -151,7 +151,7 @@
    icon="alert.tga"
    name="MediaAlert"
    type="alert">
-The owner of this parcel has requested the following [TYPE] URL to be loaded by your viewer:
+The owner of this parcel has requested the following [MEDIA_TYPE] URL to be loaded by your viewer:
 
 [URL]
 
@@ -179,12 +179,25 @@ You may choose to allow or deny the corresponding domain or in-world scripted ob
 	 text="Whitelist"/>
    </form>
   </notification>
-
+  
   <notification
-   icon="alert.tga"
-   name="MediaListed"
-   type="alert">
-Media/audio URLs for [DOMAIN] now [LISTED]
+   icon="alertmodal.tga"
+   name="AddToMediaList"
+   type="alertmodal">
+Enter a domain name to be added to the [LIST]:
+    <tag>confirm</tag>
+    <form name="form">
+      <input name="url" type="text" default="true" />
+      <button
+       default="true"
+       index="0"
+       name="Add"
+       text="Add"/>
+      <button
+       index="1"
+       name="Cancel"
+       text="Cancel"/>
+    </form>
   </notification>
 
   <notification
@@ -192,13 +205,6 @@ Media/audio URLs for [DOMAIN] now [LISTED]
    name="MediaBlocked"
    type="notifytip">
 Media/audio URL blocked for [DOMAIN]
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="MediaFiltersCleared"
-   type="alertmodal">
-The media filters have been cleared
   </notification>
 
   <notification
@@ -610,6 +616,34 @@ Add this Ability to &apos;[ROLE_NAME]&apos;?
      name="okcancelbuttons"
      notext="No"
      yestext="Yes"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="AssignBanAbilityWarning"
+   type="alertmodal">
+You are about to add the Ability &apos;[ACTION_NAME]&apos; to the Role &apos;[ROLE_NAME]&apos;.
+
+ *WARNING*
+Any Member in a Role with this Ability will also be granted the Abilities &apos;[ACTION_NAME_2]&apos; and &apos;[ACTION_NAME_3]&apos;
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="RemoveBanAbilityWarning"
+   type="alertmodal">
+You are removing the Ability &apos;[ACTION_NAME]&apos; to the Role &apos;[ROLE_NAME]&apos;.
+
+ *WARNING*
+Removing this ability will NOT remove the Abilities &apos;[ACTION_NAME_2]&apos; and &apos;[ACTION_NAME_3]&apos;.
+
+If you no longer wish to have these abilities granted to this role, disable them immediately!
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
   </notification>
 
   <notification
@@ -1570,6 +1604,15 @@ Eject [AVATAR_NAME] from your land?
      name="okcancelbuttons"
      notext="Cancel"
      yestext="Eject"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="EjectAvatarFromGroup"
+   persist="true"
+   type="notifytip">
+You ejected [AVATAR_NAME] from group [GROUP_NAME]
+    <tag>group</tag>
   </notification>
 
   <notification
@@ -3314,6 +3357,39 @@ Leave Group?
   </notification>
 
   <notification
+   icon="alertmodal.tga"
+   name="OwnerCannotLeaveGroup"
+   type="alertmodal">
+    Unable to leave group. You cannot leave the group because you are the last owner of the group. Please assign another member to the owner role first.
+    <tag>group</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alert.tga"
+   name="GroupDepartError"
+   type="alert">
+Unable to leave group: [reason].
+    <tag>reason</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alert.tga"
+   name="GroupDepart"
+   type="alert">
+You have left the group [group_name].
+    <tag>group_name</tag>
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
+  <notification
    icon="alert.tga"
    name="ConfirmKick"
    type="alert">
@@ -3669,6 +3745,18 @@ Join me in [REGION]
 Are you sure you want to teleport?
     <usetemplate
      ignoretext="When teleporting from a landmark in inventory"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="Teleport"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="TeleportViaSLAPP"
+   type="alertmodal">
+Are you sure you want to teleport to [LOCATION]?
+    <usetemplate
+     ignoretext="Confirm that I want to teleport via SLAPP"
      name="okcancelignore"
      notext="Cancel"
      yestext="Teleport"/>

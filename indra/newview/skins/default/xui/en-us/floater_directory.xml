@@ -6,6 +6,65 @@
 	<tab_container bottom="-570" follows="left|top|right|bottom" height="550" left="0"
 	     mouse_opaque="false" name="Directory Tabs" tab_position="top" width="780">
 		<panel border="true" bottom="-549" follows="left|top|right|bottom" height="533"
+			  label="All Classic" left="1" mouse_opaque="false" name="find_all_old_panel" width="778">
+			 <string name="searching_text">
+				 Searching...
+			 </string>
+			 <string name="not_found_text">
+				 None Found.
+			 </string>
+			 <button bottom="-533" follows="left|bottom" font="SansSerif" halign="center"
+				  height="20" label="&lt; Prev" label_selected="&lt; Prev" left="80"
+				  mouse_opaque="true" name="&lt; Prev" width="60" />
+			 <button bottom="-533" follows="left|bottom" font="SansSerif" halign="center"
+				  height="20" label="Next &gt;" label_selected="Next &gt;"
+				  mouse_opaque="true" name="Next &gt;" width="60" />
+			 <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				  bottom="-24" drop_shadow_visible="true" follows="left|top" font="SansSerif"
+				  h_pad="0" halign="left" height="16" left="4" mouse_opaque="true"
+				  name="find" v_pad="0" width="50">
+				 Find:
+			 </text>
+			 <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="-24"
+				  follows="left|top" font="SansSerif" height="18" left_delta="38"
+				  max_length="63" mouse_opaque="true" name="name" width="128" spell_check="true" />
+			 <button bottom="-26" follows="left|top" font="SansSerif" halign="center" height="20"
+				  label="Search" label_selected="Search" left_delta="136" mouse_opaque="true"
+				  name="Search" width="70" />
+			 <check_box bottom="-22" control_name="ShowPGSearchAll" follows="left|top"
+				  font="SansSerifSmall" height="16" initial_value="true"
+				  label="PG content" left_delta="78" mouse_opaque="true"
+				  name="incpg" width="156" />
+			 <check_box bottom="-22" control_name="ShowMatureSearchAll" follows="left|top"
+				  font="SansSerifSmall" height="16" initial_value="false"
+				  label="Mature content" left_delta="100" mouse_opaque="true"
+				  name="incmature" width="156" />
+			 <check_box bottom="-22" control_name="ShowAdultSearchAll" follows="left|top"
+				  font="SansSerifSmall" height="16" initial_value="false"
+				  label="Adult content" left_delta="120" mouse_opaque="true"
+				  name="incadult" width="156" />
+            <check_box name="filter_gaming" label="Hide Gaming" control_name="FilterGamingSearchAll" follows="right|top" bottom="-22" left_delta="120"/>
+			 <scroll_list background_visible="true" bottom="-513" column_padding="0" draw_border="true"
+				  draw_heading="false" fg_disable_color="1, 1, 1, 1"
+				  follows="left|top|right|bottom" height="464" left="4" mouse_opaque="true"
+				  multi_select="false" name="results" search_column="1" width="339">
+				 <column label="" name="icon" width="24" />
+				 <column label="Name" name="name" width="235" />
+				 <column label="Price" name="price" width="90" />
+				 <column label="Time (PT)" name="date" width="90" />
+				 <column label="Time" name="time" width="-1" />
+				 <column label="Traffic" name="dwell" width="90" />
+				 <column label="Area" name="area" width="90" />
+				 <column label="L$/sq.m" name="per_meter" width="90" />
+				 <column label="Online" name="online" width="90" />
+				 <column label="Members" name="members" width="90" />
+			 </scroll_list>
+			 <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				  bottom_delta="-20" drop_shadow_visible="true" follows="left|bottom"
+				  font="SansSerifSmall" h_pad="0" halign="left" height="16" left="4"
+				  mouse_opaque="true" name="result_text" v_pad="0" width="328" />
+		</panel>
+		<panel border="true" bottom="-549" follows="left|top|right|bottom" height="533"
 		     label="All" left="1" mouse_opaque="false" name="find_all_panel" width="778">
 			<string name="searching_text">
 				Searching...
@@ -482,7 +541,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 					Any Category
 				</combo_item>
 				<combo_item name="LindenLocation" value="linden">
-					Linden Location
+					Official Location
 				</combo_item>
 				<combo_item name="Arts&amp;Culture" value="arts">
 					Arts and Culture
@@ -690,25 +749,26 @@ To buy direct, visit the land and click on the place name in the title bar.
       <button bottom="-30" follows="top|left" height="25" label="" left="10" name="back_btn" width="25" image_overlay="go-previous.png"/>
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next.png" />
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="reload_btn" width="25" image_overlay="go-reload.png"/>
+      <button bottom_delta="0" follows="top|left" height="25" label="" tool_tip="reset" left_delta="27" name="reset_btn" width="25" image_overlay="go-home.png"/>
       <web_browser name="market_browser" trusted_content="true" bottom="25" follows="all" left="10" right="-10" top="-40"/>
       <text bottom="5" follows="bottom|left" left="10" height="16" name="status_text"/>
       <string name="loading_text">Loading...</string>
       <string name="done_text">Done</string>
-      <string name="redirect_404_url">https://marketplace.secondlife.com/notfound</string>
+      <string name="redirect_404_url">[APP_SITE]/404</string>
       <string name="default_search_page">https://marketplace.secondlife.com/</string>
     </panel>
     <panel bottom="-549" follows="all" height="533" label="Web" left="1" mouse_opaque="false" name="web_panel" width="778">
       <button bottom="-30" follows="top|left" height="25" label="" left="10" name="back_btn" width="25" image_overlay="go-previous.png"/>
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="forward_btn" width="25" image_overlay="go-next.png" />
       <button bottom_delta="0" follows="top|left" height="25" label="" left_delta="27" name="reload_btn" width="25" image_overlay="go-reload.png"/>
-	  <button bottom_delta="0" follows="top|left" height="25" left_delta="27" width="200" label="Open Web Search Floater" name="web_search_floater_btn">
-		  <button.commit_callback function="Search.WebFloater"/>
-	  </button>
+      <button bottom_delta="0" follows="top|left" height="25" left_delta="27" width="200" label="Open Web Search Floater" name="web_search_floater_btn">
+        <button.commit_callback function="Search.WebFloater"/>
+      </button>
       <web_browser name="web_search_browser" start_url="http://search.secondlife.com/" trusted_content="true" bottom="25" follows="all" left="10" right="-10" top="-40"/>
       <text bottom="5" follows="bottom|left" left="10" height="16" name="status_text"/>
       <string name="loading_text">Loading...</string>
       <string name="done_text">Done</string>
-      <string name="redirect_404_url">http://search.secondlife.com/</string>
+      <string name="redirect_404_url">[APP_SITE]/404</string>
       <string name="default_search_page">http://search.secondlife.com/</string>
     </panel>
 	</tab_container>

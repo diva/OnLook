@@ -30,9 +30,6 @@
 #include "llcurl.h"
 #include "llhttpclient.h"
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy accountingCostResponder_timeout;
-
 //===============================================================================
 LLAccountingCostManager::LLAccountingCostManager()
 {	
@@ -60,34 +57,34 @@ public:
 		}
 	}
 	
-	void error( U32 statusNum, const std::string& reason )
+	void httpFailure(void)
 	{
-		llwarns	<< "Transport error [status:" << statusNum << "]: " << reason << llendl;
+		llwarns	<< "Transport error [status:" << mStatus << "]: " << mReason << llendl;
 		clearPendingRequests();
 
 		LLAccountingCostObserver* observer = mObserverHandle.get();
 		if (observer && observer->getTransactionID() == mTransactionID)
 		{
-			observer->setErrorStatus(statusNum, reason);
+			observer->setErrorStatus(mStatus, mReason);
 		}
 	}
 	
-	void result( const LLSD& content )
+	void httpSuccess(void)
 	{
 		//Check for error
-		if ( !content.isMap() || content.has("error") )
+		if ( !mContent.isMap() || mContent.has("error") )
 		{
 			llwarns	<< "Error on fetched data"<< llendl;
 		}
-		else if (content.has("selected"))
+		else if (mContent.has("selected"))
 		{
 			F32 physicsCost		= 0.0f;
 			F32 networkCost		= 0.0f;
 			F32 simulationCost	= 0.0f;
 
-			physicsCost		= content["selected"]["physics"].asReal();
-			networkCost		= content["selected"]["streaming"].asReal();
-			simulationCost	= content["selected"]["simulation"].asReal();
+			physicsCost		= mContent["selected"]["physics"].asReal();
+			networkCost		= mContent["selected"]["streaming"].asReal();
+			simulationCost	= mContent["selected"]["simulation"].asReal();
 				
 			SelectionCost selectionCost( /*transactionID,*/ physicsCost, networkCost, simulationCost );
 
@@ -101,7 +98,6 @@ public:
 		clearPendingRequests();
 	}
 	
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return accountingCostResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLAccountingCostResponder"; }
 
 private:

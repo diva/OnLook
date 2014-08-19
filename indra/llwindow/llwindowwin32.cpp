@@ -38,6 +38,7 @@
 
 // Linden library includes
 #include "llerror.h"
+#include "llfasttimer.h"
 #include "llgl.h"
 #include "llstring.h"
 #include "lldir.h"
@@ -57,8 +58,6 @@
 
 #include <dinput.h>
 #include <Dbt.h.>
-
-#include "llfasttimer.h"
 
 // culled from winuser.h
 #ifndef WM_MOUSEWHEEL /* Added to be compatible with later SDK's */
@@ -85,6 +84,18 @@ LLW32MsgCallback gAsyncMsgCallback = NULL;
 void show_window_creation_error(const std::string& title)
 {
 	LL_WARNS("Window") << title << LL_ENDL;
+}
+
+HGLRC SafeCreateContext(HDC hdc)
+{
+	__try
+	{
+		return wglCreateContext(hdc);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		return NULL;
+	}
 }
 
 //static
@@ -163,7 +174,6 @@ LLWinImm::LLWinImm() : mHImmDll(NULL)
 	// Check system metrics 
 	if ( !GetSystemMetrics( SM_DBCSENABLED ) )
 		return;
-	
 
 	mHImmDll = LoadLibraryA("Imm32");
 	if (mHImmDll != NULL)
@@ -205,7 +215,7 @@ LLWinImm::LLWinImm() : mHImmDll(NULL)
 			// the case, since it is very unusual; these APIs are available from 
 			// the beginning, and all versions of IMM32.DLL should have them all.  
 			// Unfortunately, this code may be executed before initialization of 
-			// the logging channel (llwarns), and we can't do it here...  Yes, this 
+			// the logging channel (LL_WARNS()), and we can't do it here...  Yes, this
 			// is one of disadvantages to use static constraction to DLL loading. 
 			FreeLibrary(mHImmDll);
 			mHImmDll = NULL;
@@ -554,6 +564,7 @@ LLWindowWin32::LLWindowWin32(LLWindowCallbacks* callbacks,
 		if (closest_refresh == 0)
 		{
 			LL_WARNS("Window") << "Couldn't find display mode " << width << " by " << height << " at " << BITS_PER_PIXEL << " bits per pixel" << LL_ENDL;
+			//success = FALSE;
 
 			if (!EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dev_mode))
 			{
@@ -1012,7 +1023,8 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 			dw_ex_style = WS_EX_APPWINDOW;
 			dw_style = WS_POPUP;
 
-			// Move window borders out not to cover window contents
+			// Move window borders out not to cover window contents.
+			// This converts client rect to window rect, i.e. expands it by the window border size.
 			AdjustWindowRectEx(&window_rect, dw_style, FALSE, dw_ex_style);
 		}
 		// If it failed, we don't want to run fullscreen
@@ -1059,7 +1071,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 		mhInstance,
 		NULL);
 
-	LL_INFOS("Window") << "window is created." << llendl ;
+	LL_INFOS("Window") << "window is created." << LL_ENDL ;
 
 	//-----------------------------------------------------------------------
 	// Create GL drawing context
@@ -1092,7 +1104,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 		return FALSE;
 	}
 
-	LL_INFOS("Window") << "Device context retrieved." << llendl ;
+	LL_INFOS("Window") << "Device context retrieved." << LL_ENDL ;
 
 	if (!(pixel_format = ChoosePixelFormat(mhDC, &pfd)))
 	{
@@ -1102,7 +1114,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 		return FALSE;
 	}
 
-	LL_INFOS("Window") << "Pixel format chosen." << llendl ;
+	LL_INFOS("Window") << "Pixel format chosen." << LL_ENDL ;
 
 	// Verify what pixel format we actually received.
 	if (!DescribePixelFormat(mhDC, pixel_format, sizeof(PIXELFORMATDESCRIPTOR),
@@ -1115,35 +1127,35 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 	}
 
 	// (EXP-1765) dump pixel data to see if there is a pattern that leads to unreproducible crash
-	LL_INFOS("Window") << "--- begin pixel format dump ---" << llendl ;
-	LL_INFOS("Window") << "pixel_format is " << pixel_format << llendl ;
-	LL_INFOS("Window") << "pfd.nSize:            " << pfd.nSize << llendl ;
-	LL_INFOS("Window") << "pfd.nVersion:         " << pfd.nVersion << llendl ;
-	LL_INFOS("Window") << "pfd.dwFlags:          0x" << std::hex << pfd.dwFlags << std::dec << llendl ;
-	LL_INFOS("Window") << "pfd.iPixelType:       " << (int)pfd.iPixelType << llendl ;
-	LL_INFOS("Window") << "pfd.cColorBits:       " << (int)pfd.cColorBits << llendl ;
-	LL_INFOS("Window") << "pfd.cRedBits:         " << (int)pfd.cRedBits << llendl ;
-	LL_INFOS("Window") << "pfd.cRedShift:        " << (int)pfd.cRedShift << llendl ;
-	LL_INFOS("Window") << "pfd.cGreenBits:       " << (int)pfd.cGreenBits << llendl ;
-	LL_INFOS("Window") << "pfd.cGreenShift:      " << (int)pfd.cGreenShift << llendl ;
-	LL_INFOS("Window") << "pfd.cBlueBits:        " << (int)pfd.cBlueBits << llendl ;
-	LL_INFOS("Window") << "pfd.cBlueShift:       " << (int)pfd.cBlueShift << llendl ;
-	LL_INFOS("Window") << "pfd.cAlphaBits:       " << (int)pfd.cAlphaBits << llendl ;
-	LL_INFOS("Window") << "pfd.cAlphaShift:      " << (int)pfd.cAlphaShift << llendl ;
-	LL_INFOS("Window") << "pfd.cAccumBits:       " << (int)pfd.cAccumBits << llendl ;
-	LL_INFOS("Window") << "pfd.cAccumRedBits:    " << (int)pfd.cAccumRedBits << llendl ;
-	LL_INFOS("Window") << "pfd.cAccumGreenBits:  " << (int)pfd.cAccumGreenBits << llendl ;
-	LL_INFOS("Window") << "pfd.cAccumBlueBits:   " << (int)pfd.cAccumBlueBits << llendl ;
-	LL_INFOS("Window") << "pfd.cAccumAlphaBits:  " << (int)pfd.cAccumAlphaBits << llendl ;
-	LL_INFOS("Window") << "pfd.cDepthBits:       " << (int)pfd.cDepthBits << llendl ;
-	LL_INFOS("Window") << "pfd.cStencilBits:     " << (int)pfd.cStencilBits << llendl ;
-	LL_INFOS("Window") << "pfd.cAuxBuffers:      " << (int)pfd.cAuxBuffers << llendl ;
-	LL_INFOS("Window") << "pfd.iLayerType:       " << (int)pfd.iLayerType << llendl ;
-	LL_INFOS("Window") << "pfd.bReserved:        " << (int)pfd.bReserved << llendl ;
-	LL_INFOS("Window") << "pfd.dwLayerMask:      " << pfd.dwLayerMask << llendl ;
-	LL_INFOS("Window") << "pfd.dwVisibleMask:    " << pfd.dwVisibleMask << llendl ;
-	LL_INFOS("Window") << "pfd.dwDamageMask:     " << pfd.dwDamageMask << llendl ;
-	LL_INFOS("Window") << "--- end pixel format dump ---" << llendl ;
+	LL_INFOS("Window") << "--- begin pixel format dump ---" << LL_ENDL ;
+	LL_INFOS("Window") << "pixel_format is " << pixel_format << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.nSize:            " << pfd.nSize << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.nVersion:         " << pfd.nVersion << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.dwFlags:          0x" << std::hex << pfd.dwFlags << std::dec << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.iPixelType:       " << (int)pfd.iPixelType << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cColorBits:       " << (int)pfd.cColorBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cRedBits:         " << (int)pfd.cRedBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cRedShift:        " << (int)pfd.cRedShift << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cGreenBits:       " << (int)pfd.cGreenBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cGreenShift:      " << (int)pfd.cGreenShift << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cBlueBits:        " << (int)pfd.cBlueBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cBlueShift:       " << (int)pfd.cBlueShift << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAlphaBits:       " << (int)pfd.cAlphaBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAlphaShift:      " << (int)pfd.cAlphaShift << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAccumBits:       " << (int)pfd.cAccumBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAccumRedBits:    " << (int)pfd.cAccumRedBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAccumGreenBits:  " << (int)pfd.cAccumGreenBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAccumBlueBits:   " << (int)pfd.cAccumBlueBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAccumAlphaBits:  " << (int)pfd.cAccumAlphaBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cDepthBits:       " << (int)pfd.cDepthBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cStencilBits:     " << (int)pfd.cStencilBits << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.cAuxBuffers:      " << (int)pfd.cAuxBuffers << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.iLayerType:       " << (int)pfd.iLayerType << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.bReserved:        " << (int)pfd.bReserved << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.dwLayerMask:      " << pfd.dwLayerMask << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.dwVisibleMask:    " << pfd.dwVisibleMask << LL_ENDL ;
+	LL_INFOS("Window") << "pfd.dwDamageMask:     " << pfd.dwDamageMask << LL_ENDL ;
+	LL_INFOS("Window") << "--- end pixel format dump ---" << LL_ENDL ;
 
 	if (pfd.cColorBits < 32)
 	{
@@ -1169,7 +1181,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 		return FALSE;
 	}
 
-	if (!(mhRC = wglCreateContext(mhDC)))
+	if (!(mhRC = SafeCreateContext(mhDC)))
 	{
 		close();
 		OSMessageBox(mCallbacks->translateString("MBGLContextErr"),
@@ -1185,7 +1197,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 		return FALSE;
 	}
 
-	LL_INFOS("Window") << "Drawing context is created." << llendl ;
+	LL_INFOS("Window") << "Drawing context is created." << LL_ENDL ;
 
 	gGLManager.initWGL();
 
@@ -1323,142 +1335,15 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 			LL_INFOS("Window") << "Choosing pixel formats: " << num_formats << " pixel formats returned" << LL_ENDL;
 		}
 
-		LL_INFOS("Window") << "pixel formats done." << llendl ;
-
-		/*for(int i = 0; i <= num_formats-1; ++i)
-		{
-			GLint query[] = {	WGL_SAMPLE_BUFFERS_ARB,
-								WGL_SAMPLES_ARB,
-								WGL_NUMBER_PIXEL_FORMATS_ARB,
-								WGL_DRAW_TO_WINDOW_ARB,
-								WGL_DRAW_TO_BITMAP_ARB,
-								WGL_ACCELERATION_ARB,
-								WGL_NEED_PALETTE_ARB,
-								WGL_NEED_SYSTEM_PALETTE_ARB,
-								WGL_SWAP_LAYER_BUFFERS_ARB,
-								WGL_SWAP_METHOD_ARB,
-								WGL_NUMBER_OVERLAYS_ARB,
-								WGL_NUMBER_UNDERLAYS_ARB,
-								WGL_TRANSPARENT_ARB,
-								WGL_TRANSPARENT_RED_VALUE_ARB,
-								WGL_TRANSPARENT_GREEN_VALUE_ARB,
-								WGL_TRANSPARENT_BLUE_VALUE_ARB,
-								WGL_TRANSPARENT_ALPHA_VALUE_ARB,
-								WGL_TRANSPARENT_INDEX_VALUE_ARB,
-								WGL_SHARE_DEPTH_ARB,
-								WGL_SHARE_STENCIL_ARB,
-								WGL_SHARE_ACCUM_ARB,
-								WGL_SUPPORT_GDI_ARB,
-								WGL_SUPPORT_OPENGL_ARB,
-								WGL_DOUBLE_BUFFER_ARB,
-								WGL_STEREO_ARB,
-								WGL_PIXEL_TYPE_ARB,
-								WGL_COLOR_BITS_ARB,
-								WGL_RED_BITS_ARB,
-								WGL_RED_SHIFT_ARB,
-								WGL_GREEN_BITS_ARB,
-								WGL_GREEN_SHIFT_ARB,
-								WGL_BLUE_BITS_ARB,
-								WGL_BLUE_SHIFT_ARB,
-								WGL_ALPHA_BITS_ARB,
-								WGL_ALPHA_SHIFT_ARB,
-								WGL_ACCUM_BITS_ARB,
-								WGL_ACCUM_RED_BITS_ARB,
-								WGL_ACCUM_GREEN_BITS_ARB,
-								WGL_ACCUM_BLUE_BITS_ARB,
-								WGL_ACCUM_ALPHA_BITS_ARB,
-								WGL_DEPTH_BITS_ARB,
-								WGL_STENCIL_BITS_ARB,
-								WGL_AUX_BUFFERS_ARB};
-			std::string names[] = {	"WGL_SAMPLE_BUFFERS_ARB",
-								"WGL_SAMPLES_ARB",
-								"WGL_NUMBER_PIXEL_FORMATS_ARB",
-								"WGL_DRAW_TO_WINDOW_ARB",
-								"WGL_DRAW_TO_BITMAP_ARB",
-								"WGL_ACCELERATION_ARB",
-								"WGL_NEED_PALETTE_ARB",
-								"WGL_NEED_SYSTEM_PALETTE_ARB",
-								"WGL_SWAP_LAYER_BUFFERS_ARB",
-								"WGL_SWAP_METHOD_ARB",
-								"WGL_NUMBER_OVERLAYS_ARB",
-								"WGL_NUMBER_UNDERLAYS_ARB",
-								"WGL_TRANSPARENT_ARB",
-								"WGL_TRANSPARENT_RED_VALUE_ARB",
-								"WGL_TRANSPARENT_GREEN_VALUE_ARB",
-								"WGL_TRANSPARENT_BLUE_VALUE_ARB",
-								"WGL_TRANSPARENT_ALPHA_VALUE_ARB",
-								"WGL_TRANSPARENT_INDEX_VALUE_ARB",
-								"WGL_SHARE_DEPTH_ARB",
-								"WGL_SHARE_STENCIL_ARB",
-								"WGL_SHARE_ACCUM_ARB",
-								"WGL_SUPPORT_GDI_ARB",
-								"WGL_SUPPORT_OPENGL_ARB",
-								"WGL_DOUBLE_BUFFER_ARB",
-								"WGL_STEREO_ARB",
-								"WGL_PIXEL_TYPE_ARB",
-								"WGL_COLOR_BITS_ARB",
-								"WGL_RED_BITS_ARB",
-								"WGL_RED_SHIFT_ARB",
-								"WGL_GREEN_BITS_ARB",
-								"WGL_GREEN_SHIFT_ARB",
-								"WGL_BLUE_BITS_ARB",
-								"WGL_BLUE_SHIFT_ARB",
-								"WGL_ALPHA_BITS_ARB",
-								"WGL_ALPHA_SHIFT_ARB",
-								"WGL_ACCUM_BITS_ARB",
-								"WGL_ACCUM_RED_BITS_ARB",
-								"WGL_ACCUM_GREEN_BITS_ARB",
-								"WGL_ACCUM_BLUE_BITS_ARB",
-								"WGL_ACCUM_ALPHA_BITS_ARB",
-								"WGL_DEPTH_BITS_ARB",
-								"WGL_STENCIL_BITS_ARB",
-								"WGL_AUX_BUFFERS_ARB"};
-			S32 results[sizeof(query)/sizeof(query[0])]={0};
-
-			if(wglGetPixelFormatAttribivARB(mhDC, pixel_formats[i], 0, sizeof(query)/sizeof(query[0]), query, results))
-			{
-				llinfos << i << ":" << llendl;
-				for(int j = 0; j < sizeof(query)/sizeof(query[0]); ++j)
-				{
-					switch(results[j])
-					{
-					case WGL_NO_ACCELERATION_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_NO_ACCELERATION_ARB" << llendl;
-						break;
-					case WGL_GENERIC_ACCELERATION_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_GENERIC_ACCELERATION_ARB" << llendl;
-						break;
-					case WGL_FULL_ACCELERATION_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_FULL_ACCELERATION_ARB" << llendl;
-						break;
-					case WGL_SWAP_EXCHANGE_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_SWAP_EXCHANGE_ARB" << llendl;
-						break;
-					case WGL_SWAP_COPY_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_SWAP_COPY_ARB" << llendl;
-						break;
-					case WGL_SWAP_UNDEFINED_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_SWAP_UNDEFINED_ARB" << llendl;
-						break;
-					case WGL_TYPE_RGBA_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_TYPE_RGBA_ARB" << llendl;
-						break;
-					case WGL_TYPE_COLORINDEX_ARB:
-						llinfos << "   " << names[j] << " = " << "WGL_TYPE_COLORINDEX_ARB" << llendl;
-						break;
-					default:
-						llinfos << "   " << names[j] << " = " << results[j] << llendl;
-					}
-					
-				}
-			}
-		}*/
+		LL_INFOS("Window") << "pixel formats done." << LL_ENDL ;
 
 		//Singu note: Reversed order of this loop. Generally, choosepixelformat returns an array with the closer matches towards the start.
 		S32 swap_method = 0;
 		S32 cur_format = 0;//num_formats-1;
 		GLint swap_query = WGL_SWAP_METHOD_ARB;
+
 		BOOL found_format = FALSE;
+
 		while (!found_format && wglGetPixelFormatAttribivARB(mhDC, pixel_formats[cur_format], 0, 1, &swap_query, &swap_method))
 		{
 			if (swap_method == WGL_SWAP_UNDEFINED_ARB /*|| cur_format <= 0*/)
@@ -1507,7 +1392,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 			mhInstance,
 			NULL);
 
-		LL_INFOS("Window") << "recreate window done." << llendl ;
+		LL_INFOS("Window") << "recreate window done." << LL_ENDL ;
 
 		if (!(mhDC = GetDC(mWindowHandle)))
 		{
@@ -1746,6 +1631,7 @@ BOOL LLWindowWin32::setCursorPosition(const LLCoordWindow position)
 	{
 		return FALSE;
 	}
+
 
 	// Inform the application of the new mouse position (needed for per-frame
 	// hover/picking to function).
@@ -1996,6 +1882,10 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 	// This helps prevent avatar walking after maximizing the window by double-clicking the title bar.
 	static bool sHandleLeftMouseUp = true;
 
+	// Ignore the double click received right after activating app.
+	// This is to avoid triggering double click teleport after returning focus (see MAINT-3786).
+	static bool sHandleDoubleClick = true;
+
 	LLWindowWin32 *window_imp = (LLWindowWin32 *)GetWindowLongPtr(h_wnd, GWLP_USERDATA);
 
 
@@ -2121,6 +2011,11 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 						window_imp->minimize();
 						window_imp->resetDisplayResolution();
 					}
+				}
+
+				if (!activating)
+				{
+					sHandleDoubleClick = false;
 				}
 
 				window_imp->mCallbacks->handleActivateApp(window_imp, activating);
@@ -2347,6 +2242,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_NCLBUTTONDOWN");
 				// A click in a non-client area, e.g. title bar or window border.
 				sHandleLeftMouseUp = false;
+				sHandleDoubleClick = true;
 			}
 			break;
 
@@ -2391,6 +2287,13 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 		//case WM_RBUTTONDBLCLK:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_LBUTTONDBLCLK");
+
+				if (!sHandleDoubleClick)
+				{
+					sHandleDoubleClick = true;
+					break;
+				}
+
 				// Because we move the cursor position in the app, we need to query
 				// to find out where the cursor at the time the event is handled.
 				// If we don't do this, many clicks could get buffered up, and if the

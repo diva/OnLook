@@ -293,11 +293,11 @@ LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 	}
 	
 	mLastTransferRateBPS = mResponder->transferRate();
-	mErrorMessage = mResponder->reason();
+	mErrorMessage = mResponder->getReason();
 
 	// if curl was ok, parse the download area.
 	CURLcode result = mResponder->result_code();
-	if (is_internal_http_error(mResponder->http_status()))
+	if (is_internal_http_error(mResponder->getStatus()))
 	{
 		// result can be a meaningless CURLE_OK in the case of an internal error.
 		result = CURLE_FAILED_INIT;		// Just some random error to get the default case below.
@@ -342,7 +342,7 @@ LLUserAuth::UserAuthcode LLUserAuth::parseResponse()
 	XMLRPC_REQUEST response = mResponder->response();
 	if(!response)
 	{
-		U32 status = mResponder->http_status();
+		U32 status = mResponder->getStatus();
 		// Is it an HTTP error?
 		if (!(200 <= status && status < 400))
 		{

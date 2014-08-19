@@ -51,7 +51,7 @@ Coloca el cursor sobre las opciones para más información.
 		<check_box label="Mostrar en la Búsqueda" name="show_in_group_list" tool_tip="Permitir que la gente vea este grupo en los resultados de la búsqueda" />
 		<check_box label="Inscripción Libre" name="open_enrollement" tool_tip="Definir si se admiten al grupo nuevos miembros sin que sea necesario invitarlos" />
 		<check_box label="Cuota de Inscripción: [CURRENCY]" name="check_enrollment_fee" tool_tip="Define si se requiere una cuota para entrar al grupo" />
-		<spinner name="spin_enrollment_fee" tool_tip="Cuando está marcado &apos;Cuota de inscripción&apos;, los miembros nuevos deben pagar esta cuota para entrar al grupo" />
+		<spinner name="spin_enrollment_fee" tool_tip="Cuando está marcado &apos;Cuota de inscripción&apos;, los miembros nuevos deben pagar esta cuota para entrar al grupo" left_delta="140"/>
 		<text name="content_rating">
 			Calificación de Contenido
 		</text>

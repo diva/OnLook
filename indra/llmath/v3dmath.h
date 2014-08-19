@@ -72,17 +72,22 @@ class LLVector3d
 		BOOL		clamp(const F64 min, const F64 max);		// Clamps all values to (min,max), returns TRUE if data changed
 		BOOL		abs();						// sets all values to absolute value of original value (first octant), returns TRUE if changed
 
-		inline const LLVector3d&	clearVec();		// Clears LLVector3d to (0, 0, 0, 1)
+		inline const LLVector3d&	clear();		// Clears LLVector3d to (0, 0, 0, 1)
+		inline const LLVector3d&	clearVec();		// deprecated
 		inline const LLVector3d&	setZero();		// Zero LLVector3d to (0, 0, 0, 0)
 		inline const LLVector3d&	zeroVec();		// deprecated
-		inline const LLVector3d&	setVec(const F64 x, const F64 y, const F64 z);	// Sets LLVector3d to (x, y, z, 1)
-		inline const LLVector3d&	setVec(const LLVector3d &vec);	// Sets LLVector3d to vec
-		inline const LLVector3d&	setVec(const F64 *vec);			// Sets LLVector3d to vec
-		inline const LLVector3d&	setVec(const LLVector3 &vec);
+		inline const LLVector3d&	set(const F64 x, const F64 y, const F64 z);	// Sets LLVector3d to (x, y, z, 1)
+		inline const LLVector3d&	set(const LLVector3d &vec);	// Sets LLVector3d to vec
+		inline const LLVector3d&	set(const F64 *vec);		// Sets LLVector3d to vec
+		inline const LLVector3d&	set(const LLVector3 &vec);
+		inline const LLVector3d&	setVec(const F64 x, const F64 y, const F64 z);	// deprecated
+		inline const LLVector3d&	setVec(const LLVector3d &vec);	// deprecated
+		inline const LLVector3d&	setVec(const F64 *vec);			// deprecated
+		inline const LLVector3d&	setVec(const LLVector3 &vec);	// deprecated
 
-		F64		magVec() const;				// Returns magnitude of LLVector3d
-		F64		magVecSquared() const;		// Returns magnitude squared of LLVector3d
-		inline F64		normVec();					// Normalizes and returns the magnitude of LLVector3d
+		F64		magVec() const;				// deprecated
+		F64		magVecSquared() const;		// deprecated
+		inline F64		normVec();					// deprecated
 
 		F64 length() const;			// Returns magnitude of LLVector3d
 		F64 lengthSquared() const;	// Returns magnitude squared of LLVector3d
@@ -127,7 +132,15 @@ class LLVector3d
 
 typedef LLVector3d LLGlobalVec;
 
-const LLVector3d &LLVector3d::setVec(const LLVector3 &vec)
+inline const LLVector3d &LLVector3d::set(const LLVector3 &vec)
+{
+	mdV[0] = vec.mV[0];
+	mdV[1] = vec.mV[1];
+	mdV[2] = vec.mV[2];
+	return *this;
+}
+
+inline const LLVector3d &LLVector3d::setVec(const LLVector3 &vec)
 {
 	mdV[0] = vec.mV[0];
 	mdV[1] = vec.mV[1];
@@ -184,6 +197,14 @@ inline BOOL LLVector3d::isFinite() const
 
 // Clear and Assignment Functions
 
+inline const LLVector3d&	LLVector3d::clear(void)
+{
+	mdV[0] = 0.f;
+	mdV[1] = 0.f;
+	mdV[2]= 0.f;
+	return (*this);
+}
+
 inline const LLVector3d&	LLVector3d::clearVec(void)
 {
 	mdV[0] = 0.f;
@@ -205,6 +226,30 @@ inline const LLVector3d&	LLVector3d::zeroVec(void)
 	mdV[0] = 0.f;
 	mdV[1] = 0.f;
 	mdV[2] = 0.f;
+	return (*this);
+}
+
+inline const LLVector3d&	LLVector3d::set(const F64 x, const F64 y, const F64 z)
+{
+	mdV[VX] = x;
+	mdV[VY] = y;
+	mdV[VZ] = z;
+	return (*this);
+}
+
+inline const LLVector3d&	LLVector3d::set(const LLVector3d &vec)
+{
+	mdV[0] = vec.mdV[0];
+	mdV[1] = vec.mdV[1];
+	mdV[2] = vec.mdV[2];
+	return (*this);
+}
+
+inline const LLVector3d&	LLVector3d::set(const F64 *vec)
+{
+	mdV[0] = vec[0];
+	mdV[1] = vec[1];
+	mdV[2] = vec[2];
 	return (*this);
 }
 
@@ -470,6 +515,17 @@ inline LLVector3d projected_vec(const LLVector3d &a, const LLVector3d &b)
 	LLVector3d project_axis = b;
 	project_axis.normalize();
 	return project_axis * (a * project_axis);
+}
+
+inline LLVector3d inverse_projected_vec(const LLVector3d& a, const LLVector3d& b)
+{
+	LLVector3d normalized_a = a;
+	normalized_a.normalize();
+	LLVector3d normalized_b = b;
+	F64 b_length = normalized_b.normalize();
+
+	F64 dot_product = normalized_a * normalized_b;
+	return normalized_a * (b_length / dot_product);
 }
 
 #endif // LL_V3DMATH_H

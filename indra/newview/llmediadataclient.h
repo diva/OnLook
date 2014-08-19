@@ -197,9 +197,9 @@ protected:
 
 		Responder(const request_ptr_t &request);
 		//If we get back an error (not found, etc...), handle it here
-		virtual void error(U32 status, const std::string& reason);
+		virtual void httpFailure(void);
 		//If we get back a normal response, handle it here.	 Default just logs it.
-		virtual void result(const LLSD& content);
+		virtual void httpSuccess(void);
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mediaDataClientResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "LLMediaDataClientResponder"; }
 
@@ -348,7 +348,7 @@ protected:
     public:
         Responder(const request_ptr_t &request)
             : LLMediaDataClient::Responder(request) {}
-        virtual void result(const LLSD &content);
+        virtual void httpSuccess(void);
     };
 private:
 	// The Get/Update data client needs a second queue to avoid object updates starving load-ins.
@@ -404,8 +404,8 @@ protected:
     public:
         Responder(const request_ptr_t &request)
             : LLMediaDataClient::Responder(request) {}
-		virtual void error(U32 status, const std::string& reason);
-        virtual void result(const LLSD &content);
+		virtual void httpFailure(void);
+        virtual void httpSuccess(void);
     private:
         void mediaNavigateBounceBack();
     };

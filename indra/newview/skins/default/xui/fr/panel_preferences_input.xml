@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel label="Contrôle caméra" name="Input panel">
+<panel label="Contrôles+caméra" name="Input panel">
 	<text name=" Mouselook Options:">Vue subjective:</text>
 	<text name=" Mouse Sensitivity:">Sensibilité de la souris:</text>
-	<check_box label="Inverser la souris" name="invert_mouse"/>
+    <check_box label="Souris inversée" name="invert_mouse"/>
+    <check_box label="Zoom click droit instantané" name="instant_zoom"/>
+	<check_box control_name="UseRealisticMouselook" label="Comportement 'réaliste' de la cam en vue subjective" name="UseRealisticMouselook"/>
+    <text name="UI Hidden in mouselook:">Masquage UI en vue subjective:</text>
+    <check_box name="mouselook_hides_floaters" label="Menus Flottants"/>
+    <check_box left_delta="140" name="mouselook_hides_notices" label="Notices"/>
+    <check_box name="mouselook_hides_menubar" label="Barre de menus"/>
+    <check_box left_delta="140" name="mouselook_hides_toolbar" label="Barre d'outils"/>
+    <text name=" Movement Options:">Options des mouvements:</text>
 	<check_box label="Voler/atterrir en appuyant sur les fl&#xEA;ches haut/bas" name="automatic_fly"/>
 	<check_box label="Permet de s'accroupir en bloquant la touche shift" name="crouch_toggle"/>
+    <check_box label="Mode azerty au lieu de qwerty : zqsd / wasd" name="azerty_keys"/>
 	<text name=" Camera Options:">Options de la caméra:</text>
 	<text name="camera_fov_label">Angle de vision:</text>
 	<text name="Camera Follow Distance:">Distance:</text>
+    <check_box label="Scroll + Ctrl et/ou Shift appuyés ajustent la position de la cam" name="scroll_keys"/>
 	<check_box label="Ajustement automatique en mode Edition" name="edit_camera_movement" tool_tip="Positionne automatiquement la caméra lors de l'entrée ou de la sortie du mode Edition."/>
 	<check_box label="Ajustement automatique en mode Edition d'apparence" name="appearance_camera_movement" tool_tip="Positionne automatiquement la caméra en mode Apparence de l'avatar."/>
 	<check_box label="Lever l'avatar au reset de la caméra" name="unsit_on_camera_reset" tool_tip="L&#xE8;ve automatiquement l'avatar quand vous pressez ESC, ainsi la caméra permute en mode troisième personne"/>

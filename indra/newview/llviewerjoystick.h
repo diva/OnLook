@@ -67,7 +67,7 @@ public:
 	bool getOverrideCamera() { return mOverrideCamera; }
 	void setOverrideCamera(bool val);
 	bool toggleFlycam();
-	void setSNDefaults();
+	void setSNDefaults(S32 type = 0);
 	std::string getDescription();
 	
 protected:

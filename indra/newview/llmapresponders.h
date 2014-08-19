@@ -40,7 +40,7 @@ extern AIHTTPTimeoutPolicy mapLayerResponder_timeout;
 
 class LLMapLayerResponder : public LLHTTPClient::ResponderWithResult
 {
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpSuccess(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mapLayerResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMapLayerResponder"; }
 };

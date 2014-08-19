@@ -192,13 +192,13 @@ public:
 	:	mAgentIDs(agent_ids)
 	{ }
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		// Pull expiration out of headers if available
 		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(mReceivedHeaders);
 		F64 now = LLFrameTimer::getTotalSeconds();
 
-		LLSD agents = content["agents"];
+		LLSD agents = mContent["agents"];
 		LLSD::array_const_iterator it = agents.beginArray();
 		for ( ; it != agents.endArray(); ++it)
 		{
@@ -228,7 +228,7 @@ public:
 		}
 
 		// Same logic as error response case
-		LLSD unresolved_agents = content["bad_ids"];
+		LLSD unresolved_agents = mContent["bad_ids"];
 		S32  num_unresolved = unresolved_agents.size();
 		if (num_unresolved > 0)
 		{
@@ -252,13 +252,13 @@ public:
                                  << LL_ENDL;
     }
 
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		// If there's an error, it might be caused by PeopleApi,
 		// or when loading textures on startup and using a very slow 
 		// network, this query may time out.
 		// What we should do depends on whether or not we have a cached name
-		LL_WARNS("AvNameCache") << "LLAvatarNameResponder::error " << status << " " << reason
+		LL_WARNS("AvNameCache") << "LLAvatarNameResponder::httpFailure " << mStatus << " " << mReason
 								<< LL_ENDL;
 
 		// Add dummy records for any agent IDs in this request that we do not have cached already
@@ -794,6 +794,7 @@ void LLAvatarNameCache::setUseDisplayNames(bool use)
 	if (use != sUseDisplayNames)
 	{
 		sUseDisplayNames = use;
+		LL_DEBUGS("AvNameCache") << "Display names are now: " << (use ? "on" : "off") << LL_ENDL;
 		// flush our cache
 		sCache.clear();
 

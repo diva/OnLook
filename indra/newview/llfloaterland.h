@@ -383,6 +383,7 @@ public:
 
 	static void onCommitPublicAccess(LLUICtrl* ctrl, void *userdata);
 	static void onCommitAny(LLUICtrl* ctrl, void *userdata);
+	static void onCommitGroupCheck(LLUICtrl* ctrl, void *userdata);
 	static void onClickRemoveAccess(void*);
 	static void onClickRemoveBanned(void*);
 

@@ -46,10 +46,8 @@ class LLScrollListItem;
 class LLTextEditor;
 class LLGroupMemberData;
 
-// Forward declare for friend usage.
-//virtual BOOL LLPanelGroupSubTab::postBuildSubTab(LLView*);
-
 typedef std::map<std::string,std::string> icon_map_t;
+
 
 class LLPanelGroupRoles : public LLPanelGroupTab,
 						  public LLPanelGroupTabObserver
@@ -89,6 +87,8 @@ public:
 	virtual void cancel();
 	virtual void update(LLGroupChange gc);
 
+	virtual void setGroupID(const LLUUID& id);
+
 	// PanelGroupTab observer trigger
 	virtual void tabChanged();
 
@@ -102,6 +102,7 @@ protected:
 	std::string				mDefaultNeedsApplyMesg;
 	std::string				mWantApplyMesg;
 };
+
 
 class LLPanelGroupSubTab : public LLPanelGroupTab
 {
@@ -123,6 +124,8 @@ public:
 	bool matchesActionSearchFilter(std::string action);
 
 	void setFooterEnabled(BOOL enable);
+
+	virtual void setGroupID(const LLUUID& id);
 protected:
 	void buildActionsList(LLScrollListCtrl* ctrl,
 								 U64 allowed_by_some,
@@ -152,8 +155,12 @@ protected:
 
 	bool mActivated;
 
+	bool mHasGroupBanPower; // Used to communicate between action sets due to the dependency between
+							// GP_GROUP_BAN_ACCESS and GP_EJECT_MEMBER and GP_ROLE_REMOVE_MEMBER
+
 	void setOthersVisible(BOOL b);
 };
+
 
 class LLPanelGroupMembersSubTab : public LLPanelGroupSubTab
 {
@@ -176,10 +183,14 @@ public:
 
 	static void onEjectMembers(void*);
 	void handleEjectMembers();
+	void sendEjectNotifications(const LLUUID& group_id, const uuid_vec_t& selected_members);
 
 	static void onRoleCheck(LLUICtrl* check, void* user_data);
 	void handleRoleCheck(const LLUUID& role_id,
 						 LLRoleMemberChangeType type);
+
+	void handleBanMember();
+
 
 	void applyMemberChanges();
 	bool addOwnerCB(const LLSD& notification, const LLSD& response);
@@ -193,6 +204,8 @@ public:
 	void updateMembers();
 
 	virtual void draw();
+
+	virtual void setGroupID(const LLUUID& id);
 
 	void addMemberToList(LLGroupMemberData* data);
 	void onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name, const LLUUID& av_id);
@@ -212,6 +225,7 @@ protected:
 	LLScrollListCtrl*	mAssignedRolesList;
 	LLScrollListCtrl*	mAllowedActionsList;
 	LLButton*           mEjectBtn;
+	LLButton*			mBanBtn;
 
 	BOOL mChanged;
 	BOOL mPendingMemberUpdate;
@@ -224,6 +238,7 @@ protected:
 	typedef std::map<LLUUID, boost::signals2::connection> avatar_name_cache_connection_map_t;
 	avatar_name_cache_connection_map_t mAvatarNameCacheConnections;
 };
+
 
 class LLPanelGroupRolesSubTab : public LLPanelGroupSubTab
 {
@@ -265,6 +280,11 @@ public:
 	void handleDeleteRole();
 
 	void saveRoleChanges(bool select_saved_role);
+
+	virtual void setGroupID(const LLUUID& id);
+
+	BOOL	mFirstOpen;
+
 protected:
 	void handleActionCheck(LLUICtrl* ctrl, bool force);
 	LLSD createRoleItem(const LLUUID& role_id, std::string name, std::string title, S32 members);
@@ -286,6 +306,7 @@ protected:
 	std::string mRemoveEveryoneTxt;
 };
 
+
 class LLPanelGroupActionsSubTab : public LLPanelGroupSubTab
 {
 public:
@@ -303,6 +324,8 @@ public:
 	virtual void update(LLGroupChange gc);
 
 	void handleActionSelect();
+
+	virtual void setGroupID(const LLUUID& id);
 protected:
 	LLScrollListCtrl*	mActionList;
 	LLScrollListCtrl*	mActionRoles;
@@ -311,5 +334,43 @@ protected:
 	LLTextEditor*	mActionDescription;
 };
 
+
+class LLPanelGroupBanListSubTab : public LLPanelGroupSubTab
+{
+public:
+	LLPanelGroupBanListSubTab(const std::string& name, const LLUUID& group_id);
+	virtual ~LLPanelGroupBanListSubTab() {}
+
+	virtual BOOL postBuildSubTab(LLView* root);
+
+	static void* createTab(void* data);
+
+	virtual void activate();
+	virtual void update(LLGroupChange gc);
+	virtual void draw();
+
+	void handleBanEntrySelect();
+
+	void handleCreateBanEntry();
+
+	void handleDeleteBanEntry();
+
+	void handleRefreshBanList();
+
+	void onBanListCompleted(bool isComplete);
+
+protected:
+	void populateBanList();
+
+public:
+	virtual void setGroupID(const LLUUID& id);
+
+protected:
+	LLNameListCtrl* mBanList;
+	LLButton* mCreateBanButton;
+	LLButton* mDeleteBanButton;
+	LLButton* mRefreshBanListButton;
+
+};
 
 #endif // LL_LLPANELGROUPROLES_H

@@ -29,6 +29,7 @@
 	</string>
 	<button label="Información Grupo" right="-245" name="group_info_btn" width="80"/>
 	<button label="Historial" left_delta="80" name="history_btn" width="80"/>
+	<button name="ding_btn" label="Timbre"/>
 	<button label="Unirse a Llamada" left_delta="80" name="start_call_btn" width="80"/>
 	<button label="Terminar Llamada" name="end_call_btn" width="80"/>
 	<button label="&lt; &lt;" label_selected="&gt; &gt;" left="420" name="toggle_active_speakers_btn" right="450" tool_tip="Pulsa aquí para mostrar/ocultar la lista de participantes activos en esta sesión de MI." width="80"/>

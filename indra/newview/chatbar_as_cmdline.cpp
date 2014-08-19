@@ -33,12 +33,14 @@
 
 #include "chatbar_as_cmdline.h"
 
+#include "llavatarnamecache.h"
 #include "llcalc.h"
 
 #include "llchatbar.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentui.h"
+#include "llavataractions.h"
 #include "llviewerregion.h"
 #include "llworld.h"
 #include "lleventtimer.h"
@@ -215,6 +217,12 @@ struct ProfCtrlListAccum : public LLControlGroup::ApplyFunctor
 	std::vector<std::pair<std::string, U32> > mVariableList;
 };
 #endif //PROF_CTRL_CALLS
+void spew_key_to_name(const LLUUID& targetKey, const LLAvatarName& av_name)
+{
+	std::string object_name;
+	LLAvatarNameCache::getPNSName(av_name, object_name);
+	cmdline_printchat(llformat("%s: %s", targetKey.asString().c_str(), object_name.c_str()));
+}
 bool cmd_line_chat(std::string revised_text, EChatType type)
 {
 	static LLCachedControl<bool> sAscentCmdLine(gSavedSettings, "AscentCmdLine");
@@ -251,17 +259,16 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				{
 					if (i >> y)
 					{
-						if (i >> z)
+						if (!(i >> z))
+							z = gAgent.getPositionAgent().mV[VZ];
+
+						if (LLViewerRegion* agentRegionp = gAgent.getRegion())
 						{
-							LLViewerRegion* agentRegionp = gAgent.getRegion();
-							if(agentRegionp)
-							{
-								LLVector3 targetPos(x,y,z);
-								LLVector3d pos_global = from_region_handle(agentRegionp->getHandle());
-								pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
-								gAgent.teleportViaLocation(pos_global);
-								return false;
-							}
+							LLVector3 targetPos(x,y,z);
+							LLVector3d pos_global = from_region_handle(agentRegionp->getHandle());
+							pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
+							gAgent.teleportViaLocation(pos_global);
+							return false;
 						}
 					}
 				}
@@ -289,11 +296,13 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				LLUUID targetKey;
 				if(i >> targetKey)
 				{
-					std::string object_name;
-					gCacheName->getFullName(targetKey, object_name);
-					char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-					snprintf(buffer,sizeof(buffer),"%s: (%s)",targetKey.asString().c_str(), object_name.c_str());
-					cmdline_printchat(std::string(buffer));
+					LLAvatarName av_name;
+					if (!LLAvatarNameCache::get(targetKey, &av_name))
+					{
+						LLAvatarNameCache::get(targetKey, boost::bind(spew_key_to_name, _1, _2));
+						return false;
+					}
+					spew_key_to_name(targetKey, av_name);
 				}
 				return false;
 			}
@@ -428,7 +437,14 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			{
 				if (revised_text.length() > command.length() + 1)
 				{
-					LLUrlAction::clickAction(revised_text.substr(command.length()+1));
+					const std::string sub(revised_text.substr(command.length()+1));
+					LLUUID id;
+					if (id.parseUUID(sub, &id))
+					{
+						LLAvatarActions::showProfile(id);
+						return false;
+					}
+					LLUrlAction::clickAction(sub);
 				}
 				return false;
 			}

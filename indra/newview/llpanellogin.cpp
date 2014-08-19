@@ -741,21 +741,24 @@ void LLPanelLogin::updateGridCombo()
 	const HippoGridInfo *curGrid = gHippoGridManager->getCurrentGrid();
 	const HippoGridInfo *defGrid = gHippoGridManager->getGrid(defaultGrid);
 
+	S32 idx(-1);
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
 	for (it = gHippoGridManager->beginGrid(); it != end; ++it)
 	{
 		std::string grid = it->second->getGridName();
-		if(grid.empty() || it->second == defGrid || it->second == curGrid)
+		if (grid.empty() || it->second == defGrid)
 			continue;
+		if (it->second == curGrid) idx = grids->getItemCount();
 		grids->add(grid);
 	}
-	if(curGrid || defGrid)
+	if (curGrid || defGrid)
 	{
-		if(defGrid)
+		if (defGrid)
+		{
 			grids->add(defGrid->getGridName(),ADD_TOP);
-		if(curGrid && defGrid != curGrid)
-			grids->add(curGrid->getGridName(),ADD_TOP);
-		grids->setCurrentByIndex(0);
+			++idx;
+		}
+		grids->setCurrentByIndex(idx);
 	}
 	else
 	{

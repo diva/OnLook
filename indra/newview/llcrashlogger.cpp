@@ -56,23 +56,23 @@ public:
 	{
 	}
 
-	virtual void error(U32 status, const std::string& reason)
+	virtual void httpFailure(void)
 	{
-		llwarns << "Crash report sending failed: " << reason << llendl;
+		llwarns << "Crash report sending failed: " << mReason << llendl;
 	}
 
-	virtual void result(const LLSD& content)
+	virtual void httpSuccess(void)
 	{
 		std::string msg = "Crash report successfully sent";
-		if (content.has("message"))
+		if (mContent.has("message"))
 		{
-			msg += ": " + content["message"].asString();
+			msg += ": " + mContent["message"].asString();
 		}
 		llinfos << msg << llendl;
 
-		if (content.has("report_id"))
+		if (mContent.has("report_id"))
 		{
-			gSavedSettings.setS32("CrashReportID", content["report_id"].asInteger());
+			gSavedSettings.setS32("CrashReportID", mContent["report_id"].asInteger());
 		}
 
 	}

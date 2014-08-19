@@ -13,7 +13,7 @@ Resident Chooser&apos; to start.
 	     column_padding="0" draw_border="true" height="174" left="5"
 	     multi_select="true" name="invitee_list"
 	     tool_tip="Hold the Ctrl key and click resident names to multi-select."
-	     width="200" />
+	     width="200" menu_num="0"/>
 	<button bottom_delta="-24" font="SansSerifSmall" halign="center" height="20"
 	     label="Remove Selected from List" left_delta="0" name="remove_button"
 	     tool_tip="Removes residents selected above from the invite list."
@@ -26,7 +26,7 @@ Resident Chooser&apos; to start.
 	     tool_tip="Choose from the list of Roles you are allowed to assign members to."
 	     width="196" />
 	<button bottom="4" font="SansSerifSmall" halign="center" height="20"
-	     label="Send Invitations" left="4" name="ok_button" width="130" />
+	     label="Send Invitations" left="4" name="invite_button" width="130" />
 	<button bottom_delta="0" font="SansSerifSmall" halign="center" height="20"
 	     label="Cancel" left_delta="132" name="cancel_button" width="70" />
 	<string name="confirm_invite_owner_str">
@@ -39,7 +39,7 @@ Resident Chooser&apos; to start.
 		Group Invitations not sent: too many Residents selected. Group Invitations are limited to 100 per request.
 	</string>
 	<!--button bottom="25" font="SansSerifSmall" halign="center" height="20"
-	     label="Send Invitations" left="65" name="ok_button" width="140" />
+	     label="Send Invitations" left="65" name="invite_button" width="140" />
 	<button bottom_delta="-22" font="SansSerifSmall" halign="center" height="20"
 	     label="Cancel" left_delta="0" name="cancel_button" width="140" /-->
 	<string name="loading">(loading...)</string>

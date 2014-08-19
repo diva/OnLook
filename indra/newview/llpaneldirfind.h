@@ -99,6 +99,7 @@ public:
 
 	/*virtual*/ void draw();
 
+	void search(const std::string& query);
 	void onClickSearch();
 };
 

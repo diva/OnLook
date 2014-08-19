@@ -45,9 +45,9 @@ class LLClassifiedStatsResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLClassifiedStatsResponder(LLHandle<LLView> classified_panel_handle, LLUUID classified_id);
 	//If we get back a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content);
+	/*virtual*/ void httpSuccess(void);
 	//If we get back an error (not found, etc...), handle it here
-	/*virtual*/ void error(U32 status, const std::string& reason);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return classifiedStatsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLClassifiedStatsResponder"; }
 

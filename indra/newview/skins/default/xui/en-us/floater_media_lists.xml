@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+    can_close="true"
+    can_drag_on_left="false"
+    can_minimize="true"
+    can_resize="true"
+    height="254"
+    name="floatermedialists"
+    positioning="centered"
+    rect_control="MediaFilterRect"
+    title="Media Filter"
+    width="460"
+    min_height="160"
+    min_width="300">
+    <floater.string name="EnterUrlAllow">
+        Enter domain or URL to always allow:
+    </floater.string>
+    <floater.string name="EnterUrlDeny">
+        Enter domain or URL to never allow:
+    </floater.string>
+
+ <layout_stack
+     name="lists_layout_stack"
+     left="10"
+     bottom="-254"
+     right="-10"
+     height="234"
+     width="440"
+     follows="all"
+     orientation="horizontal"
+     layout="topleft">
+
+  <layout_panel
+      name="whitelist_layout_panel"
+      width="220"
+      height="204"
+      auto_resize="true"
+      follows="all"
+      layout="topleft">
+
+    <scroll_list
+        left="0"
+        right="-1"
+        height="166"
+        follows="all"
+        background_visible="true"
+        column_padding="5"
+        draw_border="true"
+        draw_heading="true"
+        mouse_opaque="false"
+        multi_select="true"
+        name="whitelist">
+        <column label="Allowed Domains" name="list"/>
+    </scroll_list>
+
+   <layout_stack
+       name="whitelist_buttons_layout_stack"
+       left="0"
+       bottom_delta="-24"
+       right="-1"
+       height="20"
+       follows="left|right|bottom"
+       orientation="horizontal"
+       layout="topleft">
+
+   <layout_panel
+       name="whitelist_buttons_panel_add"
+       width="110"
+       height="20"
+       user_resize="false"
+       auto_resize="true"
+       follows="all"
+       layout="topleft">
+
+    <button
+        bottom="0"
+        left="0"
+        height="20"
+        right="-1"
+        enabled="true"
+        follows="all"
+        font="SansSerifSmall"
+        halign="center"
+        label="Add..."
+        mouse_opaque="false"
+        name="add_whitelist">
+        <button.commit_callback
+         function="MediaFilter.OnAdd"
+         parameter="1"/>
+    </button>
+
+   </layout_panel>
+   <layout_panel
+       name="whitelist_buttons_panel_remove"
+       left="110"
+       width="110"
+       height="20"
+       auto_resize="true"
+       follows="all"
+       layout="topleft">
+
+    <button
+        bottom="0"
+        left="0"
+        height="20"
+        right="-1"
+        enabled="true"
+        follows="all"
+        font="SansSerifSmall"
+        halign="center"
+        label="Remove"
+        mouse_opaque="false"
+        name="remove_whitelist">
+        <button.commit_callback
+         function="MediaFilter.OnRemove"
+         parameter="1"/>
+    </button>
+
+    </layout_panel>
+   </layout_stack>
+
+  </layout_panel>
+
+  <layout_panel
+      name="blacklist_layout_panel"
+      width="220"
+      height="204"
+      auto_resize="true"
+      follows="all"
+      layout="topleft">
+
+    <scroll_list
+        left="0"
+        right="-1"
+        height="166"
+        follows="all"
+        background_visible="true"
+        column_padding="5"
+        draw_border="true"
+        draw_heading="true"
+        mouse_opaque="false"
+        multi_select="true"
+        name="blacklist">
+        <column label="Blocked Domains" name="list"/>
+    </scroll_list>
+
+   <layout_stack
+       name="blacklist_buttons_layout_stack"
+       left="0"
+       bottom_delta="-24"
+       right="-1"
+       height="20"
+       follows="left|right|bottom"
+       orientation="horizontal"
+       layout="topleft">
+
+    <layout_panel
+        name="blacklist_buttons_panel_add"
+        width="110"
+        height="20"
+        user_resize="false"
+        auto_resize="true"
+        follows="all"
+        layout="topleft">
+
+    <button
+        bottom="0"
+        left="0"
+        height="20"
+        right="-1"
+        enabled="true"
+        follows="all"
+        font="SansSerifSmall"
+        halign="center"
+        label="Add..."
+        mouse_opaque="false"
+        name="add_blacklist">
+        <button.commit_callback
+         function="MediaFilter.OnAdd"/>
+    </button>
+
+    </layout_panel>
+    <layout_panel
+        name="blacklist_buttons_panel_remove"
+        width="110"
+        left_delta="110"
+        height="20"
+        auto_resize="true"
+        follows="all"
+        layout="topleft">
+
+    <button
+        bottom="0"
+        left="0"
+        height="20"
+        right="-1"
+        enabled="true"
+        follows="all"
+        font="SansSerifSmall"
+        halign="center"
+        label="Remove"
+        mouse_opaque="false"
+        name="remove_blacklist">
+        <button.commit_callback
+         function="MediaFilter.OnRemove"/>
+    </button>
+
+    </layout_panel>
+   </layout_stack>
+
+  </layout_panel>
+ </layout_stack>
+
+</floater>

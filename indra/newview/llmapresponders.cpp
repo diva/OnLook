@@ -42,11 +42,11 @@
 #include "llsdserialize.h"
 
 //virtual 
-void LLMapLayerResponder::result(const LLSD& result)
+void LLMapLayerResponder::httpSuccess(void)
 {
-	llinfos << "LLMapLayerResponder::result from capabilities" << llendl;
+	llinfos << "LLMapLayerResponder::mContent from capabilities" << llendl;
 
-	S32 agent_flags = result["AgentData"]["Flags"];
+	S32 agent_flags = mContent["AgentData"]["Flags"];
 	U32 layer = flagsToLayer(agent_flags);
 
 	if (layer != SIM_LAYER_COMPOSITE)
@@ -60,7 +60,7 @@ void LLMapLayerResponder::result(const LLSD& result)
 	LLWorldMap::getInstance()->mMapLayers.clear();
 
 	LLSD::array_const_iterator iter;
-	for(iter = result["LayerData"].beginArray(); iter != result["LayerData"].endArray(); ++iter)
+	for(iter = mContent["LayerData"].beginArray(); iter != mContent["LayerData"].endArray(); ++iter)
 	{
 		const LLSD& layer_data = *iter;
 		

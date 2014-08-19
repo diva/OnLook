@@ -223,12 +223,12 @@ LLAssetUploadResponder::~LLAssetUploadResponder()
 }
 
 // virtual
-void LLAssetUploadResponder::error(U32 statusNum, const std::string& reason)
+void LLAssetUploadResponder::httpFailure(void)
 {
-	llinfos << "LLAssetUploadResponder::error " << statusNum 
-			<< " reason: " << reason << llendl;
+	llinfos << "LLAssetUploadResponder::error " << mStatus 
+			<< " reason: " << mReason << llendl;
 	LLSD args;
-	switch(statusNum)
+	switch(mStatus)
 	{
 		case 400:
 			args["FILE"] = (mFileName.empty() ? mVFileID.asString() : mFileName);
@@ -248,15 +248,15 @@ void LLAssetUploadResponder::error(U32 statusNum, const std::string& reason)
 }
 
 //virtual 
-void LLAssetUploadResponder::result(const LLSD& content)
+void LLAssetUploadResponder::httpSuccess(void)
 {
 	lldebugs << "LLAssetUploadResponder::result from capabilities" << llendl;
 
-	std::string state = content["state"];
+	std::string state = mContent["state"];
 
 	if (state == "upload")
 	{
-		uploadUpload(content);
+		uploadUpload(mContent);
 	}
 	else if (state == "complete")
 	{
@@ -264,14 +264,14 @@ void LLAssetUploadResponder::result(const LLSD& content)
 		if (mFileName.empty())
 		{
 			// rename the file in the VFS to the actual asset id
-			// llinfos << "Changing uploaded asset UUID to " << content["new_asset"].asUUID() << llendl;
-			gVFS->renameFile(mVFileID, mAssetType, content["new_asset"].asUUID(), mAssetType);
+			// llinfos << "Changing uploaded asset UUID to " << mContent["new_asset"].asUUID() << llendl;
+			gVFS->renameFile(mVFileID, mAssetType, mContent["new_asset"].asUUID(), mAssetType);
 		}
-		uploadComplete(content);
+		uploadComplete(mContent);
 	}
 	else
 	{
-		uploadFailure(content);
+		uploadFailure(mContent);
 	}
 }
 
@@ -332,13 +332,13 @@ LLNewAgentInventoryResponder::LLNewAgentInventoryResponder(
 }
 
 // virtual
-void LLNewAgentInventoryResponder::error(U32 statusNum, const std::string& reason)
+void LLNewAgentInventoryResponder::httpFailure(void)
 {
 	if (mCallBack)
 	{
 		(*mCallBack)(false, mUserData);
 	}
-	LLAssetUploadResponder::error(statusNum, reason);
+	LLAssetUploadResponder::httpFailure();
 	//LLImportColladaAssetCache::getInstance()->assetUploaded(mVFileID, LLUUID(), FALSE);
 }
 
@@ -498,9 +498,9 @@ void LLSendTexLayerResponder::uploadComplete(const LLSD& content)
 	}
 }
 
-void LLSendTexLayerResponder::error(U32 statusNum, const std::string& reason)
+void LLSendTexLayerResponder::httpFailure(void)
 {
-	llinfos << "status: " << statusNum << " reason: " << reason << llendl;
+	llinfos << "status: " << mStatus << " reason: " << mReason << llendl;
 	
 	// Invoke the original callback with an error result
 	LLViewerTexLayerSetBuffer::onTextureUploadComplete(LLUUID(), (void*) mBakedUploadData, -1, LL_EXSTAT_NONE);
@@ -1020,20 +1020,17 @@ LLNewAgentInventoryVariablePriceResponder::~LLNewAgentInventoryVariablePriceResp
 	delete mImpl;
 }
 
-void LLNewAgentInventoryVariablePriceResponder::errorWithContent(
-	U32 statusNum,
-	const std::string& reason,
-	const LLSD& content)
+void LLNewAgentInventoryVariablePriceResponder::httpFailure(void)
 {
 	lldebugs 
-		<< "LLNewAgentInventoryVariablePrice::error " << statusNum 
-		<< " reason: " << reason << llendl;
+		<< "LLNewAgentInventoryVariablePrice::error " << mStatus
+		<< " reason: " << mReason << llendl;
 
-	if ( content.has("error") )
+	if ( mContent.has("error") )
 	{
 		static const std::string _ERROR = "error";
 
-		mImpl->onTransportError(content[_ERROR]);
+		mImpl->onTransportError(mContent[_ERROR]);
 	}
 	else
 	{
@@ -1041,7 +1038,7 @@ void LLNewAgentInventoryVariablePriceResponder::errorWithContent(
 	}
 }
 
-void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
+void LLNewAgentInventoryVariablePriceResponder::httpSuccess(void)
 {
 	// Parse out application level errors and the appropriate
 	// responses for them
@@ -1056,13 +1053,13 @@ void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
 	static const std::string _RSVP = "rsvp";
 
 	// Check for application level errors
-	if (content.has(_ERROR))
+	if (mContent.has(_ERROR))
 	{
-		onApplicationLevelError(content[_ERROR]);
+		onApplicationLevelError(mContent[_ERROR]);
 		return;
 	}
 
-	std::string state = content[_STATE];
+	std::string state = mContent[_STATE];
 	LLAssetType::EType asset_type = mImpl->getAssetType();
 
 	if (_COMPLETE == state)
@@ -1071,11 +1068,11 @@ void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
 		if (mImpl->getFilename().empty())
 		{
 			// rename the file in the VFS to the actual asset id
-			// llinfos << "Changing uploaded asset UUID to " << content["new_asset"].asUUID() << llendl;
+			// llinfos << "Changing uploaded asset UUID to " << mContent["new_asset"].asUUID() << llendl;
 			gVFS->renameFile(
 				mImpl->getVFileID(),
 				asset_type,
-				content["new_asset"].asUUID(),
+				mContent["new_asset"].asUUID(),
 				asset_type);
 		}
 
@@ -1086,8 +1083,8 @@ void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
 			mImpl->getFolderID(),
 			mImpl->getItemName(),
 			mImpl->getItemDescription(),
-			content,
-			content[_UPLOAD_PRICE].asInteger());
+			mContent,
+			mContent[_UPLOAD_PRICE].asInteger());
 
 		// TODO* Add bulk (serial) uploading or add
 		// a super class of this that does so
@@ -1095,9 +1092,9 @@ void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
 	else if ( _CONFIRM_UPLOAD == state )
 	{
 		showConfirmationDialog(
-			content[_UPLOAD_PRICE].asInteger(),
-			content[_RESOURCE_COST].asInteger(),
-			content[_RSVP].asString());
+			mContent[_UPLOAD_PRICE].asInteger(),
+			mContent[_RESOURCE_COST].asInteger(),
+			mContent[_RSVP].asString());
 	}
 	else
 	{

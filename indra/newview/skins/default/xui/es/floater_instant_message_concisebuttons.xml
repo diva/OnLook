@@ -31,6 +31,7 @@
 		Ofrecido un Ítem de Inventario
 	</string>
 	<flyout_button label="Perfil" name="instant_message_flyout">
+		<flyout_button_item label="Perfil" name="profile_item"/>
 		<flyout_button_item label="Historial" name="history_btn"/>
 		<flyout_button_item label="Ofrecer Teleporte" name="profile_tele_btn"/>
 		<flyout_button_item label="Solicitar Teleporte" name="request_teleport_item"/>

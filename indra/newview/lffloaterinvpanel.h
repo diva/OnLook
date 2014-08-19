@@ -35,7 +35,6 @@ public:
 	static void closeAll(); // Called when not allowed to have inventory open
 
 	/*virtual*/ BOOL handleKeyHere(KEY key, MASK mask);
-	void onSearch(const LLSD& val);
 
 private:
 	class LLInventoryPanel* mPanel;

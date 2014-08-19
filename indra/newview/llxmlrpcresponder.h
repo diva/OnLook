@@ -90,7 +90,7 @@ private:
 	XMLRPC_VALUE mV;
 };
 
-class XMLRPCResponder : public LLHTTPClient::LegacyPolledResponder {
+class XMLRPCResponder : public LLHTTPClient::ResponderWithCompleted {
 private:
 	AITransferInfo mTransferInfo;
 	S32 mBufferSize;
@@ -110,7 +110,7 @@ public:
 	/*virtual*/ bool forbidReuse(void) const { return true; }
 	/*virtual*/ void received_HTTP_header(void) { mReceivedHTTPHeader = true; LLHTTPClient::ResponderBase::received_HTTP_header(); }
 	/*virtual*/ void completed_headers(U32 status, std::string const& reason, AITransferInfo* info);
-	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return XMLRPCResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "XMLRPCResponder"; }
 };

@@ -31,8 +31,8 @@
 	     left="205" name="terraform_help" width="18" />
 	<check_box bottom_delta="-20" follows="left|top" height="20" label="Block Fly" left="10"
 	     name="block_fly_check" width="80" />
-	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
-	     left="205" name="fly_help" width="18" />
+	<button bottom_delta="0" follows="left|top" height="18" label="?" left="205" name="fly_help" width="18" />
+	<check_box bottom_delta="-20" follows="left|top" height="20" label="Block Parcel Fly Over" tool_tip="Extend access checks upwards to prevent flying over a parcel" left="10" name="block_fly_over_check" width="90" />
 	<check_box bottom_delta="-20" follows="left|top" height="20" label="Allow Damage"
 	     left="10" name="allow_damage_check" width="80" />
 	<button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="18" label="?"
@@ -94,7 +94,7 @@
      label="Phase" left_delta="-35" max_val="30" min_val="6" name="sun_hour_slider" show_text="false" width="200" />
 	<button bottom_delta="-20" enabled="false" follows="left|top" height="20" label="Apply"
 	     left="108" name="apply_btn" width="100" />
-	<button bottom_delta="-60" follows="left|top" height="20"
+	<button bottom_delta="-40" follows="left|top" height="20"
 	     label="Teleport Home One User..." left="10" name="kick_btn" width="250" />
 	<button bottom_delta="-23" follows="left|top" height="20"
 	     label="Teleport Home All Users..." left="10" name="kick_all_btn" width="250" />

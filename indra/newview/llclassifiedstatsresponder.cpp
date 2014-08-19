@@ -50,16 +50,16 @@ mClassifiedID(classified_id)
 {
 }
 /*virtual*/
-void LLClassifiedStatsResponder::result(const LLSD& content)
+void LLClassifiedStatsResponder::httpSuccess(void)
 {
-	S32 teleport = content["teleport_clicks"].asInteger();
-	S32 map = content["map_clicks"].asInteger();
-	S32 profile = content["profile_clicks"].asInteger();
-	S32 search_teleport = content["search_teleport_clicks"].asInteger();
-	S32 search_map = content["search_map_clicks"].asInteger();
-	S32 search_profile = content["search_profile_clicks"].asInteger();
+	S32 teleport = mContent["teleport_clicks"].asInteger();
+	S32 map = mContent["map_clicks"].asInteger();
+	S32 profile = mContent["profile_clicks"].asInteger();
+	S32 search_teleport = mContent["search_teleport_clicks"].asInteger();
+	S32 search_map = mContent["search_map_clicks"].asInteger();
+	S32 search_profile = mContent["search_profile_clicks"].asInteger();
 
-	LLPanelClassified* classified_panelp = (LLPanelClassified*)mClassifiedPanelHandle.get();
+	LLPanelClassifiedInfo* classified_panelp = (LLPanelClassifiedInfo*)mClassifiedPanelHandle.get();
 
 	if(classified_panelp)
 	{
@@ -73,10 +73,9 @@ void LLClassifiedStatsResponder::result(const LLSD& content)
 }
 
 /*virtual*/
-void LLClassifiedStatsResponder::error(U32 status, const std::string& reason)
+void LLClassifiedStatsResponder::httpFailure(void)
 {
-	llinfos << "LLClassifiedStatsResponder::error("
-		<< status << ": " << reason << ")" << llendl;
+	llinfos << "httpFailure: " << dumpResponse() << llendl;
 }
 
 
