@@ -2204,7 +2204,16 @@ void reload_objects(LLTextureReloader& texture_list, LLViewerObject::const_child
 		for (U8 i = 0; i < object->getNumTEs(); i++)
 		{
 			texture_list.addTexture(object->getTEImage(i));
+			const LLTextureEntry* te = object->getTE(i);
+			if (LLMaterial* mat = te ? te->getMaterialParams().get() : NULL)
+			{
+				if (mat->getSpecularID().notNull())
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(mat->getSpecularID()));
+				if (mat->getNormalID().notNull())
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(mat->getNormalID()));
+			}
 		}
+
 
 		if(recurse)
 		{
