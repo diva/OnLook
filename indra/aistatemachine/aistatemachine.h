@@ -36,6 +36,7 @@
 
 #include "aithreadsafe.h"
 #include <llpointer.h>
+#include "lltimer.h"
 #include <list>
 #include <boost/signals2.hpp>
 
@@ -98,10 +99,139 @@ class AIEngine
 extern AIEngine gMainThreadEngine;
 extern AIEngine gStateMachineThreadEngine;
 
+#ifndef STATE_MACHINE_PROFILING
+#define STATE_MACHINE_PROFILING (LL_RELEASE_FOR_DOWNLOAD)
+#endif
+
 class AIStateMachine : public LLThreadSafeRefCount
 {
   public:
 	typedef U32 state_type;		//!< The type of run_state
+
+	// A simple timer class that will calculate time delta between ctor and GetTimerData call.
+	// Time data is stored as a nested TimeData object.
+	// If STATE_MACHINE_PROFILING is defined then a stack of all StateTimers from root is maintained for debug output.
+	class StateTimerBase
+	{
+	public:
+		class TimeData
+		{
+			friend class StateTimerBase;
+		public:
+			TimeData() : mStart(-1), mEnd(-1) {}
+			U64 GetDuration() {	return mEnd - mStart; }
+		private:
+			U64 mStart, mEnd;
+
+#if !STATE_MACHINE_PROFILING
+			TimeData(const std::string& name) : mStart(get_clock_count()), mEnd(get_clock_count()) {}
+#else
+			TimeData(const std::string& name) : mName(name), mStart(get_clock_count()), mEnd(get_clock_count()) {}
+			void DumpTimer(std::ostringstream& msg, std::string prefix);
+			std::vector<TimeData> mChildren;
+			std::string mName;	
+			static TimeData sRoot;
+#endif
+		};
+	protected:
+#if !STATE_MACHINE_PROFILING
+		StateTimerBase(const std::string& name) : mData(name) {}
+		~StateTimerBase() {}
+		TimeData mData;
+		// Return a copy of the underlying timer data.
+		// This allows the data live beyond the scope of the state timer.
+	public:
+		const TimeData GetTimerData()
+		{
+			mData.mEnd = get_clock_count();	//set mEnd to current time, since GetTimerData() will always be called before the dtor, obv.
+			return mData;
+		}
+#else
+		// Ctors/dtors are hidden. Only StateTimerRoot and StateTimer are permitted to access them.
+		StateTimerBase() : mData(NULL) {}
+		~StateTimerBase()
+		{
+			// If mData is null then the timer was not registered due to being in the wrong thread or the root timer wasn't in the expected state.
+			if (!mData)
+				return;
+			mData->mEnd = get_clock_count();
+			mTimerStack.pop_back();
+		}
+
+		// Also hide internals from everything except StateTimerRoot and StateTimer
+		bool AddAsRoot(const std::string& name)
+		{
+			
+			if (!is_main_thread())
+				return true;	//Ignoring this timer, but pretending it was added.
+			if (!mTimerStack.empty())
+				return false;
+			TimeData::sRoot = TimeData(name);
+			mData = &TimeData::sRoot;
+			mData->mChildren.clear();	
+			mTimerStack.push_back(this);
+			return true;
+		}
+		bool AddAsChild(const std::string& name)
+		{
+			if (!is_main_thread())
+				return true;	//Ignoring this timer, but pretending it was added.
+			if (mTimerStack.empty())
+				return false;
+			mTimerStack.back()->mData->mChildren.push_back(TimeData(name));
+			mData = &mTimerStack.back()->mData->mChildren.back();
+			mTimerStack.push_back(this);
+			return true;
+		}
+
+		TimeData* mData;
+		static std::vector<StateTimerBase*> mTimerStack;
+
+	public:
+		// Debug spew
+		static void DumpTimers(std::ostringstream& msg)
+		{
+			TimeData::sRoot.DumpTimer(msg, "");
+		}
+
+		// Return a copy of the underlying timer data.
+		// This allows the data live beyond the scope of the state timer.
+		const TimeData GetTimerData() const
+		{
+			if (mData)
+			{
+				TimeData ret = *mData;
+				ret.mEnd = get_clock_count();	//set mEnd to current time, since GetTimerData() will always be called before the dtor, obv.
+				return ret;
+			}
+			return TimeData();
+		}
+#endif
+	};
+public:
+#if !STATE_MACHINE_PROFILING
+	typedef StateTimerBase StateTimerRoot;
+	typedef StateTimerBase StateTimer;
+#else
+	class StateTimerRoot : public StateTimerBase
+	{ //A StateTimerRoot can become a child if a root already exists.
+	public:
+		StateTimerRoot(const std::string& name)
+		{
+			if(!AddAsRoot(name))
+				AddAsChild(name);	
+		}
+	};
+	class StateTimer : public StateTimerBase
+	{ //A StateTimer can never become a root
+	public:
+		StateTimer(const std::string& name)
+		{
+			AddAsChild(name);
+		}
+	};
+#endif
+
 
   protected:
 	// The type of event that causes multiplex() to be called.
@@ -301,6 +431,9 @@ class AIStateMachine : public LLThreadSafeRefCount
 
 	void add(U64 count) { mRuntime += count; }
 	U64 getRuntime(void) const { return mRuntime; }
+
+	// For diagnostics. Every derived class must override this.
+	virtual const char* getName() const = 0;
 
   protected:
 	virtual void initialize_impl(void) = 0;

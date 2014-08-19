@@ -40,6 +40,8 @@
 #include "lluploadfloaterobservers.h"
 #include "aistatemachinethread.h"
 
+#include <boost/function.hpp>
+
 class LLVOVolume;
 class LLMeshResponder;
 class LLMutex;
@@ -283,6 +285,16 @@ public:
 
 	};
 
+	struct MeshHeaderInfo
+	{
+		MeshHeaderInfo()
+			: mHeaderSize(0), mVersion(0), mOffset(-1), mSize(0) {}
+		U32 mHeaderSize;
+		U32 mVersion;
+		S32 mOffset;
+		S32 mSize;
+	};
+
 	//set of requested skin info
 	std::set<LLUUID> mSkinRequests;
 	
@@ -331,6 +343,9 @@ public:
 	bool decompositionReceived(const LLUUID& mesh_id, U8* data, S32 data_size);
 	bool physicsShapeReceived(const LLUUID& mesh_id, U8* data, S32 data_size);
 	LLSD& getMeshHeader(const LLUUID& mesh_id);
+
+	bool getMeshHeaderInfo(const LLUUID& mesh_id, const char* block_name, MeshHeaderInfo& info);
+	bool loadInfoFromVFS(const LLUUID& mesh_id, MeshHeaderInfo& info, boost::function<bool(const LLUUID&, U8*, S32)> fn);
 
 	void notifyLoadedMeshes();
 	S32 getActualMeshLOD(const LLVolumeParams& mesh_params, S32 lod);
@@ -449,6 +464,8 @@ public:
 		LLHandle<LLWholeModelFeeObserver> const& fee_observer, LLHandle<LLWholeModelUploadObserver> const& upload_observer);
 
 	void setWholeModelUploadURL(std::string const& whole_model_upload_url) { mWholeModelUploadURL = whole_model_upload_url; }
+
+	/*virtual*/ const char* getName() const { return "AIMeshUpload"; }
 
 protected:
 	// Implement AIStateMachine.

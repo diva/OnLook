@@ -758,7 +758,7 @@ public:
 			// show an error to the user?
 			llwarns
 				<< "Application level error when fetching object "
-				<< "cost.  Message: " << mContent["error"]["message"].asString()
+				<< "cost. Message: " << mContent["error"]["message"].asString()
 				<< ", identifier: " << mContent["error"]["identifier"].asString()
 				<< llendl;
 
@@ -871,7 +871,7 @@ public:
 			LLUUID object_id = iter->asUUID();
 
 			// Check to see if the request contains data for the object
-			if ( mContent.has(iter->asString()) )
+			if (mContent.has(iter->asString()))
 			{
 				const LLSD& data = mContent[iter->asString()];
 
@@ -1459,8 +1459,7 @@ void LLViewerObjectList::removeFromActiveList(LLViewerObject* objectp)
 		
 		objectp->setListIndex(-1);
 
-		std::vector<LLPointer<LLViewerObject> >::iterator it(mActiveObjects.begin() + idx);
-		std::vector<LLPointer<LLViewerObject> >::iterator iter = vector_replace_with_last(mActiveObjects, it);
+		std::vector<LLPointer<LLViewerObject> >::iterator iter = vector_replace_with_last(mActiveObjects, mActiveObjects.begin() + idx);
 		if(iter != mActiveObjects.end())
 			(*iter)->setListIndex(idx);
 

@@ -63,6 +63,8 @@ public:
 	bool hasDirname(void) const { return hasFilename(); }
 	std::string const& getDirname(void) const { return getFilename(); }
 
+	/*virtual*/ const char* getName() const { return "AIDirPicker"; }
+
 public:
 	// Basically all public members of AIStateMachine could made accessible here,
 	// but I don't think others will ever be needed (not even these, actually).
