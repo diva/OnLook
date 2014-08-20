@@ -100,7 +100,9 @@ extern AIEngine gMainThreadEngine;
 extern AIEngine gStateMachineThreadEngine;
 
 #ifndef STATE_MACHINE_PROFILING
-#define STATE_MACHINE_PROFILING (LL_RELEASE_FOR_DOWNLOAD)
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+#define STATE_MACHINE_PROFILING 1
+#endif
 #endif
 
 class AIStateMachine : public LLThreadSafeRefCount
@@ -133,10 +135,10 @@ class AIStateMachine : public LLThreadSafeRefCount
 			static TimeData sRoot;
 #endif
 		};
-	protected:
 #if !STATE_MACHINE_PROFILING
 		StateTimerBase(const std::string& name) : mData(name) {}
 		~StateTimerBase() {}
+	protected:
 		TimeData mData;
 		// Return a copy of the underlying timer data.
 		// This allows the data live beyond the scope of the state timer.
@@ -147,6 +149,7 @@ class AIStateMachine : public LLThreadSafeRefCount
 			return mData;
 		}
 #else
+	protected:
 		// Ctors/dtors are hidden. Only StateTimerRoot and StateTimer are permitted to access them.
 		StateTimerBase() : mData(NULL) {}
 		~StateTimerBase()
