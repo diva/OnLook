@@ -21,9 +21,6 @@ Asegurate que has ingresado el URI de inicio de sesión correcto. Un ejemplo de 
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
-	<string name="APP_NAME">Singularity Viewer</string>
-	<string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
-	<string name="SHORT_APP_NAME">Singularity</string>
 	<string name="SECOND_LIFE_GRID">Grid Second Life</string>
 	<string name="SUPPORT_SITE">Portal de Soporte de Second Life</string>
 	
