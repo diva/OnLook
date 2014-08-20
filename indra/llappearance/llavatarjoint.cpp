@@ -105,8 +105,9 @@ void LLAvatarJoint::setValid( BOOL valid, BOOL recursive )
 		for (child_list_t::iterator iter = mChildren.begin();
 			 iter != mChildren.end(); ++iter)
 		{
-			LLAvatarJoint* joint = (LLAvatarJoint*)(*iter);
-			joint->setValid(valid, TRUE);
+			LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
+			if (joint)
+				joint->setValid(valid, TRUE);
 		}
 	}
 
@@ -138,8 +139,9 @@ void LLAvatarJoint::setVisible(BOOL visible, BOOL recursive)
 		for (child_list_t::iterator iter = mChildren.begin();
 			 iter != mChildren.end(); ++iter)
 		{
-			LLAvatarJoint* joint = (LLAvatarJoint*)(*iter);
-			joint->setVisible(visible, recursive);
+			LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
+			if(joint)
+				joint->setVisible(visible, recursive);
 		}
 	}
 }
@@ -260,7 +262,7 @@ void LLAvatarJointCollisionVolume::renderCollision()
 	updateWorldMatrix();
 	
 	gGL.pushMatrix();
-	gGL.multMatrix( &mXform.getWorldMatrix().mMatrix[0][0] );
+	gGL.multMatrix( mXform.getWorldMatrix() );
 
 	gGL.diffuseColor3f( 0.f, 0.f, 1.f );
 	

@@ -68,6 +68,7 @@
 #include <map>
 #include <cstring>
 
+
 //
 // Globals
 //
@@ -160,18 +161,19 @@ void LLWorld::setRegionSize(const U32& width, const U32& length)
 	mWidthInMeters = mWidth * mScale;
 }
 
+
 LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 {
 	llinfos << "Add region with handle: " << region_handle << " on host " << host << llendl;
 	LLViewerRegion *regionp = getRegionFromHandle(region_handle);
 	if (regionp)
 	{
-		llinfos << "Region exists, removing it " << llendl;
 		LLHost old_host = regionp->getHost();
 		// region already exists!
 		if (host == old_host && regionp->isAlive())
 		{
 			// This is a duplicate for the same host and it's alive, don't bother.
+			llinfos << "Region already exists and is alive, using existing region" << llendl;
 			return regionp;
 		}
 
@@ -189,6 +191,10 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 		// matches, because all the agent state for the new camera is completely different.
 		removeRegion(old_host);
 	}
+	else
+	{
+		llinfos << "Region does not exist, creating new one" << llendl;
+	}
 
 	U32 iindex = 0;
 	U32 jindex = 0;
@@ -199,8 +205,8 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 	S32 x = (S32)(iindex/256); //MegaRegion
 	S32 y = (S32)(jindex/256); //MegaRegion
 // </FS:CR> Aurora Sim
-	llinfos << "Adding new region (" << x << ":" << y << ")" << llendl;
-	llinfos << "Host: " << host << llendl;
+	llinfos << "Adding new region (" << x << ":" << y << ")"
+		<< " on host: " << host << llendl;
 
 	LLVector3d origin_global;
 
@@ -272,7 +278,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 
 				if (neighborp && last_neighborp != neighborp)
 				{
-					//llinfos << "Connecting " << region_x << ":" << region_y << " -> " << adj_x << ":" << adj_y << llendl;
+					//LL_INFOS() << "Connecting " << region_x << ":" << region_y << " -> " << adj_x << ":" << adj_y << LL_ENDL;
 					regionp->connectNeighbor(neighborp, dir);
 					last_neighborp = neighborp;
 				}
@@ -341,6 +347,7 @@ void LLWorld::removeRegion(const LLHost &host)
 	mVisibleRegionList.remove(regionp);
 
 	mRegionRemovedSignal(regionp);
+
 	//double check all objects of this region are removed.
 	gObjectList.clearAllMapObjectsInRegion(regionp) ;
 	//llassert_always(!gObjectList.hasMapObjectInRegion(regionp)) ;
@@ -1345,6 +1352,14 @@ static LLFastTimer::DeclareTimer FTM_ENABLE_SIMULATOR("Enable Sim");
 void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 {
 	LLFastTimer t(FTM_ENABLE_SIMULATOR);
+
+	if (!gAgent.getRegion())
+		return;
+
+	static const LLCachedControl<bool> connectToNeighbors(gSavedSettings, "AlchemyConnectToNeighbors");
+	if (!connectToNeighbors && ((gAgent.getTeleportState() == LLAgent::TELEPORT_LOCAL) || (gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)))
+		return;
+
 	// enable the appropriate circuit for this simulator and 
 	// add its values into the gSimulator structure
 	U64		handle;
@@ -1540,20 +1555,19 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 
 		if (!pVOAvatar->isDead() && !pVOAvatar->isSelf() && !pVOAvatar->mIsDummy)
 		{
+			LLVector3d pos_global = pVOAvatar->getPositionGlobal();
 			LLUUID uuid = pVOAvatar->getID();
-			if(!uuid.isNull())
+
+			if (!uuid.isNull()
+				&& dist_vec_squared(pos_global, relative_to) <= radius_squared)
 			{
-				LLVector3d pos_global = pVOAvatar->getPositionGlobal();
-				if(dist_vec_squared(pos_global, relative_to) <= radius_squared)
+				if(positions != NULL)
 				{
-					if(positions != NULL)
-					{
-						positions->push_back(pos_global);
-					}
-					if(avatar_ids !=NULL)
-					{
-						avatar_ids->push_back(uuid);
-					}
+					positions->push_back(pos_global);
+				}
+				if(avatar_ids !=NULL)
+				{
+					avatar_ids->push_back(uuid);
 				}
 			}
 		}

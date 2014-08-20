@@ -429,6 +429,11 @@ private:
 public:
 	static void onChangeSelfInvisible(bool invisible);
 	void setInvisible(bool invisible);
+private:
+	void handleTeleportFinished();
+private:
+	boost::signals2::connection mTeleportFinishedSlot;
+
 };
 
 extern LLPointer<LLVOAvatarSelf> gAgentAvatarp;

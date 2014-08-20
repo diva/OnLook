@@ -26,6 +26,8 @@
 
 LFSimFeatureHandler::LFSimFeatureHandler()
 : mSupportsExport(false)
+, mDestinationGuideURL(gSavedSettings.getString("DestinationGuideURL"))
+, mSearchURL(gSavedSettings.getString("SearchURL"))
 , mSayRange(20)
 , mShoutRange(100)
 , mWhisperRange(10)
@@ -54,57 +56,82 @@ void LFSimFeatureHandler::handleRegionChange()
 	}
 }
 
+template<typename T>
+void has_feature_or_default(SignaledType<T>& type, const LLSD& features, const std::string& feature)
+{
+	type = (features.has(feature)) ? static_cast<T>(features[feature]) : type.getDefault();
+}
+template<>
+void has_feature_or_default(SignaledType<U32>& type, const LLSD& features, const std::string& feature)
+{
+	type = (features.has(feature)) ? features[feature].asInteger() : type.getDefault();
+}
+
 void LFSimFeatureHandler::setSupportedFeatures()
 {
 	if (LLViewerRegion* region = gAgent.getRegion())
 	{
 		LLSD info;
 		region->getSimulatorFeatures(info);
+		//bool hg(); // Singu Note: There should probably be a flag for this some day.
 		if (info.has("OpenSimExtras")) // OpenSim specific sim features
 		{
 			// For definition of OpenSimExtras please see
 			// http://opensimulator.org/wiki/SimulatorFeatures_Extras
 			const LLSD& extras(info["OpenSimExtras"]);
-			mSupportsExport = extras.has("ExportSupported") ? extras["ExportSupported"].asBoolean() : false;
-			mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
-			mSearchURL = extras.has("search-server-url") ? extras["search-server-url"].asString() : "";
-			mSayRange = extras.has("say-range") ? extras["say-range"].asInteger() : 20;
-			mShoutRange = extras.has("shout-range") ? extras["shout-range"].asInteger() : 100;
-			mWhisperRange = extras.has("whisper-range") ? extras["whisper-range"].asInteger() : 10;
+			has_feature_or_default(mSupportsExport, extras, "ExportSupported");
+			//if (hg)
+			{
+				has_feature_or_default(mDestinationGuideURL, extras, "destination-guide-url");
+				mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
+				has_feature_or_default(mSearchURL, extras, "search-server-url");
+			}
+			has_feature_or_default(mSayRange, extras, "say-range");
+			has_feature_or_default(mShoutRange, extras, "shout-range");
+			has_feature_or_default(mWhisperRange, extras, "whisper-range");
 		}
 		else // OpenSim specifics are unsupported reset all to default
 		{
-			mSupportsExport = false;
-			mMapServerURL = "";
-			mSearchURL = "";
-			mSayRange = 20;
-			mShoutRange = 100;
-			mWhisperRange = 10;
+			mSupportsExport.reset();
+			//if (hg)
+			{
+				mDestinationGuideURL.reset();
+				mMapServerURL = "";
+				mSearchURL.reset();
+			}
+			mSayRange.reset();
+			mShoutRange.reset();
+			mWhisperRange.reset();
 		}
 	}
 }
 
-boost::signals2::connection LFSimFeatureHandler::setSupportsExportCallback(const boost::signals2::signal<void()>::slot_type& slot)
+boost::signals2::connection LFSimFeatureHandler::setSupportsExportCallback(const SignaledType<bool>::slot_t& slot)
 {
 	return mSupportsExport.connect(slot);
 }
 
-boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const boost::signals2::signal<void()>::slot_type& slot)
+boost::signals2::connection LFSimFeatureHandler::setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot)
+{
+	return mDestinationGuideURL.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const SignaledType<std::string>::slot_t& slot)
 {
 	return mSearchURL.connect(slot);
 }
 
-boost::signals2::connection LFSimFeatureHandler::setSayRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+boost::signals2::connection LFSimFeatureHandler::setSayRangeCallback(const SignaledType<U32>::slot_t& slot)
 {
 	return mSayRange.connect(slot);
 }
 
-boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const SignaledType<U32>::slot_t& slot)
 {
 	return mShoutRange.connect(slot);
 }
 
-boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const boost::signals2::signal<void()>::slot_type& slot)
+boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot)
 {
 	return mWhisperRange.connect(slot);
 }

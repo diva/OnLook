@@ -41,22 +41,22 @@
 #include "llagent.h"
 #include "llappviewer.h"
 #include "llfloaterwebcontent.h"
+#include "hippogridmanager.h"
 #include "llparcel.h"
 #include "llsd.h"
+#include "llalertdialog.h"
 #include "llui.h"
 #include "lluri.h"
+#include "sgversion.h"
 #include "llviewercontrol.h"
-#include "llviewermedia.h"
 #include "llviewernetwork.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llnotificationsutil.h"
-#include "llalertdialog.h"
-
-#include "sgversion.h"
 
 bool on_load_url_external_response(const LLSD& notification, const LLSD& response, bool async );
+
 
 class URLLoader : public LLAlertDialog::URLLoader
 {
@@ -208,17 +208,11 @@ std::string LLWeb::escapeURL(const std::string& url)
 	return escaped_url;
 }
 
+std::string getLoginUriDomain();
 //static
 std::string LLWeb::expandURLSubstitutions(const std::string &url,
 										  const LLSD &default_subs)
 {
-    gCurrentVersion = llformat("%s %d.%d.%d.%d",
-        gVersionChannel,
-        gVersionMajor,
-        gVersionMinor,
-        gVersionPatch,
-        gVersionBuild );
-
 	LLSD substitution = default_subs;
 	substitution["VERSION"] = gCurrentVersion;
 	substitution["VERSION_MAJOR"] = gVersionMajor;
@@ -226,8 +220,15 @@ std::string LLWeb::expandURLSubstitutions(const std::string &url,
 	substitution["VERSION_PATCH"] = gVersionPatch;
 	substitution["VERSION_BUILD"] = gVersionBuild;
 	substitution["CHANNEL"] = gVersionChannel;
-	substitution["GRID"] = LLViewerLogin::getInstance()->getGridLabel();
-	substitution["GRID_LOWERCASE"] =  utf8str_tolower(LLViewerLogin::getInstance()->getGridLabel());
+	const HippoGridInfo* grid(gHippoGridManager->getCurrentGrid());
+	std::string gridId(grid->isSecondLife() ? getLoginUriDomain() : grid->getGridName());
+	if (grid->isSecondLife())
+	{
+		gridId = gridId.substr(0, gridId.find('.'));
+	}
+
+	substitution["GRID"] = gridId;
+	substitution["GRID_LOWERCASE"] =  utf8str_tolower(gridId);
 	substitution["OS"] = LLAppViewer::instance()->getOSInfo().getOSStringSimple();
 	substitution["SESSION_ID"] = gAgent.getSessionID();
 	substitution["FIRST_LOGIN"] = gAgent.isFirstLogin();

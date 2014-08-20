@@ -56,8 +56,6 @@ void hud_render_utf8text(const std::string &str, const LLVector3 &pos_agent,
 	hud_render_text(wstr, pos_agent, font, style, shadow, x_offset, y_offset, color, orthographic);
 }
 
-int glProjectf(const LLVector3& object, const F32* modelview, const F32* projection, const LLRect& viewport, LLVector3& windowCoordinate);
-
 void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 					const LLFontGL &font,
 					const U8 style,
@@ -115,7 +113,7 @@ void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 
 	const LLRect& world_view_rect = gViewerWindow->getWorldViewRectRaw();
 	
-	glProjectf(render_pos, gGLModelView, gGLProjection, world_view_rect, window_coordinates);
+	gGL.projectf(render_pos, gGLModelView, gGLProjection, world_view_rect, window_coordinates);
 
 	//fonts all render orthographically, set up projection``
 	gGL.matrixMode(LLRender::MM_PROJECTION);

@@ -103,6 +103,14 @@ LLPanelGroupGeneral::LLPanelGroupGeneral(const std::string& name,
 
 LLPanelGroupGeneral::~LLPanelGroupGeneral()
 {
+	for (avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.begin(); it != mAvatarNameCacheConnections.end(); ++it)
+	{
+		if (it->second.connected())
+		{
+			it->second.disconnect();
+		}
+	}
+	mAvatarNameCacheConnections.clear();
 }
 
 BOOL LLPanelGroupGeneral::postBuild()
@@ -810,9 +818,16 @@ void LLPanelGroupGeneral::updateMembers()
 		else
 		{
 			// If name is not cached, onNameCache() should be called when it is cached and add this member to list.
-			LLAvatarNameCache::get(mMemberProgress->first, 
-									boost::bind(&LLPanelGroupGeneral::onNameCache,
-												this, gdatap->getMemberVersion(), member, _2));
+			avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.find(mMemberProgress->first);
+			if (it != mAvatarNameCacheConnections.end())
+			{
+				if (it->second.connected())
+				{
+					it->second.disconnect();
+				}
+				mAvatarNameCacheConnections.erase(it);
+			}
+			mAvatarNameCacheConnections[mMemberProgress->first] = LLAvatarNameCache::get(mMemberProgress->first, boost::bind(&LLPanelGroupGeneral::onNameCache, this, gdatap->getMemberVersion(), member, _2, _1));
 		}
 	}
 
@@ -854,8 +869,18 @@ void LLPanelGroupGeneral::addMember(LLGroupMemberData* member)
 	/*LLScrollListItem* member_row =*/ mListVisibleMembers->addNameItemRow(item_params);
 }
 
-void LLPanelGroupGeneral::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name)
+void LLPanelGroupGeneral::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name, const LLUUID& av_id)
 {
+	avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.find(av_id);
+	if (it != mAvatarNameCacheConnections.end())
+	{
+		if (it->second.connected())
+		{
+			it->second.disconnect();
+		}
+		mAvatarNameCacheConnections.erase(it);
+	}
+
 	LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID);
 
 	if (!gdatap

@@ -73,8 +73,8 @@ public:
 	LLMaterialsResponder(const std::string& pMethod, const std::string& pCapabilityURL, CallbackFunction pCallback);
 	virtual ~LLMaterialsResponder();
 
-	virtual void result(const LLSD& pContent);
-	virtual void error(U32 pStatus, const std::string& pReason);
+	virtual void httpSuccess(void);
+	virtual void httpFailure(void);
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return materialsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMaterialsResponder"; }
@@ -96,18 +96,18 @@ LLMaterialsResponder::~LLMaterialsResponder()
 {
 }
 
-void LLMaterialsResponder::result(const LLSD& pContent)
+void LLMaterialsResponder::httpSuccess(void)
 {
 	LL_DEBUGS("Materials") << LL_ENDL;
-	mCallback(true, pContent);
+	mCallback(true, mContent);
 }
 
-void LLMaterialsResponder::error(U32 pStatus, const std::string& pReason)
+void LLMaterialsResponder::httpFailure(void)
 {
 	LL_WARNS("Materials")
 		<< "\n--------------------------------------------------------------------------\n"
-		<< mMethod << " Error[" << pStatus << "] cannot access cap '" << MATERIALS_CAPABILITY_NAME
-		<< "'\n  with url '" << mCapabilityURL	<< "' because " << pReason 
+		<< mMethod << " Error[" << mStatus << "] cannot access cap '" << MATERIALS_CAPABILITY_NAME
+		<< "'\n  with url '" << mCapabilityURL	<< "' because " << mReason 
 		<< "\n--------------------------------------------------------------------------"
 		<< LL_ENDL;
 

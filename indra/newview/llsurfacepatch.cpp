@@ -47,8 +47,8 @@ extern bool gShiftFrame;
 extern U64 gFrameTime;
 extern LLPipeline gPipeline;
 
-LLSurfacePatch::LLSurfacePatch() :
-	mHasReceivedData(FALSE),
+LLSurfacePatch::LLSurfacePatch()
+:	mHasReceivedData(FALSE),
 	mSTexUpdate(FALSE),
 	mDirty(FALSE),
 	mDirtyZStats(TRUE),

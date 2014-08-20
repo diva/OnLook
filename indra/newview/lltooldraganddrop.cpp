@@ -1591,7 +1591,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	case LLAssetType::AT_CALLINGCARD:
 		// Calling Cards in object are disabled for now
 		// because of incomplete LSL support. See STORM-1117.
-		return ACCEPT_NO;
+		//return ACCEPT_NO;
 	default:
 			break;
 	}
@@ -1604,7 +1604,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 		transfer = TRUE;
 	}
 	BOOL volume = (LL_PCODE_VOLUME == obj->getPCode());
-	BOOL attached = obj->isAttachment();
+	BOOL attached = false; // <singu/> No longer necessary.
 	BOOL unrestricted = ((perm.getMaskBase() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED) ? TRUE : FALSE;
 
 // [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.2.0c) | Modified: RLVa-1.0.0c

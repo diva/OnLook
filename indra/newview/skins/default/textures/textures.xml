@@ -415,4 +415,5 @@
   <texture name="Inv_WindLight.png" preload="true"/>
   <texture name="Inv_WaterLight.png" preload="true"/>
 
+  <texture name="Refresh_Off" file_name="Refresh_Off.png" preload="true" />
 </textures>

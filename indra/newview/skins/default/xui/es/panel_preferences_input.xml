@@ -7,12 +7,20 @@
 		Sensibilidad del Ratón:
 	</text>
 	<check_box label="Invertir el Ratón" name="invert_mouse"/>
+	<check_box label="Acercamiento Instantáneo con Click derecho, no progresivo" name="instant_zoom"/>
 	<check_box label="Mostrar Avatar en Vista Subjetiva" name="first_person_avatar_visible"/>
+	<check_box label="Usar comportamiento de Cámara 'realistico' en Vista Subjetiva" name="UseRealisticMouselook"/>
+	<text name="UI Hidden in mouselook:">Esconder Interface en Vista Subjetiva:</text>
+	<check_box name="mouselook_hides_floaters" label="Flotantes"/>
+	<check_box left_delta="110" name="mouselook_hides_notices" label="Avisos"/>
+	<check_box name="mouselook_hides_menubar" label="Barra de Menúes"/>
+	<check_box left_delta="110" name="mouselook_hides_toolbar" label="Barra de Herramientas"/>
 	<text name=" Movement Options:">
 		Opciones de Movimiento:
 	</text>
 	<check_box label="Despegar/Aterrizar al pulsar RePág/AvPág" name="automatic_fly"/>
-	<check_box label="Permitir alternar estar en cuclillas presionando la tecla Mayús" name="crouch_toggle"/>	
+	<check_box label="Permitir alternar estar en cuclillas presionando la tecla Mayús" name="crouch_toggle"/>
+	<check_box label="Usar disposición de teclado azerty en vez de qwerty" name="azerty_keys"/>
 	<text left="10" name=" Camera Options:">
 		Opciones de Cámara:
 	</text>
@@ -23,6 +31,7 @@
 	<text name="Camera Follow Distance:" width="198">
 		Distancia de seguimiento de la Cámara:
 	</text>
+	<check_box label="Rueda del mouse + Ctrl y/o Mayús ajusta posición cámara" name="scroll_keys"/>
 	<slider left="336" name="camera_offset_scale"/>
 	<check_box label="Reorientar la cámara el editar" name="edit_camera_movement" tool_tip="Posicionar la Cámara automáticamente al entrar y salir del modo de Edición"/>
 	<check_box label="Reorientar la cámara el editar la apariencia" name="appearance_camera_movement" tool_tip="Posicionar la Cámara automáticamente mientras se esté en modo edición del avatar"/>

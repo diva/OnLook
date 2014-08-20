@@ -4,7 +4,7 @@
 	<scroll_list background_visible="true" bottom="45" column_padding="0" draw_border="true"
 	     draw_heading="true" draw_stripes="true" enabled="true"
 	     follows="left|top|right|bottom" left="10" mouse_opaque="true"
-	     multi_select="false" name="group list" tab_stop="true" top="-10"
+	     multi_select="true" name="group list" tab_stop="true" top="-10"
 	     width="240">
 		<column dynamicwidth="true" label="Name" name="name" tool_tip="Name" />
     <!--<column label="Active" name="is_active_group"

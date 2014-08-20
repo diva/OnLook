@@ -123,11 +123,13 @@ void LLPrefsAscentVan::refreshValues()
 	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
 	mAddNotReplace = gSavedSettings.getBOOL("LiruAddNotReplace");
 	mTurnAround = gSavedSettings.getBOOL("TurnAroundWhenWalkingBackwards");
+	mCustomizeAnim = gSavedSettings.getBOOL("LiruCustomizeAnim");
 	mAnnounceSnapshots = gSavedSettings.getBOOL("AnnounceSnapshots");
 	mAnnounceStreamMetadata = gSavedSettings.getBOOL("AnnounceStreamMetadata");
 	mUnfocusedFloatersOpaque = gSavedSettings.getBOOL("FloaterUnfocusedBackgroundOpaque");
 	mCompleteNameProfiles   = gSavedSettings.getBOOL("SinguCompleteNameProfiles");
 	mScriptErrorsStealFocus = gSavedSettings.getBOOL("LiruScriptErrorsStealFocus");
+	mConnectToNeighbors = gSavedSettings.getBOOL("AlchemyConnectToNeighbors");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentBroadcastTag     = gSavedSettings.getBOOL("AscentBroadcastTag");
@@ -173,10 +175,6 @@ void LLPrefsAscentVan::refresh()
     combo->setCurrentByIndex(mSelectedClient);
 
     childSetEnabled("friends_color_textbox",     mUseStatusColors);
-    childSetEnabled("friend_color_swatch",       mUseStatusColors || mColorFriendChat);
-    childSetEnabled("estate_owner_color_swatch", mUseStatusColors || mColorEOChat);
-    childSetEnabled("linden_color_swatch",       mUseStatusColors || mColorLindenChat);
-    childSetEnabled("muted_color_swatch",        mUseStatusColors || mColorMutedChat);
 
     childSetEnabled("custom_tag_label_text",   mCustomTagOn);
     childSetEnabled("custom_tag_label_box",    mCustomTagOn);
@@ -196,11 +194,13 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("SGDisableChatAnimation",		mDisableChatAnimation);
 	gSavedSettings.setBOOL("LiruAddNotReplace", mAddNotReplace);
 	gSavedSettings.setBOOL("TurnAroundWhenWalkingBackwards", mTurnAround);
+	gSavedSettings.setBOOL("LiruCustomizeAnim", mCustomizeAnim);
 	gSavedSettings.setBOOL("AnnounceSnapshots", mAnnounceSnapshots);
 	gSavedSettings.setBOOL("AnnounceStreamMetadata", mAnnounceStreamMetadata);
 	gSavedSettings.setBOOL("FloaterUnfocusedBackgroundOpaque", mUnfocusedFloatersOpaque);
 	gSavedSettings.setBOOL("SinguCompleteNameProfiles",     mCompleteNameProfiles);
 	gSavedSettings.setBOOL("LiruScriptErrorsStealFocus",    mScriptErrorsStealFocus);
+	gSavedSettings.setBOOL("AlchemyConnectToNeighbors",     mConnectToNeighbors);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentBroadcastTag",         mAscentBroadcastTag);

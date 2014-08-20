@@ -440,9 +440,20 @@ class LLFileUploadBulk : public view_listener_t
 				S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 				void *userdata = NULL;
 				gSavedSettings.setBOOL("TemporaryUpload", enabled);
-				upload_new_resource(filename, asset_name, asset_name, 0, LLFolderType::FT_NONE, LLInventoryType::IT_NONE,
-					LLFloaterPerms::getNextOwnerPerms(), LLFloaterPerms::getGroupPerms(), LLFloaterPerms::getEveryonePerms(),
-					display_name, callback, expected_upload_cost, userdata);
+				upload_new_resource(
+					filename,
+					asset_name,
+					asset_name,
+					0,
+					LLFolderType::FT_NONE,
+					LLInventoryType::IT_NONE,
+					LLFloaterPerms::getNextOwnerPerms("Uploads"),
+					LLFloaterPerms::getGroupPerms("Uploads"),
+					LLFloaterPerms::getEveryonePerms("Uploads"),
+					display_name,
+					callback,
+					expected_upload_cost,
+					userdata);
 
 			}
 		}
@@ -925,7 +936,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		if(exten == "lsl" || exten == "gesture" || exten == "notecard") // added notecard Oct 15 2009
 		{
 			LLInventoryType::EType inv_type = LLInventoryType::IT_GESTURE;
-			if(exten == "lsl") inv_type = LLInventoryType::IT_LSL;
+			if (exten == "lsl") inv_type = LLInventoryType::IT_LSL;
 			else if(exten == "gesture") inv_type = LLInventoryType::IT_GESTURE;
 			else if(exten == "notecard") inv_type = LLInventoryType::IT_NOTECARD;
 			create_inventory_item(	gAgent.getID(),
@@ -1374,6 +1385,19 @@ void NewResourceItemCallback::fire(const LLUUID& new_item_id)
 	LLUUID vfile_id = LLUUID(new_item->getDescription());
 	if(vfile_id.isNull()) return;
 	new_item->setDescription("(No Description)");
+	std::string type("Uploads");
+	switch(new_item->getInventoryType())
+	{
+		case LLInventoryType::IT_LSL:      type = "Scripts"; break;
+		case LLInventoryType::IT_GESTURE:  type = "Gestures"; break;
+		case LLInventoryType::IT_NOTECARD: type = "Notecard"; break;
+		default: break;
+	}
+	LLPermissions perms = new_item->getPermissions();
+	perms.setMaskNext(LLFloaterPerms::getNextOwnerPerms(type));
+	perms.setMaskGroup(LLFloaterPerms::getGroupPerms(type));
+	perms.setMaskEveryone(LLFloaterPerms::getEveryonePerms(type));
+	new_item->setPermissions(perms);
 	new_item->updateServer(FALSE);
 	gInventory.updateItem(new_item);
 	gInventory.notifyObservers();

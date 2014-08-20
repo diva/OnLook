@@ -58,6 +58,7 @@
 #include "lldir.h"
 #include "lleventpoll.h"
 #include "llfloatergodtools.h"
+#include "llfloaterperms.h"
 #include "llfloaterreporter.h"
 #include "llfloaterregioninfo.h"
 #include "llhttpnode.h"
@@ -223,9 +224,9 @@ public:
 	virtual ~BaseCapabilitiesComplete()
 	{ }
 
-    void error(U32 statusNum, const std::string& reason)
+    void httpFailure(void)
     {
-		LL_WARNS2("AppInit", "Capabilities") << statusNum << ": " << reason << LL_ENDL;
+		LL_WARNS2("AppInit", "Capabilities") << mStatus << ": " << mReason << LL_ENDL;
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if (regionp)
 		{
@@ -233,7 +234,7 @@ public:
 		}
     }
 
-    void result(const LLSD& content)
+    void httpSuccess(void)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region was removed
@@ -248,7 +249,7 @@ public:
 		}
 
 		LLSD::map_const_iterator iter;
-		for(iter = content.beginMap(); iter != content.endMap(); ++iter)
+		for(iter = mContent.beginMap(); iter != mContent.endMap(); ++iter)
 		{
 			regionp->setCapability(iter->first, iter->second);
 			LL_DEBUGS2("AppInit", "Capabilities") << "got capability for " 
@@ -320,6 +321,9 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 {
 	// Moved this up... -> mWidth = region_width_meters;
 // </FS:CR>
+
+	mRenderMatrix.setIdentity();
+
 	mImpl->mOriginGlobal = from_region_handle(handle); 
 	updateRenderMatrix();
 
@@ -546,7 +550,7 @@ void LLViewerRegion::setOriginGlobal(const LLVector3d &origin_global)
 
 void LLViewerRegion::updateRenderMatrix()
 {
-	mRenderMatrix.setTranslation(getOriginAgent());
+	mRenderMatrix.setTranslate_affine(getOriginAgent());
 }
 
 void LLViewerRegion::setTimeDilation(F32 time_dilation)
@@ -1694,6 +1698,7 @@ void LLViewerRegion::unpackRegionHandshake()
 
 void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 {
+	capabilityNames.append("AgentPreferences");
 	capabilityNames.append("AgentState");
 	capabilityNames.append("AttachmentResources");
 	//capabilityNames.append("AvatarPickerSearch"); //Display name/SLID lookup (llfloateravatarpicker.cpp)
@@ -1717,6 +1722,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
 	capabilityNames.append("GetTexture");
+	capabilityNames.append("GroupAPIv1");
 	capabilityNames.append("GroupMemberData");
 	capabilityNames.append("GroupProposalBallot");
 	capabilityNames.append("HomeLocation");
@@ -1737,7 +1743,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("RemoteParcelRequest");
 	capabilityNames.append("RenderMaterials");
 	capabilityNames.append("RequestTextureDownload");
-	//capabilityNames.append("ResourceCostSelected"); //Object weights (llfloaterobjectweights.cpp)
+	capabilityNames.append("ResourceCostSelected");
 	capabilityNames.append("RetrieveNavMeshSrc");
 	capabilityNames.append("SearchStatRequest");
 	capabilityNames.append("SearchStatTracking");
@@ -1847,13 +1853,13 @@ public:
     { }
 	
 	
-    void error(U32 statusNum, const std::string& reason)
+    void httpFailure(void)
     {
-		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
+		LL_WARNS2("AppInit", "SimulatorFeatures") << mStatus << ": " << mReason << LL_ENDL;
 		retry();
     }
 
-    void result(const LLSD& content)
+    void httpSuccess(void)
     {
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region is removed or responder is not created.
@@ -1862,7 +1868,7 @@ public:
 			return ;
 		}
 		
-		regionp->setSimulatorFeatures(content);
+		regionp->setSimulatorFeatures(mContent);
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return simulatorFeaturesReceived_timeout; }
@@ -1893,16 +1899,16 @@ public:
 	: mRetryURL(retry_url), mRegionHandle(region_handle), mAttempt(attempt), mMaxAttempts(max_attempts)
 	{}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		LL_WARNS2("AppInit", "GamingData") << statusNum << ": " << reason << LL_ENDL;
+		LL_WARNS2("AppInit", "GamingData") << mStatus << ": " << mReason << LL_ENDL;
 		retry();
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
-		if(regionp) regionp->setGamingData(content);
+		if(regionp) regionp->setGamingData(mContent);
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return gamingDataReceived_timeout; }
@@ -1997,6 +2003,8 @@ void LLViewerRegion::setCapabilitiesReceived(bool received)
 	if (received)
 	{
 		mCapabilitiesReceivedSignal(getRegionID());
+
+		LLFloaterPermsDefault::sendInitialPerms();
 
 		// This is a single-shot signal. Forget callbacks to save resources.
 		mCapabilitiesReceivedSignal.disconnect_all_slots();

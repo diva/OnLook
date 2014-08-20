@@ -44,12 +44,11 @@ class LLObjectSelection;
 class LLScrollListCtrl;
 class LLUICtrl;
 
-class LLFloaterInspect : public LLFloater, public LLSingleton<LLFloaterInspect>, public LLVOInventoryListener
+class LLFloaterInspect : public LLFloater, public LLFloaterSingleton<LLFloaterInspect>, public LLVOInventoryListener
 {
-	friend class LLSingleton<LLFloaterInspect>;
+	friend class LLUISingleton<LLFloaterInspect, VisibilityPolicy<LLFloater> >;
 public:
 
-	static void showInstance();
 //	static void show(void* ignored = NULL);
 	void onOpen();
 	virtual BOOL postBuild();
@@ -73,7 +72,7 @@ protected:
 	// </edit>
 
 private:
-	LLFloaterInspect();
+	LLFloaterInspect(const LLSD&);
 	virtual ~LLFloaterInspect(void);
 
 	LLSafeHandle<LLObjectSelection> mObjectSelection;

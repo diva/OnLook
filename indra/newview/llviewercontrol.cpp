@@ -84,6 +84,8 @@
 #include "aicurl.h"
 #include "aihttptimeoutpolicy.h"
 
+void load_default_bindings(bool zqsd);
+
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 BOOL 				gHackGodmode = FALSE;
 #endif
@@ -627,6 +629,8 @@ static bool handlePhoenixNameSystemChanged(const LLSD& newvalue)
 }
 // [/Ansariel: Display name support]
 
+bool handleUpdateFriends() { LLAvatarTracker::instance().updateFriends(); return true; }
+
 static bool handleAllowLargeSounds(const LLSD& newvalue)
 {
 	if(gAudiop)
@@ -824,8 +828,11 @@ void settings_setup_listeners()
     // [Ansariel: Display name support]
 	gSavedSettings.getControl("PhoenixNameSystem")->getSignal()->connect(boost::bind(&handlePhoenixNameSystemChanged, _2));
     // [/Ansariel: Display name support]
+	gSavedSettings.getControl("LiruShowLastNameResident")->getSignal()->connect(boost::bind(handlePhoenixNameSystemChanged, _2));
+	gSavedSettings.getControl("FriendNameSystem")->getSignal()->connect(boost::bind(handleUpdateFriends));
 
 	gSavedSettings.getControl("AllowLargeSounds")->getSignal()->connect(boost::bind(&handleAllowLargeSounds, _2));
+	gSavedSettings.getControl("LiruUseZQSDKeys")->getSignal()->connect(boost::bind(load_default_bindings, _2));
 }
 
 void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name)

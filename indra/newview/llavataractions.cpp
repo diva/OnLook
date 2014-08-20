@@ -37,6 +37,7 @@
 #include "llagent.h"
 #include "llcallingcard.h"		// for LLAvatarTracker
 #include "llfloateravatarinfo.h"
+#include "llfloatergroupbulkban.h"
 #include "llfloatergroupinvite.h"
 #include "llfloatergroups.h"
 #include "llfloaterwebprofile.h"
@@ -506,8 +507,12 @@ void LLAvatarActions::on_avatar_name_cache_teleport_request(const LLUUID& id, co
 {
 	LLSD notification;
 	notification["uuid"] = id;
-	//notification["NAME_SLURL"] =  LLSLURL("agent", id, "about").getSLURLString();
 	std::string name;
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+	if (!RlvActions::canShowName(RlvActions::SNC_TELEPORTREQUEST))
+		name = RlvStrings::getAnonym(av_name.getLegacyName());
+	else
+// [RLVa:KB]
 	LLAvatarNameCache::getPNSName(av_name, name);
 	notification["NAME"] = name;
 	LLSD payload;
@@ -742,6 +747,24 @@ bool LLAvatarActions::handlePay(const LLSD& notification, const LLSD& response, 
 	LLFloaterPay::payDirectly(&give_money, avatar_id, /*is_group=*/false);
 	return false;
 }
+
+// <singu> Ban from group functions
+void callback_ban_from_group(const LLUUID& group, uuid_vec_t& ids)
+{
+	LLFloaterGroupBulkBan::showForGroup(group, &ids);
+}
+
+void ban_from_group(const uuid_vec_t& ids)
+{
+	if (LLFloaterGroupPicker* widget = LLFloaterGroupPicker::showInstance(ids.front())) // It'd be cool if LLSD could be formed from uuid_vec_t
+	{
+		widget->center();
+		widget->setPowersMask(GP_GROUP_BAN_ACCESS);
+		widget->removeNoneOption();
+		widget->setSelectGroupCallback(boost::bind(callback_ban_from_group, _1, ids));
+	}
+}
+// </singu>
 
 // static
 void LLAvatarActions::callback_invite_to_group(LLUUID group_id, LLUUID id)

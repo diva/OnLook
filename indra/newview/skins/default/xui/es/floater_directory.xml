@@ -2,6 +2,37 @@
 <floater name="directory" title="Buscar en Second Life">
 	<tab_container name="Directory Tabs">
 		<!-- ======================== -->
+		<panel label="Todos (Clásico)" name="find_all_old_panel">
+			<string name="searching_text">
+				Buscando...
+			</string>
+			<string name="not_found_text">
+				Nada hallado.
+			</string>
+			<button label="&lt; Ant." label_selected="&lt; Ant." name="&lt; Prev"/>
+			<button label="Sig. &gt;" label_selected="Sig. &gt;" name="Next &gt;"/>
+			<text name="find">
+				Buscar:
+			</text>
+			<button label="Buscar" label_selected="Buscar" name="Search"/>
+			<check_box label="Contenido PG" name="incpg"/>
+			<check_box label="Contenido Mature" name="incmature"/>
+			<check_box label="Contenido Adulto" name="incadult"/>
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar" />
+			<scroll_list name="results">
+				<column label="Nombre" name="name"/>
+				<column label="Precio" name="price"/>
+				<column label="Día (PT)" name="date"/>
+				<column label="Hora" name="time"/>
+				<column label="Tráfico" name="dwell"/>
+				<column label="Superfice" name="area"/>
+				<column label="[CURRENCY]/m²" name="per_meter"/>
+				<column label="Conectado" name="online"/>
+				<column label="Miembros" name="members"/>
+			</scroll_list>
+			<text name="result_text"/>
+		</panel>
+		<!-- ========================== -->
 		<panel label="Todos" name="find_all_panel">
 			<string name="searching_text">
 				Buscando...
@@ -13,9 +44,6 @@
 				Buscar:
 			</text>
 			<line_editor label="Buscar" name="search_editor" tool_tip="Buscar en Second Life"/>
-			<button label="" name="back_btn"/>
-			<button label="" name="forward_btn"/>
-			<button label="" name="reload_btn"/>
 			<button label="Buscar" name="search_btn"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
@@ -40,7 +68,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
-			<check_box name="filter_gaming" label="Ocultar Juegos de azar" />			
+			<check_box name="filter_gaming" label="Ocultar Juegos de azar" />
 			<button label="?" label_selected="?" name="?"/>
 			<web_browser name="find_browser"/>
 			<text name="status_text"/>
@@ -72,7 +100,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
-			<check_box name="filter_gaming" label="Ocultar Juegos de azar" />			
+			<check_box name="filter_gaming" label="Ocultar Juegos de azar" />
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Cualquier Categoría
@@ -109,8 +137,6 @@
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<button label="Borrar" label_selected="Borrar" name="Delete"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nombre" name="name"/>
 				<column label="Precio" name="price"/>
 			</scroll_list>
@@ -192,8 +218,6 @@
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<button label="Borrar" label_selected="Borrar" name="Delete"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nombre" name="name"/>
 				<column label="Día (PT)" name="date"/>
 				<column label="Hora" name="time"/>
@@ -210,9 +234,6 @@
 			<string name="not_found_text">
 				Nada encontrado.
 			</string>
-			<button label="" name="back_btn"/>
-			<button label="" name="forward_btn"/>
-			<button label="" name="reload_btn"/>
 			<!-- No hay checkboxes de calificación, el escaparate es completamente PG -->
 			<web_browser name="showcase_browser"/>
 			<text bottom="5" name="status_text"/>
@@ -246,7 +267,7 @@
 			<check_box label="Contenido PG" name="incpg"/>
 			<check_box label="Contenido Mature" name="incmature"/>
 			<check_box label="Contenido Adulto" name="incadult"/>
-			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>			
+			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>
 			<combo_box name="type">
 				<combo_item name="AllTypes">
 					Todos los tipos
@@ -270,11 +291,9 @@
 				m²
 			</text>
 			<line_editor left="130" name="priceedit"/>
-			<line_editor left="130" name="areaedit"/>			
+			<line_editor left="130" name="areaedit"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nombre" name="name"/>
 				<column label="Tipo" name="landtype"/>
 				<column label="Precio [CURRENCY]" name="price"/>
@@ -306,7 +325,7 @@
 					Cualquier Categoría
 				</combo_item>
 				<combo_item name="LindenLocation">
-					Localización Linden
+					Localización Oficial
 				</combo_item>
 				<combo_item name="Arts&amp;Cultures">
 					Arte y Cultura
@@ -391,8 +410,6 @@
 			</combo_box>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				  <column label="Nombre" name="name" />
 				  <column label="Tráfico" name="dwell"/>
 			</scroll_list>
@@ -414,8 +431,6 @@
 			<line_editor name="name"/>
 			<button label="Buscar" label_selected="Buscar" name="Search"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nombre" name="name"/>
 			</scroll_list>
 			<text name="result_text"/>
@@ -442,38 +457,26 @@
 			<check_box label="Contenido Adulto" name="incadult"/>
 			<check_box name="filter_gaming" label="Ocultar Juegos de Azar"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nombre" name="name"/>
 				<column label="Miembros" name="members"/>
-				<column label="" name="score"/>
 			</scroll_list>
 			<text name="result_text"/>
 		</panel>
 		<!-- ======================== -->
 		<panel label="Mercado en línea" name="market_panel">
-			<button label="" name="back_btn"/>
-			<button label="" name="forward_btn"/>
-			<button label="" name="reload_btn"/>
+			<button label="" tool_tip="reiniciar" name="reset_btn"/>
 			<web_browser name="market_browser"/>
 			<text name="status_text"/>
 			<string name="loading_text">Cargando...</string>
 			<string name="done_text">Hecho</string>
-			<string name="redirect_404_url">https://marketplace.secondlife.com/notfound</string>
+			<string name="redirect_404_url">[APP_SITE]/404</string>
 			<string name="default_search_page">https://marketplace.secondlife.com/?lang=es-ES</string>
 		</panel>
 		<!-- ======================== -->
 		<panel label="Web" name="web_panel">
-			<button label="" name="back_btn"/>
-			<button label="" name="forward_btn"/>
-			<button label="" name="reload_btn"/>
 			<button left_delta="27" width="200" label="Abrir Búsqueda en Navegador Web" name="web_search_floater_btn"/>
-			<web_browser name="web_search_browser" start_url="http://search.secondlife.com/"/>
-			<text name="status_text"/>
 			<string name="loading_text">Cargando...</string>
 			<string name="done_text">Hecho</string>
-			<string name="redirect_404_url">http://search.secondlife.com/</string>
-			<string name="default_search_page">http://search.secondlife.com/</string>
 		</panel>
 	</tab_container>
 	<panel name="classified_details_panel"/>

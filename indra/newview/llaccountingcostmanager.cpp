@@ -30,9 +30,6 @@
 #include "llcurl.h"
 #include "llhttpclient.h"
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy accountingCostResponder_timeout;
-
 //===============================================================================
 LLAccountingCostManager::LLAccountingCostManager()
 {	
@@ -41,9 +38,15 @@ LLAccountingCostManager::LLAccountingCostManager()
 class LLAccountingCostResponder : public LLHTTPClient::ResponderWithResult
 {
 public:
-	LLAccountingCostResponder( const LLSD& objectIDs )
-	: mObjectIDs( objectIDs )
+	LLAccountingCostResponder( const LLSD& objectIDs, const LLHandle<LLAccountingCostObserver>& observer_handle )
+	: mObjectIDs( objectIDs ),
+	  mObserverHandle( observer_handle )
 	{
+		LLAccountingCostObserver* observer = mObserverHandle.get();
+		if (observer)
+		{
+			mTransactionID = observer->getTransactionID();
+		}
 	}
 		
 	void clearPendingRequests ( void )
@@ -54,50 +57,63 @@ public:
 		}
 	}
 	
-	/*virtual*/ void error( U32 statusNum, const std::string& reason )
+	void httpFailure(void)
 	{
-		llwarns	<< "Transport error "<<reason<<llendl;	
+		llwarns	<< "Transport error [status:" << mStatus << "]: " << mReason << llendl;
 		clearPendingRequests();
+
+		LLAccountingCostObserver* observer = mObserverHandle.get();
+		if (observer && observer->getTransactionID() == mTransactionID)
+		{
+			observer->setErrorStatus(mStatus, mReason);
+		}
 	}
 	
-	/*virtual*/ void result( const LLSD& content )
+	void httpSuccess(void)
 	{
 		//Check for error
-		if ( !content.isMap() || content.has("error") )
+		if ( !mContent.isMap() || mContent.has("error") )
 		{
 			llwarns	<< "Error on fetched data"<< llendl;
-			clearPendingRequests();
 		}
-		else if (content.has("selected"))
+		else if (mContent.has("selected"))
 		{
 			F32 physicsCost		= 0.0f;
 			F32 networkCost		= 0.0f;
 			F32 simulationCost	= 0.0f;
 
-			//LLTransactionID transactionID;
-				
-			//transactionID	= content["selected"][i]["local_id"].asUUID();
-			physicsCost		= content["selected"]["physics"].asReal();
-			networkCost		= content["selected"]["streaming"].asReal();
-			simulationCost	= content["selected"]["simulation"].asReal();
+			physicsCost		= mContent["selected"]["physics"].asReal();
+			networkCost		= mContent["selected"]["streaming"].asReal();
+			simulationCost	= mContent["selected"]["simulation"].asReal();
 				
 			SelectionCost selectionCost( /*transactionID,*/ physicsCost, networkCost, simulationCost );
-					
+
+			LLAccountingCostObserver* observer = mObserverHandle.get();
+			if (observer && observer->getTransactionID() == mTransactionID)
+			{
+				observer->onWeightsUpdate(selectionCost);
+			}
 		}
 
 		clearPendingRequests();
 	}
 	
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return accountingCostResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLAccountingCostResponder"; }
 
 private:
 	//List of posted objects
 	LLSD mObjectIDs;
-};
 
+	// Current request ID
+	LLUUID mTransactionID;
+
+	// Cost update observer handle
+	LLHandle<LLAccountingCostObserver> mObserverHandle;
+};
 //===============================================================================
-void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const std::string& url )
+void LLAccountingCostManager::fetchCosts( eSelectionType selectionType,
+										  const std::string& url,
+										  const LLHandle<LLAccountingCostObserver>& observer_handle )
 {
 	// Invoking system must have already determined capability availability
 	if ( !url.empty() )
@@ -144,7 +160,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const st
 			LLSD dataToPost = LLSD::emptyMap();		
 			dataToPost[keystr.c_str()] = objectList;
 
-			LLHTTPClient::post( url, dataToPost, new LLAccountingCostResponder( objectList ));
+			LLHTTPClient::post( url, dataToPost, new LLAccountingCostResponder( objectList, observer_handle ));
 		}
 	}
 	else

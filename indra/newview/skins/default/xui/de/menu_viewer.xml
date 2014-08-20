@@ -95,7 +95,6 @@
 		<menu_item_check label="Aktive Sprecher" name="Active Speakers"/>
 		<menu_item_check label="Stummschalten-Liste" name="Mute List"/>
 		<menu_item_check label="Teleport-Liste" name="Teleport History"/>
-		<menu_item_check label="Medienfilter" name="Media Filter"/>
 		<menu_item_separator label="-----------" name="separator2"/>
 		<menu_item_check label="Kamerasteuerung" name="Camera Controls"/>
 		<menu_item_check label="Bewegungssteuerung" name="Movement Controls"/>
@@ -161,11 +160,11 @@
 		
 		<menu_item_separator label="-----------" name="separator6"/>
 		<menu label="Umgebungseinstellungen" name="Environment Settings">
-			<menu_item_call label="Sonnenaufgang" name="Sunrise"/>
-			<menu_item_call label="Mittag" name="Noon"/>
-			<menu_item_call label="Sonnenuntergang" name="Sunset"/>
-			<menu_item_call label="Mitternacht" name="Midnight"/>
-			<menu_item_call label="Auf Regionsstandard zurücksetzen" name="Revert to Region Default"/>
+			<menu_item_check label="Sonnenaufgang" name="Sunrise"/>
+			<menu_item_check label="Mittag" name="Noon"/>
+			<menu_item_check label="Sonnenuntergang" name="Sunset"/>
+			<menu_item_check label="Mitternacht" name="Midnight"/>
+			<menu_item_check label="Auf Regionsstandard zurücksetzen" name="Revert to Region Default"/>
 			<menu_item_separator label="-----------" name="separator"/>
       <menu_item_call label="Umwelt-Editor" name="Environment Editor"/>
       <menu_item_call label="Tageszyklus-Editor" name="Day Cycle Editor"/>
@@ -247,19 +246,19 @@
 		<menu label="Fehlermeldungen" name="Bug Reporting">
 			<menu_item_call label="Allgemeiner Probleme-Tracker..." name="Public Issue Tracker..."/>
 			<menu_item_call label="Hilfe zum Allgemeinen Probleme-Tracker..." name="Publc Issue Tracker Help..."/>
-			<menu_item_call label="Singularity Probleme-Tracker..." name="Singularity Issue Tracker..."/>
+			<menu_item_call label="[SHORT_APP_NAME] Probleme-Tracker..." name="Singularity Issue Tracker..."/>
 			<menu_item_separator label="-----------" name="separator7"/>
 			<menu_item_call label="Fehlermeldungs 101..." name="Bug Reporting 101..."/>
 			<menu_item_call label="Sicherheitsprobleme..." name="Security Issues..."/>
 			<menu_item_call label="QA-Wiki..." name="QA Wiki..."/>
 			<menu_item_separator label="-----------" name="separator9"/>
 			<menu_item_call label="Fehler melden..." name="Report Bug..."/>
-			<menu_item_call label="Singularity Problem berichten..." name="Report Singularity Bug..."/>
+			<menu_item_call label="[SHORT_APP_NAME] Problem berichten..." name="Report Singularity Bug..."/>
 			<menu_item_call label="Neue Funktionalität nachfragen..." name="Request New Feature..."/>
 		</menu>
 		<menu_item_call label="Über [APP_NAME]..." name="About Second Life..."/>
 	</menu>
-	<menu label="Singularity" name="Singularity">
+	<menu name="Singularity">
 		<menu_item_call label="Alle Dialoge schließen" name="Close All Dialogs"/>
 		
 		<menu_item_call label="Täusche Abwesend-Status vor" name="Fake Away Status"/>
@@ -271,6 +270,7 @@
 		<menu_item_check label="Areal-Objektsuche" name="Object Area Search"/>
 		<menu_item_check label="Sound Explorer" name="Sound Explorer"/>
 		<menu_item_check label="Asset-Blacklist" name="Asset Blacklist"/>
+		<menu_item_check label="Medienfilter" name="Media Filter"/>
 		<menu_item_check label="Streaming-Audio Anzeige" name="Streaming Audio Display"/>
 		<menu_item_check label="Pose-Stand" name="Pose Stand"/>
 		<menu_item_check label="Region Debug Konsole" name="Region Debug Console"/>

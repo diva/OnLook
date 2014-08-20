@@ -913,7 +913,7 @@ BOOL LLPanelAvatarClassified::canClose()
 	LLTabContainer* tabs = getChild<LLTabContainer>("classified tab");
 	for (S32 i = 0; i < tabs->getTabCount(); i++)
 	{
-		LLPanelClassified* panel = (LLPanelClassified*)tabs->getPanelByIndex(i);
+		LLPanelClassifiedInfo* panel = (LLPanelClassifiedInfo*)tabs->getPanelByIndex(i);
 		if (!panel->canClose())
 		{
 			return FALSE;
@@ -927,7 +927,7 @@ BOOL LLPanelAvatarClassified::titleIsValid()
 	LLTabContainer* tabs = getChild<LLTabContainer>("classified tab");
 	if ( tabs )
 	{
-		LLPanelClassified* panel = (LLPanelClassified*)tabs->getCurrentPanel();
+		LLPanelClassifiedInfo* panel = (LLPanelClassifiedInfo*)tabs->getCurrentPanel();
 		if ( panel )
 		{
 			if ( ! panel->titleIsValid() )
@@ -945,7 +945,7 @@ void LLPanelAvatarClassified::apply()
 	LLTabContainer* tabs = getChild<LLTabContainer>("classified tab");
 	for (S32 i = 0; i < tabs->getTabCount(); i++)
 	{
-		LLPanelClassified* panel = (LLPanelClassified*)tabs->getPanelByIndex(i);
+		LLPanelClassifiedInfo* panel = (LLPanelClassifiedInfo*)tabs->getPanelByIndex(i);
 		panel->apply();
 	}
 }
@@ -977,7 +977,7 @@ void LLPanelAvatarClassified::processProperties(void* data, EAvatarProcessorType
 			for(LLAvatarClassifieds::classifieds_list_t::iterator it = c_info->classifieds_list.begin();
 				it != c_info->classifieds_list.end(); ++it)
 			{
-				LLPanelClassified* panel_classified = new LLPanelClassified(false, false);
+				LLPanelClassifiedInfo* panel_classified = new LLPanelClassifiedInfo(false, false);
 
 				panel_classified->setClassifiedID(it->classified_id);
 
@@ -1027,7 +1027,7 @@ bool LLPanelAvatarClassified::callbackNew(const LLSD& notification, const LLSD& 
 	S32 option = LLNotification::getSelectedOption(notification, response);
 	if (0 == option)
 	{
-		LLPanelClassified* panel_classified = new LLPanelClassified(false, false);
+		LLPanelClassifiedInfo* panel_classified = new LLPanelClassifiedInfo(false, false);
 		panel_classified->initNewClassified();
 		LLTabContainer*	tabs = getChild<LLTabContainer>("classified tab");
 		if(tabs)
@@ -1046,10 +1046,10 @@ void LLPanelAvatarClassified::onClickDelete(void* data)
 	LLPanelAvatarClassified* self = (LLPanelAvatarClassified*)data;
 
 	LLTabContainer*	tabs = self->getChild<LLTabContainer>("classified tab");
-	LLPanelClassified* panel_classified = NULL;
+	LLPanelClassifiedInfo* panel_classified = NULL;
 	if(tabs)
 	{
-		panel_classified = (LLPanelClassified*)tabs->getCurrentPanel();
+		panel_classified = (LLPanelClassifiedInfo*)tabs->getCurrentPanel();
 	}
 	if (!panel_classified) return;
 
@@ -1064,10 +1064,10 @@ bool  LLPanelAvatarClassified::callbackDelete(const LLSD& notification, const LL
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 	LLTabContainer*	tabs = getChild<LLTabContainer>("classified tab");
-	LLPanelClassified* panel_classified=NULL;
+	LLPanelClassifiedInfo* panel_classified=NULL;
 	if(tabs)
 	{
-		panel_classified = (LLPanelClassified*)tabs->getCurrentPanel();
+		panel_classified = (LLPanelClassifiedInfo*)tabs->getCurrentPanel();
 	}
 
 	if (!panel_classified) return false;

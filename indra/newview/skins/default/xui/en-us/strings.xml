@@ -28,6 +28,7 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 	<string name="APP_NAME">Singularity Viewer</string>
 	<string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
 	<string name="SHORT_APP_NAME">Singularity</string>
+	<string name="APP_SITE">http://www.singularityviewer.org</string>
 	<string name="SECOND_LIFE_GRID">Second Life Grid</string>
 	<string name="SUPPORT_SITE">Second Life Support Portal</string>
 
@@ -315,7 +316,10 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 
 	<!-- build floater -->
 	<string name="multiple_textures">Multiple</string>
+
 	<string name="use_texture">Use texture</string>
+    <string name="manip_hint1">Move mouse cursor over ruler</string>
+    <string name="manip_hint2">to snap to grid</string>
 
 	<!-- world map -->
 	<string name="texture_loading">Loading...</string>
@@ -2721,6 +2725,26 @@ string input = string to test for match
 string pattern = string to use as pattern
 returns boolean TRUE/FALSE.
 	</string>
+	<string name="LSLTipText_osForceCreateLink">
+osForceCreateLink(key target, integer parent)
+Link the script's object with target, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osForceBreakLink">
+osForceBreakLink(integer link)
+De-links the prim with the given link number in a linked set, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osForceBreakAllLinks">
+osForceBreakAllLinks()
+De-links all prims in a link set, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osGetRegionSize">
+vector osGetRegionSize()
+Returns the size of the region in metres.
+	</string>
+	<string name="LSLTipText_osGetPhysicsEngineType">
+string osGetPhysicsEngineType()
+Returns a string containing the name of the Physics Engine.
+	</string>
 
 	<string name="LSLTipText_cmSetWindlightScene">
 cmSetWindlightScene(list rules)
@@ -3074,8 +3098,8 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 
     <!-- Non-standard LLChat strings -->
     <string name="ScriptCounting">Counting scripts, please wait...</string>
-    <string name="ScriptCountAvatar">Counted [SCRIPTS] scripts in [OBJECTS] attachments on [NAME].</string>
-    <string name="ScriptCountObject">Counted [SCRIPTS] scripts in [OBJECTS] objects.</string>
+    <string name="ScriptCountAvatar">Counted [SCRIPTS] scripts in [OBJECTS] attachments on [NAME]. ([RUNNING] running, [MONO] mono.)</string>
+    <string name="ScriptCountObject">Counted [SCRIPTS] scripts in [OBJECTS] objects. ([RUNNING] running, [MONO] mono.)</string>
     <string name="ScriptDeleteObject">Deleted [SCRIPTS] scripts in [OBJECTS] objects.</string>
     <string name="took_a_snapshot">took a snapshot</string>
 
@@ -4401,6 +4425,12 @@ Try enclosing path to the editor with double quotes.
 
   <!-- teleport_strings.xml's strings we need -->
   <string name="completed_from">Teleport completed from</string>
+  
+  <!-- Media filter -->
+  <string name="audio">audio</string>
+  <string name="media">media</string>
+  <string name="MediaFilterBlacklist">blacklist</string>
+  <string name="MediaFilterWhitelist">whitelist</string>
 
   <!-- AIAlert messages -->
   <!-- These two do not need translation ;) -->

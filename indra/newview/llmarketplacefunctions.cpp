@@ -41,7 +41,7 @@
 // Helpers
 //
 
-static std::string getLoginUriDomain()
+std::string getLoginUriDomain()
 {
 	LLURI uri(gHippoGridManager->getConnectedGrid()->getLoginUri());
 	std::string hostname = uri.hostName();	// Ie, "login.<gridid>.lindenlab.com"
@@ -157,29 +157,29 @@ namespace LLMarketplaceImport
 	class LLImportPostResponder : public LLHTTPClient::ResponderWithCompleted
 	{
 	public:
-		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
+		/*virtual*/ void httpCompleted(void)
 		{
 			slmPostTimer.stop();
 
 			if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 			{
-				llinfos << " SLM POST status: " << status << llendl;
-				llinfos << " SLM POST reason: " << reason << llendl;
-				llinfos << " SLM POST content: " << content.asString() << llendl;
+				llinfos << " SLM POST status: " << mStatus << llendl;
+				llinfos << " SLM POST reason: " << mReason << llendl;
+				llinfos << " SLM POST content: " << mContent.asString() << llendl;
 				llinfos << " SLM POST timer: " << slmPostTimer.getElapsedTimeF32() << llendl;
 			}
 
 			// MAINT-2301 : we determined we can safely ignore that error in that context
-			if (status == MarketplaceErrorCodes::IMPORT_JOB_TIMEOUT)
+			if (mStatus == MarketplaceErrorCodes::IMPORT_JOB_TIMEOUT)
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 				{
 					llinfos << " SLM POST : Ignoring time out status and treating it as success" << llendl;
 				}
-				status = MarketplaceErrorCodes::IMPORT_DONE;
+				mStatus = MarketplaceErrorCodes::IMPORT_DONE;
 			}
 
-			if (status >= MarketplaceErrorCodes::IMPORT_BAD_REQUEST)
+			if (mStatus >= MarketplaceErrorCodes::IMPORT_BAD_REQUEST)
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 				{
@@ -188,10 +188,10 @@ namespace LLMarketplaceImport
 				sMarketplaceCookie.clear();
 			}
 
-			sImportInProgress = (status == MarketplaceErrorCodes::IMPORT_DONE);
+			sImportInProgress = (mStatus == MarketplaceErrorCodes::IMPORT_DONE);
 			sImportPostPending = false;
-			sImportResultStatus = status;
-			sImportId = content;
+			sImportResultStatus = mStatus;
+			sImportId = mContent;
 		}
 
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportPostResponder_timeout; }
@@ -203,9 +203,9 @@ namespace LLMarketplaceImport
 	public:
 		/*virtual*/ bool needsHeaders(void) const { return true; }
 
-		/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+		/*virtual*/ void completedHeaders(void)
 		{
-			if (status == HTTP_OK)
+			if (mStatus == HTTP_OK)
 			{
 				std::string value = get_cookie("_slm_session");
 				if (!value.empty())
@@ -219,39 +219,39 @@ namespace LLMarketplaceImport
 			}
 		}
 
-		/*virtual*/ void completed(U32 status, const std::string& reason, const LLSD& content)
+		/*virtual*/ void httpCompleted(void)
 		{
 			slmGetTimer.stop();
 
 			if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 			{
-				llinfos << " SLM GET status: " << status << llendl;
-				llinfos << " SLM GET reason: " << reason << llendl;
-				llinfos << " SLM GET content: " << content.asString() << llendl;
+				llinfos << " SLM GET status: " << mStatus << llendl;
+				llinfos << " SLM GET reason: " << mReason << llendl;
+				llinfos << " SLM GET content: " << mContent.asString() << llendl;
 				llinfos << " SLM GET timer: " << slmGetTimer.getElapsedTimeF32() << llendl;
 			}
 
 			// MAINT-2452 : Do not clear the cookie on IMPORT_DONE_WITH_ERRORS : Happens when trying to import objects with wrong permissions
 			// ACME-1221 : Do not clear the cookie on IMPORT_NOT_FOUND : Happens for newly created Merchant accounts that are initially empty
-			if ((status >= MarketplaceErrorCodes::IMPORT_BAD_REQUEST) &&
-				(status != MarketplaceErrorCodes::IMPORT_DONE_WITH_ERRORS) &&
-				(status != MarketplaceErrorCodes::IMPORT_NOT_FOUND))
+			if ((mStatus >= MarketplaceErrorCodes::IMPORT_BAD_REQUEST) &&
+				(mStatus != MarketplaceErrorCodes::IMPORT_DONE_WITH_ERRORS) &&
+				(mStatus != MarketplaceErrorCodes::IMPORT_NOT_FOUND))
 			{
 				if (gSavedSettings.getBOOL("InventoryOutboxLogging"))
 				{
-					llinfos << " SLM GET clearing marketplace cookie due to client or server error (" << status << " / " << reason << ")." << llendl;
+					llinfos << " SLM GET clearing marketplace cookie due to client or server error (" << mStatus << " / " << mReason << ")." << llendl;
 				}
 				sMarketplaceCookie.clear();
 			}
-			else if (gSavedSettings.getBOOL("InventoryOutboxLogging") && (status >= MarketplaceErrorCodes::IMPORT_BAD_REQUEST))
+			else if (gSavedSettings.getBOOL("InventoryOutboxLogging") && (mStatus >= MarketplaceErrorCodes::IMPORT_BAD_REQUEST))
 			{
-				llinfos << " SLM GET : Got error status = " << status << ", but marketplace cookie not cleared." << llendl;
+				llinfos << " SLM GET : Got error status = " << mStatus << ", but marketplace cookie not cleared." << llendl;
 			}
 
-			sImportInProgress = (status == MarketplaceErrorCodes::IMPORT_PROCESSING);
+			sImportInProgress = (mStatus == MarketplaceErrorCodes::IMPORT_PROCESSING);
 			sImportGetPending = false;
-			sImportResultStatus = status;
-			sImportResults = content;
+			sImportResultStatus = mStatus;
+			sImportResults = mContent;
 		}
 
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportGetResponder_timeout; }

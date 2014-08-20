@@ -2,31 +2,25 @@
  * @file llcamera.cpp
  * @brief Implementation of the LLCamera class.
  *
- * $LicenseInfo:firstyear=2000&license=viewergpl$
- * 
- * Copyright (c) 2000-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2000&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -189,8 +183,30 @@ static	const LLVector4a sFrustumScaler[] =
 	LLVector4a( 1, 1, 1)		// 8 entries
 };
 
-S32 LLCamera::AABBInFrustum(const LLVector4a &center, const LLVector4a& radius) 
+bool LLCamera::isChanged()
 {
+	bool changed = false;
+	for (U32 i = 0; i < mPlaneCount; i++)
+{
+		U8 mask = mPlaneMask[i];
+		if (mask != 0xff && !changed)
+		{
+			changed = !mAgentPlanes[i].equal(mLastAgentPlanes[i]);
+		}
+		mLastAgentPlanes[i].set(mAgentPlanes[i]);
+	}
+
+	return changed;
+}
+
+S32 LLCamera::AABBInFrustum(const LLVector4a &center, const LLVector4a& radius, const LLPlane* planes)
+{
+	if(!planes)
+	{
+		//use agent space
+		planes = mAgentPlanes;
+	}
+
 	U8 mask = 0;
 	bool result = false;
 	LLVector4a rscale, maxp, minp;
@@ -201,7 +217,7 @@ S32 LLCamera::AABBInFrustum(const LLVector4a &center, const LLVector4a& radius)
 		mask = mPlaneMask[i];
 		if (mask < PLANE_MASK_NUM)
 		{
-			const LLPlane& p(mAgentPlanes[i]);
+			const LLPlane& p(planes[i]);
 			p.getAt<3>(d);
 			rscale.setMul(radius, sFrustumScaler[mask]);
 			minp.setSub(center, rscale);
@@ -222,9 +238,21 @@ S32 LLCamera::AABBInFrustum(const LLVector4a &center, const LLVector4a& radius)
 	return result?1:2;
 }
 
-
-S32 LLCamera::AABBInFrustumNoFarClip(const LLVector4a& center, const LLVector4a& radius) 
+//exactly same as the function AABBInFrustum(...)
+//except uses mRegionPlanes instead of mAgentPlanes.
+S32 LLCamera::AABBInRegionFrustum(const LLVector4a& center, const LLVector4a& radius)
 {
+	return AABBInFrustum(center, radius, mRegionPlanes);
+}
+
+S32 LLCamera::AABBInFrustumNoFarClip(const LLVector4a& center, const LLVector4a& radius, const LLPlane* planes)
+{
+	if(!planes)
+	{
+		//use agent space
+		planes = mAgentPlanes;
+	}
+
 	U8 mask = 0;
 	bool result = false;
 	LLVector4a rscale, maxp, minp;
@@ -235,7 +263,7 @@ S32 LLCamera::AABBInFrustumNoFarClip(const LLVector4a& center, const LLVector4a&
 		mask = mPlaneMask[i];
 		if ((i != 5) && (mask < PLANE_MASK_NUM))
 		{
-			const LLPlane& p(mAgentPlanes[i]);
+			const LLPlane& p(planes[i]);
 			p.getAt<3>(d);
 			rscale.setMul(radius, sFrustumScaler[mask]);
 			minp.setSub(center, rscale);
@@ -254,6 +282,13 @@ S32 LLCamera::AABBInFrustumNoFarClip(const LLVector4a& center, const LLVector4a&
 	}
 
 	return result?1:2;
+}
+
+//exactly same as the function AABBInFrustumNoFarClip(...)
+//except uses mRegionPlanes instead of mAgentPlanes.
+S32 LLCamera::AABBInRegionFrustumNoFarClip(const LLVector4a& center, const LLVector4a& radius)
+{
+	return AABBInFrustumNoFarClip(center, radius, mRegionPlanes);
 }
 
 int LLCamera::sphereInFrustumQuick(const LLVector3 &sphere_center, const F32 radius) 
@@ -589,6 +624,47 @@ void LLCamera::calcAgentFrustumPlanes(LLVector3* frust)
 	for (U32 i = 0; i < mPlaneCount; i++)
 	{
 		mPlaneMask[i] = mAgentPlanes[i].calcPlaneMask();
+	}
+}
+
+//calculate regional planes from mAgentPlanes.
+//vector "shift" is the vector of the region origin in the agent space.
+void LLCamera::calcRegionFrustumPlanes(const LLVector3& shift, F32 far_clip_distance)
+{
+	F32 far_w;
+	{
+		LLVector3 p = getOrigin();
+		LLVector3 n(mAgentPlanes[5][0], mAgentPlanes[5][1], mAgentPlanes[5][2]);
+		F32 dd = n * p;
+		if(dd + mAgentPlanes[5][3] < 0) //signed distance
+		{
+			far_w = -far_clip_distance - dd;
+		}
+		else
+		{
+			far_w = far_clip_distance - dd;
+		}
+		far_w += n * shift;
+	}
+
+	F32 d;
+	LLVector3 n;
+	for(S32 i = 0 ; i < 7; i++)
+	{
+		if (mPlaneMask[i] != 0xff)
+		{
+			n.setVec(mAgentPlanes[i][0], mAgentPlanes[i][1], mAgentPlanes[i][2]);
+
+			if(i != 5)
+			{
+				d = mAgentPlanes[i][3] + n * shift;
+			}
+			else
+			{
+				d = far_w;
+			}
+			mRegionPlanes[i].setVec(n, d);
+		}
 	}
 }
 

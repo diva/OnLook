@@ -13,6 +13,32 @@
 	<menu bottom="97" create_jump_keys="true" drop_shadow="true" enabled="true"
 	     height="439" label="Edit" left="38" mouse_opaque="false" name="Edit"
 	     opaque="true" tear_off="false" width="153">
+		<menu_item_call label="Undo" name="Undo" shortcut="control|Z">
+			<on_click function="Edit.Undo"/>
+			<on_enable function="Edit.EnableUndo"/>
+		</menu_item_call>
+		<menu_item_call label="Redo" name="Redo" shortcut="control|Y">
+			<on_click function="Edit.Redo"/>
+			<on_enable function="Edit.EnableRedo"/>
+		</menu_item_call>
+		<menu_item_separator/>
+		<menu_item_call label="Cut" name="Cut" shortcut="control|X">
+			<on_click function="Edit.Cut"/>
+			<on_enable function="Edit.EnableCut"/>
+		</menu_item_call>
+		<menu_item_call label="Copy" name="Copy" shortcut="control|C">
+			<on_click function="Edit.Copy"/>
+			<on_enable function="Edit.EnableCopy"/>
+		</menu_item_call>
+		<menu_item_call label="Paste" name="Paste" shortcut="control|V">
+			<on_click function="Edit.Paste"/>
+			<on_enable function="Edit.EnablePaste"/>
+		</menu_item_call>
+		<menu_item_call label="Delete" name="Delete" shortcut="Del">
+			<on_click function="Edit.Delete"/>
+			<on_enable function="Edit.EnableDelete"/>
+		</menu_item_call>
+		<menu_item_separator/>
 		<menu_item_call bottom="-29" enabled="true" height="19" label="Preferences..." left="0"
 		     mouse_opaque="true" name="Preferences..." shortcut="control|P" width="153">
 			<on_click function="ShowFloater" userdata="preferences" />
@@ -25,7 +51,7 @@
 		     mouse_opaque="true" name="Second Life Help" shortcut="F1" width="166">
 			<on_click function="ShowFloater" userdata="help f1" />
 		</menu_item_call-->
-		<menu_item_call bottom="-48" enabled="true" height="19" label="About [APP_NAME]..." left="0"
+		<menu_item_call bottom="-48" enabled="true" height="19" label="About [SHORT_APP_NAME]..." left="0"
 		     mouse_opaque="true" name="About Second Life..." width="166">
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>

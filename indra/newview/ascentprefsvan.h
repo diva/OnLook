@@ -59,11 +59,13 @@ private:
 	bool mDisableChatAnimation;
 	bool mAddNotReplace;
 	bool mTurnAround;
+	bool mCustomizeAnim;
 	bool mAnnounceSnapshots;
 	bool mAnnounceStreamMetadata;
 	bool mUnfocusedFloatersOpaque;
 	bool mCompleteNameProfiles;
 	bool mScriptErrorsStealFocus;
+	bool mConnectToNeighbors;
 	//Tags\Colors
 	bool mAscentBroadcastTag;
 	std::string mReportClientUUID;

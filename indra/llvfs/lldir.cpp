@@ -301,19 +301,19 @@ void LLDir::setDumpDir( const std::string& path )
 
 const std::string &LLDir::getDumpDir() const
 {
-    if (sDumpDir.empty() )
-    {
+	if (sDumpDir.empty() )
+	{
 		/* Singu Note: don't generate a different dump dir each time
-        LLUUID uid;
-        uid.generate();
-        
-        sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "")
-                    + "dump-" + uid.asString();
+		LLUUID uid;
+		uid.generate();
+
+		sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "")
+					+ "dump-" + uid.asString();
 		*/
 
-		sDumpDir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
-        dir_exists_or_crash(sDumpDir);  
-    }
+		sDumpDir = getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
+		dir_exists_or_crash(sDumpDir);
+	}
 
 	return LLDir::sDumpDir;
 }
@@ -708,6 +708,33 @@ void LLDir::setLindenUserDir(const std::string &grid, const std::string &first, 
 	}
 
 	dumpCurrentDirectories();	
+}
+
+void LLDir::makePortable()
+{
+	std::string dir = mExecutableDir;
+	dir.erase(dir.rfind(mDirDelimiter)); // Go one level up
+	dir += mDirDelimiter + "portable_viewer";
+	if (LLFile::mkdir(dir) == -1)
+	{
+		if (errno != EEXIST)
+		{
+			llwarns << "Couldn't create portable_viewer directory." << llendl;
+			return; // Failed, don't mess anything up.
+		}
+	}
+	mOSUserDir = dir + mDirDelimiter + "settings";
+	mOSCacheDir = dir + mDirDelimiter + "cache";
+	if (LLFile::mkdir(mOSUserDir) == -1 || LLFile::mkdir(mOSCacheDir) == -1)
+	{
+		if (errno != EEXIST)
+		{
+			llwarns << "Couldn't create portable_viewer cache and settings directories." << llendl;
+			return; // Failed, don't mess up the existing initialization.
+		}
+	}
+	mDefaultCacheDir = buildSLOSCacheDir();
+	initAppDirs(mAppName); // This is kinda lazy, but it's probably the quickest, most uniform way.
 }
 
 void LLDir::setChatLogsDir(const std::string &path)

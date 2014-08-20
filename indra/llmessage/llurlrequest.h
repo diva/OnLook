@@ -72,7 +72,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	/**
 	 * @brief Cached value of responder->getName() as passed to the constructor.
 	 */
-	char const* getResponderName(void) const { return mResponderNameCache; }
+	/*virtual*/ const char* getName() const { return mResponderNameCache.c_str(); }
 
   protected:
 	// Call abort(), not delete.
@@ -113,7 +113,7 @@ class LLURLRequest : public AICurlEasyRequestStateMachine {
 	U32 mBodySize;
 	LLHTTPClient::ResponderPtr mResponder;
 	AIHTTPHeaders mHeaders;
-	char const* mResponderNameCache;
+	std::string mResponderNameCache;
 
   protected:
 	// Handle initializing the object.

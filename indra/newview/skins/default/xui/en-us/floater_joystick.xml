@@ -92,8 +92,13 @@
 	<text bottom="-450" left="20" width="94" halign="right" name="ZoomDeadZone">Zoom Dead Zone</text>
 	<spinner bottom="-450" left="265" width="56" label_width="0" control_name="FlycamAxisDeadZone6" name="FlycamAxisDeadZone6" decimal_digits="2" increment="0.01" min_val="0" max_val="1"/>
 
-	<button bottom="-451" left="340" height="22" label="SpaceNavigator Defaults" name="SpaceNavigatorDefaults" scale_image="true" width="184"/>
-	
+    <flyout_button bottom="-451" left="340" height="22" label="Set to Defaults" name="Default" width="184">
+      <flyout_button_item value="0" name="Space Navigator" label="Space Navigator"/>
+      <flyout_button_item value="1" name="OUYA" label="OUYA Controller"/>
+      <flyout_button_item value="2" name="XBOX" label="XBOX Controller"/>
+      <flyout_button_item value="3" name="DS3" label="DualShock 3"/>
+    </flyout_button>
+
 	<button bottom="-480" left="340" height="20" label="OK" label_selected="OK" name="ok_btn" width="90"/>
 	<button bottom="-480" left_delta="94" height="20" label="Cancel" label_selected="Cancel" name="cancel_btn" width="90"/>
 </floater>

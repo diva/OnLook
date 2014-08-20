@@ -98,6 +98,8 @@ class AITimer : public AIStateMachine {
 	 */
 	F64 getInterval(void) const { return mInterval; }
 
+	/*virtual*/ const char* getName() const { return "AITimer"; }
+
   protected:
 	// Call finish() (or abort()), not delete.
 	/*virtual*/ ~AITimer() { DoutEntering(dc::statemachine(mSMDebug), "~AITimer() [" << (void*)this << "]"); mFrameTimer.cancel(); }

@@ -142,7 +142,6 @@ BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 			group->setState(LLSpatialGroup::GEOM_DIRTY);
 		}
 		drawable->setNumFaces(0, NULL, getTEImage(0));
-		LLPipeline::sCompiles++;
 		return TRUE;
 	}
 
@@ -195,7 +194,6 @@ BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 	}
 
 	mDrawable->movePartition();
-	LLPipeline::sCompiles++;
 	return TRUE;
 }
 

@@ -11,10 +11,13 @@
 	</string>
 	<string name="NoDevice">
 		aucun joystick détecté
-	</string>	<spinner name="JoystickAxis1" label="Mapping axe des X "/>
-	<spinner name="JoystickAxis4" label="Mapping du tangage" label_width="111" left="8" width="152"/>	<spinner name="JoystickAxis6" label="Mapping du zoom"/>
+	</string>
+	<spinner name="JoystickAxis1" label="Mapping axe des X "/>
+	<spinner name="JoystickAxis4" label="Mapping du tangage" label_width="111" left="8" width="152"/>
+	<spinner name="JoystickAxis6" label="Mapping du zoom"/>
 	<spinner name="JoystickAxis2" label="Mapping axe des Y"/>
-	<spinner name="JoystickAxis5" label="Mapping du lacet"/>	<spinner name="JoystickAxis0" label="Mapping axe des Z"/>
+	<spinner name="JoystickAxis5" label="Mapping du lacet"/>
+	<spinner name="JoystickAxis0" label="Mapping axe des Z"/>
 	<spinner name="JoystickAxis3" label="Mapping du roulis"/>
 	<check_box label="Zoom direct" name="ZoomDirect"/>
 	<check_box label="Curseur 3D" name="Cursor3D"/>
@@ -76,7 +79,6 @@
 	<text name="ZoomDeadZone" left="6" width="110">
 		Zone neutre du zoom
 	</text>
-	<button label="Options par défaut du joystick" name="SpaceNavigatorDefaults"/>
 	<button label="OK" label_selected="OK" name="ok_btn"/>
 	<button label="Annuler" label_selected="Annuler" name="cancel_btn"/>
 </floater>

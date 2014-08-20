@@ -525,6 +525,13 @@ void LLWorldMapView::draw()
 					llfloor(left + 3), llfloor(bottom + 2),
 					LLColor4::white,
 					LLFontGL::LEFT, LLFontGL::BASELINE, LLFontGL::NORMAL, LLFontGL::DROP_SHADOW);
+				static const LLCachedControl<bool> show_region_positions("SFMapShowRegionPositions");
+				if (show_region_positions)
+					font->renderUTF8(
+						llformat("(%d, %d)", llfloor(info->getGlobalOrigin().mdV[VX]/256), llfloor(info->getGlobalOrigin().mdV[VY])/256), 0,
+						llfloor(left + 3), llfloor(bottom + 14),
+						LLColor4::white,
+						LLFontGL::LEFT, LLFontGL::BASELINE, LLFontGL::NORMAL, LLFontGL::DROP_SHADOW);
 			}
 		}
 	}

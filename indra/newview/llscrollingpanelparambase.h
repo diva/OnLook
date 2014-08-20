@@ -57,6 +57,7 @@ public:
 protected:
 	BOOL mAllowModify;
 	LLWearable *mWearable;
+	class LLSliderCtrl* mSlider;
 }; 
 
 #endif

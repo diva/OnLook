@@ -85,6 +85,7 @@ public:
 	}
 
 	// Copy words 16-byte blocks from src to dst. Source and destination must not overlap. 
+	// Source and dest must be 16-byte aligned and size must be multiple of 16.
 	static void memcpyNonAliased16(F32* __restrict dst, const F32* __restrict src, size_t bytes);
 
 	////////////////////////////////////
@@ -127,7 +128,7 @@ public:
 	inline void loadua(const F32* src);
 	
 	// Load only three floats beginning at address 'src'. Slowest method.
-	inline void load3(const F32* src);
+	inline void load3(const F32* src, const F32 w=0.f);
 	
 	// Store to a 16-byte aligned memory address
 	inline void store4a(F32* dst) const;
@@ -169,6 +170,9 @@ public:
 	
 	// Set all 4 elements to element i of v, with i NOT known at compile time
 	inline void splat(const LLVector4a& v, U32 i);
+
+	// Sets element N to that of src's element N. Much cleaner than.. {LLVector4Logical mask; mask.clear(); mask.setElement<N>(); target.setSelectWithMask(mask,src,target);}
+	template <int N> inline void copyComponent(const LLVector4a& src);
 	
 	// Select bits from sourceIfTrue and sourceIfFalse according to bits in mask
 	inline void setSelectWithMask( const LLVector4Logical& mask, const LLVector4a& sourceIfTrue, const LLVector4a& sourceIfFalse );
@@ -280,6 +284,8 @@ public:
 	// Quantize this vector to 8 or 16 bit precision
 	void quantize8( const LLVector4a& low, const LLVector4a& high );
 	void quantize16( const LLVector4a& low, const LLVector4a& high );
+
+	void negate();
 
 	////////////////////////////////////
 	// LOGICAL

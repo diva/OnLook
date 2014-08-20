@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="517" border="true" label="System" name="ascsys">
-  <tab_container label="Singularity System" bottom="0" height="440" width="497" left="0" name="Ascent System" tab_min_width="70" tab_position="top">
+  <tab_container label="System" bottom="0" height="440" width="497" left="0" name="Ascent System" tab_min_width="70" tab_position="top">
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="General" name="User Interface">
       <check_box left="10" bottom_delta="-25" control_name="DoubleClickTeleport" follows="top" initial_value="false"
@@ -27,7 +27,7 @@
       <check_box bottom_delta="-18" follows="left|top" initial_value="true"
         label="Enable Power User functionality" tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself or your belongings. If you're sure, activate the checkbox below as well." name="power_user_check"/>
       <check_box bottom_delta="-18" enabled="true" follows="top" left="20" initial_value="true"
-        label="Confirm Power User functionality" tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Singularity devs won't replace anything you break. We recommend having a backup copy of anything to be victim to these powers. Unlike most checkboxes, you must click Apply or OK before this will activate." name="power_user_confirm_check"/>
+        label="Confirm Power User functionality" tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. [SHORT_APP_NAME] devs won't replace anything you break. We recommend having a backup copy of anything to be victim to these powers. Unlike most checkboxes, you must click Apply or OK before this will activate." name="power_user_confirm_check"/>
       <check_box bottom_delta="-18" control_name="FetchInventoryOnLogin" follows="top" left="10" initial_value="true"
         label="Automatically fetch the inventory in the background after login" tool_tip="Inventory will preload when you log in, so you don't have to wait for it to load when doing an initial search." name="fetch_inventory_on_login_check"/>
       <check_box bottom_delta="-18" control_name="WindEnabled" follows="left|top" initial_value="false" label="Enable Wind Effects" name="enable_wind"/>
@@ -80,13 +80,23 @@
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open." name="AscentCmdLineTP2" width="200"/>
       <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_14">Toggle Fake Away Status (usage: cmd)</text>
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineAway" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_15">Send region message (usage: cmd msg)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineRegionSay" tool_tip="Only works on permissive regions (Estate Managers only)" width="200"/>
     </panel>
 
-    <panel border="true" left="1" bottom="-408" height="408" width="500" label="Security" name="Security">
+    <panel border="true" left="1" bottom="-408" height="408" width="500" label="Security &amp; Privacy" name="Security">
       <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" follows="top" initial_value="true" label="Broadcast Viewer Effects (does not affect pointat and lookat)" left="10" name="broadcast_viewer_effects" width="400"/>
       <check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" follows="top" initial_value="true" label="Disable Point At And Beam" tool_tip="Don't point at or show your edit beam when selecting an object." name="disable_point_at_and_beams_check"/>
       <check_box bottom_delta="-20" control_name="PrivateLookAt" follows="top" initial_value="false" label="Do not Look At objects and/or avatars" tool_tip="Disables headturns and lookat beacons, causing your avatar to look straight ahead (unless scripted to do otherwise)." name="private_look_at_check"/>
       <check_box bottom_delta="-20" control_name="AscentShowLookAt" follows="top" initial_value="false" label="Show others' LookAt beacons" tool_tip="Shows you where others are looking." name="show_look_at_check"/>
+      <combo_box bottom_delta="-1" left_delta="200" follows="top" height="18" control_name="LookAtNameSystem" name="lookat_namesystem_combobox" width="130" tool_tip="Style for displaying names on LookAt beacons">
+        <combo_item name="No Names" value="-1">No Names</combo_item>
+        <combo_item name="Old Names" value="0">Old Names</combo_item>
+        <combo_item name="Display Names (with Username)" value="1">Display Names (w/Username)</combo_item>
+        <combo_item name="Display Names only" value="2">Display Names only</combo_item>
+        <combo_item name="Old Names (with Display Names)" value="3">Old Names (w/Display)</combo_item>
+      </combo_box>
+      <check_box bottom_delta="-18" left="10" control_name="AlchemyLookAtLines" follows="top" label="Show a line from look at beacon to avatar" tool_tip="See a line connecting the camera focus point to the avatar. Useful to find where they are." name="lineslookat"/>
       <check_box bottom_delta="-20" control_name="AnnounceBumps" follows="top" label="Announce in chat when people bump you" name="announce_bumps"/>
       <check_box bottom_delta="-20" control_name="SGDetachBridge" follows="top" initial_value="false" label="Auto detach LSL Bridge" tool_tip="Automatically detach LSL Bridge of Phoenix or Firestorm viewer." name="detach_bridge"/>
       <check_box bottom_delta="-20" control_name="QuietSnapshotsToDisk" follows="top" initial_value="false" label="Quiet Snapshots to Disk" tool_tip="Doesn't make a camera sound nor alert everyone when you take a snapshot to your computer." name="quiet_snapshots_check"/>
@@ -99,6 +109,8 @@
       <check_box bottom_delta="-20" left="10" follows="top" label="Auto-minimize region restart notice" name="region_restart_minimized" control_name="LiruRegionRestartMinimized" tool_tip="Useful for sim owners and people who need to pack up before leaving"/>
       <text name="EmergencyTeleportDesc" left="14" bottom_delta="-12" follows="top">Drop a landmark below to autoteleport there in the last 20 seconds before region restarts</text>
       <drop_target control_name="EmergencyTeleportLandmark" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_drop" width="430"/>
+      <text name="EmergencyTeleportBackupDesc" halign="center" width="432" left="14" bottom_delta="-26" follows="top">Drop a backup landmark to autoteleport to below, should you already be at the above</text>
+      <drop_target control_name="EmergencyTeleportLandmarkBackup" bottom_delta="-8" left="15" height="17" name="emergency_teleport_landmark_backup_drop" width="430"/>
       <text bottom_delta="-26" follows="top" name="UISndRestartText">Sound played when regions will restart:</text>
       <line_editor bottom_delta="-6" left_delta="222" follows="top" width="209" height="16" name="UISndRestart" tool_tip="Empty for no sound to play"/>
     </panel>
@@ -123,10 +135,15 @@
         <combo_item name="Plastic" value="Plastic">Plastic</combo_item>
         <combo_item name="Rubber" value="Rubber">Rubber</combo_item>
       </combo_box>
-      <text bottom="-19" left_delta="85" name="text_box7" halign="center" width="115">Next Owner Perms</text>
-        <check_box follows="top" height="16" initial_value="false" label="Copy permission" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="NextOwnerCopy"/>
-        <check_box follows="top" height="16" initial_value="false" label="Modify permission" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="NextOwnerModify"/>
-        <check_box follows="top" height="16" initial_value="true" label="Transfer permission" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
+      <text bottom="-19" left_delta="85" name="text_box7" halign="center" width="145">Next Owner Perms</text>
+      <text bottom="-34" left_delta="0" name="text_box8" halign="center" width="65">Objects</text>
+        <check_box follows="top" height="16" initial_value="false" label="Copy" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="ObjectsNextOwnerCopy"/>
+        <check_box follows="top" height="16" initial_value="false" label="Modify" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="ObjectsNextOwnerModify"/>
+        <check_box follows="top" height="16" initial_value="true" label="Transfer" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="ObjectsNextOwnerTransfer" enabled_control="ObjectsNextOwnerCopy"/>
+      <text bottom="-34" left_delta="85" name="text_box9" halign="center" width="65">Scripts</text>
+        <check_box follows="top" height="16" label="Copy" tool_tip="Next owner can make copies of scripts" name="script_next_owner_copy" control_name="ScriptsNextOwnerCopy"/>
+        <check_box follows="top" height="16" label="Modify" tool_tip="Next owner can edit scripts" name="script_next_owner_modify" control_name="ScriptsNextOwnerModify"/>
+        <check_box follows="top" height="16" label="Transfer" tool_tip="Next owner can give(or sell) scripts" name="script_next_owner_transfer" control_name="ScriptsNextOwnerTransfer" enabled_control="ScriptsNextOwnerCopy"/>
       <check_box bottom="-131" left="5" follows="top" height="16" label="Phantom" name="EmPhantomToggle" control_name="EmeraldBuildPrefs_Phantom"/>
       <check_box follows="top" height="16" label="Physical" name="EmPhysicalToggle" control_name="EmeraldBuildPrefs_Physical"/>
       <check_box follows="top" height="16" label="Temporary" name="EmTemporaryToggle" control_name="EmeraldBuildPrefs_Temporary"/>

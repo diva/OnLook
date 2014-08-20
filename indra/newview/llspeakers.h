@@ -81,6 +81,15 @@ public:
 	BOOL			mModeratorMutedText;
 };
 
+class LLSpeakerUpdateSpeakerEvent : public LLOldEvents::LLEvent
+{
+public:
+	LLSpeakerUpdateSpeakerEvent(LLSpeaker* source);
+	/*virtual*/ LLSD getValue();
+private:
+	const LLUUID& mSpeakerID;
+};
+
 class LLSpeakerUpdateModeratorEvent : public LLOldEvents::LLEvent
 {
 public:
@@ -186,6 +195,8 @@ public:
 	void unsetActionTimer(const LLUUID& speaker_id);
 
 	void removeAllTimers();
+
+	bool isTimerStarted(const LLUUID& speaker_id);
 private:
 	/**
 	 * Callback of the each instance of LLSpeakerActionTimer.
@@ -230,6 +241,7 @@ public:
 	void getSpeakerList(speaker_list_t* speaker_list, BOOL include_text);
 	LLVoiceChannel* getVoiceChannel() { return mVoiceChannel; }
 	const LLUUID getSessionID();
+	bool isSpeakerToBeRemoved(const LLUUID& speaker_id);
 
 	/**
 	 * Removes avaline speaker.
@@ -253,6 +265,8 @@ protected:
 
 	typedef std::map<LLUUID, LLPointer<LLSpeaker> > speaker_map_t;
 	speaker_map_t		mSpeakers;
+	bool				mSpeakerListUpdated;
+	LLTimer				mGetListTime;
 
 	speaker_list_t		mSpeakersSorted;
 	LLFrameTimer		mSpeechTimer;

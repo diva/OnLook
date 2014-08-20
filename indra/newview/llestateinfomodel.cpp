@@ -118,16 +118,16 @@ class LLEstateChangeInfoResponder : public LLHTTPClient::ResponderWithResult
 public:
 
 	// if we get a normal response, handle it here
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		llinfos << "Committed estate info" << llendl;
 		LLEstateInfoModel::instance().notifyCommit();
 	}
 
 	// if we get an error response
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		llwarns << "Failed to commit estate info (" << status << "): " << reason << llendl;
+		llwarns << "Failed to commit estate info (" << mStatus << "): " << mReason << llendl;
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }

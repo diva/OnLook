@@ -229,11 +229,15 @@ private:
 		std::string application_dir = std::string( cwd );
 
 #if LL_LINUX
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+#if !GLIB_CHECK_VERSION(2, 32, 0)
 		// take care to initialize glib properly, because some
 		// versions of Qt don't, and we indirectly need it for (some
 		// versions of) Flash to not crash the browser.
 		if (!g_thread_supported ()) g_thread_init (NULL);
+#endif
 		g_type_init();
+#endif
 #endif
 
 #if LL_DARWIN

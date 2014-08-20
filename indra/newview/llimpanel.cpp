@@ -172,10 +172,10 @@ public:
 		mAgents = agents_to_invite;
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		//try an "old school" way.
-		if ( statusNum == 400 )
+		if ( mStatus == 400 )
 		{
 			start_deprecated_conference_chat(
 				mTempSessionID,
@@ -347,6 +347,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	case IM_SESSION_P2P_INVITE:
 		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mLogLabel, mOtherParticipantUUID);
 		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
+		mDing = gSavedSettings.getBOOL("LiruNewMessageSoundIMsOn");
 		break;
 	default:
 		llwarns << "Unknown session type" << llendl;
@@ -634,10 +635,10 @@ public:
 		mSessionID = session_id;
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llwarns << "Error inviting all agents to session [status:"
-				<< statusNum << "]: " << reason << llendl;
+				<< mStatus << "]: " << mReason << llendl;
 		//throw something back to the viewer here?
 	}
 
@@ -1030,7 +1031,8 @@ void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 
 void LLFloaterIMPanel::onInputEditorFocusReceived()
 {
-	mHistoryEditor->setCursorAndScrollToEnd();
+	if (gSavedSettings.getBOOL("LiruLegacyScrollToEnd"))
+		mHistoryEditor->setCursorAndScrollToEnd();
 }
 
 void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)

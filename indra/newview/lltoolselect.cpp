@@ -215,7 +215,7 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 			LLSelectMgr::getInstance()->setAgentHUDZoom(target_zoom, current_zoom);
 		}
 
-		if (!gAgentCamera.getFocusOnAvatar() &&										// if camera not glued to avatar
+		if (gSavedSettings.getBOOL("RightClickTurnsAvatar") && !gAgentCamera.getFocusOnAvatar() &&										// if camera not glued to avatar
 			LLVOAvatar::findAvatarFromAttachment(object) != gAgentAvatarp &&	// and it's not one of your attachments
 			object != gAgentAvatarp)									// and it's not you
 		{

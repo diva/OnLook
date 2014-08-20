@@ -128,7 +128,7 @@ BOOL	LLPanelFace::postBuild()
 	mMediaDelete = getChildView("delete_media");
 
 	// Label caching
-	mLabelGlossy = getChildView("label glossy");
+	mLabelGlossy = getChildView("label glossiness");
 	mLabelEnvironment = getChildView("label environment");
 	mLabelShinyColor = getChildView("label shinycolor");
 	mLabelAlphaMode = getChildView("label alphamode");
@@ -170,8 +170,8 @@ BOOL	LLPanelFace::postBuild()
 	mCtrlCopy = getChild<LLUICtrl>("copytextures");
 	mCtrlPaste = getChild<LLUICtrl>("pastetextures");
 
-	mComboShiny->setCommitCallback(boost::bind(&LLPanelFace::sendShiny, this, boost::bind(&LLSD::asInteger, _2)));
-	mComboBumpy->setCommitCallback(boost::bind(&LLPanelFace::sendBump, this, boost::bind(&LLSD::asInteger, _2)));
+	mComboShiny->setCommitCallback(boost::bind(&LLPanelFace::sendShiny, this, boost::bind(&LLComboBox::getCurrentIndex, mComboShiny)));
+	mComboBumpy->setCommitCallback(boost::bind(&LLPanelFace::sendBump, this, boost::bind(&LLComboBox::getCurrentIndex, mComboBumpy)));
 	mComboAlpha->setCommitCallback(boost::bind(&LLPanelFace::onCommitAlphaMode, this));
 	mCtrlTexScaleU->setCommitCallback(boost::bind(&LLPanelFace::onCommitTextureInfo, this));
 	mCtrlFlipTexScaleU->setCommitCallback(boost::bind(&LLPanelFace::onCommitFlip, this, true));
@@ -1282,7 +1282,7 @@ void LLPanelFace::updateUI()
 
 			LLSelectedTE::getFullbright(fullbright_flag,identical_fullbright);
 
-			mCheckFullbright->setValue((S32)(fullbright_flag != 0));
+			mCheckFullbright->setValue(fullbright_flag != 0);
 			mCheckFullbright->setEnabled(editable);
 			mCheckFullbright->setTentative(!identical_fullbright);
 		}
@@ -1800,7 +1800,7 @@ void LLPanelFace::onSelectTexture(const LLSD& data)
 	LLSelectMgr::getInstance()->saveSelectedObjectTextures();
 	sendTexture();
 
-	LLGLenum image_format;
+	LLGLenum image_format(0);
 	bool identical_image_format = false;
 	LLSelectedTE::getImageFormat(image_format, identical_image_format);
 
@@ -2143,7 +2143,7 @@ void LLPanelFace::LLSelectedTE::getFace(LLFace*& face_to_return, bool& identical
 
 void LLPanelFace::LLSelectedTE::getImageFormat(LLGLenum& image_format_to_return, bool& identical_face)
 {
-	LLGLenum image_format;
+	LLGLenum image_format(0);
 	struct LLSelectedTEGetImageFormat : public LLSelectedTEGetFunctor<LLGLenum>
 	{
 		LLGLenum get(LLViewerObject* object, S32 te_index)

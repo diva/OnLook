@@ -932,10 +932,10 @@ protected:
 		MIN = 3
 	} eDName;
 
-	LLVector4a mCenter;
-	LLVector4a mSize;
-	LLVector4a mMax;
-	LLVector4a mMin;
+	LL_ALIGN_16(LLVector4a mCenter);
+	LL_ALIGN_16(LLVector4a mSize);
+	LL_ALIGN_16(LLVector4a mMax);
+	LL_ALIGN_16(LLVector4a mMin);
 	
 	oct_node* mParent;
 	U8 mOctant;
@@ -964,6 +964,26 @@ public:
 	:	BaseType(center, size, parent)
 	{
 	}
+
+#ifdef LL_OCTREE_POOLS
+	void* operator new(size_t size)
+	{
+		return LLOctreeNode<T>::getPool(size).malloc();
+	}
+	void operator delete(void* ptr)
+	{
+		LLOctreeNode<T>::getPool(sizeof(LLOctreeNode<T>)).free(ptr);
+	}
+#else
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+#endif
 	
 	bool balance()
 	{	

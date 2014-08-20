@@ -366,8 +366,9 @@ void LLAvatarJointMesh::setupJoint(LLAvatarJoint* current_joint)
 	for (LLJoint::child_list_t::iterator iter = current_joint->mChildren.begin();
 		 iter != current_joint->mChildren.end(); ++iter)
 	{
-		LLAvatarJoint* child_joint = (LLAvatarJoint*)(*iter);
-		setupJoint(child_joint);
+		LLAvatarJoint* child_joint = dynamic_cast<LLAvatarJoint*>(*iter);
+		if(child_joint)
+			setupJoint(child_joint);
 	}
 }
 

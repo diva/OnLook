@@ -129,11 +129,11 @@
 		<menu_item_call label="Regione/Proprietà Immobiliari..." name="Region/Estate..."/>
 		<menu_item_separator label="-----------" name="separator6"/>
 		<menu label="Impostazioni dell&apos;ambiente" name="Environment Settings">
-			<menu_item_call label="Alba" name="Sunrise"/>
-			<menu_item_call label="Mezzogiorno" name="Noon"/>
-			<menu_item_call label="Tramonto" name="Sunset"/>
-			<menu_item_call label="Mezzanotte" name="Midnight"/>
-			<menu_item_call label="Reimposta al default della regione" name="Revert to Region Default"/>
+			<menu_item_check label="Alba" name="Sunrise"/>
+			<menu_item_check label="Mezzogiorno" name="Noon"/>
+			<menu_item_check label="Tramonto" name="Sunset"/>
+			<menu_item_check label="Mezzanotte" name="Midnight"/>
+			<menu_item_check label="Reimposta al default della regione" name="Revert to Region Default"/>
 			<menu_item_separator label="-----------" name="separator"/>
 			<menu_item_call label="Editor dell&apos;ambiente" name="Environment Editor"/>
 		</menu>

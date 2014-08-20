@@ -90,8 +90,8 @@ class fetchScriptLimitsRegionInfoResponder: public LLHTTPClient::ResponderWithRe
 	public:
 		fetchScriptLimitsRegionInfoResponder(const LLSD& info) : mInfo(info) {};
 
-		void result(const LLSD& content);
-		void error(U32 status, const std::string& reason);
+		void httpSuccess(void);
+		void httpFailure(void);
 	public:
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchScriptLimitsRegionInfoResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "fetchScriptLimitsRegionInfoResponder"; }
@@ -105,8 +105,8 @@ class fetchScriptLimitsRegionSummaryResponder: public LLHTTPClient::ResponderWit
 	public:
 		fetchScriptLimitsRegionSummaryResponder(const LLSD& info) : mInfo(info) {};
 
-		void result(const LLSD& content);
-		void error(U32 status, const std::string& reason);
+		void httpSuccess(void);
+		void httpFailure(void);
 	public:
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchScriptLimitsRegionSummaryResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "fetchScriptLimitsRegionSummaryResponder"; }
@@ -120,8 +120,8 @@ class fetchScriptLimitsRegionDetailsResponder: public LLHTTPClient::ResponderWit
 	public:
 		fetchScriptLimitsRegionDetailsResponder(const LLSD& info) : mInfo(info) {};
 
-		void result(const LLSD& content);
-		void error(U32 status, const std::string& reason);
+		void httpSuccess(void);
+		void httpFailure(void);
 	public:
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchScriptLimitsRegionDetailsResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "fetchScriptLimitsRegionDetailsResponder"; }
@@ -135,8 +135,8 @@ class fetchScriptLimitsAttachmentInfoResponder: public LLHTTPClient::ResponderWi
 	public:
 		fetchScriptLimitsAttachmentInfoResponder() {};
 
-		void result(const LLSD& content);
-		void error(U32 status, const std::string& reason);
+		void httpSuccess(void);
+		void httpFailure(void);
 	public:
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchScriptLimitsAttachmentInfoResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "fetchScriptLimitsAttachmentInfoResponder"; }

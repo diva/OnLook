@@ -53,6 +53,7 @@
 #include "llscrolllistctrl.h"
 #include "llscrolllistitem.h"
 #include "lltextbox.h"
+#include "lltrans.h"
 
 #include "roles_constants.h"
 #include "llviewerwindow.h"
@@ -511,6 +512,7 @@ void LLPanelGroupNotices::onSelectNotice()
 	lldebugs << "Item " << item->getUUID() << " selected." << llendl;
 }
 
+bool is_openable(LLAssetType::EType type);
 void LLPanelGroupNotices::showNotice(const std::string& subject,
 									 const std::string& message,
 									 const bool& has_inventory,
@@ -549,6 +551,7 @@ void LLPanelGroupNotices::showNotice(const std::string& subject,
 
 		mViewInventoryName->setText(ss.str());
 		mBtnOpenAttachment->setEnabled(TRUE);
+		mBtnOpenAttachment->setLabel(LLTrans::getString(is_openable(inventory_offer->mType) ? "GroupNotifyOpenAttachment" : "GroupNotifySaveAttachment"));
 	}
 	else
 	{

@@ -33,7 +33,7 @@
 
 #include "llvoinventorylistener.h"
 
-class ScriptCounter : public LLVOInventoryListener
+class ScriptCounter : public LLInstanceTracker<ScriptCounter, LLUUID>, public LLVOInventoryListener
 {
 public:
 	ScriptCounter(bool do_delete, LLViewerObject* object);
@@ -45,6 +45,9 @@ public:
 private:
 	void requestInventoriesFor(LLViewerObject* object);
 	void requestInventoryFor(LLViewerObject* object);
+	friend void process_script_running_reply(LLMessageSystem* msg, void**);
+	void processRunningReply(LLMessageSystem* msg);
+	void summarize(); // Check if finished, if so, output and destroy.
 
 	bool doDelete;
 	LLViewerObject* foo;
@@ -52,6 +55,10 @@ private:
 	int objectCount;
 	bool requesting;
 	int scriptcount;
+	static std::map<LLUUID, ScriptCounter*> sCheckMap; // Map of scripts being checked running/mono and by which instance
+	int checking; // Number of scripts being counter by this instance
+	int mRunningCount;
+	int mMonoCount;
 };
 
 #endif //SCRIPTCOUNTER_H

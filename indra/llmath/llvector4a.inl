@@ -41,11 +41,11 @@ inline void LLVector4a::loadua(const F32* src)
 }
 
 // Load only three floats beginning at address 'src'. Slowest method.
-inline void LLVector4a::load3(const F32* src)
+inline void LLVector4a::load3(const F32* src, const F32 w)
 {
 	// mQ = { 0.f, src[2], src[1], src[0] } = { W, Z, Y, X }
 	// NB: This differs from the convention of { Z, Y, X, W }
-	mQ = _mm_set_ps(0.f, src[2], src[1], src[0]);
+	mQ = _mm_set_ps(w, src[2], src[1], src[0]);
 }	
 
 // Store to a 16-byte aligned memory address
@@ -152,6 +152,13 @@ inline void LLVector4a::splat(const LLVector4a& v, U32 i)
 			mQ = _mm_shuffle_ps(v.mQ, v.mQ, _MM_SHUFFLE(3, 3, 3, 3));
 			break;
 	}
+}
+
+// Sets element N to that of src's element N
+template <int N> inline void LLVector4a::copyComponent(const LLVector4a& src)
+{
+	static const LLVector4Logical mask = _mm_load_ps((F32*)&S_V4LOGICAL_MASK_TABLE[N*4]);
+	setSelectWithMask(mask,src,mQ);
 }
 
 // Select bits from sourceIfTrue and sourceIfFalse according to bits in mask
@@ -529,6 +536,11 @@ inline void LLVector4a::clamp( const LLVector4a& low, const LLVector4a& high )
 	setSelectWithMask( lowMask, low, *this );
 }
 
+inline void LLVector4a::negate()
+{
+	static LL_ALIGN_16(const U32 signMask[4]) = {0x80000000, 0x80000000, 0x80000000, 0x80000000 };
+	mQ = _mm_xor_ps(*reinterpret_cast<const LLQuad*>(signMask), mQ);
+}
 
 ////////////////////////////////////
 // LOGICAL

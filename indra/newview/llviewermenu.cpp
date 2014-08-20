@@ -2204,7 +2204,16 @@ void reload_objects(LLTextureReloader& texture_list, LLViewerObject::const_child
 		for (U8 i = 0; i < object->getNumTEs(); i++)
 		{
 			texture_list.addTexture(object->getTEImage(i));
+			const LLTextureEntry* te = object->getTE(i);
+			if (LLMaterial* mat = te ? te->getMaterialParams().get() : NULL)
+			{
+				if (mat->getSpecularID().notNull())
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(mat->getSpecularID()));
+				if (mat->getNormalID().notNull())
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(mat->getNormalID()));
+			}
 		}
+
 
 		if(recurse)
 		{
@@ -3008,6 +3017,7 @@ class LLScriptCount : public view_listener_t
 	{
 		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
 		{
+			if (ScriptCounter::getInstance(object->getID())) return true;
 			ScriptCounter* sc = new ScriptCounter(false, object);
 			sc->requestInventories();
 			// sc will destroy itself
@@ -3022,6 +3032,7 @@ class LLScriptDelete : public view_listener_t
 	{
 		if (LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
 		{
+			if (ScriptCounter::getInstance(object->getID())) return true;
 			ScriptCounter* sc = new ScriptCounter(true, object);
 			sc->requestInventories();
 			// sc will destroy itself
@@ -6469,6 +6480,15 @@ BOOL enable_buy_land(void*)
 				LLViewerParcelMgr::getInstance()->getParcelSelection()->getParcel(), false);
 }
 
+class LLWorldVisibleDestinations : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool visible(!LFSimFeatureHandler::instance().destinationGuideURL().empty());
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(visible);
+		return visible;
+	}
+};
 
 class LLObjectAttachToAvatar : public view_listener_t
 {
@@ -8760,6 +8780,44 @@ class LLWorldEnvSettings : public view_listener_t
 	}
 };
 
+class LLWorldEnableEnvSettings : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool result = false;
+		std::string tod = userdata.asString();
+
+		if (tod == "region")
+		{
+			return LLEnvManagerNew::instance().getUseRegionSettings();
+		}
+
+		if (LLEnvManagerNew::instance().getUseFixedSky())
+		{
+			if (tod == "sunrise")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Sunrise");
+			}
+			else if (tod == "noon")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Midday");
+			}
+			else if (tod == "sunset")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Sunset");
+			}
+			else if (tod == "midnight")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Midnight");
+			}
+			else
+			{
+				llwarns << "Unknown item" << llendl;
+			}
+		}
+		return result;
+	}
+};
 
 class SinguCloseAllDialogs : public view_listener_t
 {
@@ -8968,6 +9026,16 @@ class ListVisibleWebProfile : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() && !(gSavedSettings.getBOOL("UseWebProfiles") || gSavedSettings.getString("WebProfileURL").empty()));
+		return true;
+	}
+};
+
+void ban_from_group(const uuid_vec_t& ids);
+class ListBanFromGroup : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		ban_from_group(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9289,7 +9357,9 @@ void initialize_menus()
 	addMenu(new LLWorldEnableSetHomeLocation(), "World.EnableSetHomeLocation");
 	addMenu(new LLWorldEnableTeleportHome(), "World.EnableTeleportHome");
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
+	addMenu(new LLWorldVisibleDestinations(), "World.VisibleDestinations");
 	(new LLWorldEnvSettings())->registerListener(gMenuHolder, "World.EnvSettings");
+	(new LLWorldEnableEnvSettings())->registerListener(gMenuHolder, "World.EnableEnvSettings");
 
 
 	// Tools menu
@@ -9487,6 +9557,7 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
+	addMenu(new ListBanFromGroup(), "List.BanFromGroup");
 	addMenu(new ListCopySLURL(), "List.CopySLURL");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");
@@ -9551,18 +9622,20 @@ void parse_simulator_features()
 	{
 		std::string insertMarker = "insert_" + i->first;
 
-		LLView* marker = gMenuBarView->getChildView(insertMarker, true, false);
+		LLMenuItemGL* marker = gMenuBarView->findChild<LLMenuItemGL>(insertMarker);
 		if (!marker) continue;
 
 		LLMenuGL* menu = dynamic_cast<LLMenuGL*>(marker->getParent());
 		if (!menu) continue;
+
+		std::list<LLMenuItemGL*>::iterator it = menu->find(marker);
 
 		for (LLSD::map_iterator j = i->second.beginMap(); j != i->second.endMap(); ++j)
 		{
 			LLMenuItemCallGL* custom = new LLMenuItemCallGL(j->second.asString(), j->first, custom_selected);
 			custom->setUserData(custom);
 			gCustomMenuItems.push_back(custom);
-			menu->addChild(custom, marker);
+			menu->insert(it, custom);
 		}
 	}
 }

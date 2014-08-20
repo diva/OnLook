@@ -64,23 +64,14 @@
 #include "llagent.h"
 #include "llmenugl.h"
 #include "roles_constants.h"
+#include "llfloatersearchreplace.h"
+#include "llfloaterperms.h"
 #include "llselectmgr.h"
 #include "llviewerinventory.h"
 #include "llviewermenu.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
-#include "llkeyboard.h"
-#include "llscrollcontainer.h"
-#include "llcheckboxctrl.h"
-#include "llselectmgr.h"
-#include "lltooldraganddrop.h"
-#include "llscrolllistctrl.h"
-#include "lltextbox.h"
-#include "llslider.h"
-#include "lldir.h"
-#include "llcombobox.h"
-#include "llfloatersearchreplace.h"
 #include "llviewerstats.h"
 #include "llviewertexteditor.h"
 #include "llviewerwindow.h"
@@ -88,7 +79,6 @@
 #include "llmediactrl.h"
 #include "lluictrlfactory.h"
 #include "lltrans.h"
-#include "llviewercontrol.h"
 #include "llappviewer.h"
 
 #include "llsdserialize.h"
@@ -1207,18 +1197,6 @@ bool LLScriptEdContainer::onExternalChange(const std::string& filename)
 	return true;
 }
 
-// virtual
-void LLScriptEdContainer::reshape(S32 width, S32 height, BOOL called_from_parent)
-{
-	LLPreview::reshape(width, height, called_from_parent);
-
-	if (!isMinimized())
-	{
-		// So that next time you open a script it will have the same height and width (although not the same position).
-		gSavedSettings.setRect("PreviewScriptRect", getRect());
-	}
-}
-
 // <edit>
 // virtual
 BOOL LLScriptEdContainer::canSaveAs() const
@@ -1891,7 +1869,7 @@ void LLLiveLSLEditor::loadAsset()
 			mIsModifiable = item && gAgent.allowOperation(PERM_MODIFY, 
 										item->getPermissions(),
 				   						GP_OBJECT_MANIPULATE);
-			
+			refreshFromItem(item);
 			// This is commented out, because we don't completely
 			// handle script exports yet.
 			/*
@@ -1914,7 +1892,7 @@ void LLLiveLSLEditor::loadAsset()
 		mScriptEd->enableSave(FALSE);
 		LLPermissions perm;
 		perm.init(gAgent.getID(), gAgent.getID(), LLUUID::null, gAgent.getGroupID());
-		perm.initMasks(PERM_ALL, PERM_ALL, PERM_NONE, PERM_NONE, PERM_MOVE | PERM_TRANSFER);
+		perm.initMasks(PERM_ALL, PERM_ALL, LLFloaterPerms::getEveryonePerms("Scripts"), LLFloaterPerms::getGroupPerms("Scripts"), LLFloaterPerms::getNextOwnerPerms("Scripts"));
 		mItem = new LLViewerInventoryItem(mItemUUID,
 										  mObjectUUID,
 										  perm,

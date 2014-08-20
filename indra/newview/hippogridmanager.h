@@ -31,11 +31,6 @@ public:
 		PLATFORM_SECONDLIFE,
 		PLATFORM_LAST
 	};
-	enum SearchType {
-		SEARCH_ALL_EMPTY,
-		SEARCH_ALL_QUERY,
-		SEARCH_ALL_TEMPLATE
-	};
 
 	explicit HippoGridInfo(const std::string& gridName);
 
@@ -58,7 +53,6 @@ public:
 	const std::string& getSearchUrl()       const { return mSearchUrl; }
 	const std::string& getGridMessage()     const { return mGridMessage; }
 	const std::string& getVoiceConnector()  const { return mVoiceConnector; }
-	std::string getSearchUrl(SearchType ty, bool is_web) const;
 	bool isRenderCompat()                   const { return mRenderCompat; }
 	std::string getGridNick() const;
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }

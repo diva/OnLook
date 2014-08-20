@@ -91,14 +91,16 @@ void LLTemplateMessageReader::getData(const char *blockname, const char *varname
 	}
 
 	LLMsgBlkData *msg_block_data = iter->second;
-	LLMsgVarData& vardata = msg_block_data->mMemberVarData[vnamep];
+	LLMsgBlkData::msg_var_data_map_t &var_data_map = msg_block_data->mMemberVarData;
 
-	if (!vardata.getName())
+	if (var_data_map.find(vnamep) == var_data_map.end())
 	{
 		llerrs << "Variable "<< vnamep << " not in message "
 			<< mCurrentRMessageData->mName<< " block " << bnamep << llendl;
 		return;
 	}
+
+	LLMsgVarData& vardata = msg_block_data->mMemberVarData[vnamep];
 
 	if (size && size != vardata.getSize())
 	{
@@ -284,7 +286,7 @@ void LLTemplateMessageReader::getU8(const char *block, const char *var,
 void LLTemplateMessageReader::getBOOL(const char *block, const char *var, 
 										  BOOL &b, S32 blocknum )
 {
-	U8 value;
+	U8 value(0);
 	getData(block, var, &value, sizeof(U8), blocknum);
 	b = (BOOL) value;
 }

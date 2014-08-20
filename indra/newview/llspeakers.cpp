@@ -32,6 +32,7 @@
 #include "llavatarnamecache.h"
 #include "llimpanel.h" // For LLFloaterIMPanel
 #include "llimview.h"
+#include "llgroupmgr.h"
 #include "llsdutil.h"
 #include "llui.h"
 #include "llviewerobjectlist.h"
@@ -61,8 +62,7 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 	mModeratorMutedVoice(FALSE),
 	mModeratorMutedText(FALSE)
 {
-	// Make sure we also get the display name if SLIM or some other external voice client is used and not whatever is provided.
-	if ((name.empty() && type == SPEAKER_AGENT) || type == SPEAKER_EXTERNAL)
+	if (name.empty() && type == SPEAKER_AGENT)
 	{
 		lookupName();
 	}
@@ -98,6 +98,19 @@ void LLSpeaker::onNameCache(const LLAvatarName& full_name)
 bool LLSpeaker::isInVoiceChannel()
 {
 	return mStatus <= LLSpeaker::STATUS_VOICE_ACTIVE || mStatus == LLSpeaker::STATUS_MUTED;
+}
+
+LLSpeakerUpdateSpeakerEvent::LLSpeakerUpdateSpeakerEvent(LLSpeaker* source)
+: LLEvent(source, "Speaker update speaker event"),
+  mSpeakerID (source->mID)
+{
+}
+
+LLSD LLSpeakerUpdateSpeakerEvent::getValue()
+{
+	LLSD ret;
+	ret["id"] = mSpeakerID;
+	return ret;
 }
 
 LLSpeakerUpdateModeratorEvent::LLSpeakerUpdateModeratorEvent(LLSpeaker* source)
@@ -257,6 +270,11 @@ bool LLSpeakersDelayActionsStorage::onTimerActionCallback(const LLUUID& speaker_
 	return true;
 }
 
+bool LLSpeakersDelayActionsStorage::isTimerStarted(const LLUUID& speaker_id)
+{
+	return (mActionTimersMap.size() > 0) && (mActionTimersMap.find(speaker_id) != mActionTimersMap.end());
+}
+
 //
 // ModerationResponder
 //
@@ -269,9 +287,9 @@ public:
 		mSessionID = session_id;
 	}
 
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	virtual void httpFailure(void)
 	{
-		llwarns << "ModerationResponder error [status:" << status << "]: " << reason << llendl;
+		llwarns << mStatus << ": " << mReason << llendl;
 
 		if ( gIMMgr )
 		{
@@ -280,7 +298,7 @@ public:
 
 			//403 == you're not a mod
 			//should be disabled if you're not a moderator
-			if ( 403 == status )
+			if ( 403 == mStatus )
 			{
 				floaterp->showSessionEventError(
 					"mute",
@@ -308,8 +326,10 @@ private:
 LLSpeakerMgr::LLSpeakerMgr(LLVoiceChannel* channelp) :
 	mVoiceChannel(channelp),
 	mVoiceModerated(false),
-	mModerateModeHandledFirstTime(false)
+	mModerateModeHandledFirstTime(false),
+	mSpeakerListUpdated(false)
 {
+	mGetListTime.reset();
 	static LLUICachedControl<F32> remove_delay ("SpeakerParticipantRemoveDelay", 10.0);
 
 	mSpeakerDelayRemover = new LLSpeakersDelayActionsStorage(boost::bind(&LLSpeakerMgr::removeSpeaker, this, _1), remove_delay);
@@ -322,7 +342,8 @@ LLSpeakerMgr::~LLSpeakerMgr()
 
 LLPointer<LLSpeaker> LLSpeakerMgr::setSpeaker(const LLUUID& id, const std::string& name, LLSpeaker::ESpeakerStatus status, LLSpeaker::ESpeakerType type)
 {
-	if (id.isNull())
+	LLUUID session_id = getSessionID();
+	if (id.isNull() || (id == session_id))
 	{
 		return NULL;
 	}
@@ -434,6 +455,7 @@ void LLSpeakerMgr::update(BOOL resort_ok)
 				{
 					speakerp->mLastSpokeTime = mSpeechTimer.getElapsedTimeF32();
 					speakerp->mHasSpoken = TRUE;
+					fireEvent(new LLSpeakerUpdateSpeakerEvent(speakerp), "update_speaker");
 				}
 				speakerp->mStatus = LLSpeaker::STATUS_SPEAKING;
 				// interpolate between active color and full speaking color based on power of speech output
@@ -522,6 +544,81 @@ void LLSpeakerMgr::updateSpeakerList()
 						   (LLVoiceClient::getInstance()->isParticipantAvatar(*participant_it)?LLSpeaker::SPEAKER_AGENT:LLSpeaker::SPEAKER_EXTERNAL));
 		}
 	}
+	else
+	{
+		// If not, check if the list is empty, except if it's Nearby Chat (session_id NULL).
+		LLUUID session_id = getSessionID();
+		if (!session_id.isNull() && !mSpeakerListUpdated)
+		{
+			// If the list is empty, we update it with whatever we have locally so that it doesn't stay empty too long.
+			// *TODO: Fix the server side code that sometimes forgets to send back the list of participants after a chat started.
+			// (IOW, fix why we get no ChatterBoxSessionAgentListUpdates message after the initial ChatterBoxSessionStartReply)
+			/* Singu TODO: LLIMModel::LLIMSession
+			LLIMModel::LLIMSession* session = LLIMModel::getInstance()->findIMSession(session_id);
+			if (session->isGroupSessionType() && (mSpeakers.size() <= 1))
+			*/
+			LLFloaterIMPanel* floater = gIMMgr->findFloaterBySession(session_id);
+			if (floater && floater->getSessionType() == LLFloaterIMPanel::GROUP_SESSION && (mSpeakers.size() <= 1))
+			{
+				const F32 load_group_timeout = gSavedSettings.getF32("ChatLoadGroupTimeout");
+				// For groups, we need to hit the group manager.
+				// Note: The session uuid and the group uuid are actually one and the same. If that was to change, this will fail.
+				LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(session_id);
+				if (!gdatap && (mGetListTime.getElapsedTimeF32() >= load_group_timeout))
+				{
+					// Request the data the first time around
+					LLGroupMgr::getInstance()->sendCapGroupMembersRequest(session_id);
+				}
+				else if (gdatap && gdatap->isMemberDataComplete() && !gdatap->mMembers.empty())
+				{
+					// Add group members when we get the complete list (note: can take a while before we get that list)
+					LLGroupMgrGroupData::member_list_t::iterator member_it = gdatap->mMembers.begin();
+					const S32 load_group_max_members = gSavedSettings.getS32("ChatLoadGroupMaxMembers");
+					S32 updated = 0;
+					while (member_it != gdatap->mMembers.end())
+					{
+						LLGroupMemberData* member = member_it->second;
+						LLUUID id = member_it->first;
+						// Add only members who are online and not already in the list
+						if ((member->getOnlineStatus() == "Online") && (mSpeakers.find(id) == mSpeakers.end()))
+						{
+							LLPointer<LLSpeaker> speakerp = setSpeaker(id, "", LLSpeaker::STATUS_VOICE_ACTIVE, LLSpeaker::SPEAKER_AGENT);
+							speakerp->mIsModerator = ((member->getAgentPowers() & GP_SESSION_MODERATOR) == GP_SESSION_MODERATOR);
+							updated++;
+						}
+						++member_it;
+						// Limit the number of "manually updated" participants to a reasonable number to avoid severe fps drop
+						// *TODO : solve the perf issue of having several hundreds of widgets in the conversation list
+						if (updated >= load_group_max_members)
+							break;
+					}
+					mSpeakerListUpdated = true;
+				}
+			}
+			/* Singu TODO: LLIMModel::LLIMSession
+			else if (mSpeakers.size() == 0)
+			{
+				// For all other session type (ad-hoc, P2P, avaline), we use the initial participants targets list
+				for (uuid_vec_t::iterator it = session->mInitialTargetIDs.begin();it!=session->mInitialTargetIDs.end();++it)
+				{
+					// Add buddies if they are on line, add any other avatar.
+					if (!LLAvatarTracker::instance().isBuddy(*it) || LLAvatarTracker::instance().isBuddyOnline(*it))
+					{
+						setSpeaker(*it, "", LLSpeaker::STATUS_VOICE_ACTIVE, LLSpeaker::SPEAKER_AGENT);
+					}
+				}
+				mSpeakerListUpdated = true;
+			}
+			*/
+			else
+			{
+				// The list has been updated the normal way (i.e. by a ChatterBoxSessionAgentListUpdates received from the server)
+				mSpeakerListUpdated = true;
+			}
+		}
+	}
+	// Always add the current agent (it has to be there...). Will do nothing if already there.
+	setSpeaker(gAgentID, "", LLSpeaker::STATUS_VOICE_ACTIVE, LLSpeaker::SPEAKER_AGENT);
 }
 
 void LLSpeakerMgr::setSpeakerNotInChannel(LLSpeaker* speakerp)
@@ -586,6 +683,10 @@ const LLUUID LLSpeakerMgr::getSessionID()
 	return mVoiceChannel->getSessionID();
 }
 
+bool LLSpeakerMgr::isSpeakerToBeRemoved(const LLUUID& speaker_id)
+{
+	return mSpeakerDelayRemover && mSpeakerDelayRemover->isTimerStarted(speaker_id);
+}
 
 void LLSpeakerMgr::setSpeakerTyping(const LLUUID& speaker_id, BOOL typing)
 {
@@ -604,6 +705,7 @@ void LLSpeakerMgr::speakerChatted(const LLUUID& speaker_id)
 	{
 		speakerp->mLastSpokeTime = mSpeechTimer.getElapsedTimeF32();
 		speakerp->mHasSpoken = TRUE;
+		fireEvent(new LLSpeakerUpdateSpeakerEvent(speakerp), "update_speaker");
 	}
 }
 
@@ -773,10 +875,7 @@ void LLIMSpeakerMgr::updateSpeakers(const LLSD& update)
 		}
 	}
 }
-/*prep#
-	virtual void errorWithContent(U32 status, const std::string& reason, const LLSD& content)
-		llwarns << "ModerationResponder error [status:" << status << "]: " << content << llendl;
-		*/
+
 void LLIMSpeakerMgr::toggleAllowTextChat(const LLUUID& speaker_id)
 {
 	LLPointer<LLSpeaker> speakerp = findSpeaker(speaker_id);
@@ -956,7 +1055,7 @@ void LLLocalSpeakerMgr::updateSpeakerList()
 		if (speakerp->mStatus == LLSpeaker::STATUS_TEXT_ONLY)
 		{
 			LLVOAvatar* avatarp = gObjectList.findAvatar(speaker_id);
-			if (!avatarp || dist_vec_squared(avatarp->getPositionAgent(), gAgent.getPositionAgent()) > CHAT_NORMAL_RADIUS_SQUARED)
+			if (!avatarp || dist_vec_squared(avatarp->getPositionAgent(), gAgent.getPositionAgent()) > CHAT_NORMAL_RADIUS * CHAT_NORMAL_RADIUS)
 			{
 				setSpeakerNotInChannel(speakerp);
 			}

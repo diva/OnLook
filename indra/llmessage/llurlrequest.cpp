@@ -78,7 +78,7 @@ LLURLRequest::LLURLRequest(LLURLRequest::ERequestAction action, std::string cons
 	LLHTTPClient::ResponderPtr responder, AIHTTPHeaders& headers, AIPerService::Approvement* approved,
 	bool keepalive, bool is_auth, bool compression) :
     mAction(action), mURL(url), mKeepAlive(keepalive), mIsAuth(is_auth), mNoCompression(!compression),
-	mBody(body), mResponder(responder), mHeaders(headers), mResponderNameCache(responder ? responder->getName() : "<uninitialized>")
+	mBody(body), mResponder(responder), mHeaders(headers), mResponderNameCache(std::string("LLURLRequest:") + std::string(responder ? responder->getName() : "<uninitialized>"))
 {
 	if (approved)
 	{
@@ -276,32 +276,4 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 	return rv;
 }
 
-// Called from AIStateMachine::mainloop, but put here because we don't want to include llurlrequest.h there of course.
-void print_statemachine_diagnostics(U64 total_clocks, U64 max_delta, AIEngine::queued_type::const_reference slowest_element)
-{
-  AIStateMachine const& slowest_state_machine = slowest_element.statemachine();
-  LLURLRequest const* request = dynamic_cast<LLURLRequest const*>(&slowest_state_machine);
-  F64 const tfactor = 1000 / calc_clock_frequency();
-  std::ostringstream msg;
-  if (total_clocks > max_delta)
-  {
-	  msg << "AIStateMachine::mainloop did run for " << (total_clocks * tfactor) << " ms. The slowest ";
-  }
-  else
-  {
-	  msg << "AIStateMachine::mainloop: A ";
-  }
-  msg << "state machine ";
-  if (request)
-  {
-	  msg << "(" << request->getResponderName() << ") ";
-  }
-  msg << "ran for " << (max_delta * tfactor) << " ms";
-  if (slowest_state_machine.getRuntime() > max_delta)
-  {
-	  msg << " (" << (slowest_state_machine.getRuntime() * tfactor) << " ms in total now)";
-  }
-  msg << ".";
-  llwarns << msg.str() << llendl;
-}
 

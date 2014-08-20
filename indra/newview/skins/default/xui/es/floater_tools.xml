@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="toolbox floater" title="" short_title="Construir">
 
+    <floater.string name="status_selectcount">
+        Primitivas: [OBJ_COUNT], LI: [LAND_IMPACT]
+    </floater.string>
+    <floater.string
+     name="status_remaining_capacity">
+        Capacidad remanente [LAND_CAPACITY].
+    </floater.string>
+
 <!-- Main floater tabs -->
 
 	<button name="button focus" tool_tip="Visión"/>
@@ -8,7 +16,7 @@
 	<button name="button edit" tool_tip="Editar"/>
 	<button name="button create" tool_tip="Crear"/>
 	<button name="button land" tool_tip="Terreno"/>
-
+	<button name="mini_button" label="" tool_tip="Conmutar Tamaño flotante de construcción"/>
 <!-- Focus panel -->
 
 	<check_box label="Zoom" name="radio zoom"/>
@@ -106,7 +114,8 @@
 	<text name="link_num_obj_count">
 		[DESC] [NUM]
 	</text>
-	<text name="prim_count"/>
+    <text name="selection_empty">Sin selección.</text>
+
 
 <!-- Sub-tabs -->
 
@@ -645,10 +654,4 @@ name="button abandon land"/>
 	<string name="grid_attachment_text">
 		Añadido
 	</string>
-  <string name="status_selectprimequiv">
-    , Peso: [SEL_WEIGHT]
-  </string>
-  <string name="status_selectcount">
-    Primitivas: [COUNT][PE_STRING]
-  </string>
 </floater>

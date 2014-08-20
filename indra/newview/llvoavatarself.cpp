@@ -54,6 +54,7 @@
 #include "llviewermedia.h"
 #include "llviewermenu.h"
 #include "llviewerobjectlist.h"
+#include "llviewerparcelmgr.h"
 #include "llviewerstats.h"
 #include "llviewerregion.h"
 #include "llviewertexlayer.h"
@@ -179,6 +180,8 @@ LLVOAvatarSelf::LLVOAvatarSelf(const LLUUID& id,
 	mMotionController.mIsSelf = TRUE;
 
 	SHClientTagMgr::instance().updateAvatarTag(this);	//No TE update messages for self. Force update here.
+
+	mTeleportFinishedSlot = LLViewerParcelMgr::getInstance()->setTeleportFinishedCallback(boost::bind(&LLVOAvatarSelf::handleTeleportFinished, this));
 
 	lldebugs << "Marking avatar as self " << id << llendl;
 }
@@ -2314,7 +2317,7 @@ public:
 	{
 	}
 
-	/*virtual*/ void result(LLSD const& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		LL_DEBUGS("Avatar") << "OK" << LL_ENDL;
 		if (mLiveSequence == mExpectedSequence)
@@ -2322,9 +2325,9 @@ public:
 			mReportingStarted = true;
 		}
 	}
-	/*virtual*/ void error(U32 status, std::string const& reason)
+	/*virtual*/ void httpFailure(void)
 	{
-		LL_WARNS("Avatar") << "Failed " << status << " reason " << reason << LL_ENDL;
+		LL_WARNS("Avatar") << "Failed " << mStatus << " reason " << mReason << LL_ENDL;
 	}
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return appearanceChangeMetricsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "AppearanceChangeMetricsResponder"; }
@@ -2490,9 +2493,9 @@ public:
 	{
 	}
 
-	/*virtual*/ void completedHeaders(U32 status, std::string const& reason, AIHTTPReceivedHeaders const& headers)
+	/*virtual*/ void completedHeaders(void)
 	{
-		if (isGoodStatus(status))
+		if (isGoodStatus(mStatus))
 		{
 			LL_DEBUGS("Avatar") << "status OK" << llendl;
 		}
@@ -2507,7 +2510,7 @@ public:
 	}
 
 	// Error
-	/*virtual*//* void error(U32 status, const std::string& reason)
+	/*virtual*//* void httpFailure(void)
 	{
 		if (isAgentAvatarValid())
 		{
@@ -2662,7 +2665,7 @@ void LLVOAvatarSelf::addLocalTextureStats( ETextureIndex type, LLViewerFetchedTe
 					imagep->setAdditionalDecodePriority(SELF_ADDITIONAL_PRI) ;
 				}
 				imagep->resetTextureStats();
-				imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL);
+				imagep->setMaxVirtualSizeResetInterval(MAX_TEXTURE_VIRTUAL_SIZE_RESET_INTERVAL);
 				imagep->addTextureStats( desired_pixels / texel_area_ratio );
 				imagep->forceUpdateBindStats() ;
 				if (imagep->getDiscardLevel() < 0)
@@ -3258,7 +3261,7 @@ LLVector3 LLVOAvatarSelf::getLegacyAvatarOffset() const
 	if(on_pose_stand)
 		offset.mV[VZ] += 7.5f;
 
-	return offset;
+	return mAvatarOffset + offset;
 }
 
 // static
@@ -3287,5 +3290,25 @@ void LLVOAvatarSelf::setInvisible(bool invisible)
 		invalidateAll();
 		requestLayerSetUploads();
 		gAgent.sendAgentSetAppearance();
+	}
+}
+
+void LLVOAvatarSelf::handleTeleportFinished()
+{
+	for (attachment_map_t::iterator it = mAttachmentPoints.begin(); it != mAttachmentPoints.end(); ++it)
+	{
+		LLViewerJointAttachment* attachment = it->second;
+		if (attachment && attachment->getIsHUDAttachment())
+		{
+			typedef LLViewerJointAttachment::attachedobjs_vec_t object_vec_t;
+			const object_vec_t& obj_list = attachment->mAttachedObjects;
+			for (object_vec_t::const_iterator it2 = obj_list.begin(); it2 != obj_list.end(); ++it2)
+			{
+				if(*it2)
+				{
+					(*it2)->dirtySpatialGroup(true);
+				}
+			}
+		}
 	}
 }

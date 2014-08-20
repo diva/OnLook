@@ -32,16 +32,17 @@
 #include "llstat.h"
 #include "lltimer.h"
 #include "m4math.h"
+#include "llmatrix4a.h"
 #include "llcoord.h"
 
 class LLViewerObject;
 
 // This rotation matrix moves the default OpenGL reference frame 
 // (-Z at, Y up) to Cory's favorite reference frame (X at, Z up)
-const F32 OGL_TO_CFR_ROTATION[16] = {  0.f,  0.f, -1.f,  0.f, 	// -Z becomes X
-									  -1.f,  0.f,  0.f,  0.f, 	// -X becomes Y
-									   0.f,  1.f,  0.f,  0.f,	//  Y becomes Z
-									   0.f,  0.f,  0.f,  1.f };
+static LL_ALIGN_16(const LLMatrix4a) OGL_TO_CFR_ROTATION(LLVector4a( 0.f,  0.f, -1.f,  0.f), 	// -Z becomes X
+														LLVector4a(-1.f,  0.f,  0.f,  0.f), 	// -X becomes Y
+														LLVector4a( 0.f,  1.f,  0.f,  0.f),		//  Y becomes Z
+														LLVector4a( 0.f,  0.f,  0.f,  1.f) );
 
 const BOOL FOR_SELECTION = TRUE;
 const BOOL NOT_FOR_SELECTION = FALSE;
@@ -88,8 +89,8 @@ public:
 	static void updateCameraAngle(void* user_data, const LLSD& value);
 	void setPerspective(BOOL for_selection, S32 x, S32 y_from_bot, S32 width, S32 height, BOOL limit_select_distance, F32 z_near = 0, F32 z_far = 0);
 
-	const LLMatrix4 &getProjection() const;
-	const LLMatrix4 &getModelview() const;
+	const LLMatrix4a &getProjection() const;
+	const LLMatrix4a &getModelview() const;
 
 	// Warning!  These assume the current global matrices are correct
 	void projectScreenToPosAgent(const S32 screen_x, const S32 screen_y, LLVector3* pos_agent ) const;
@@ -137,8 +138,8 @@ protected:
 	F32       mAverageSpeed ;
 	F32       mAverageAngularSpeed ;
 
-	mutable LLMatrix4	mProjectionMatrix;	// Cache of perspective matrix
-	mutable LLMatrix4	mModelviewMatrix;
+	mutable LLMatrix4a	mProjectionMatrix;	// Cache of perspective matrix
+	mutable LLMatrix4a	mModelviewMatrix;
 	F32					mCameraFOVDefault;
 	F32					mSavedFOVDefault; // <exodus/>
 	F32					mCosHalfCameraFOV;

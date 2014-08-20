@@ -640,7 +640,8 @@ void LLChatBar::onInputEditorFocusLost()
 // static
 void LLChatBar::onInputEditorGainFocus()
 {
-	LLFloaterChat::setHistoryCursorAndScrollToEnd();
+	if (gSavedSettings.getBOOL("LiruLegacyScrollToEnd"))
+		LLFloaterChat::setHistoryCursorAndScrollToEnd();
 }
 
 // static

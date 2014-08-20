@@ -84,6 +84,7 @@ private:
 	bool mOneLineGroupButt;
 	bool mOneLineConfButt;
 	bool mOnlyComm;
+	bool mLegacyEndScroll;
 	bool mItalicizeActions;
 	bool mLegacyLogLaunch;
 	S32 mFriendNames;

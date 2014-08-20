@@ -38,12 +38,12 @@
 #include "llstring.h"
 #include "stdtypes.h"
 #include "v4math.h"
+#include "llmatrix4a.h"
 #include "llplane.h"
 #include "llgltypes.h"
 #include "llinstancetracker.h"
 
 #include "llglheaders.h"
-#include "glh/glh_linear.h"
 
 extern BOOL gDebugGL;
 extern BOOL gDebugSession;
@@ -321,21 +321,23 @@ public:
   Does not stack.
   Caches inverse of projection matrix used in gGLObliqueProjectionInverse
 */
+LL_ALIGN_PREFIX(16)
 class LLGLUserClipPlane 
 {
 public:
 	
-	LLGLUserClipPlane(const LLPlane& plane, const glh::matrix4f& modelview, const glh::matrix4f& projection, bool apply = true);
+	LLGLUserClipPlane(const LLPlane& plane, const LLMatrix4a& modelview, const LLMatrix4a& projection, bool apply = true);
 	~LLGLUserClipPlane();
 
 	void setPlane(F32 a, F32 b, F32 c, F32 d);
 
 private:
-	bool mApply;
 
-	glh::matrix4f mProjection;
-	glh::matrix4f mModelview;
-};
+	LL_ALIGN_16(LLMatrix4a mProjection);
+	LL_ALIGN_16(LLMatrix4a mModelview);
+
+	bool mApply;
+} LL_ALIGN_POSTFIX(16);
 
 /*
   Modify and load projection matrix to push depth values to far clip plane.
@@ -348,7 +350,7 @@ private:
 class LLGLSquashToFarClip
 {
 public:
-	LLGLSquashToFarClip(glh::matrix4f projection, U32 layer = 0);
+	LLGLSquashToFarClip(const LLMatrix4a& projection, U32 layer = 0);
 	~LLGLSquashToFarClip();
 };
 
@@ -454,8 +456,6 @@ public:
 	bool isCompleted();
 	void wait();
 };
-
-extern LLMatrix4 gGLObliqueProjectionInverse;
 
 #include "llglstates.h"
 

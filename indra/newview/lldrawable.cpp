@@ -179,7 +179,7 @@ LLVOVolume* LLDrawable::getVOVolume() const
 	}
 }
 
-const LLMatrix4& LLDrawable::getRenderMatrix() const
+const LLMatrix4a& LLDrawable::getRenderMatrix() const
 { 
 	return isRoot() ? getWorldMatrix() : getParent()->getWorldMatrix();
 }
@@ -565,6 +565,7 @@ F32 LLDrawable::updateXform(BOOL undamped)
 		dist_squared = dist_vec_squared(new_pos, target_pos);
 
 		LLQuaternion new_rot = nlerp(lerp_amt, old_rot, target_rot);
+		// FIXME: This can be negative! It is be possible for some rots to 'cancel out' pos or size changes.
 		dist_squared += (1.f - dot(new_rot, target_rot)) * 10.f;
 
 		LLVector3 new_scale = lerp(old_scale, target_scale, lerp_amt);
@@ -587,6 +588,15 @@ F32 LLDrawable::updateXform(BOOL undamped)
 				gPipeline.markRebuild(this, LLDrawable::REBUILD_POSITION, TRUE);
 			}
 		}
+	}
+	else
+	{
+		// The following fixes MAINT-1742 but breaks vehicles similar to MAINT-2275
+		// dist_squared = dist_vec_squared(old_pos, target_pos);
+
+		// The following fixes MAINT-2247 but causes MAINT-2275
+		//dist_squared += (1.f - dot(old_rot, target_rot)) * 10.f;
+		//dist_squared += dist_vec_squared(old_scale, target_scale);
 	}
 
 	LLVector3 vec = mCurrentScale-target_scale;
@@ -682,17 +692,7 @@ BOOL LLDrawable::updateMove()
 	
 	makeActive();
 
-	BOOL done;
-
-	if (isState(MOVE_UNDAMPED))
-	{
-		done = updateMoveUndamped();
-	}
-	else
-	{
-		done = updateMoveDamped();
-	}
-	return done;
+	return isState(MOVE_UNDAMPED) ? updateMoveUndamped() : updateMoveDamped();
 }
 
 BOOL LLDrawable::updateMoveUndamped()
@@ -709,7 +709,6 @@ BOOL LLDrawable::updateMoveUndamped()
 	}
 
 	mVObjp->clearChanged(LLXform::MOVED);
-	
 	return TRUE;
 }
 
@@ -833,7 +832,6 @@ void LLDrawable::updateTexture()
 
 	if (getVOVolume())
 	{
-		//getVOVolume()->mFaceMappingChanged = TRUE;
 		gPipeline.markRebuild(this, LLDrawable::REBUILD_MATERIAL, TRUE);
 	}
 }
@@ -1153,8 +1151,8 @@ BOOL LLDrawable::isVisible() const
 // Spatial Partition Bridging Drawable
 //=======================================
 
-LLSpatialBridge::LLSpatialBridge(LLDrawable* root, BOOL render_by_group, U32 data_mask)
-: LLSpatialPartition(data_mask, render_by_group, GL_STREAM_DRAW_ARB)
+LLSpatialBridge::LLSpatialBridge(LLDrawable* root, BOOL render_by_group, U32 data_mask) :
+	LLSpatialPartition(data_mask, render_by_group, GL_STREAM_DRAW_ARB)
 {
 	mBridge = this;
 	mDrawable = root;
@@ -1211,8 +1209,7 @@ void LLSpatialBridge::updateSpatialExtents()
 	LLVector4a size = root->mBounds[1];
 		
 	//VECTORIZE THIS
-	LLMatrix4a mat;
-	mat.loadu(mDrawable->getXform()->getWorldMatrix());
+	const LLMatrix4a& mat = mDrawable->getXform()->getWorldMatrix();
 
 	LLVector4a t;
 	t.splat(0.f);
@@ -1242,12 +1239,9 @@ void LLSpatialBridge::updateSpatialExtents()
 	scale.mul(size);
 	mat.rotate(scale, v[3]);
 
-	
 	LLVector4a& newMin = mExtents[0];
 	LLVector4a& newMax = mExtents[1];
-	
 	newMin = newMax = center;
-	
 	for (U32 i = 0; i < 4; i++)
 	{
 		LLVector4a delta;
@@ -1279,27 +1273,35 @@ LLCamera LLSpatialBridge::transformCamera(LLCamera& camera)
 {
 	LLCamera ret = camera;
 	LLXformMatrix* mat = mDrawable->getXform();
-	LLVector3 center = LLVector3(0,0,0) * mat->getWorldMatrix();
+	const LLVector4a& center = mat->getWorldMatrix().getRow<3>();
 
-	LLVector3 delta = ret.getOrigin() - center;
-	LLQuaternion rot = ~mat->getRotation();
+	LLQuaternion2 invRot;
+	invRot.setConjugate( LLQuaternion2(mat->getRotation()) );
 
-	delta *= rot;
-	LLVector3 lookAt = ret.getAtAxis();
-	LLVector3 up_axis = ret.getUpAxis();
-	LLVector3 left_axis = ret.getLeftAxis();
+	LLVector4a delta;
+	delta.load3(ret.getOrigin().mV);
+	delta.sub(center);
 
-	lookAt *= rot;
-	up_axis *= rot;
-	left_axis *= rot;
+	LLVector4a lookAt;
+	lookAt.load3(ret.getAtAxis().mV);
+	LLVector4a up_axis;
 
-	if (!delta.isFinite())
+	up_axis.load3(ret.getUpAxis().mV);
+	LLVector4a left_axis;
+	left_axis.load3(ret.getLeftAxis().mV);
+
+	delta.setRotated(invRot, delta);
+	lookAt.setRotated(invRot, lookAt);
+	up_axis.setRotated(invRot, up_axis);
+	left_axis.setRotated(invRot, left_axis);
+
+	if (!delta.isFinite3())
 	{
-		delta.clearVec();
+		delta.clear();
 	}
 
-	ret.setOrigin(delta);
-	ret.setAxes(lookAt, left_axis, up_axis);
+	ret.setOrigin(LLVector3(delta.getF32ptr()));
+	ret.setAxes(LLVector3(lookAt.getF32ptr()), LLVector3(left_axis.getF32ptr()), LLVector3(up_axis.getF32ptr()));
 		
 	return ret;
 }
@@ -1419,16 +1421,17 @@ void LLSpatialBridge::setVisible(LLCamera& camera_in, std::vector<LLDrawable*>* 
 	group->rebound();
 	
 	LLVector4a center;
-	center.setAdd(mExtents[0], mExtents[1]);
+	const LLVector4a* exts = getSpatialExtents();
+	center.setAdd(exts[0], exts[1]);
 	center.mul(0.5f);
 	LLVector4a size;
-	size.setSub(mExtents[1], mExtents[0]);
+	size.setSub(exts[1], exts[0]);
 	size.mul(0.5f);
 
 	if ((LLPipeline::sShadowRender && camera_in.AABBInFrustum(center, size)) ||
 		LLPipeline::sImpostorRender ||
 		(camera_in.AABBInFrustumNoFarClip(center, size) && 
-		AABBSphereIntersect(mExtents[0], mExtents[1], camera_in.getOrigin(), camera_in.mFrustumCornerDist)))
+		AABBSphereIntersect(exts[0], exts[1], camera_in.getOrigin(), camera_in.mFrustumCornerDist)))
 	{
 		if (!LLPipeline::sImpostorRender &&
 			!LLPipeline::sShadowRender && 
@@ -1591,12 +1594,17 @@ const LLVector3	LLDrawable::getPositionAgent() const
 	{
 		if (isActive())
 		{
-			LLVector3 pos(0,0,0);
 			if (!isRoot())
 			{
-				pos = mVObjp->getPosition();
+				LLVector4a pos;
+				pos.load3(mVObjp->getPosition().mV);
+				getRenderMatrix().affineTransform(pos,pos);
+				return LLVector3(pos.getF32ptr());
 			}
-			return pos * getRenderMatrix();
+			else
+			{
+				return LLVector3(getRenderMatrix().getRow<3>().getF32ptr());
+			}
 		}
 		else
 		{

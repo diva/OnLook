@@ -76,11 +76,7 @@
 	<button name="Whitelist" text="Immer erlauben"/>
    </form></notification>
 
-  <notification name="MediaListed">Media/audio URLs f&#xFC;r [DOMAIN] jetzt [LISTED]</notification>
-
   <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
-
-  <notification name="MediaFiltersCleared">Die Medienfilter sind gel&#xF6;scht worden</notification>
 
   <notification name="MissingAlert" label="Unbekannter Warnhinweis">Ihre Version von Second Life kann den gerade empfangenen Warnhinweis nicht anzeigen.
 
@@ -209,8 +205,6 @@ Dieses Kontrollk&#xE4;stchen zeigt Folgendes an:
   <notification name="ClickPartnerHelpAvatar">Auf der [SECOND_LIFE] Website k&#xF6;nnen Sie anderen Einwohnern eine Partnerschaft vorschlagen und bestehende Partnerschaften l&#xF6;sen.
 
 Die Second Life Website f&#xFC;r weitere Informationen &#xFC;ber Partnerschaften &#xF6;ffnen?<usetemplate name="okcancelbuttons" yestext="Gehe zu Seite"/></notification>
-
-  <notification name="ClickUploadHelpPermissions">Ihre Standardberechtigung funktionieren in &#xE4;lteren Regionen m&#xF6;glicherweise nicht.</notification>
 
   <notification name="ClickWebProfileHelpAvatar">Wenn dieser Einwohner einen Webprofil-URL angegeben hat, k&#xF6;nnen Sie:
  * Auf &#x201E;Laden&#x201C; klicken und die Seite in dieser Web-Registerkarte anzeigen.
@@ -1050,7 +1044,7 @@ In Ihren Anwendungsordner herunterladen?<usetemplate name="okcancelbuttons" yest
 
   <notification name="WebLaunchPublicIssue">Im [SECOND_LIFE] Allgemeine-Fragen-Tracker k&#xF6;nnen Sie Fehler und andere Probleme melden.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>
 
-  <notification name="WebLaunchSinguIssue">Besuche den Singularity Issue Tracker, um Fehler und Bugs mit dem Singularity Viewer zu berichten.
+  <notification name="WebLaunchSinguIssue">Besuche den [SHORT_APP_NAME] Issue Tracker, um Fehler und Bugs mit dem [SHORT_APP_NAME] Viewer zu berichten.
 Achte bitte da drauf das deine Meldung nicht schon existiert.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>
 
   <notification name="WebLaunchPublicIssueHelp">Informieren Sie sich im [SECOND_LIFE] Wiki &#xFC;ber den Allgemeine Fragen-Tracker.<usetemplate name="okcancelignore" yestext="Gehe zu Seite"/></notification>

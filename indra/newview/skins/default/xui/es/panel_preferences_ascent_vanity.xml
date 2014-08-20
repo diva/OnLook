@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Vanity" name="ascvan">
-	<tab_container label="Singularity Vanity" name="Ascent Vanity">
+	<tab_container label="Vanity" name="Ascent Vanity">
 		<panel label="General" name="General">
 			<check_box label="Cuando sea aplicable, guardar Ajustes Vanity por cuenta." tool_tip="Guarda ajustes individuales por cuenta, permitiendo una mas fácil personalización de Alts." name="use_account_settings_check"/>
 			<check_box label="Ocultar pantalla de progreso de Teleporte" tool_tip="Activado, el visor ocultará la pantalla de progreso de Teleportación, pemitiendo leer MIs.." name="disable_tp_screen_check"/>
@@ -8,12 +8,14 @@
 			<check_box label="Ocultar la pantalla de inicio/cierre de sesión" tool_tip="Marcado, el visor ocultará la pantalla de progreso de inicio/cierre de sesión." name="disable_logout_screen_check"/>
 			<check_box label="Desactivar animaciones de chat, susurro y gritos" tool_tip="Quitar las animaciones de tu avatar. El efecto es visible para todos" name="disable_chat_animation"/>
 			<check_box label="Añadir ropa y objetos anexables en vez de reemplazarlos" tool_tip="Cuando hagas doble click o presiones la tecla Entrar sobre ropas u objetos para vestir en tu inventario, los objetos seleccionados se agregarán a tu vestuario en vez de reemplazar a los que tengas vestidos en la misma ubicación" name="add_not_replace"/>
+			<check_box label="Animar al entrar en el modo Apariencia" name="customize_anim"/>
 			<check_box label="Dar la vuelta al caminar hacía atrás" tool_tip="Es posible que algunos AOs puedan darte vuelta incluso con esta opción deshabilitada." name="turn_around"/>	
 			<check_box label="Anunciar cuando alguien toma una foto" tool_tip="No avisa si el usuario ha deshabilitado en su visor el no anunciar que está tomando fotografías." name="announce_snapshots"/>
 			<check_box label="Mostrar los metadatos de la música en stream en el chat local cuando es activada" tool_tip="Cuando comienza una nueva canción, se mostrará un mensaje en el chat local con la información disponible del tema." name="announce_stream_metadata"/>
 			<check_box label="Mostrar opacas las ventanas flotantes sin foco (requiere que se active en foco cada flotante para tener efecto)" tool_tip="Cuando un flotante pierde el foco, no se volverá transparente con esta opción habilitada.  Esto puede causar conflictos con algunas pieles del visor." name="unfocused_floaters_opaque"/>
 			<check_box label="Mostrar nombres completos (Nombres mostrados y nombres de usuario) en perfiles" tool_tip="Sin importar la configuración global del mostrado de nombres, no funcionará si los nombres mostrados están desactivados." name="complete_name_profiles"/>
-			<check_box label="Permitir a los scripts apropiarse del foco cuando no se puedan compilar debido a errores" name="script_errors_steal_focus"/>			
+			<check_box label="Permitir a los scripts apropiarse del foco cuando no se puedan compilar debido a errores" name="script_errors_steal_focus"/>
+      <check_box label="Conectarse con regiones contiguas" name="connect_to_neighbors"/>
 		</panel>
 		<!-- ============================ -->
 		<panel label="Tags/Colores" name="TagsColors">
@@ -41,7 +43,7 @@
 			<check_box label="Mostrar Tag de Visor de los demás" tool_tip="Activándolo mostrará el nombre de Tag de visor sobre los nombres de avatar de otros usuarios." name="show_other_tag_check"/>
 			<check_box label="Mostrar color de Tag de visor de los demás" tool_tip="Activándolo fijará el color del tag del visor de los demás a su propio color." name="show_client_tag_color_check"/>
 			<check_box label="Mostrar tiempo inactivo" tool_tip="Activándolo mostrará la cantidad de tiempo que el avatar está inactivo." name="show_idle_time_check"/>
-			<check_box label="Chequear automáticamente actualizaciones de clientes" tool_tip="Activándolo permite a Singularity descargar nuevas definiciones de clientes cuando sea necesario." name="update_tags_check"/>
+			<check_box label="Chequear automáticamente actualizaciones de clientes" tool_tip="Activándolo permite a [SHORT_APP_NAME] descargar nuevas definiciones de clientes cuando sea necesario." name="update_tags_check"/>
 			<button name="update_clientdefs" label="Actualización Manual" height="18" left_delta="310" width="150"/>
 			<!-- End of Client Tag settings -->
 			<text name="effects_color_textbox">

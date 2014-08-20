@@ -54,23 +54,21 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
-#include "llwindow.h"
 #include "llhudrender.h"
 #include "llworld.h"
 #include "v2math.h"
 #include "llvoavatar.h"
 #include "llmeshrepository.h"
+#include "lltrans.h"
 #include "hippolimits.h"
-
 
 const F32 MAX_MANIP_SELECT_DISTANCE_SQUARED = 11.f * 11.f;
 const F32 SNAP_GUIDE_SCREEN_OFFSET = 0.05f;
 const F32 SNAP_GUIDE_SCREEN_LENGTH = 0.7f;
 const F32 SELECTED_MANIPULATOR_SCALE = 1.2f;
 const F32 MANIPULATOR_SCALE_HALF_LIFE = 0.07f;
-const S32 NUM_MANIPULATORS = 14;
 
-const LLManip::EManipPart MANIPULATOR_IDS[NUM_MANIPULATORS] = 
+const LLManip::EManipPart MANIPULATOR_IDS[LLManipScale::NUM_MANIPULATORS] =
 {
 	LLManip::LL_CORNER_NNN,
 	LLManip::LL_CORNER_NNP,
@@ -87,6 +85,25 @@ const LLManip::EManipPart MANIPULATOR_IDS[NUM_MANIPULATORS] =
 	LLManip::LL_FACE_NEGY,
 	LLManip::LL_FACE_NEGZ
 };
+
+
+F32 get_default_max_prim_scale(bool is_flora)
+{
+	return gHippoLimits->getMaxPrimScale();
+	/* Singu Note: We must check with the grid
+	// a bit of a hack, but if it's foilage, we don't want to use the
+	// new larger scale which would result in giant trees and grass
+	if (gMeshRepo.meshRezEnabled() &&
+		!is_flora)
+	{
+		return DEFAULT_MAX_PRIM_SCALE;
+	}
+	else
+	{
+		return DEFAULT_MAX_PRIM_SCALE_NO_MESH;
+	}
+	*/
+}
 
 // static
 void LLManipScale::setUniform(BOOL b)
@@ -129,18 +146,16 @@ inline void LLManipScale::conditionalHighlight( U32 part, const LLColor4* highli
 	LLColor4 default_highlight( 1.f, 1.f, 1.f, 1.f );
 	LLColor4 default_normal( 0.7f, 0.7f, 0.7f, 0.6f );
 	LLColor4 invisible(0.f, 0.f, 0.f, 0.f);
-	F32 manipulator_scale = 1.f;
 
 	for (S32 i = 0; i < NUM_MANIPULATORS; i++)
 	{
 		if((U32)MANIPULATOR_IDS[i] == part)
 		{
-			manipulator_scale = mManipulatorScales[i];
+			mScaledBoxHandleSize = mManipulatorScales[i] * mBoxHandleSize[i];
 			break;
 		}
 	}
 
-	mScaledBoxHandleSize = mBoxHandleSize * manipulator_scale;
 	if (mManipPart != (S32)LL_NO_PART && mManipPart != (S32)part)
 	{
 		gGL.color4fv( invisible.mV );
@@ -167,7 +182,6 @@ void LLManipScale::handleSelect()
 LLManipScale::LLManipScale( LLToolComposite* composite )
 	: 
 	LLManip( std::string("Scale"), composite ),
-	mBoxHandleSize( 1.f ),
 	mScaledBoxHandleSize( 1.f ),
 	mLastMouseX( -1 ),
 	mLastMouseY( -1 ),
@@ -176,21 +190,22 @@ LLManipScale::LLManipScale( LLToolComposite* composite )
 	mScaleSnapUnit1(1.f),
 	mScaleSnapUnit2(1.f),
 	mSnapRegimeOffset(0.f),
+	mTickPixelSpacing1(0.f),
+	mTickPixelSpacing2(0.f),
 	mSnapGuideLength(0.f),
-	mInSnapRegime(FALSE),
-	mScaleSnapValue(0.f)
+	mSnapRegime(SNAP_REGIME_NONE),
+	mScaleSnappedValue(0.f)
 { 
-	mManipulatorScales = new F32[NUM_MANIPULATORS];
 	for (S32 i = 0; i < NUM_MANIPULATORS; i++)
 	{
 		mManipulatorScales[i] = 1.f;
+		mBoxHandleSize[i]     = 1.f;
 	}
 }
 
 LLManipScale::~LLManipScale()
 {
 	for_each(mProjectedManipulators.begin(), mProjectedManipulators.end(), DeletePointer());
-	delete[] mManipulatorScales;
 }
 
 void LLManipScale::render()
@@ -200,7 +215,8 @@ void LLManipScale::render()
 	LLGLDepthTest gls_depth(GL_TRUE);
 	LLGLEnable gl_blend(GL_BLEND);
 	LLGLEnable gls_alpha_test(GL_ALPHA_TEST);
-	
+	LLBBox bbox = LLSelectMgr::getInstance()->getBBoxOfSelection();
+
 	if( canAffectSelection() )
 	{
 		gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -221,42 +237,48 @@ void LLManipScale::render()
 
 		if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
 		{
-			mBoxHandleSize = BOX_HANDLE_BASE_SIZE * BOX_HANDLE_BASE_FACTOR / (F32) LLViewerCamera::getInstance()->getViewHeightInPixels();
-			mBoxHandleSize /= gAgentCamera.mHUDCurZoom;
+			for (S32 i = 0; i < NUM_MANIPULATORS; i++)
+			{
+				mBoxHandleSize[i] = BOX_HANDLE_BASE_SIZE * BOX_HANDLE_BASE_FACTOR / (F32) LLViewerCamera::getInstance()->getViewHeightInPixels();
+				mBoxHandleSize[i] /= gAgentCamera.mHUDCurZoom;
+			}
 		}
 		else
 		{
-			F32 range_squared = dist_vec_squared(gAgentCamera.getCameraPositionAgent(), center_agent);
-			F32 range_from_agent_squared = dist_vec_squared(gAgent.getPositionAgent(), center_agent);
-
-			// Don't draw manip if object too far away
-			if (gSavedSettings.getBOOL("LimitSelectDistance"))
+			for (S32 i = 0; i < NUM_MANIPULATORS; i++)
 			{
-				F32 max_select_distance = gSavedSettings.getF32("MaxSelectDistance");
-				if (range_from_agent_squared > max_select_distance * max_select_distance)
+				LLVector3 manipulator_pos = bbox.localToAgent(unitVectorToLocalBBoxExtent(partToUnitVector(MANIPULATOR_IDS[i]), bbox));
+				F32 range_squared = dist_vec_squared(gAgentCamera.getCameraPositionAgent(), manipulator_pos);
+				F32 range_from_agent_squared = dist_vec_squared(gAgent.getPositionAgent(), manipulator_pos);
+
+				// Don't draw manip if object too far away
+				if (gSavedSettings.getBOOL("LimitSelectDistance"))
 				{
-					return;
+					F32 max_select_distance = gSavedSettings.getF32("MaxSelectDistance");
+					if (range_from_agent_squared > max_select_distance * max_select_distance)
+					{
+						return;
+					}
 				}
-			}
 
-			if (range_squared > 0.001f * 0.001f)
-			{
-				// range != zero
-				F32 fraction_of_fov = BOX_HANDLE_BASE_SIZE / (F32) LLViewerCamera::getInstance()->getViewHeightInPixels();
-				F32 apparent_angle = fraction_of_fov * LLViewerCamera::getInstance()->getView();  // radians
-				mBoxHandleSize = (F32) sqrtf(range_squared) * tan(apparent_angle) * BOX_HANDLE_BASE_FACTOR;
-			}
-			else
-			{
-				// range == zero
-				mBoxHandleSize = BOX_HANDLE_BASE_FACTOR;
+				if (range_squared > 0.001f * 0.001f)
+				{
+					// range != zero
+					F32 fraction_of_fov = BOX_HANDLE_BASE_SIZE / (F32) LLViewerCamera::getInstance()->getViewHeightInPixels();
+					F32 apparent_angle = fraction_of_fov * LLViewerCamera::getInstance()->getView();  // radians
+					mBoxHandleSize[i] = (F32) sqrtf(range_squared) * tan(apparent_angle) * BOX_HANDLE_BASE_FACTOR;
+				}
+				else
+				{
+					// range == zero
+						mBoxHandleSize[i] = BOX_HANDLE_BASE_FACTOR;
+				}
 			}
 		}
 
 		////////////////////////////////////////////////////////////////////////
 		// Draw bounding box
 
-		LLBBox bbox = LLSelectMgr::getInstance()->getBBoxOfSelection();
 		LLVector3 pos_agent = bbox.getPositionAgent();
 		LLQuaternion rot = bbox.getRotation();
 
@@ -379,6 +401,7 @@ BOOL LLManipScale::handleMouseUp(S32 x, S32 y, MASK mask)
 		// Might have missed last update due to UPDATE_DELAY timing
 		LLSelectMgr::getInstance()->sendMultipleUpdate( mLastUpdateFlags );
 		
+		//gAgent.setObjectTracking(gSavedSettings.getBOOL("TrackFocusObject"));
 		LLSelectMgr::getInstance()->saveSelectedObjectTransform(SELECT_ACTION_TYPE_PICK);
 	}
 	return LLManip::handleMouseUp(x, y, mask);
@@ -398,11 +421,11 @@ BOOL LLManipScale::handleHover(S32 x, S32 y, MASK mask)
 		{
 			drag( x, y );
 		}
-		lldebugst(LLERR_USER_INPUT) << "hover handled by LLManipScale (active)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by LLManipScale (active)" << LL_ENDL;
 	}
 	else
 	{
-		mInSnapRegime = FALSE;
+		mSnapRegime = SNAP_REGIME_NONE;
 		// not dragging...
 		highlightManipulators(x, y);
 	}
@@ -410,7 +433,7 @@ BOOL LLManipScale::handleHover(S32 x, S32 y, MASK mask)
 	// Patch up textures, if possible.
 	LLSelectMgr::getInstance()->adjustTexturesByScale(FALSE, getStretchTextures());
 
-	gViewerWindow->getWindow()->setCursor(UI_CURSOR_TOOLSCALE);
+	gViewerWindow->setCursor(UI_CURSOR_TOOLSCALE);
 	return TRUE;
 }
 
@@ -429,7 +452,7 @@ void LLManipScale::highlightManipulators(S32 x, S32 y)
 		{
 			LLVector4 translation(bbox.getPositionAgent());
 			transform.initRotTrans(bbox.getRotation(), translation);
-			LLMatrix4 cfr(OGL_TO_CFR_ROTATION);
+			LLMatrix4 cfr(OGL_TO_CFR_ROTATION.getF32ptr());
 			transform *= cfr;
 			LLMatrix4 window_scale;
 			F32 zoom_level = 2.f * gAgentCamera.mHUDCurZoom;
@@ -440,8 +463,8 @@ void LLManipScale::highlightManipulators(S32 x, S32 y)
 		}
 		else
 		{
-			LLMatrix4 projMatrix = LLViewerCamera::getInstance()->getProjection();
-			LLMatrix4 modelView = LLViewerCamera::getInstance()->getModelview();
+			LLMatrix4 projMatrix( LLViewerCamera::getInstance()->getProjection().getF32ptr() );
+			LLMatrix4 modelView( LLViewerCamera::getInstance()->getModelview().getF32ptr() );
 			transform.initAll(LLVector3(1.f, 1.f, 1.f), bbox.getRotation(), bbox.getPositionAgent());
 			
 			transform *= modelView;
@@ -497,19 +520,19 @@ void LLManipScale::highlightManipulators(S32 x, S32 y)
 
 		mHighlightedPart = LL_NO_PART;
 
-		for (minpulator_list_t::iterator iter = mProjectedManipulators.begin();
+		for (manipulator_list_t::iterator iter = mProjectedManipulators.begin();
 			 iter != mProjectedManipulators.end(); ++iter)
 		{
 			ManipulatorHandle* manipulator = *iter;
 			{
-				manip2d.setVec(manipulator->mPosition.mV[VX] * half_width, manipulator->mPosition.mV[VY] * half_height);
+				manip2d.set(manipulator->mPosition.mV[VX] * half_width, manipulator->mPosition.mV[VY] * half_height);
 				
 				delta = manip2d - mousePos;
-				if (delta.magVecSquared() < MAX_MANIP_SELECT_DISTANCE_SQUARED)
+				if (delta.lengthSquared() < MAX_MANIP_SELECT_DISTANCE_SQUARED)
 				{
 					mHighlightedPart = manipulator->mManipID;
 
-					//llinfos << "Tried: " << mHighlightedPart << llendl;
+					//LL_INFOS() << "Tried: " << mHighlightedPart << LL_ENDL;
 					break;
 				}
 			}
@@ -528,7 +551,7 @@ void LLManipScale::highlightManipulators(S32 x, S32 y)
 		}
 	}
 
-	lldebugst(LLERR_USER_INPUT) << "hover handled by LLManipScale (inactive)" << llendl;
+	LL_DEBUGS("UserInput") << "hover handled by LLManipScale (inactive)" << LL_ENDL;
 }
 
 
@@ -662,32 +685,32 @@ void LLManipScale::renderFaces( const LLBBox& bbox )
 			{
 			  case 0:
 				conditionalHighlight( LL_FACE_POSZ, &z_highlight_color, &z_normal_color );
-				renderAxisHandle( ctr, LLVector3( ctr.mV[VX], ctr.mV[VY], max.mV[VZ] ) );
+				renderAxisHandle( LL_FACE_POSZ, ctr, LLVector3( ctr.mV[VX], ctr.mV[VY], max.mV[VZ] ) );
 				break;
 
 			  case 1:
 				conditionalHighlight( LL_FACE_POSX, &x_highlight_color, &x_normal_color );
-				renderAxisHandle( ctr, LLVector3( max.mV[VX], ctr.mV[VY], ctr.mV[VZ] ) );
+				renderAxisHandle( LL_FACE_POSX, ctr, LLVector3( max.mV[VX], ctr.mV[VY], ctr.mV[VZ] ) );
 				break;
 
 			  case 2:
 				conditionalHighlight( LL_FACE_POSY, &y_highlight_color, &y_normal_color );
-				renderAxisHandle( ctr, LLVector3( ctr.mV[VX], max.mV[VY], ctr.mV[VZ] ) );
+				renderAxisHandle( LL_FACE_POSY, ctr, LLVector3( ctr.mV[VX], max.mV[VY], ctr.mV[VZ] ) );
 				break;
 
 			  case 3:
 				conditionalHighlight( LL_FACE_NEGX, &x_highlight_color, &x_normal_color );
-				renderAxisHandle( ctr, LLVector3( min.mV[VX], ctr.mV[VY], ctr.mV[VZ] ) );
+				renderAxisHandle( LL_FACE_NEGX, ctr, LLVector3( min.mV[VX], ctr.mV[VY], ctr.mV[VZ] ) );
 				break;
 
 			  case 4:
 				conditionalHighlight( LL_FACE_NEGY, &y_highlight_color, &y_normal_color );
-				renderAxisHandle( ctr, LLVector3( ctr.mV[VX], min.mV[VY], ctr.mV[VZ] ) );
+				renderAxisHandle( LL_FACE_NEGY, ctr, LLVector3( ctr.mV[VX], min.mV[VY], ctr.mV[VZ] ) );
 				break;
 
 			  case 5:
 				conditionalHighlight( LL_FACE_NEGZ, &z_highlight_color, &z_normal_color );
-				renderAxisHandle( ctr, LLVector3( ctr.mV[VX], ctr.mV[VY], min.mV[VZ] ) );
+				renderAxisHandle( LL_FACE_NEGZ, ctr, LLVector3( ctr.mV[VX], ctr.mV[VY], min.mV[VZ] ) );
 				break;
 			}
 		}
@@ -697,10 +720,10 @@ void LLManipScale::renderFaces( const LLBBox& bbox )
 void LLManipScale::renderEdges( const LLBBox& bbox )
 {
 	LLVector3 extent = bbox.getExtentLocal();
-	F32 edge_width = mBoxHandleSize * .6f;
 
 	for( U32 part = LL_EDGE_MIN; part <= LL_EDGE_MAX; part++ )
 	{
+		F32 edge_width = mBoxHandleSize[part] * .6f;
 		LLVector3 direction = edgeToUnitVector( part );
 		LLVector3 center_to_edge = unitVectorToLocalBBoxExtent( direction, bbox );
 
@@ -761,14 +784,14 @@ void LLManipScale::renderBoxHandle( F32 x, F32 y, F32 z )
 }
 
 
-void LLManipScale::renderAxisHandle( const LLVector3& start, const LLVector3& end )
+void LLManipScale::renderAxisHandle( U32 part, const LLVector3& start, const LLVector3& end )
 {
 	if( getShowAxes() )
 	{
 		// Draws a single "jacks" style handle: a long, retangular box from start to end.
 		LLVector3 offset_start = end - start;
-		offset_start.normVec();
-		offset_start = start + mBoxHandleSize * offset_start;
+		offset_start.normalize();
+		offset_start = start + mBoxHandleSize[part] * offset_start;
 
 		LLVector3 delta = end - offset_start;
 		LLVector3 pos = offset_start + 0.5f * delta;
@@ -777,9 +800,9 @@ void LLManipScale::renderAxisHandle( const LLVector3& start, const LLVector3& en
 		{
 			gGL.translatef( pos.mV[VX], pos.mV[VY], pos.mV[VZ] );
 			gGL.scalef( 
-				mBoxHandleSize + llabs(delta.mV[VX]),
-				mBoxHandleSize + llabs(delta.mV[VY]),
-				mBoxHandleSize + llabs(delta.mV[VZ]));
+				mBoxHandleSize[part] + llabs(delta.mV[VX]),
+				mBoxHandleSize[part] + llabs(delta.mV[VY]),
+				mBoxHandleSize[part] + llabs(delta.mV[VZ]));
 			gBox.render();
 		}
 		gGL.popMatrix();
@@ -790,7 +813,7 @@ void LLManipScale::renderAxisHandle( const LLVector3& start, const LLVector3& en
 	}
 }
 
-
+// General scale call
 void LLManipScale::drag( S32 x, S32 y )
 {
 	if( (LL_FACE_MIN <= (S32)mManipPart) 
@@ -798,8 +821,7 @@ void LLManipScale::drag( S32 x, S32 y )
 	{
 		dragFace( x, y );
 	}
-	else
-	if( (LL_CORNER_MIN <= (S32)mManipPart) 
+	else if( (LL_CORNER_MIN <= (S32)mManipPart)
 		&& ((S32)mManipPart <= LL_CORNER_MAX) )
 	{
 		dragCorner( x, y );
@@ -825,123 +847,86 @@ void LLManipScale::drag( S32 x, S32 y )
     gAgentCamera.clearFocusObject();
 }
 
-// Scale around the 
+// Scale on three axis simultaneously
 void LLManipScale::dragCorner( S32 x, S32 y )
 {
-	LLBBox bbox	= LLSelectMgr::getInstance()->getBBoxOfSelection();
-
 	// Suppress scale if mouse hasn't moved.
 	if (x == mLastMouseX && y == mLastMouseY)
 	{
-	//	sendUpdates(TRUE,TRUE,TRUE);
 		return;
 	}
-
 	mLastMouseX = x;
 	mLastMouseY = y;
 
-	LLVector3d drag_start_point_global	= mDragStartPointGlobal;
-	LLVector3d drag_start_center_global = mDragStartCenterGlobal;
-	LLVector3 drag_start_point_agent = gAgent.getPosAgentFromGlobal(drag_start_point_global);
-	LLVector3 drag_start_center_agent = gAgent.getPosAgentFromGlobal(drag_start_center_global);
+	LLVector3 drag_start_point_agent = gAgent.getPosAgentFromGlobal(mDragStartPointGlobal);
+	LLVector3 drag_start_center_agent = gAgent.getPosAgentFromGlobal(mDragStartCenterGlobal);
 
 	LLVector3d drag_start_dir_d;
-	drag_start_dir_d.setVec(drag_start_point_global - drag_start_center_global);
-	LLVector3 drag_start_dir_f;
-	drag_start_dir_f.setVec(drag_start_dir_d);
+	drag_start_dir_d.set(mDragStartPointGlobal - mDragStartCenterGlobal);
 
 	F32 s = 0;
 	F32 t = 0;
-
 	nearestPointOnLineFromMouse(x, y, 
 						drag_start_center_agent,
 						drag_start_point_agent,
 						s, t );
 
-	F32 drag_start_dist = dist_vec(drag_start_point_agent, drag_start_center_agent);
-
 	if( s <= 0 )  // we only care about intersections in front of the camera
 	{
 		return;
 	}
+	mDragPointGlobal = lerp(mDragStartCenterGlobal, mDragStartPointGlobal, t);
 
-	LLVector3d drag_point_global = drag_start_center_global + t * drag_start_dir_d;
-
-	F32 scale_factor = t;
-
+	LLBBox bbox	     = LLSelectMgr::getInstance()->getBBoxOfSelection();
+	F32 scale_factor = 1.f;
+	F32 max_scale    = partToMaxScale(mManipPart, bbox);
+	F32 min_scale    = partToMinScale(mManipPart, bbox);
 	BOOL uniform = LLManipScale::getUniform();
 
-	if( !uniform )
-	{
-		scale_factor = 0.5f + (scale_factor * 0.5f);
-	}
-
 	// check for snapping
-	LLVector3 drag_center_agent = gAgent.getPosAgentFromGlobal(drag_point_global);
 	LLVector3 mouse_on_plane1;
-	getMousePointOnPlaneAgent(mouse_on_plane1, x, y, drag_center_agent, mScalePlaneNormal1);
+	getMousePointOnPlaneAgent(mouse_on_plane1, x, y, mScaleCenter, mScalePlaneNormal1);
+	mouse_on_plane1 -= mScaleCenter;
+
 	LLVector3 mouse_on_plane2;
-	getMousePointOnPlaneAgent(mouse_on_plane2, x, y, drag_center_agent, mScalePlaneNormal2);
-	LLVector3 mouse_dir_1 = mouse_on_plane1 - mScaleCenter;
-	LLVector3 mouse_dir_2 = mouse_on_plane2 - mScaleCenter;
-	LLVector3 mouse_to_scale_line_1 = mouse_dir_1 - projected_vec(mouse_dir_1, mScaleDir);
-	LLVector3 mouse_to_scale_line_2 = mouse_dir_2 - projected_vec(mouse_dir_2, mScaleDir);
-	LLVector3 mouse_to_scale_line_dir_1 = mouse_to_scale_line_1;
-	mouse_to_scale_line_dir_1.normVec();
-	if (mouse_to_scale_line_dir_1 * mSnapGuideDir1 < 0.f)
-	{
-		// need to keep sign of mouse offset wrt to snap guide direction
-		mouse_to_scale_line_dir_1 *= -1.f;
-	}
-	LLVector3 mouse_to_scale_line_dir_2 = mouse_to_scale_line_2;
-	mouse_to_scale_line_dir_2.normVec();
-	if (mouse_to_scale_line_dir_2 * mSnapGuideDir2 < 0.f)
-	{
-		// need to keep sign of mouse offset wrt to snap guide direction
-		mouse_to_scale_line_dir_2 *= -1.f;
-	}
+	getMousePointOnPlaneAgent(mouse_on_plane2, x, y, mScaleCenter, mScalePlaneNormal2);
+	mouse_on_plane2 -= mScaleCenter;
 
-	F32 snap_dir_dot_mouse_offset1 = mSnapGuideDir1 * mouse_to_scale_line_dir_1;
-	F32 snap_dir_dot_mouse_offset2 = mSnapGuideDir2 * mouse_to_scale_line_dir_2;
-
-	F32 dist_from_scale_line_1 = mouse_to_scale_line_1 * mouse_to_scale_line_dir_1; 
-	F32 dist_from_scale_line_2 = mouse_to_scale_line_2 * mouse_to_scale_line_dir_2;
-
-	F32 max_scale = partToMaxScale(mManipPart, bbox);
-	F32 min_scale = partToMinScale(mManipPart, bbox);
+	LLVector3 projected_drag_pos1 = inverse_projected_vec(mScaleDir, orthogonal_component(mouse_on_plane1, mSnapGuideDir1));
+	LLVector3 projected_drag_pos2 = inverse_projected_vec(mScaleDir, orthogonal_component(mouse_on_plane2, mSnapGuideDir2));
 
 	BOOL snap_enabled = gSavedSettings.getBOOL("SnapEnabled");
-	if (snap_enabled && dist_from_scale_line_1 > mSnapRegimeOffset * snap_dir_dot_mouse_offset1)
+	if (snap_enabled && (mouse_on_plane1 - projected_drag_pos1) * mSnapGuideDir1 > mSnapRegimeOffset)
 	{
-		mInSnapRegime = TRUE;
-		LLVector3 projected_drag_pos = mouse_on_plane1 - (dist_from_scale_line_1 / snap_dir_dot_mouse_offset1) * mSnapGuideDir1;
-		F32 drag_dist = (projected_drag_pos - mScaleCenter) * mScaleDir;
+		F32 drag_dist = mScaleDir * projected_drag_pos1; // Projecting the drag position allows for negative results, vs using the length which will result in a "reverse scaling" bug.
 
-		F32 cur_subdivisions = llclamp(getSubdivisionLevel(projected_drag_pos, mScaleDir, mScaleSnapUnit1), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
+		F32 cur_subdivisions = llclamp(getSubdivisionLevel(mScaleCenter + projected_drag_pos1, mScaleDir, mScaleSnapUnit1, mTickPixelSpacing1), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
 		F32 snap_dist = mScaleSnapUnit1 / (2.f * cur_subdivisions);
 		F32 relative_snap_dist = fmodf(drag_dist + snap_dist, mScaleSnapUnit1 / cur_subdivisions);
 
-		mScaleSnapValue = llclamp((drag_dist - (relative_snap_dist - snap_dist)), min_scale, max_scale);
+		mScaleSnappedValue = llclamp((drag_dist - (relative_snap_dist - snap_dist)), min_scale, max_scale);
+		scale_factor = mScaleSnappedValue / dist_vec(drag_start_point_agent, drag_start_center_agent);
+		mScaleSnappedValue /= mScaleSnapUnit1 * 2.f;
+		mSnapRegime = SNAP_REGIME_UPPER;
 
-		scale_factor = mScaleSnapValue / drag_start_dist;
 		if( !uniform )
 		{
 			scale_factor *= 0.5f;
 		}
 	}
-	else if (snap_enabled && dist_from_scale_line_2 > mSnapRegimeOffset * snap_dir_dot_mouse_offset2)
+	else if (snap_enabled && (mouse_on_plane2 - projected_drag_pos2) * mSnapGuideDir2 > mSnapRegimeOffset )
 	{
-		mInSnapRegime = TRUE;
-		LLVector3 projected_drag_pos = mouse_on_plane2 - (dist_from_scale_line_2 / snap_dir_dot_mouse_offset2) * mSnapGuideDir2;
-		F32 drag_dist = (projected_drag_pos - mScaleCenter) * mScaleDir;
+		F32 drag_dist = mScaleDir * projected_drag_pos2; // Projecting the drag position allows for negative results, vs using the length which will result in a "reverse scaling" bug.
 
-		F32 cur_subdivisions = llclamp(getSubdivisionLevel(projected_drag_pos, mScaleDir, mScaleSnapUnit2), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
+		F32 cur_subdivisions = llclamp(getSubdivisionLevel(mScaleCenter + projected_drag_pos2, mScaleDir, mScaleSnapUnit2, mTickPixelSpacing2), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
 		F32 snap_dist = mScaleSnapUnit2 / (2.f * cur_subdivisions);
 		F32 relative_snap_dist = fmodf(drag_dist + snap_dist, mScaleSnapUnit2 / cur_subdivisions);
 
-		mScaleSnapValue = llclamp((drag_dist - (relative_snap_dist - snap_dist)), min_scale, max_scale);
+		mScaleSnappedValue = llclamp((drag_dist - (relative_snap_dist - snap_dist)), min_scale, max_scale);
+		scale_factor = mScaleSnappedValue / dist_vec(drag_start_point_agent, drag_start_center_agent);
+		mScaleSnappedValue /= mScaleSnapUnit2 * 2.f;
+		mSnapRegime = SNAP_REGIME_LOWER;
 
-		scale_factor = mScaleSnapValue / drag_start_dist;
 		if( !uniform )
 		{
 			scale_factor *= 0.5f;
@@ -949,14 +934,18 @@ void LLManipScale::dragCorner( S32 x, S32 y )
 	}
 	else 
 	{
-		mInSnapRegime = FALSE;
+		mSnapRegime = SNAP_REGIME_NONE;
+		scale_factor = t;
+		if (!uniform)
+		{
+			scale_factor = 0.5f + (scale_factor * 0.5f);
+		}
 	}
 
-	F32 max_prim_scale = gHippoLimits->getMaxPrimScale();
-	F32 min_prim_scale = gHippoLimits->getMinPrimScale();
+	F32 MIN_PRIM_SCALE = gHippoLimits->getMinPrimScale();
 
-	F32 max_scale_factor = max_prim_scale / min_prim_scale;
-	F32 min_scale_factor = min_prim_scale / max_prim_scale;
+	F32 max_scale_factor = get_default_max_prim_scale() / MIN_PRIM_SCALE;
+	F32 min_scale_factor = MIN_PRIM_SCALE / get_default_max_prim_scale();
 
 	// find max and min scale factors that will make biggest object hit max absolute scale and smallest object hit min absolute scale
 	for (LLObjectSelection::iterator iter = mObjectSelection->begin();
@@ -971,10 +960,10 @@ void LLManipScale::dragCorner( S32 x, S32 y )
 		{
 			const LLVector3& scale = selectNode->mSavedScale;
 
-			F32 cur_max_scale_factor = llmin( max_prim_scale / scale.mV[VX], max_prim_scale / scale.mV[VY], max_prim_scale / scale.mV[VZ] );
+			F32 cur_max_scale_factor = llmin( get_default_max_prim_scale(LLPickInfo::isFlora(cur)) / scale.mV[VX], get_default_max_prim_scale(LLPickInfo::isFlora(cur)) / scale.mV[VY], get_default_max_prim_scale(LLPickInfo::isFlora(cur)) / scale.mV[VZ] );
 			max_scale_factor = llmin( max_scale_factor, cur_max_scale_factor );
 
-			F32 cur_min_scale_factor = llmax( min_prim_scale / scale.mV[VX], min_prim_scale / scale.mV[VY], min_prim_scale / scale.mV[VZ] );
+			F32 cur_min_scale_factor = llmax( MIN_PRIM_SCALE / scale.mV[VX], MIN_PRIM_SCALE / scale.mV[VY], MIN_PRIM_SCALE / scale.mV[VZ] );
 			min_scale_factor = llmax( min_scale_factor, cur_min_scale_factor );
 		}
 	}
@@ -1056,19 +1045,14 @@ void LLManipScale::dragCorner( S32 x, S32 y )
 			rebuild(cur);
 		}
 	}
-
-	
-
-	mDragPointGlobal = drag_point_global;
 }
 
-	
+// Scale on a single axis
 void LLManipScale::dragFace( S32 x, S32 y )
 {
 	// Suppress scale if mouse hasn't moved.
 	if (x == mLastMouseX && y == mLastMouseY)
 	{
-	//	sendUpdates(TRUE,TRUE,FALSE);
 		return;
 	}
 
@@ -1081,9 +1065,9 @@ void LLManipScale::dragFace( S32 x, S32 y )
 	LLVector3 drag_start_center_agent = gAgent.getPosAgentFromGlobal(drag_start_center_global);
 
 	LLVector3d drag_start_dir_d;
-	drag_start_dir_d.setVec(drag_start_point_global - drag_start_center_global);
+	drag_start_dir_d.set(drag_start_point_global - drag_start_center_global);
 	LLVector3 drag_start_dir_f;
-	drag_start_dir_f.setVec(drag_start_dir_d);
+	drag_start_dir_f.set(drag_start_dir_d);
 
 	LLBBox bbox	= LLSelectMgr::getInstance()->getBBoxOfSelection();
 
@@ -1127,26 +1111,26 @@ void LLManipScale::dragFace( S32 x, S32 y )
 
 	if (snap_enabled && dist_from_scale_line > mSnapRegimeOffset)
 	{
-		mInSnapRegime = TRUE;
+		mSnapRegime = static_cast<ESnapRegimes>(SNAP_REGIME_UPPER | SNAP_REGIME_LOWER); // A face drag doesn't have split regimes.
 
  		if (dist_along_scale_line > max_drag_dist)
 		{
-			mScaleSnapValue = max_drag_dist;
+			mScaleSnappedValue = max_drag_dist;
 
 			LLVector3 clamp_point = mScaleCenter + max_drag_dist * mScaleDir;
-			drag_delta.setVec(clamp_point - drag_start_point_agent);
+			drag_delta.set(clamp_point - drag_start_point_agent);
 		}
 		else if (dist_along_scale_line < min_drag_dist)
 		{
-			mScaleSnapValue = min_drag_dist;
+			mScaleSnappedValue = min_drag_dist;
 
 			LLVector3 clamp_point = mScaleCenter + min_drag_dist * mScaleDir;
-			drag_delta.setVec(clamp_point - drag_start_point_agent);
+			drag_delta.set(clamp_point - drag_start_point_agent);
 		}
 		else
 		{
 			F32 drag_dist = scale_center_to_mouse * mScaleDir;
-			F32 cur_subdivisions = llclamp(getSubdivisionLevel(mScaleCenter + mScaleDir * drag_dist, mScaleDir, mScaleSnapUnit1), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
+			F32 cur_subdivisions = llclamp(getSubdivisionLevel(mScaleCenter + mScaleDir * drag_dist, mScaleDir, mScaleSnapUnit1, mTickPixelSpacing1), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
 			F32 snap_dist = mScaleSnapUnit1 / (2.f * cur_subdivisions);
 			F32 relative_snap_dist = fmodf(drag_dist + snap_dist, mScaleSnapUnit1 / cur_subdivisions);
 			relative_snap_dist -= snap_dist;
@@ -1160,7 +1144,7 @@ void LLManipScale::dragFace( S32 x, S32 y )
 										 drag_dist - max_drag_dist,
 										 drag_dist - min_drag_dist);
 
-			mScaleSnapValue = drag_dist - relative_snap_dist;
+			mScaleSnappedValue = (drag_dist - relative_snap_dist) / (mScaleSnapUnit1 * 2.f);
 
 			if (llabs(relative_snap_dist) < snap_dist)
 			{
@@ -1176,7 +1160,7 @@ void LLManipScale::dragFace( S32 x, S32 y )
 	}
 	else 
 	{
-		mInSnapRegime = FALSE;
+		mSnapRegime = SNAP_REGIME_NONE;
 	}
 
 	LLVector3 dir_agent;
@@ -1259,7 +1243,7 @@ void LLManipScale::stretchFace( const LLVector3& drag_start_agent, const LLVecto
 			S32 axis_index			= axis.mV[0] ? 0 : (axis.mV[1] ? 1 : 2 );
 
 			LLVector3 delta_local	= end_local - start_local;
-			F32 delta_local_mag		= delta_local.magVec();
+			F32 delta_local_mag		= delta_local.length();
 			LLVector3 dir_local;
 			if (delta_local_mag == 0.f)
 			{
@@ -1272,7 +1256,7 @@ void LLManipScale::stretchFace( const LLVector3& drag_start_agent, const LLVecto
 
 			F32 denom = axis * dir_local;
 			F32 desired_delta_size	= is_approx_zero(denom) ? 0.f : (delta_local_mag / denom);  // in meters
-			F32 desired_scale		= llclamp(selectNode->mSavedScale.mV[axis_index] + desired_delta_size, gHippoLimits->getMinPrimScale(), gHippoLimits->getMaxPrimScale());
+			F32 desired_scale		= llclamp(selectNode->mSavedScale.mV[axis_index] + desired_delta_size, gHippoLimits->getMinPrimScale(), get_default_max_prim_scale(LLPickInfo::isFlora(cur)));
 			// propagate scale constraint back to position offset
 			desired_delta_size		= desired_scale - selectNode->mSavedScale.mV[axis_index]; // propagate constraint back to position
 
@@ -1285,7 +1269,7 @@ void LLManipScale::stretchFace( const LLVector3& drag_start_agent, const LLVecto
 			{
 				LLVector3 delta_pos_local = axis * (0.5f * desired_delta_size);
 				LLVector3d delta_pos_global;
-				delta_pos_global.setVec(cur_bbox.localToAgent( delta_pos_local ) - cur_bbox.getCenterAgent());
+				delta_pos_global.set(cur_bbox.localToAgent( delta_pos_local ) - cur_bbox.getCenterAgent());
 				LLVector3 cur_pos = cur->getPositionEdit();
 
 				if (cur->isRootEdit() && !cur->isAttachment())
@@ -1343,7 +1327,7 @@ void LLManipScale::renderGuidelinesPart( const LLBBox& bbox )
 	}
 
 	guideline_end -= guideline_start;
-	guideline_end.normVec();
+	guideline_end.normalize();
 	guideline_end *= gAgent.getRegion()->getWidth();
 	guideline_end += guideline_start;
 
@@ -1364,26 +1348,27 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 	LLQuaternion grid_rotation;
 	LLSelectMgr::getInstance()->getGrid(grid_origin, grid_rotation, grid_scale);
 
+	bool uniform = LLManipScale::getUniform();
+
 	LLVector3 box_corner_agent = bbox.localToAgent(unitVectorToLocalBBoxExtent( partToUnitVector( mManipPart ), bbox ));
-	mScaleCenter = getUniform() ? bbox.getCenterAgent() : bbox.localToAgent(unitVectorToLocalBBoxExtent( -1.f * partToUnitVector( mManipPart ), bbox ));
+	mScaleCenter = uniform ? bbox.getCenterAgent() : bbox.localToAgent(unitVectorToLocalBBoxExtent( -1.f * partToUnitVector( mManipPart ), bbox ));
 	mScaleDir = box_corner_agent - mScaleCenter;
-	mScaleDir.normVec();
+	mScaleDir.normalize();
 
 	if(mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
 	{
 		mSnapRegimeOffset = SNAP_GUIDE_SCREEN_OFFSET / gAgentCamera.mHUDCurZoom;
-
 	}
 	else
 	{
-		F32 object_distance = dist_vec(mScaleCenter, LLViewerCamera::getInstance()->getOrigin());
+		F32 object_distance = dist_vec(box_corner_agent, LLViewerCamera::getInstance()->getOrigin());
 		mSnapRegimeOffset = (SNAP_GUIDE_SCREEN_OFFSET * gViewerWindow->getWorldViewWidthRaw() * object_distance) / LLViewerCamera::getInstance()->getPixelMeterRatio();
 	}
 	LLVector3 cam_at_axis;
 	F32 snap_guide_length;
 	if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
 	{
-		cam_at_axis.setVec(1.f, 0.f, 0.f);
+		cam_at_axis.set(1.f, 0.f, 0.f);
 		snap_guide_length = SNAP_GUIDE_SCREEN_LENGTH / gAgentCamera.mHUDCurZoom;
 	}
 	else
@@ -1396,18 +1381,17 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 	mSnapGuideLength = snap_guide_length / llmax(0.1f, (llmin(mSnapGuideDir1 * cam_at_axis, mSnapGuideDir2 * cam_at_axis)));
 
 	LLVector3 off_axis_dir = mScaleDir % cam_at_axis;
-	off_axis_dir.normVec();
+	off_axis_dir.normalize();
 
 	if( (LL_FACE_MIN <= (S32)mManipPart) && ((S32)mManipPart <= LL_FACE_MAX) )
 	{
-		LLVector3 object_scale = bbox.getMaxLocal();
-		object_scale.scaleVec(off_axis_dir * ~bbox.getRotation());
-		object_scale.abs();
-		if (object_scale.mV[VX] > object_scale.mV[VY] && object_scale.mV[VX] > object_scale.mV[VZ])
+		LLVector3 bbox_relative_cam_dir = off_axis_dir * ~bbox.getRotation();
+		bbox_relative_cam_dir.abs();
+		if (bbox_relative_cam_dir.mV[VX] > bbox_relative_cam_dir.mV[VY] && bbox_relative_cam_dir.mV[VX] > bbox_relative_cam_dir.mV[VZ])
 		{
 			mSnapGuideDir1 = LLVector3::x_axis * bbox.getRotation();
 		}
-		else if (object_scale.mV[VY] > object_scale.mV[VZ])
+		else if (bbox_relative_cam_dir.mV[VY] > bbox_relative_cam_dir.mV[VZ])
 		{
 			mSnapGuideDir1 = LLVector3::y_axis * bbox.getRotation();
 		}
@@ -1417,7 +1401,7 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 		}
 
 		LLVector3 scale_snap = grid_scale;
-		mScaleSnapUnit1 = scale_snap.scaleVec(partToUnitVector( mManipPart )).magVec();
+		mScaleSnapUnit1 = scale_snap.scaleVec(partToUnitVector( mManipPart )).length();
 		mScaleSnapUnit2 = mScaleSnapUnit1;
 		mSnapGuideDir1 *= mSnapGuideDir1 * LLViewerCamera::getInstance()->getUpAxis() > 0.f ? 1.f : -1.f;
 		mSnapGuideDir2 = mSnapGuideDir1 * -1.f;
@@ -1426,7 +1410,6 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 	}
 	else if( (LL_CORNER_MIN <= (S32)mManipPart) && ((S32)mManipPart <= LL_CORNER_MAX) )
 	{
-		LLVector3 local_scale_dir = partToUnitVector( mManipPart );
 		LLVector3 local_camera_dir;
 		if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
 		{
@@ -1434,74 +1417,133 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 		}
 		else
 		{
-			local_camera_dir = (LLViewerCamera::getInstance()->getOrigin() - bbox.getCenterAgent()) * ~bbox.getRotation();
-			local_camera_dir.normVec();
-		}
-		local_scale_dir -= projected_vec(local_scale_dir, local_camera_dir);
-		local_scale_dir.normVec();
-		LLVector3 x_axis_proj_camera = LLVector3::x_axis - projected_vec(LLVector3::x_axis, local_camera_dir);
-		x_axis_proj_camera.normVec();
-		LLVector3 y_axis_proj_camera = LLVector3::y_axis - projected_vec(LLVector3::y_axis, local_camera_dir);
-		y_axis_proj_camera.normVec();
-		LLVector3 z_axis_proj_camera = LLVector3::z_axis - projected_vec(LLVector3::z_axis, local_camera_dir);
-		z_axis_proj_camera.normVec();
-		F32 x_axis_proj = llabs(local_scale_dir * x_axis_proj_camera);
-		F32 y_axis_proj = llabs(local_scale_dir * y_axis_proj_camera);
-		F32 z_axis_proj = llabs(local_scale_dir * z_axis_proj_camera);
-
-		if (x_axis_proj > y_axis_proj && x_axis_proj > z_axis_proj)
-		{
-			mSnapGuideDir1 = LLVector3::y_axis;
-			mScaleSnapUnit2 = grid_scale.mV[VY];
-			mSnapGuideDir2 = LLVector3::z_axis;
-			mScaleSnapUnit1 = grid_scale.mV[VZ];
-		}
-		else if (y_axis_proj > z_axis_proj)
-		{
-			mSnapGuideDir1 = LLVector3::x_axis;
-			mScaleSnapUnit2 = grid_scale.mV[VX];
-			mSnapGuideDir2 = LLVector3::z_axis;
-			mScaleSnapUnit1 = grid_scale.mV[VZ];
-		}
-		else
-		{
-			mSnapGuideDir1 = LLVector3::x_axis;
-			mScaleSnapUnit2 = grid_scale.mV[VX];
-			mSnapGuideDir2 = LLVector3::y_axis;
-			mScaleSnapUnit1 = grid_scale.mV[VY];
+			local_camera_dir = (LLViewerCamera::getInstance()->getOrigin() - box_corner_agent) * ~bbox.getRotation();
+			local_camera_dir.normalize();
 		}
 
-		LLVector3 snap_guide_flip(1.f, 1.f, 1.f);
+		LLVector3 axis_flip;
 		switch (mManipPart)
 		{
 		case LL_CORNER_NNN:
+			axis_flip.set(1.f, 1.f, 1.f);
 			break;
 		case LL_CORNER_NNP:
-			snap_guide_flip.setVec(1.f, 1.f, -1.f);
+			axis_flip.set(1.f, 1.f, -1.f);
 			break;
 		case LL_CORNER_NPN:
-			snap_guide_flip.setVec(1.f, -1.f, 1.f);
+			axis_flip.set(1.f, -1.f, 1.f);
 			break;
 		case LL_CORNER_NPP:
-			snap_guide_flip.setVec(1.f, -1.f, -1.f);
+			axis_flip.set(1.f, -1.f, -1.f);
 			break;
 		case LL_CORNER_PNN:
-			snap_guide_flip.setVec(-1.f, 1.f, 1.f);
+			axis_flip.set(-1.f, 1.f, 1.f);
 			break;
 		case LL_CORNER_PNP:
-			snap_guide_flip.setVec(-1.f, 1.f, -1.f);
+			axis_flip.set(-1.f, 1.f, -1.f);
 			break;
 		case LL_CORNER_PPN:
-			snap_guide_flip.setVec(-1.f, -1.f, 1.f);
+			axis_flip.set(-1.f, -1.f, 1.f);
 			break;
 		case LL_CORNER_PPP:
-			snap_guide_flip.setVec(-1.f, -1.f, -1.f);
+			axis_flip.set(-1.f, -1.f, -1.f);
 			break;
 		default:
 			break;
 		}
-		mSnapGuideDir1.scaleVec(snap_guide_flip);
-		mSnapGuideDir2.scaleVec(snap_guide_flip);
+
+		// account for which side of the object the camera is located and negate appropriate axes
+		local_camera_dir.scaleVec(axis_flip);
+
+		// normalize to object scale
+		LLVector3 bbox_extent = bbox.getExtentLocal();
+		local_camera_dir.scaleVec(LLVector3(1.f / bbox_extent.mV[VX], 1.f / bbox_extent.mV[VY], 1.f / bbox_extent.mV[VZ]));
+
+		S32 scale_face = -1;
+
+		if ((local_camera_dir.mV[VX] > 0.f) == (local_camera_dir.mV[VY] > 0.f))
+		{
+			if ((local_camera_dir.mV[VZ] > 0.f) == (local_camera_dir.mV[VY] > 0.f))
+			{
+				LLVector3 local_camera_dir_abs = local_camera_dir;
+				local_camera_dir_abs.abs();
+				// all neighboring faces of bbox are pointing towards camera or away from camera
+				// use largest magnitude face for snap guides
+				if (local_camera_dir_abs.mV[VX] > local_camera_dir_abs.mV[VY])
+				{
+					if (local_camera_dir_abs.mV[VX] > local_camera_dir_abs.mV[VZ])
+					{
+						scale_face = VX;
+					}
+					else
+					{
+						scale_face = VZ;
+					}
+				}
+				else // y > x
+				{
+					if (local_camera_dir_abs.mV[VY] > local_camera_dir_abs.mV[VZ])
+					{
+						scale_face = VY;
+					}
+					else
+					{
+						scale_face = VZ;
+					}
+				}
+			}
+			else
+			{
+				// z axis facing opposite direction from x and y relative to camera, use x and y for snap guides
+				scale_face = VZ;
+			}
+		}
+		else // x and y axes are facing in opposite directions relative to camera
+		{
+			if ((local_camera_dir.mV[VZ] > 0.f) == (local_camera_dir.mV[VY] > 0.f))
+			{
+				// x axis facing opposite direction from y and z relative to camera, use y and z for snap guides
+				scale_face = VX;
+			}
+			else
+			{
+				// y axis facing opposite direction from x and z relative to camera, use x and z for snap guides
+				scale_face = VY;
+			}
+		}
+
+		switch(scale_face)
+		{
+		case VX:
+			// x axis face being scaled, use y and z for snap guides
+			mSnapGuideDir1 = LLVector3::y_axis.scaledVec(axis_flip);
+			mScaleSnapUnit1 = grid_scale.mV[VZ];
+			mSnapGuideDir2 = LLVector3::z_axis.scaledVec(axis_flip);
+			mScaleSnapUnit2 = grid_scale.mV[VY];
+			break;
+		case VY:
+			// y axis facing being scaled, use x and z for snap guides
+			mSnapGuideDir1 = LLVector3::x_axis.scaledVec(axis_flip);
+			mScaleSnapUnit1 = grid_scale.mV[VZ];
+			mSnapGuideDir2 = LLVector3::z_axis.scaledVec(axis_flip);
+			mScaleSnapUnit2 = grid_scale.mV[VX];
+			break;
+		case VZ:
+			// z axis facing being scaled, use x and y for snap guides
+			mSnapGuideDir1 = LLVector3::x_axis.scaledVec(axis_flip);
+			mScaleSnapUnit1 = grid_scale.mV[VY];
+			mSnapGuideDir2 = LLVector3::y_axis.scaledVec(axis_flip);
+			mScaleSnapUnit2 = grid_scale.mV[VX];
+			break;
+		default:
+			mSnapGuideDir1.setZero();
+			mScaleSnapUnit1 = 0.f;
+
+			mSnapGuideDir2.setZero();
+			mScaleSnapUnit2 = 0.f;
+			break;
+		}
+
 		mSnapGuideDir1.rotVec(bbox.getRotation());
 		mSnapGuideDir2.rotVec(bbox.getRotation());
 		mSnapDir1 = -1.f * mSnapGuideDir2;
@@ -1509,13 +1551,22 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 	}
 
 	mScalePlaneNormal1 = mSnapGuideDir1 % mScaleDir;
-	mScalePlaneNormal1.normVec();
+	mScalePlaneNormal1.normalize();
 
 	mScalePlaneNormal2 = mSnapGuideDir2 % mScaleDir;
-	mScalePlaneNormal2.normVec();	
+	mScalePlaneNormal2.normalize();
 
 	mScaleSnapUnit1 = mScaleSnapUnit1 / (mSnapDir1 * mScaleDir);
 	mScaleSnapUnit2 = mScaleSnapUnit2 / (mSnapDir2 * mScaleDir);
+
+	mTickPixelSpacing1 = llround((F32)MIN_DIVISION_PIXEL_WIDTH / (mScaleDir % mSnapGuideDir1).length());
+	mTickPixelSpacing2 = llround((F32)MIN_DIVISION_PIXEL_WIDTH / (mScaleDir % mSnapGuideDir2).length());
+
+	if (uniform)
+	{
+		mScaleSnapUnit1 *= 0.5f;
+		mScaleSnapUnit2 *= 0.5f;
+	}
 }
 
 void LLManipScale::renderSnapGuides(const LLBBox& bbox)
@@ -1526,7 +1577,6 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 		return;
 	}
 
-	F32 max_subdivisions = sGridMaxSubdivisionLevel;
 	static const LLCachedControl<F32> grid_alpha("GridOpacity",1.f);
 
 	F32 max_point_on_scale_line = partToMaxScale(mManipPart, bbox);
@@ -1540,9 +1590,9 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 		LLColor4 tick_color = setupSnapGuideRenderPass(pass);
 
 		gGL.begin(LLRender::LINES);
-		LLVector3 line_mid = mScaleCenter + (mScaleSnapValue * mScaleDir) + (mSnapGuideDir1 * mSnapRegimeOffset);
-		LLVector3 line_start = line_mid - (mScaleDir * (llmin(mScaleSnapValue, mSnapGuideLength * 0.5f)));
-		LLVector3 line_end = line_mid + (mScaleDir * llmin(max_point_on_scale_line - mScaleSnapValue, mSnapGuideLength * 0.5f));
+		LLVector3 line_mid = mScaleCenter + (mScaleSnappedValue * mScaleDir) + (mSnapGuideDir1 * mSnapRegimeOffset);
+		LLVector3 line_start = line_mid - (mScaleDir * (llmin(mScaleSnappedValue, mSnapGuideLength * 0.5f)));
+		LLVector3 line_end = line_mid + (mScaleDir * llmin(max_point_on_scale_line - mScaleSnappedValue, mSnapGuideLength * 0.5f));
 		
 		gGL.color4f(tick_color.mV[VRED], tick_color.mV[VGREEN], tick_color.mV[VBLUE], tick_color.mV[VALPHA] * 0.1f);
 		gGL.vertex3fv(line_start.mV);
@@ -1552,9 +1602,9 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 		gGL.color4f(tick_color.mV[VRED], tick_color.mV[VGREEN], tick_color.mV[VBLUE], tick_color.mV[VALPHA] * 0.1f);
 		gGL.vertex3fv(line_end.mV);
 
-		line_mid = mScaleCenter + (mScaleSnapValue * mScaleDir) + (mSnapGuideDir2 * mSnapRegimeOffset);
-		line_start = line_mid - (mScaleDir * (llmin(mScaleSnapValue, mSnapGuideLength * 0.5f)));
-		line_end = line_mid + (mScaleDir * llmin(max_point_on_scale_line - mScaleSnapValue, mSnapGuideLength * 0.5f));
+		line_mid = mScaleCenter + (mScaleSnappedValue * mScaleDir) + (mSnapGuideDir2 * mSnapRegimeOffset);
+		line_start = line_mid - (mScaleDir * (llmin(mScaleSnappedValue, mSnapGuideLength * 0.5f)));
+		line_end = line_mid + (mScaleDir * llmin(max_point_on_scale_line - mScaleSnappedValue, mSnapGuideLength * 0.5f));
 		gGL.vertex3fv(line_start.mV);
 		gGL.color4fv(tick_color.mV);
 		gGL.vertex3fv(line_mid.mV);
@@ -1567,31 +1617,38 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 	{
 		LLGLDepthTest gls_depth(GL_FALSE);
 
-		F32 dist_grid_axis = (drag_point - mScaleCenter) * mScaleDir;
+		F32 dist_grid_axis = llmax(0.f, (drag_point - mScaleCenter) * mScaleDir);
+
+		F32 smallest_subdivision1 = mScaleSnapUnit1 / sGridMaxSubdivisionLevel;
+		F32 smallest_subdivision2 = mScaleSnapUnit2 / sGridMaxSubdivisionLevel;
+
+		F32 dist_scale_units_1 = dist_grid_axis / smallest_subdivision1;
+		F32 dist_scale_units_2 = dist_grid_axis / smallest_subdivision2;
+
 		// find distance to nearest smallest grid unit
-		F32 grid_offset1 = fmodf(dist_grid_axis, mScaleSnapUnit1 / max_subdivisions);
-		F32 grid_offset2 = fmodf(dist_grid_axis, mScaleSnapUnit2 / max_subdivisions);
+		F32 grid_multiple1 = llfloor(dist_scale_units_1);
+		F32 grid_multiple2 = llfloor(dist_scale_units_2);
+		F32 grid_offset1 = fmodf(dist_grid_axis, smallest_subdivision1);
+		F32 grid_offset2 = fmodf(dist_grid_axis, smallest_subdivision2);
 
 		// how many smallest grid units are we away from largest grid scale?
-		S32 sub_div_offset_1 = llround(fmod(dist_grid_axis - grid_offset1, mScaleSnapUnit1 / sGridMinSubdivisionLevel) / (mScaleSnapUnit1 / max_subdivisions));
-		S32 sub_div_offset_2 = llround(fmod(dist_grid_axis - grid_offset2, mScaleSnapUnit2 / sGridMinSubdivisionLevel) / (mScaleSnapUnit2 / max_subdivisions));
+		S32 sub_div_offset_1 = llround(fmod(dist_grid_axis - grid_offset1, mScaleSnapUnit1 / sGridMinSubdivisionLevel) / smallest_subdivision1);
+		S32 sub_div_offset_2 = llround(fmod(dist_grid_axis - grid_offset2, mScaleSnapUnit2 / sGridMinSubdivisionLevel) / smallest_subdivision2);
 
-		S32 num_ticks_per_side1 = llmax(1, lltrunc(0.5f * mSnapGuideLength / (mScaleSnapUnit1 / max_subdivisions)));
-		S32 num_ticks_per_side2 = llmax(1, lltrunc(0.5f * mSnapGuideLength / (mScaleSnapUnit2 / max_subdivisions)));
-		F32 dist_scale_units_1 = dist_grid_axis / (mScaleSnapUnit1 / max_subdivisions);
-		F32 dist_scale_units_2 = dist_grid_axis / (mScaleSnapUnit2 / max_subdivisions);
+		S32 num_ticks_per_side1 = llmax(1, lltrunc(0.5f * mSnapGuideLength / smallest_subdivision1));
+		S32 num_ticks_per_side2 = llmax(1, lltrunc(0.5f * mSnapGuideLength / smallest_subdivision2));
 		S32 ticks_from_scale_center_1 = lltrunc(dist_scale_units_1);
 		S32 ticks_from_scale_center_2 = lltrunc(dist_scale_units_2);
-		S32 max_ticks1 = llceil(max_point_on_scale_line / (mScaleSnapUnit1 / max_subdivisions) - dist_scale_units_1);
-		S32 max_ticks2 = llceil(max_point_on_scale_line / (mScaleSnapUnit2 / max_subdivisions) - dist_scale_units_2);
+		S32 max_ticks1 = llceil(max_point_on_scale_line / smallest_subdivision1 - dist_scale_units_1);
+		S32 max_ticks2 = llceil(max_point_on_scale_line / smallest_subdivision2 - dist_scale_units_2);
 		S32 start_tick = 0;
 		S32 stop_tick = 0;
 
-		if (mInSnapRegime)
+		if (mSnapRegime != SNAP_REGIME_NONE)
 		{
 			// draw snap guide line
 			gGL.begin(LLRender::LINES);
-			LLVector3 snap_line_center = mScaleCenter + (mScaleSnapValue * mScaleDir);
+			LLVector3 snap_line_center = bbox.localToAgent(unitVectorToLocalBBoxExtent( partToUnitVector( mManipPart ), bbox ));
 
 			LLVector3 snap_line_start = snap_line_center + (mSnapGuideDir1 * mSnapRegimeOffset);
 			LLVector3 snap_line_end = snap_line_center + (mSnapGuideDir2 * mSnapRegimeOffset);
@@ -1613,22 +1670,22 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 				LLVector3 arrow_span = mScaleDir;
 
 				arrow_dir = snap_line_start - snap_line_center;
-				arrow_dir.normVec();
-				gGL.vertex3fv((snap_line_start + arrow_dir * mBoxHandleSize).mV);
-				gGL.vertex3fv((snap_line_start + arrow_span * mBoxHandleSize).mV);
-				gGL.vertex3fv((snap_line_start - arrow_span * mBoxHandleSize).mV);
+				arrow_dir.normalize();
+				gGL.vertex3fv((snap_line_start + arrow_dir * mSnapRegimeOffset * 0.1f).mV);
+				gGL.vertex3fv((snap_line_start + arrow_span * mSnapRegimeOffset * 0.1f).mV);
+				gGL.vertex3fv((snap_line_start - arrow_span * mSnapRegimeOffset * 0.1f).mV);
 
 				arrow_dir = snap_line_end - snap_line_center;
-				arrow_dir.normVec();
-				gGL.vertex3fv((snap_line_end + arrow_dir * mBoxHandleSize).mV);
-				gGL.vertex3fv((snap_line_end + arrow_span * mBoxHandleSize).mV);
-				gGL.vertex3fv((snap_line_end - arrow_span * mBoxHandleSize).mV);
+				arrow_dir.normalize();
+				gGL.vertex3fv((snap_line_end + arrow_dir * mSnapRegimeOffset * 0.1f).mV);
+				gGL.vertex3fv((snap_line_end + arrow_span * mSnapRegimeOffset * 0.1f).mV);
+				gGL.vertex3fv((snap_line_end - arrow_span * mSnapRegimeOffset * 0.1f).mV);
 			}
 			gGL.end();
 		}
 	
 		LLVector2 screen_translate_axis(llabs(mScaleDir * LLViewerCamera::getInstance()->getLeftAxis()), llabs(mScaleDir * LLViewerCamera::getInstance()->getUpAxis()));
-		screen_translate_axis.normVec();
+		screen_translate_axis.normalize();
 
 		S32 tick_label_spacing = llround(screen_translate_axis * sTickLabelSpacing);
 
@@ -1644,17 +1701,17 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 			for (S32 i = start_tick; i <= stop_tick; i++)
 			{
 				F32 alpha = (1.f - (1.f *  ((F32)llabs(i) / (F32)num_ticks_per_side1)));
-				LLVector3 tick_pos = drag_point + (mScaleDir * (mScaleSnapUnit1 / max_subdivisions * (F32)i - grid_offset1));
+				LLVector3 tick_pos = mScaleCenter + (mScaleDir * (grid_multiple1 + i) * smallest_subdivision1);
 
-				F32 cur_subdivisions = llclamp(getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit1), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
+				F32 cur_subdivisions = llclamp(getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit1, mTickPixelSpacing1), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
 
-				if (fmodf((F32)(i + sub_div_offset_1), (max_subdivisions / cur_subdivisions)) != 0.f)
+				if (fmodf((F32)(i + sub_div_offset_1), (sGridMaxSubdivisionLevel / cur_subdivisions)) != 0.f)
 				{
 					continue;
 				}
 
 				F32 tick_scale = 1.f;
-				for (F32 division_level = max_subdivisions; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
+				for (F32 division_level = sGridMaxSubdivisionLevel; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
 				{
 					if (fmodf((F32)(i + sub_div_offset_1), division_level) == 0.f)
 					{
@@ -1677,17 +1734,17 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 			for (S32 i = start_tick; i <= stop_tick; i++)
 			{
 				F32 alpha = (1.f - (1.f *  ((F32)llabs(i) / (F32)num_ticks_per_side2)));
-				LLVector3 tick_pos = drag_point + (mScaleDir * (mScaleSnapUnit2 / max_subdivisions * (F32)i - grid_offset2));
+				LLVector3 tick_pos = mScaleCenter + (mScaleDir * (grid_multiple2 + i) * smallest_subdivision2);
 
-				F32 cur_subdivisions = llclamp(getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit2), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
+				F32 cur_subdivisions = llclamp(getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit2, mTickPixelSpacing2), sGridMinSubdivisionLevel, sGridMaxSubdivisionLevel);
 
-				if (fmodf((F32)(i + sub_div_offset_2), (max_subdivisions / cur_subdivisions)) != 0.f)
+				if (fmodf((F32)(i + sub_div_offset_2), (sGridMaxSubdivisionLevel / cur_subdivisions)) != 0.f)
 				{
 					continue;
 				}
 
 				F32 tick_scale = 1.f;
-				for (F32 division_level = max_subdivisions; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
+				for (F32 division_level = sGridMaxSubdivisionLevel; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
 				{
 					if (fmodf((F32)(i + sub_div_offset_2), division_level) == 0.f)
 					{
@@ -1705,21 +1762,21 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 			gGL.end();
 		}
 
-		// render tick labels
+		// render upper tick labels
 		start_tick = -(llmin(ticks_from_scale_center_1, num_ticks_per_side1));
 		stop_tick = llmin(max_ticks1, num_ticks_per_side1);
 
 		F32 grid_resolution = mObjectSelection->getSelectType() == SELECT_TYPE_HUD ? 0.25f : llmax(gSavedSettings.getF32("GridResolution"), 0.001f);
-		S32 label_sub_div_offset_1 = llround(fmod(dist_grid_axis - grid_offset1, mScaleSnapUnit1  * 32.f) / (mScaleSnapUnit1 / max_subdivisions));
-		S32 label_sub_div_offset_2 = llround(fmod(dist_grid_axis - grid_offset2, mScaleSnapUnit2  * 32.f) / (mScaleSnapUnit2 / max_subdivisions));
+		S32 label_sub_div_offset_1 = llround(fmod(dist_grid_axis - grid_offset1, mScaleSnapUnit1  * 32.f) / smallest_subdivision1);
+		S32 label_sub_div_offset_2 = llround(fmod(dist_grid_axis - grid_offset2, mScaleSnapUnit2  * 32.f) / smallest_subdivision2);
 
 		for (S32 i = start_tick; i <= stop_tick; i++)
 		{
 			F32 tick_scale = 1.f;
 			F32 alpha = grid_alpha * (1.f - (0.5f *  ((F32)llabs(i) / (F32)num_ticks_per_side1)));
-			LLVector3 tick_pos = drag_point + (mScaleDir * (mScaleSnapUnit1 / max_subdivisions * (F32)i - grid_offset1));
+			LLVector3 tick_pos = mScaleCenter + (mScaleDir * (grid_multiple1 + i) * smallest_subdivision1);
 
-			for (F32 division_level = max_subdivisions; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
+			for (F32 division_level = sGridMaxSubdivisionLevel; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
 			{
 				if (fmodf((F32)(i + label_sub_div_offset_1), division_level) == 0.f)
 				{
@@ -1728,39 +1785,34 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 				tick_scale *= 0.7f;
 			}
 
-			if (fmodf((F32)(i + label_sub_div_offset_1), (max_subdivisions / llmin(sGridMaxSubdivisionLevel, getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit1, tick_label_spacing)))) == 0.f)
+			if (fmodf((F32)(i + label_sub_div_offset_1), (sGridMaxSubdivisionLevel / llmin(sGridMaxSubdivisionLevel, getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit1, tick_label_spacing)))) == 0.f)
 			{
-				LLVector3 text_origin = tick_pos + 
-					(mSnapGuideDir1 * mSnapRegimeOffset * (1.f + tick_scale));
+				LLVector3 text_origin = tick_pos + (mSnapGuideDir1 * mSnapRegimeOffset * (1.f + tick_scale));
 
 				EGridMode grid_mode = LLSelectMgr::getInstance()->getGridMode();
-				F32 tick_val;
+				F32 tick_value;
 				if (grid_mode == GRID_MODE_WORLD)
 				{
-					tick_val = (tick_pos - mScaleCenter) * mScaleDir / (mScaleSnapUnit1 / grid_resolution);
+					tick_value = (grid_multiple1 + i) / (sGridMaxSubdivisionLevel / grid_resolution);
 				}
 				else
 				{
-					tick_val = (tick_pos - mScaleCenter) * mScaleDir / (mScaleSnapUnit1 * 2.f);
-				}
-
-				if (getUniform())
-				{
-					tick_val *= 2.f;
+					tick_value = (grid_multiple1 + i) / (2.f * sGridMaxSubdivisionLevel);
 				}
 
 				F32 text_highlight = 0.8f;
 
-				if (is_approx_equal(tick_val, mScaleSnapValue) && mInSnapRegime)
+				// Highlight this text if the tick value matches the snapped to value, and if either the second set of ticks isn't going to be shown or cursor is in the first snap regime.
+				if (is_approx_equal(tick_value, mScaleSnappedValue) && (mScaleSnapUnit2 == mScaleSnapUnit1 || (mSnapRegime & SNAP_REGIME_UPPER)))
 				{
 					text_highlight = 1.f;
 				}
 
-				renderTickValue(text_origin, tick_val, grid_mode == GRID_MODE_WORLD ? std::string("m") : std::string("x"), LLColor4(text_highlight, text_highlight, text_highlight, alpha));
+				renderTickValue(text_origin, tick_value, grid_mode == GRID_MODE_WORLD ? std::string("m") : std::string("x"), LLColor4(text_highlight, text_highlight, text_highlight, alpha));
 			}
 		}
 
-		// label ticks on opposite side
+		// label ticks on opposite side, only can happen in scaling modes that effect more than one axis and when the object's axis don't have the same scale.  A differing scale indicates both conditions.
 		if (mScaleSnapUnit2 != mScaleSnapUnit1)
 		{
 			start_tick = -(llmin(ticks_from_scale_center_2, num_ticks_per_side2));
@@ -1769,9 +1821,9 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 			{
 				F32 tick_scale = 1.f;
 				F32 alpha = grid_alpha * (1.f - (0.5f *  ((F32)llabs(i) / (F32)num_ticks_per_side2)));
-				LLVector3 tick_pos = drag_point + (mScaleDir * (mScaleSnapUnit2 / max_subdivisions * (F32)i - grid_offset2));
+				LLVector3 tick_pos = mScaleCenter + (mScaleDir * (grid_multiple2 + i) * smallest_subdivision2);
 
-				for (F32 division_level = max_subdivisions; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
+				for (F32 division_level = sGridMaxSubdivisionLevel; division_level >= sGridMinSubdivisionLevel; division_level /= 2.f)
 				{
 					if (fmodf((F32)(i + label_sub_div_offset_2), division_level) == 0.f)
 					{
@@ -1780,35 +1832,29 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 					tick_scale *= 0.7f;
 				}
 
-				if (fmodf((F32)(i + label_sub_div_offset_2), (max_subdivisions / llmin(max_subdivisions, getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit2, tick_label_spacing)))) == 0.f)
+				if (fmodf((F32)(i + label_sub_div_offset_2), (sGridMaxSubdivisionLevel / llmin(sGridMaxSubdivisionLevel, getSubdivisionLevel(tick_pos, mScaleDir, mScaleSnapUnit2, tick_label_spacing)))) == 0.f)
 				{
-					LLVector3 text_origin = tick_pos + 
-						(mSnapGuideDir2 * mSnapRegimeOffset * (1.f + tick_scale));
+					LLVector3 text_origin = tick_pos + (mSnapGuideDir2 * mSnapRegimeOffset * (1.f + tick_scale));
 
 					EGridMode grid_mode = LLSelectMgr::getInstance()->getGridMode();
-					F32 tick_val;
+					F32 tick_value;
 					if (grid_mode == GRID_MODE_WORLD)
 					{
-						tick_val = (tick_pos - mScaleCenter) * mScaleDir / (mScaleSnapUnit2 / grid_resolution);
+						tick_value = (grid_multiple2 + i) / (sGridMaxSubdivisionLevel / grid_resolution);
 					}
 					else
 					{
-						tick_val = (tick_pos - mScaleCenter) * mScaleDir / (mScaleSnapUnit2 * 2.f);
-					}
-
-					if (getUniform())
-					{
-						tick_val *= 2.f;
+						tick_value = (grid_multiple2 + i) / (2.f * sGridMaxSubdivisionLevel);
 					}
 
 					F32 text_highlight = 0.8f;
 
-					if (is_approx_equal(tick_val, mScaleSnapValue) && mInSnapRegime)
+					if (is_approx_equal(tick_value, mScaleSnappedValue) && (mSnapRegime & SNAP_REGIME_LOWER))
 					{
 						text_highlight = 1.f;
 					}
 
-					renderTickValue(text_origin, tick_val, grid_mode == GRID_MODE_WORLD ? std::string("m") : std::string("x"), LLColor4(text_highlight, text_highlight, text_highlight, alpha));
+					renderTickValue(text_origin, tick_value, grid_mode == GRID_MODE_WORLD ? std::string("m") : std::string("x"), LLColor4(text_highlight, text_highlight, text_highlight, alpha));
 				}
 			}
 		}
@@ -1834,13 +1880,13 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 				LLVector3 help_text_pos = selection_center_start + (mSnapRegimeOffset * 5.f * offset_dir);
 				const LLFontGL* big_fontp = LLFontGL::getFontSansSerif();
 
-				std::string help_text = "Move mouse cursor over ruler";
+				std::string help_text = LLTrans::getString("manip_hint1");
 				LLColor4 help_text_color = LLColor4::white;
 				help_text_color.mV[VALPHA] = clamp_rescale(mHelpTextTimer.getElapsedTimeF32(), sHelpTextVisibleTime, sHelpTextVisibleTime + sHelpTextFadeTime, grid_alpha, 0.f);
-				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
-				help_text = "to snap to grid";
+				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, false);
+				help_text = LLTrans::getString("manip_hint2");
 				help_text_pos -= LLViewerCamera::getInstance()->getUpAxis() * mSnapRegimeOffset * 0.4f;
-				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
+				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, false);
 			}
 		}
 	}
@@ -1853,13 +1899,11 @@ LLVector3 LLManipScale::partToUnitVector( S32 part ) const
 	{
 		return faceToUnitVector( part );
 	}
-	else
-	if( (LL_CORNER_MIN <= part) && (part <= LL_CORNER_MAX) )
+	else if ( (LL_CORNER_MIN <= part) && (part <= LL_CORNER_MAX) )
 	{
 		return cornerToUnitVector( part );
 	}
-	else
-	if( (LL_EDGE_MIN <= part) && (part <= LL_EDGE_MAX ) )
+	else if ( (LL_EDGE_MIN <= part) && (part <= LL_EDGE_MAX ) )
 	{
 		return edgeToUnitVector( part );
 	}
@@ -1871,27 +1915,32 @@ LLVector3 LLManipScale::partToUnitVector( S32 part ) const
 LLVector3 LLManipScale::faceToUnitVector( S32 part ) const
 {
 	llassert( (LL_FACE_MIN <= part) && (part <= LL_FACE_MAX) );
+	LLVector3 vec;
 	switch( part )
 	{
 		case LL_FACE_POSX:
-			return LLVector3(  1.f,  0.f,  0.f );
-
+			vec.set(  1.f,  0.f,  0.f );
+			break;
 		case LL_FACE_NEGX:
-			return LLVector3( -1.f,  0.f,  0.f );
-
+			vec.set( -1.f,  0.f,  0.f );
+			break;
 		case LL_FACE_POSY:
-			return LLVector3(  0.f,  1.f,  0.f );
-
+			vec.set(  0.f,  1.f,  0.f );
+			break;
 		case LL_FACE_NEGY:
-			return LLVector3(  0.f, -1.f,  0.f );
-
+			vec.set(  0.f, -1.f,  0.f );
+			break;
 		case LL_FACE_POSZ:
-			return LLVector3(  0.f,  0.f,  1.f );
-
+			vec.set(  0.f,  0.f,  1.f );
+			break;
 		case LL_FACE_NEGZ:
-			return LLVector3(  0.f,  0.f, -1.f );
+			vec.set(  0.f,  0.f, -1.f );
+			break;
+		default:
+			vec.clear();
 	}
-	return LLVector3();
+
+	return vec;
 }
 
 
@@ -1903,31 +1952,31 @@ LLVector3 LLManipScale::cornerToUnitVector( S32 part ) const
 	switch(part)
 	{
 		case LL_CORNER_NNN:
-			vec.setVec(-F_SQRT3, -F_SQRT3, -F_SQRT3);
+			vec.set(-OO_SQRT3, -OO_SQRT3, -OO_SQRT3);
 			break;
 		case LL_CORNER_NNP:		
-			vec.setVec(-F_SQRT3, -F_SQRT3, F_SQRT3);
+			vec.set(-OO_SQRT3, -OO_SQRT3, OO_SQRT3);
 			break;
 		case LL_CORNER_NPN:
-			vec.setVec(-F_SQRT3, F_SQRT3, -F_SQRT3);
+			vec.set(-OO_SQRT3, OO_SQRT3, -OO_SQRT3);
 			break;
 		case LL_CORNER_NPP:
-			vec.setVec(-F_SQRT3, F_SQRT3, F_SQRT3);
+			vec.set(-OO_SQRT3, OO_SQRT3, OO_SQRT3);
 			break;
 		case LL_CORNER_PNN:
-			vec.setVec(F_SQRT3, -F_SQRT3, -F_SQRT3);
+			vec.set(OO_SQRT3, -OO_SQRT3, -OO_SQRT3);
 			break;
 		case LL_CORNER_PNP:
-			vec.setVec(F_SQRT3, -F_SQRT3, F_SQRT3);
+			vec.set(OO_SQRT3, -OO_SQRT3, OO_SQRT3);
 			break;
 		case LL_CORNER_PPN:
-			vec.setVec(F_SQRT3, F_SQRT3, -F_SQRT3);
+			vec.set(OO_SQRT3, OO_SQRT3, -OO_SQRT3);
 			break;
 		case LL_CORNER_PPP:
-			vec.setVec(F_SQRT3, F_SQRT3, F_SQRT3);
+			vec.set(OO_SQRT3, OO_SQRT3, OO_SQRT3);
 			break;
 		default:
-			vec.clearVec();
+			vec.clear();
 	}
 
 	return vec;
@@ -1973,7 +2022,7 @@ F32		LLManipScale::partToMaxScale( S32 part, const LLBBox &bbox ) const
 			max_extent = bbox_extents.mV[i];
 		}
 	}
-	max_scale_factor = bbox_extents.magVec() * gHippoLimits->getMaxPrimScale() / max_extent;
+	max_scale_factor = bbox_extents.length() * get_default_max_prim_scale() / max_extent;
 
 	if (getUniform())
 	{
@@ -1988,7 +2037,7 @@ F32		LLManipScale::partToMinScale( S32 part, const LLBBox &bbox ) const
 {
 	LLVector3 bbox_extents = unitVectorToLocalBBoxExtent( partToUnitVector( part ), bbox );
 	bbox_extents.abs();
-	F32 min_extent = gHippoLimits->getMaxPrimScale();
+	F32 min_extent = get_default_max_prim_scale();
 	for (U32 i = VX; i <= VZ; i++)
 	{
 		if (bbox_extents.mV[i] > 0.f && bbox_extents.mV[i] < min_extent)

@@ -123,7 +123,7 @@ BOOL QToolAlign::findSelectedManipulator(S32 x, S32 y)
 	{
 		LLVector4 translation(mBBox.getCenterAgent());
 		transform.initRotTrans(mBBox.getRotation(), translation);
-		LLMatrix4 cfr(OGL_TO_CFR_ROTATION);
+		LLMatrix4 cfr(OGL_TO_CFR_ROTATION.getF32ptr());
 		transform *= cfr;
 		LLMatrix4 window_scale;
 		F32 zoom_level = 2.f * gAgentCamera.mHUDCurZoom;
@@ -136,8 +136,8 @@ BOOL QToolAlign::findSelectedManipulator(S32 x, S32 y)
 	{
 		transform.initAll(LLVector3(1.f, 1.f, 1.f), mBBox.getRotation(), mBBox.getCenterAgent());
 
-		LLMatrix4 projection_matrix = LLViewerCamera::getInstance()->getProjection();
-		LLMatrix4 model_matrix = LLViewerCamera::getInstance()->getModelview();
+		LLMatrix4 projection_matrix( LLViewerCamera::getInstance()->getProjection().getF32ptr() );
+		LLMatrix4 model_matrix( LLViewerCamera::getInstance()->getModelview().getF32ptr() );
 
 		transform *= model_matrix;
 		transform *= projection_matrix;

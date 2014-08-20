@@ -47,6 +47,7 @@
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
 #include "llfloaterautoreplacesettings.h"
+#include "llfloateravatar.h"
 #include "llfloateravatarlist.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterblacklist.h"
@@ -58,6 +59,7 @@
 #include "llfloaterchatterbox.h"
 #include "llfloatercustomize.h"
 #include "llfloaterdaycycle.h"
+#include "llfloaterdestinations.h"
 #include "llfloaterdisplayname.h"
 #include "llfloatereditui.h"
 #include "llfloaterenvsettings.h"
@@ -69,10 +71,12 @@
 #include "llfloaterhud.h"
 #include "llfloaterinspect.h"
 #include "llfloaterinventory.h"
+#include "llfloaterjoystick.h"
 #include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
 #include "llfloaterlandholdings.h"
 #include "llfloatermap.h"
+#include "llfloatermediafilter.h"
 #include "llfloatermemleak.h"
 #include "llfloatermessagelog.h"
 #include "llfloatermute.h"
@@ -111,7 +115,6 @@
 #include "rlvfloaters.h"
 // [/RLVa:LF]
 #include "shfloatermediaticker.h"
-#include "slfloatermediafilter.h"
 
 void handle_chat()
 {
@@ -190,7 +193,6 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		//Singu TODO: Re-implement f1 help.
 		//registerFloater("help f1", boost::bind(/*gViewerHtmlHelp.show*/));
 		registerFloater("help tutorial", boost::bind(LLFloaterHUD::showHUD));
-		registerFloater("inspect", boost::bind(LLFloaterInspect::showInstance));
 		registerFloater("inventory", boost::bind(LLInventoryView::toggleVisibility, (void*)NULL), boost::bind(is_visible_view, static_cast<boost::function<LLView* ()> >(LLInventoryView::getActiveInventory)));
 		registerFloater("local assets", boost::bind(FloaterLocalAssetBrowser::show, (void*)0));
 		registerFloater("mean events", boost::bind(LLFloaterBump::show, (void*)NULL));
@@ -205,6 +207,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
 		registerFloater("script errors", boost::bind(LLFloaterScriptDebug::show, LLUUID::null));
 		registerFloater("search", boost::bind(toggle_search_floater));
+		registerFloater("show inspect", boost::bind(LLFloaterInspect::showInstance, LLSD()));
 		registerFloater("sit", boost::bind(toggle_sit));
 		registerFloater("snapshot", boost::bind(LLFloaterSnapshot::show, (void*)NULL));
 		registerFloater("sound_explorer", boost::bind(LLFloaterExploreSounds::toggle), boost::bind(LLFloaterExploreSounds::visible));
@@ -219,16 +222,20 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterActiveSpeakers>		("active speakers");
 		registerFloater<JCFloaterAreaSearch>			("areasearch");
 		registerFloater<LLFloaterAutoReplaceSettings>	("autoreplace");
+		registerFloater<LLFloaterAvatar>				("avatar");
 		registerFloater<LLFloaterBeacons>				("beacons");
 		registerFloater<LLFloaterCamera>				("camera controls");
 		registerFloater<LLFloaterChat>					("chat history");
 		registerFloater<LLFloaterChatterBox>			("communicate");
+		registerFloater<LLFloaterDestinations>			("destinations");
 		registerFloater<LLFloaterMyFriends>				("friends", 0);
 		registerFloater<LLFloaterGesture>				("gestures");
 		registerFloater<LLFloaterMyFriends>				("groups", 1);
 		registerFloater<CommWrapper>					("im");
+		registerFloater<LLFloaterInspect>				("inspect");
+		registerFloater<LLFloaterJoystick>				("joystick");
 		registerFloater<LLFloaterLagMeter>				("lag meter");
-		registerFloater<SLFloaterMediaFilter>			("media filter");
+		registerFloater<LLFloaterMediaFilter>			("media filter");
 		registerFloater<LLFloaterMap>					("mini map");
 		registerFloater<LLFloaterMove>					("movement controls");
 		registerFloater<LLFloaterMute>					("mute list");
@@ -236,7 +243,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterOutbox>				("outbox");
 		registerFloater<LLFloaterPathfindingCharacters>	("pathfinding_characters");
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
-		registerFloater<LLFloaterPerms>					("perm prefs");
+		registerFloater<LLFloaterPermsDefault>			("perm prefs");
 		registerFloater<LLFloaterAvatarList>			("radar");
 		registerFloater<LLFloaterScriptLimits>			("script info");
 		registerFloater<LLFloaterStats>					("stat bar");
@@ -272,7 +279,7 @@ void show_floater(const std::string& floater_name)
 	if (it == MenuFloaterDict::instance().mEntries.end()) // Simple codeless floater
 	{
 		if (LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name))
-			gFloaterView->bringToFront(floater);
+			floater->isFrontmost() ? floater->close() : gFloaterView->bringToFront(floater);
 		else
 			LLUICtrlFactory::getInstance()->buildFloater(new LLFloater(), floater_name);
 	}

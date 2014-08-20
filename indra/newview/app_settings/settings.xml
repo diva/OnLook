@@ -243,6 +243,22 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
+  <key>FloaterAvatarRect</key>
+  <map>
+    <key>Comment</key>
+    <string>Avatar picker floater position</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Rect</string>
+    <key>Value</key>
+    <array>
+      <integer>30</integer>
+      <integer>505</integer>
+      <integer>580</integer>
+      <integer>275</integer>
+    </array>
+  </map>
   <key>FloaterAvatarTextRect</key>
   <map>
     <key>Comment</key>
@@ -345,17 +361,6 @@
       </array>
     </map>
 
-  <key>MediaEnableFilter</key>
-  <map>
-    <key>Comment</key>
-    <string>Enable media domain filtering</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>Boolean</string>
-    <key>Value</key>
-    <integer>1</integer>
-  </map>
   <key>MediaFilterRect</key>
   <map>
     <key>Comment</key>
@@ -558,17 +563,6 @@
     <key>Value</key>
     <string />
   </map>
-  <key>ShowcaseURLDefault</key>
-  <map>
-    <key>Comment</key>
-    <string>URL to load for the Showcase tab in Second Life</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>String</string>
-    <key>Value</key>
-    <string>http://secondlife.com/app/showcase/index.php?</string>
-  </map>
 
   <key>CheckForGridUpdates</key>
   <map>
@@ -651,6 +645,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruBlockConferences</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, new incoming conference chats will not be opened.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>LiruContinueFlyingOnUnsit</key>
     <map>
       <key>Comment</key>
@@ -677,6 +682,19 @@
         <real>1.0</real>
         <real>1.0</real>
       </array>
+    </map>
+    <key>LiruCustomizeAnim</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to animate when going into appearance mode.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+      <key>IsCOA</key>
+      <integer>1</integer>
     </map>
     <key>LiruGridInTitle</key>
     <map>
@@ -724,6 +742,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruLegacyDisplayMuteds</key>
+    <map>
+      <key>Comment</key>
+      <string>When off, muted people will go unrendered...</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>LiruLegacyLandmarks</key>
     <map>
       <key>Comment</key>
@@ -767,6 +796,17 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>LiruLegacyScrollToEnd</key>
+    <map>
+      <key>Comment</key>
+      <string>Automatically scroll to the end of a chat's history when the chat regains focus.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>LiruLocalTime</key>
     <map>
@@ -845,6 +885,17 @@
       <key>Value</key>
       <boolean>1</boolean>
     </map>
+    <key>LiruMouselookInstantZoom</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the right click zoom in mouselook will be instant or smoothly transition between zooms</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
     <key>LiruMouselookMenu</key>
     <map>
       <key>Comment</key>
@@ -890,6 +941,19 @@
       <string>String</string>
       <key>Value</key>
       <string/>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
+    <key>LiruNewMessageSoundIMsOn</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not ding defaults to being on for new IMs.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
       <key>IsCOA</key>
       <integer>1</integer>
     </map>
@@ -951,10 +1015,54 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruShowTransactionThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>Threshold of money changes before which transaction notifications will not be shown.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LiruUseAdvancedMenuShortcut</key>
+    <map>
+      <key>Comment</key>
+      <string>Use ctrl-alt(-shift)-d to toggle the advanced menu.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
     <key>LiruUseContextMenus</key>
     <map>
       <key>Comment</key>
       <string>Use context menus instead of the default pie menus we all know and love.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>LiruUseZQSDKeys</key>
+    <map>
+      <key>Comment</key>
+      <string>Use ZQSD layout instead of WASD.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>SFMapShowRegionPositions</key>
+    <map>
+      <key>Comment</key>
+      <string>Shows the X and Y coordinates above the sim name in the world map.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -983,6 +1091,17 @@ Found in Advanced->Rendering->Info Displays</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>UseRealisticMouselook</key>
+    <map>
+      <key>Comment</key>
+      <string>Use a realistic first person view, this prevents your camera from being the center of everything and your avatar always beeing locked below you, it allows your Avatar to move around freely in mouselook while your camera will follow it around. Prepare your seatbelts for an awesome shaky View! May break with certain super unrealistic animations.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>LogShowHistoryLines</key>
     <map>
@@ -1221,6 +1340,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <boolean>0</boolean>
+    </map>
+    <key>RightClickTurnsAvatar</key>
+    <map>
+      <key>Comment</key>
+      <string>When false, right clicking on objects that are certain angles from the direction your avatar is facing will not turn your avatar to face them.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
     </map>
     <key>ShowDisplayNameChanges</key>
     <map>
@@ -3025,6 +3155,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>2</integer>
     </map>
+    <key>AvatarPickerURL</key>
+    <map>
+      <key>Comment</key>
+      <string>Avatar picker contents</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://lecs-viewer-web-components.s3.amazonaws.com/v3.0/[GRID_LOWERCASE]/avatars.html</string>
+    </map>
     <key>AvatarRotateThresholdSlow</key>
     <map>
       <key>Comment</key>
@@ -4099,6 +4240,28 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>ChatLoadGroupMaxMembers</key>
+    <map>
+        <key>Comment</key>
+        <string>Max number of active members we'll show up for an unresponsive group</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>S32</string>
+        <key>Value</key>
+        <real>100</real>
+    </map>
+    <key>ChatLoadGroupTimeout</key>
+    <map>
+        <key>Comment</key>
+        <string>Time we give the server to send group participants before we hit the server for group info (seconds)</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>F32</string>
+        <key>Value</key>
+        <real>10.0</real>
     </map>
     <key>ChatOnlineNotification</key>
     <map>
@@ -5933,6 +6096,44 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <string>89556747-24cb-43ed-920b-47caed15465f</string>
     </map>
+    <key>DestinationGuideRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for destination guide</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>30</integer>
+        <integer>505</integer>
+        <integer>580</integer>
+        <integer>275</integer>
+      </array>
+    </map>
+    <key>DestinationGuideShown</key>
+    <map>
+      <key>Comment</key>
+      <string>Show destination guide</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>DestinationGuideURL</key>
+    <map>
+      <key>Comment</key>
+      <string>Destination guide contents</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://lecs-viewer-web-components.s3.amazonaws.com/v3.0/[GRID_LOWERCASE]/guide.html</string>
+    </map>
     <key>DisableCameraConstraints</key>
     <map>
       <key>Comment</key>
@@ -6416,17 +6617,6 @@ This should be as low as possible, but too low may break functionality</string>
       <string>S32</string>
       <key>Value</key>
       <integer>175</integer>
-    </map>
-    <key>EveryoneCopy</key>
-    <map>
-      <key>Comment</key>
-      <string>Everyone can copy the newly created objects</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
     </map>
     <key>FPSLogFrequency</key>
     <map>
@@ -8409,6 +8599,17 @@ This should be as low as possible, but too low may break functionality</string>
       <string>F32</string>
       <key>Value</key>
       <real>1.0</real>
+    </map>
+    <key>FlycamBuildModeScale</key>
+    <map>
+      <key>Comment</key>
+      <string>Scale factor to apply to flycam movements when in build mode.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.3333333</real>
     </map>
     <key>FlycamFeathering</key>
     <map>
@@ -10713,39 +10914,6 @@ This should be as low as possible, but too low may break functionality</string>
       <string>F32</string>
       <key>Value</key>
       <integer>20</integer>
-    </map>
-    <key>NextOwnerCopy</key>
-    <map>
-      <key>Comment</key>
-      <string>Newly created objects can be copied by next owner</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>NextOwnerModify</key>
-    <map>
-      <key>Comment</key>
-      <string>Newly created objects can be modified by next owner</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>NextOwnerTransfer</key>
-    <map>
-      <key>Comment</key>
-      <string>Newly created objects can be resold or given away by next owner</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
     </map>
     <key>NewCacheLocation</key>
     <map>
@@ -14564,17 +14732,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>ShareWithGroup</key>
-    <map>
-      <key>Comment</key>
-      <string>Newly created objects are shared with the currently active group</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
     <key>ShowActiveSpeakers</key>
     <map>
       <key>Comment</key>
@@ -14590,6 +14747,17 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Show descriptive tooltip when mouse hovers over non-interactive and interactive objects.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ShowAvatarFloater</key>
+    <map>
+      <key>Comment</key>
+      <string>Display avatar picker floater on login</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
@@ -17795,6 +17963,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>GenericErrorPageURL</key>
+    <map>
+      <key>Comment</key>
+      <string>URL to set as a property on LLMediaControl to navigate to if the a page completes with a 400-499 HTTP status code</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://common-flash-secondlife-com.s3.amazonaws.com/viewer/v2.6/agni/404.html</string>
+    </map>
     <key>WebProfileFloaterRect</key>
     <map>
       <key>Comment</key>
@@ -17810,6 +17989,336 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>485</integer>
         <integer>0</integer>
       </array>
+    </map>
+    <key>ObjectsNextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created objects can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ObjectsNextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created objects can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ObjectsNextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created objects can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>ObjectsEveryoneCopy</key>
+      <map>
+        <key>Comment</key>
+        <string>Everyone can copy the newly created object</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>ObjectsShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created objects are shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UploadsNextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly uploaded items can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UploadsNextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly uploaded items can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>UploadsNextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly uploaded items can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>UploadsEveryoneCopy</key>
+    <map>
+        <key>Comment</key>
+        <string>Everyone can copy the newly uploaded item</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>UploadsShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly uploaded items are shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ScriptsNextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created scripts can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ScriptsNextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created scripts can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>ScriptsNextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created scripts can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>ScriptsEveryoneCopy</key>
+    <map>
+        <key>Comment</key>
+        <string>Everyone can copy the newly created script</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>ScriptsShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created scripts are shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>NotecardsNextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created notecards can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>NotecardsNextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created notecards can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>NotecardsNextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created notecards can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>NotecardsEveryoneCopy</key>
+    <map>
+        <key>Comment</key>
+        <string>Everyone can copy the newly created notecard</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>NotecardsShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created scripts are shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>GesturesNextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created gestures can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>GesturesNextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created gestures can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>GesturesNextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created gestures can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>GesturesEveryoneCopy</key>
+    <map>
+        <key>Comment</key>
+        <string>Everyone can copy the newly created gesture</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>GesturesShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created gestures are shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>WearablesNextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created clothing or body part can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>WearablesNextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created clothing or body part can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>WearablesNextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created clothing or body part can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>WearablesEveryoneCopy</key>
+    <map>
+        <key>Comment</key>
+        <string>Everyone can copy the newly created clothing or body part</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>WearablesShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>Newly created clothing or body part is shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
   <key>SimulateFBOFailure</key>
   <map>
@@ -18082,6 +18591,73 @@ This should be as low as possible, but too low may break functionality</string>
       <string>S32</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+
+    <key>EveryoneCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>(obsolete) Everyone can copy the newly created objects</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>NextOwnerCopy</key>
+    <map>
+      <key>Comment</key>
+      <string>(obsolete) Newly created objects can be copied by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>NextOwnerModify</key>
+    <map>
+      <key>Comment</key>
+      <string>(obsolete) Newly created objects can be modified by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>NextOwnerTransfer</key>
+    <map>
+      <key>Comment</key>
+      <string>(obsolete) Newly created objects can be resold or given away by next owner</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>ShareWithGroup</key>
+    <map>
+      <key>Comment</key>
+      <string>(obsolete) Newly created objects are shared with the currently active group</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>MediaFilterEnable</key>
+    <map>
+      <key>Comment</key>
+      <string>Enable media domain filtering (0 = Off, 1 = Blacklist only, 2 = Prompt)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>2</integer>
     </map>
   </map>
 </llsd>

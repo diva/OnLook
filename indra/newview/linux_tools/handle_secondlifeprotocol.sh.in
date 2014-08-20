@@ -13,5 +13,5 @@ fi
 RUN_PATH=`dirname "$0" || echo .`
 cd "${RUN_PATH}"
 
-exec ./singularity -url \'"${URL}"\'
+exec ./@VIEWER_BRANDING_ID@ -url \'"${URL}"\'
 

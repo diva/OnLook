@@ -1290,11 +1290,11 @@ one from scratch and wear it.
              can_apply_immediately="true" default_image_name="Default" allow_no_texture="true"
              follows="left|top" width="64" height="80" left_delta="90" bottom="-165"/>
             <check_box name="head alpha texture invisible"
-             follows="left" width="16" height="16" left="142" bottom="-185"/>
+             follows="left" width="16" height="16" left="142" bottom="-90"/>
             <check_box name="upper alpha texture invisible"
-             follows="left" width="16" height="16" left_delta="90" bottom="-185"/>
+             follows="left" width="16" height="16" left_delta="90" bottom="-90"/>
             <check_box name="lower alpha texture invisible"
-             follows="left" width="16" height="16" left_delta="90" bottom="-185"/>
+             follows="left" width="16" height="16" left_delta="90" bottom="-90"/>
             <texture_picker name="Hair Alpha" label="Hair Alpha" tool_tip="Click to choose a picture"
              can_apply_immediately="true" default_image_name="Default" allow_no_texture="true"
              follows="left|top" width="64" height="80" left="120" bottom="-280"/>
@@ -1302,9 +1302,9 @@ one from scratch and wear it.
              can_apply_immediately="true" default_image_name="Default" allow_no_texture="true"
              follows="left|top" width="64" height="80" left_delta="90" bottom="-280"/>
             <check_box name="hair alpha texture invisible"
-             follows="left" width="16" height="16" left="142" bottom="-300"/>
+             follows="left" width="16" height="16" left="142" bottom="-205"/>
             <check_box name="eye alpha texture invisible"
-             follows="left" width="16" height="16" left_delta="90" bottom="-300"/>
+             follows="left" width="16" height="16" left_delta="90" bottom="-205"/>
 			<button name="Create New" label="Create New Alpha" label_selected="Create New Alpha"
                  follows="left|top" halign="center" width="170" height="24" left="160" bottom="-148"
 			     mouse_opaque="true" scale_image="true"/>

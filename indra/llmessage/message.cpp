@@ -116,20 +116,20 @@ namespace
 		{
 		}
 
-		/*virtual*/ void error(U32 status, const std::string& reason)
+		/*virtual*/ void httpFailure(void)
 		{
 			// don't spam when agent communication disconnected already
-			if (status != 410)
+			if (mStatus != 410)
 			{
-				LL_WARNS("Messaging") << "error status " << status
+				LL_WARNS("Messaging") << "error status " << mStatus
 						<< " for message " << mMessageName
-						<< " reason " << reason << llendl;
+						<< " reason " << mReason << llendl;
 			}
-			// TODO: Map status in to useful error code.
+			// TODO: Map mStatus in to useful error code.
 			if(NULL != mCallback) mCallback(mCallbackData, LL_ERR_TCP_TIMEOUT);
 		}
 		
-		/*virtual*/ void result(const LLSD& content)
+		/*virtual*/ void httpSuccess(void)
 		{
 			if(NULL != mCallback) mCallback(mCallbackData, LL_ERR_NOERR);
 		}

@@ -2622,6 +2622,7 @@ void LLViewerObject::saveScript(
 	 * interaction with doUpdateInventory() called below.
 	 */
 	lldebugs << "LLViewerObject::saveScript() " << item->getUUID() << " " << item->getAssetUUID() << llendl;
+
 	LLPointer<LLViewerInventoryItem> task_item =
 		new LLViewerInventoryItem(item->getUUID(), mID, item->getPermissions(),
 								  item->getAssetUUID(), item->getType(),
@@ -2902,7 +2903,7 @@ BOOL LLViewerObject::loadTaskInvFile(const std::string& filename)
 		while(ifs.good())
 		{
 			ifs.getline(buffer, MAX_STRING);
-			sscanf(buffer, " %254s", keyword);	/* Flawfinder: ignore */
+			if (sscanf(buffer, " %254s", keyword) < 1) continue;
 			if(0 == strcmp("inv_item", keyword))
 			{
 				LLPointer<LLInventoryObject> inv = new LLViewerInventoryItem;
@@ -3718,18 +3719,18 @@ const LLQuaternion LLViewerObject::getRenderRotation() const
 	{
 		if (!mDrawable->isRoot())
 		{
-			ret = getRotation() * LLQuaternion(mDrawable->getParent()->getWorldMatrix());
+			ret = getRotation() * LLQuaternion(LLMatrix4(mDrawable->getParent()->getWorldMatrix().getF32ptr()));
 		}
 		else
 		{
-			ret = LLQuaternion(mDrawable->getWorldMatrix());
+			ret = LLQuaternion(LLMatrix4(mDrawable->getWorldMatrix().getF32ptr()));
 		}
 	}
 	
 	return ret;
 }
 
-const LLMatrix4 LLViewerObject::getRenderMatrix() const
+const LLMatrix4a& LLViewerObject::getRenderMatrix() const
 {
 	return mDrawable->getWorldMatrix();
 }

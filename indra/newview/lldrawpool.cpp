@@ -297,17 +297,15 @@ LLViewerTexture *LLFacePool::getTexture()
 
 void LLFacePool::removeFaceReference(LLFace *facep)
 {
-	if (facep->getReferenceIndex() != -1)
+	S32 idx = facep->getReferenceIndex();
+	if (idx != -1)
 	{
-		if (facep->getReferenceIndex() != (S32)mReferences.size())
-		{
-			LLFace *back = mReferences.back();
-			mReferences[facep->getReferenceIndex()] = back;
-			back->setReferenceIndex(facep->getReferenceIndex());
-		}
-		mReferences.pop_back();
+		facep->setReferenceIndex(-1);
+		std::vector<LLFace*>::iterator face_it(mReferences.begin() + idx);
+		std::vector<LLFace*>::iterator iter = vector_replace_with_last(mReferences, face_it);
+		if(iter != mReferences.end())
+			(*iter)->setReferenceIndex(idx);
 	}
-	facep->setReferenceIndex(-1);
 }
 
 void LLFacePool::addFaceReference(LLFace *facep)
@@ -449,7 +447,7 @@ void LLRenderPass::applyModelMatrix(LLDrawInfo& params)
 		if (params.mModelMatrix)
 		{
 			llassert(gGL.getMatrixMode() == LLRender::MM_MODELVIEW);
-			gGL.multMatrix((GLfloat*) params.mModelMatrix->mMatrix);
+			gGL.multMatrix(*params.mModelMatrix);
 		}
 		gPipeline.mMatrixOpCount++;
 	}
@@ -484,7 +482,7 @@ void LLRenderPass::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL ba
 					tex_setup = true;
 					gGL.getTexUnit(0)->activate();
 					gGL.matrixMode(LLRender::MM_TEXTURE);
-					gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
+					gGL.loadMatrix(*params.mTextureMatrix);
 					gPipeline.mTextureMatrixOps++;
 				}
 			}

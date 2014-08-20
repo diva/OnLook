@@ -100,7 +100,7 @@ Detalhes do erro: O alerta chamado '[_NAME]' não foi encontrado em notification
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Sim"/>
 	</notification>
 	<notification name="BadInstallation">
-		Ocorreu um erro atualizando o [APP_NAME]. Por favor, faça o download da última versão em www.singularityviewer.org.
+		Ocorreu um erro atualizando o [APP_NAME]. Por favor, faça o download da última versão em [APP_SITE].
     <usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
@@ -298,10 +298,6 @@ Clicando neste Box, será mostrado:
 
 Ir para o site do [SECOND_LIFE] para mais informações sobre parceria?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Ir para a Página"/>
-	</notification>
-
-	<notification name="ClickUploadHelpPermissions">
-		Suas permissões padrão podem não funcionar em regiões antigas.
 	</notification>
 
 	<notification name="ClickWebProfileHelpAvatar">

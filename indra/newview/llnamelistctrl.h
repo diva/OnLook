@@ -67,6 +67,8 @@ class LLNameListCtrl
 :	public LLScrollListCtrl, public LLInstanceTracker<LLNameListCtrl>
 {
 public:
+	typedef boost::signals2::signal<void(bool)> namelist_complete_signal_t;
+
 	typedef enum e_name_type
 	{
 		INDIVIDUAL,
@@ -105,10 +107,14 @@ protected:
 	LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL allow_multiple_selection, BOOL draw_border = TRUE, bool draw_heading = false, S32 name_column_index = 0, const std::string& name_system = "PhoenixNameSystem", const std::string& tooltip = LLStringUtil::null);
 	virtual ~LLNameListCtrl()
 	{
-		if (mAvatarNameCacheConnection.connected())
+		for (avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.begin(); it != mAvatarNameCacheConnections.end(); ++it)
 		{
-			mAvatarNameCacheConnection.disconnect();
+			if (it->second.connected())
+			{
+				it->second.disconnect();
+			}
 		}
+		mAvatarNameCacheConnections.clear();
 	}
 	friend class LLUICtrlFactory;
 public:
@@ -143,13 +149,24 @@ public:
 
 	void sortByName(BOOL ascending);
 private:
-	void onAvatarNameCache(const LLUUID& agent_id, const LLAvatarName& av_name, LLHandle<LLNameListItem> item);
+	void onAvatarNameCache(const LLUUID& agent_id, const LLAvatarName& av_name, std::string suffix, LLHandle<LLNameListItem> item);
 
 private:
 	S32    	 mNameColumnIndex;
 	BOOL	 mAllowCallingCardDrop;
 	const LLCachedControl<S32> mNameSystem;
-	boost::signals2::connection mAvatarNameCacheConnection;
+	typedef std::map<LLUUID, boost::signals2::connection> avatar_name_cache_connection_map_t;
+	avatar_name_cache_connection_map_t mAvatarNameCacheConnections;
+
+	S32 mPendingLookupsRemaining;
+	namelist_complete_signal_t mNameListCompleteSignal;
+
+public:
+	boost::signals2::connection setOnNameListCompleteCallback(boost::function<void(bool)> onNameListCompleteCallback)
+	{
+		return mNameListCompleteSignal.connect(onNameListCompleteCallback);
+	}
+
 };
 
 

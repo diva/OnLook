@@ -71,7 +71,6 @@
 	<text name="ZoomDeadZone" width="110" left="4">
 		Zona Morta de Zoom
 	</text>
-	<button label="Padrões do SpaceNavigator" name="SpaceNavigatorDefaults" font="SansSerifSmall"/>
 	<button label="OK" label_selected="OK" name="ok_btn"/>
 	<button label="Cancelar" label_selected="Cancelar" name="cancel_btn"/>
 	<string name="JoystickMonitor">

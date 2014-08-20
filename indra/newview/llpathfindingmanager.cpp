@@ -116,8 +116,8 @@ public:
 	NavMeshStatusResponder(const std::string &pCapabilityURL, LLViewerRegion *pRegion, bool pIsGetStatusOnly);
 	virtual ~NavMeshStatusResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshStatusResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "NavMeshStatusResponder"; }
 
@@ -140,8 +140,8 @@ public:
 	NavMeshResponder(const std::string &pCapabilityURL, U32 pNavMeshVersion, LLPathfindingNavMeshPtr pNavMeshPtr);
 	virtual ~NavMeshResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "NavMeshResponder"; }
 
@@ -163,8 +163,8 @@ public:
 	AgentStateResponder(const std::string &pCapabilityURL);
 	virtual ~AgentStateResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return agentStateResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "AgentStateResponder"; }
 
@@ -184,8 +184,8 @@ public:
 	NavMeshRebakeResponder(const std::string &pCapabilityURL, LLPathfindingManager::rebake_navmesh_callback_t pRebakeNavMeshCallback);
 	virtual ~NavMeshRebakeResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string& pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return navMeshRebakeResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "NavMeshRebakeResponder"; }
 
@@ -245,8 +245,8 @@ public:
 	ObjectLinksetsResponder(const std::string &pCapabilityURL, LinksetsResponderPtr pLinksetsResponsderPtr);
 	virtual ~ObjectLinksetsResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string &pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return objectLinksetsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "ObjectLinksetsResponder"; }
 
@@ -266,8 +266,8 @@ public:
 	TerrainLinksetsResponder(const std::string &pCapabilityURL, LinksetsResponderPtr pLinksetsResponsderPtr);
 	virtual ~TerrainLinksetsResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string &pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return terrainLinksetsResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "TerrainLinksetsResponder"; }
 
@@ -287,8 +287,8 @@ public:
 	CharactersResponder(const std::string &pCapabilityURL, LLPathfindingManager::request_id_t pRequestId, LLPathfindingManager::object_request_callback_t pCharactersCallback);
 	virtual ~CharactersResponder();
 
-	/*virtual*/ void result(const LLSD &pContent);
-	/*virtual*/ void error(U32 pStatus, const std::string &pReason);
+	/*virtual*/ void httpSuccess(void);
+	/*virtual*/ void httpFailure(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return charactersResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "CharactersResponder"; }
 
@@ -813,15 +813,15 @@ NavMeshStatusResponder::~NavMeshStatusResponder()
 {
 }
 
-void NavMeshStatusResponder::result(const LLSD &pContent)
+void NavMeshStatusResponder::httpSuccess(void)
 {
-	LLPathfindingNavMeshStatus navMeshStatus(mRegionUUID, pContent);
+	LLPathfindingNavMeshStatus navMeshStatus(mRegionUUID, mContent);
 	LLPathfindingManager::getInstance()->handleNavMeshStatusRequest(navMeshStatus, mRegion, mIsGetStatusOnly);
 }
 
-void NavMeshStatusResponder::error(U32 pStatus, const std::string& pReason)
+void NavMeshStatusResponder::httpFailure(void)
 {
-	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << pReason << " (statusCode:" << pStatus << ")" << llendl;
+	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << mReason << " (statusCode:" << mStatus << ")" << llendl;
 	LLPathfindingNavMeshStatus navMeshStatus(mRegionUUID);
 	LLPathfindingManager::getInstance()->handleNavMeshStatusRequest(navMeshStatus, mRegion, mIsGetStatusOnly);
 }
@@ -841,14 +841,14 @@ NavMeshResponder::~NavMeshResponder()
 {
 }
 
-void NavMeshResponder::result(const LLSD &pContent)
+void NavMeshResponder::httpSuccess(void)
 {
-	mNavMeshPtr->handleNavMeshResult(pContent, mNavMeshVersion);
+	mNavMeshPtr->handleNavMeshResult(mContent, mNavMeshVersion);
 }
 
-void NavMeshResponder::error(U32 pStatus, const std::string& pReason)
+void NavMeshResponder::httpFailure(void)
 {
-	mNavMeshPtr->handleNavMeshError(pStatus, pReason, mCapabilityURL, mNavMeshVersion);
+	mNavMeshPtr->handleNavMeshError(mStatus, mReason, mCapabilityURL, mNavMeshVersion);
 }
 
 //---------------------------------------------------------------------------
@@ -863,17 +863,17 @@ AgentStateResponder::~AgentStateResponder()
 {
 }
 
-void AgentStateResponder::result(const LLSD &pContent)
+void AgentStateResponder::httpSuccess(void)
 {
-	llassert(pContent.has(AGENT_STATE_CAN_REBAKE_REGION_FIELD));
-	llassert(pContent.get(AGENT_STATE_CAN_REBAKE_REGION_FIELD).isBoolean());
-	BOOL canRebakeRegion = pContent.get(AGENT_STATE_CAN_REBAKE_REGION_FIELD).asBoolean();
+	llassert(mContent.has(AGENT_STATE_CAN_REBAKE_REGION_FIELD));
+	llassert(mContent.get(AGENT_STATE_CAN_REBAKE_REGION_FIELD).isBoolean());
+	BOOL canRebakeRegion = mContent.get(AGENT_STATE_CAN_REBAKE_REGION_FIELD).asBoolean();
 	LLPathfindingManager::getInstance()->handleAgentState(canRebakeRegion);
 }
 
-void AgentStateResponder::error(U32 pStatus, const std::string &pReason)
+void AgentStateResponder::httpFailure(void)
 {
-	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << pReason << " (statusCode:" << pStatus << ")" << llendl;
+	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << mReason << " (statusCode:" << mStatus << ")" << llendl;
 	LLPathfindingManager::getInstance()->handleAgentState(FALSE);
 }
 
@@ -891,14 +891,14 @@ NavMeshRebakeResponder::~NavMeshRebakeResponder()
 {
 }
 
-void NavMeshRebakeResponder::result(const LLSD &pContent)
+void NavMeshRebakeResponder::httpSuccess(void)
 {
 	mRebakeNavMeshCallback(true);
 }
 
-void NavMeshRebakeResponder::error(U32 pStatus, const std::string &pReason)
+void NavMeshRebakeResponder::httpFailure(void)
 {
-	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << pReason << " (statusCode:" << pStatus << ")" << llendl;
+	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << mReason << " (statusCode:" << mStatus << ")" << llendl;
 	mRebakeNavMeshCallback(false);
 }
 
@@ -997,14 +997,14 @@ ObjectLinksetsResponder::~ObjectLinksetsResponder()
 {
 }
 
-void ObjectLinksetsResponder::result(const LLSD &pContent)
+void ObjectLinksetsResponder::httpSuccess(void)
 {
-	mLinksetsResponsderPtr->handleObjectLinksetsResult(pContent);
+	mLinksetsResponsderPtr->handleObjectLinksetsResult(mContent);
 }
 
-void ObjectLinksetsResponder::error(U32 pStatus, const std::string &pReason)
+void ObjectLinksetsResponder::httpFailure(void)
 {
-	mLinksetsResponsderPtr->handleObjectLinksetsError(pStatus, pReason, mCapabilityURL);
+	mLinksetsResponsderPtr->handleObjectLinksetsError(mStatus, mReason, mCapabilityURL);
 }
 
 //---------------------------------------------------------------------------
@@ -1021,14 +1021,14 @@ TerrainLinksetsResponder::~TerrainLinksetsResponder()
 {
 }
 
-void TerrainLinksetsResponder::result(const LLSD &pContent)
+void TerrainLinksetsResponder::httpSuccess(void)
 {
-	mLinksetsResponsderPtr->handleTerrainLinksetsResult(pContent);
+	mLinksetsResponsderPtr->handleTerrainLinksetsResult(mContent);
 }
 
-void TerrainLinksetsResponder::error(U32 pStatus, const std::string &pReason)
+void TerrainLinksetsResponder::httpFailure(void)
 {
-	mLinksetsResponsderPtr->handleTerrainLinksetsError(pStatus, pReason, mCapabilityURL);
+	mLinksetsResponsderPtr->handleTerrainLinksetsError(mStatus, mReason, mCapabilityURL);
 }
 
 //---------------------------------------------------------------------------
@@ -1046,15 +1046,15 @@ CharactersResponder::~CharactersResponder()
 {
 }
 
-void CharactersResponder::result(const LLSD &pContent)
+void CharactersResponder::httpSuccess(void)
 {
-	LLPathfindingObjectListPtr characterListPtr = LLPathfindingObjectListPtr(new LLPathfindingCharacterList(pContent));
+	LLPathfindingObjectListPtr characterListPtr = LLPathfindingObjectListPtr(new LLPathfindingCharacterList(mContent));
 	mCharactersCallback(mRequestId, LLPathfindingManager::kRequestCompleted, characterListPtr);
 }
 
-void CharactersResponder::error(U32 pStatus, const std::string &pReason)
+void CharactersResponder::httpFailure(void)
 {
-	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << pReason << " (statusCode:" << pStatus << ")" << llendl;
+	llwarns << "error with request to URL '" << mCapabilityURL << "' because " << mReason << " (statusCode:" << mStatus << ")" << llendl;
 
 	LLPathfindingObjectListPtr characterListPtr =  LLPathfindingObjectListPtr(new LLPathfindingCharacterList());
 	mCharactersCallback(mRequestId, LLPathfindingManager::kRequestError, characterListPtr);

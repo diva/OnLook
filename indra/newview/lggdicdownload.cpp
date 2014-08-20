@@ -58,8 +58,6 @@ public:
 	EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::string sname);
 	~EmeraldDicDownloader() { }
 	/*virtual*/ void completedRaw(
-		U32 status,
-		const std::string& reason,
 		const LLChannelDescriptors& channels,
 		const buffer_ptr_t& buffer);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return emeraldDicDownloader_timeout; }
@@ -167,9 +165,9 @@ EmeraldDicDownloader::EmeraldDicDownloader(lggDicDownloadFloater* spanel, std::s
 }
 
 
-void EmeraldDicDownloader::completedRaw(U32 status, const std::string& reason, const LLChannelDescriptors& channels, const buffer_ptr_t& buffer)
+void EmeraldDicDownloader::completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 {
-	if (status < 200 || status >= 300)
+	if (!isGoodStatus(mStatus))
 	{
 		return;
 	}

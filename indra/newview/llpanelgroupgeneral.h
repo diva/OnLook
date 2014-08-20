@@ -68,7 +68,7 @@ public:
 	
 	virtual void draw();
 
-	void onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name);
+	void onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name, const LLUUID& av_id);
 private:
 	void onFocusEdit();
 	void onCommitAny();
@@ -113,6 +113,8 @@ private:
 	LLComboBox		*mComboMature;
 
 	LLGroupMgrGroupData::member_list_t::iterator mMemberProgress;
+	typedef std::map<LLUUID, boost::signals2::connection> avatar_name_cache_connection_map_t;
+	avatar_name_cache_connection_map_t mAvatarNameCacheConnections;
 };
 
 #endif

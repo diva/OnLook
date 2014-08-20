@@ -406,8 +406,7 @@ void LLViewerPartGroup::updateParticles(const F32 lastdt)
 		// Kill dead particles (either flagged dead, or too old)
 		if ((part->mLastUpdateTime > part->mMaxAge) || (LLViewerPart::LL_PART_DEAD_MASK == part->mFlags))
 		{
-			mParticles[i] = mParticles.back() ;
-			mParticles.pop_back() ;
+			vector_replace_with_last(mParticles, mParticles.begin() + i);
 			delete part ;
 		}
 		else 
@@ -417,8 +416,7 @@ void LLViewerPartGroup::updateParticles(const F32 lastdt)
 			{
 				// Transfer particles between groups
 				LLViewerPartSim::getInstance()->put(part) ;
-				mParticles[i] = mParticles.back() ;
-				mParticles.pop_back() ;
+				vector_replace_with_last(mParticles, mParticles.begin() + i);
 			}
 			else
 			{
@@ -675,11 +673,9 @@ void LLViewerPartSim::updateSimulation()
 	S32 count = (S32) mViewerPartSources.size();
 	S32 start = (S32)ll_frand((F32)count);
 	S32 dir = 1;
-	S32 deldir = 0;
 	if (ll_frand() > 0.5f)
 	{
 		dir = -1;
-		deldir = -1;
 	}
 
 	S32 num_updates = 0;
@@ -725,11 +721,9 @@ void LLViewerPartSim::updateSimulation()
 
 		if (mViewerPartSources[i]->isDead())
 		{
-			mViewerPartSources[i] = mViewerPartSources.back();
-			mViewerPartSources.pop_back();
-			//mViewerPartSources.erase(mViewerPartSources.begin() + i);
+			vector_replace_with_last(mViewerPartSources, mViewerPartSources.begin() + i);
+			//mViewerPartSources.erase(it);
 			count--;
-			i+=deldir;
 		}
 		else
         {
@@ -764,9 +758,8 @@ void LLViewerPartSim::updateSimulation()
 			if (!mViewerPartGroups[i]->getCount())
 			{
 				delete mViewerPartGroups[i];
-				mViewerPartGroups[i] = mViewerPartGroups.back();
-				mViewerPartGroups.pop_back();
-				//mViewerPartGroups.erase(mViewerPartGroups.begin() + i);
+				vector_replace_with_last(mViewerPartGroups, mViewerPartGroups.begin() + i);
+				//mViewerPartGroups.erase(it);
 				i--;
 				count--;
 			}
@@ -849,15 +842,15 @@ void LLViewerPartSim::removeLastCreatedSource()
 void LLViewerPartSim::cleanupRegion(LLViewerRegion *regionp)
 {
 	group_list_t& vec = mViewerPartGroups;
-	for (group_list_t::size_type i = 0;i<vec.size();++i)
+	for (group_list_t::iterator it = vec.begin();it!=vec.end();)
 	{
-		if (vec[i]->getRegion() == regionp)
+		if ((*it)->getRegion() == regionp)
 		{
-			delete vec[i];
-			vec[i--] = vec.back();
-			vec.pop_back();
+			delete *it;
+			it = vector_replace_with_last(vec,it);
 			//i = mViewerPartGroups.erase(iter);			
 		}
+		else ++it;
 	}
 }
 

@@ -60,6 +60,7 @@
 #include "hippolimits.h"
 #include "floaterao.h"
 #include "statemachine/aifilepicker.h"
+#include "lfsimfeaturehandler.h"
 
 #include "llares.h"
 #include "llavatarnamecache.h"
@@ -115,9 +116,11 @@
 #include "llfeaturemanager.h"
 #include "llfirstuse.h"
 #include "llfloateractivespeakers.h"
+#include "llfloateravatar.h"
 #include "llfloaterbeacons.h"
 #include "llfloatercamera.h"
 #include "llfloaterchat.h"
+#include "llfloaterdestinations.h"
 #include "llfloatergesture.h"
 #include "llfloaterhud.h"
 #include "llfloaterinventory.h"
@@ -140,6 +143,7 @@
 #include "llkeyboard.h"
 #include "llloginhandler.h"			// gLoginHandler, SLURL support
 #include "llpanellogin.h"
+#include "llmediafilter.h"
 #include "llmutelist.h"
 #include "llnotify.h"
 #include "llpanelavatar.h"
@@ -222,6 +226,7 @@
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "lldaycyclemanager.h"
 #include "llfloaterblacklist.h"
+#include "scriptcounter.h"
 #include "shfloatermediaticker.h"
 #include "llpacketring.h"
 // </edit>
@@ -324,6 +329,12 @@ void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is
 	dialog_refresh_all();
 }
 
+void simfeature_debug_update(const std::string& val, const std::string& setting)
+{
+	//if (!val.empty()) // Singu Note: Should we only update the setting if not empty?
+	gSavedSettings.setString(setting, val);
+}
+
 //
 // exported functionality
 //
@@ -372,6 +383,30 @@ void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
 {
 	process_sound_trigger(msg,NULL);
 	LLFloaterAvatarList::sound_trigger_hook(msg,NULL);
+}
+
+void convert_legacy_settings()
+{
+	// Convert legacy settings to new ones here.
+	if (!gSavedPerAccountSettings.getBOOL("DefaultUploadPermissionsConverted"))
+	{
+		gSavedSettings.setBOOL("UploadsEveryoneCopy", gSavedSettings.getBOOL("EveryoneCopy"));
+		bool val = gSavedPerAccountSettings.getBOOL("EveryoneExport");
+		gSavedPerAccountSettings.setBOOL("UploadsEveryoneExport", val);
+		gSavedPerAccountSettings.setBOOL("ObjectsEveryoneExport", val);
+		val = gSavedSettings.getBOOL("NextOwnerCopy");
+		gSavedSettings.setBOOL("UploadsNextOwnerCopy", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerCopy", val);
+		val = gSavedSettings.getBOOL("NextOwnerModify");
+		gSavedSettings.setBOOL("UploadsNextOwnerModify", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerModify", val);
+		val = gSavedSettings.getBOOL("NextOwnerTransfer");
+		gSavedSettings.setBOOL("UploadsNextOwnerTransfer", val);
+		gSavedSettings.setBOOL("ObjectsNextOwnerTransfer", val);
+		val = gSavedSettings.getBOOL("NextOwnerTransfer");
+		gSavedSettings.setBOOL("UploadsShareWithGroup", gSavedSettings.getBOOL("ShareWithGroup"));
+		gSavedPerAccountSettings.setBOOL("DefaultUploadPermissionsConverted", true);
+	}
 }
 
 void init_audio()
@@ -1039,6 +1074,8 @@ bool idle_startup()
 			gSavedPerAccountSettings.setU32("LastLogoff", time_corrected());
 		}
 
+		convert_legacy_settings();
+
 		//Default the path if one isn't set.
 		if (gSavedPerAccountSettings.getString("InstantMessageLogPath").empty())
 		{
@@ -1229,6 +1266,10 @@ bool idle_startup()
 		requested_options.push_back("tutorial_setting");
 		requested_options.push_back("login-flags");
 		requested_options.push_back("global-textures");
+		// <singu> Opensim requested options
+		requested_options.push_back("avatar_picker_url");
+		requested_options.push_back("destination_guide_url");
+		// </singu>
 		if(gSavedSettings.getBOOL("ConnectAsGod"))
 		{
 			gSavedSettings.setBOOL("UseDebugMenus", TRUE);
@@ -1547,13 +1588,22 @@ bool idle_startup()
 			if (process_login_success_response(password, first_sim_size_x, first_sim_size_y))
 			{
 				std::string name = firstname;
-				if (!gHippoGridManager->getCurrentGrid()->isSecondLife() ||
+				bool secondlife(gHippoGridManager->getCurrentGrid()->isSecondLife());
+				if (!secondlife ||
 					!boost::algorithm::iequals(lastname, "Resident"))
 				{
 					name += " " + lastname;
 				}
 				if (gSavedSettings.getBOOL("LiruGridInTitle")) gWindowTitle += "- " + gHippoGridManager->getCurrentGrid()->getGridName() + " ";
 				gViewerWindow->getWindow()->setTitle(gWindowTitle += "- " + name);
+
+				if (!secondlife)
+				{
+					LFSimFeatureHandler& inst(LFSimFeatureHandler::instance());
+					inst.setDestinationGuideURLCallback(boost::bind(simfeature_debug_update, _1, "DestinationGuideURL"));
+					inst.setSearchURLCallback(boost::bind(simfeature_debug_update, _1, "SearchURL"));
+				}
+
 				// Pass the user information to the voice chat server interface.
 				LLVoiceClient::getInstance()->userAuthorized(name, gAgentID);
 				// create the default proximal channel
@@ -1695,6 +1745,7 @@ bool idle_startup()
 	if (STATE_MULTIMEDIA_INIT == LLStartUp::getStartupState())
 	{
 		LLStartUp::multimediaInit();
+		LLMediaFilter::getInstance();
 		LLStartUp::setStartupState( STATE_FONT_INIT );
 		display_startup();
 		return FALSE;
@@ -1758,45 +1809,6 @@ bool idle_startup()
 		LLRect window(0, gViewerWindow->getWindowHeight(), gViewerWindow->getWindowWidth(), 0);
 		gViewerWindow->adjustControlRectanglesForFirstUse(window);
 
-		if (gSavedSettings.getBOOL("ShowMiniMap"))
-		{
-			LLFloaterMap::showInstance();
-		}
-		if (gSavedSettings.getBOOL("ShowRadar"))
-		{
-			LLFloaterAvatarList::showInstance();
-		}
-		// <edit>
-		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
-		{
-			LLFloaterAvatarList::getInstance()->close();
-		}
-		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
-		{
-			SHFloaterMediaTicker::showInstance();
-		}
-		// </edit>
-		if (gSavedSettings.getBOOL("ShowCameraControls"))
-		{
-			LLFloaterCamera::showInstance();
-		}
-		if (gSavedSettings.getBOOL("ShowMovementControls"))
-		{
-			LLFloaterMove::showInstance();
-		}
-
-		if (gSavedSettings.getBOOL("ShowActiveSpeakers"))
-		{
-			LLFloaterActiveSpeakers::showInstance();
-		}
-
-		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
-		{
-			LLFloaterBeacons::showInstance();
-		}
-		
-
-		
 		if (!gNoRender)
 		{
 			//Set up cloud rendertypes. Passed argument is unused.
@@ -2394,6 +2406,51 @@ bool idle_startup()
 		gDisplaySwapBuffers = TRUE;
 		display_startup();
 
+		if (gSavedSettings.getBOOL("ShowMiniMap"))
+		{
+			LLFloaterMap::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowRadar"))
+		{
+			LLFloaterAvatarList::showInstance();
+		}
+		// <edit>
+		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
+		{
+			LLFloaterAvatarList::getInstance()->close();
+		}
+		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
+		{
+			SHFloaterMediaTicker::showInstance();
+		}
+		// </edit>
+		if (gSavedSettings.getBOOL("ShowCameraControls"))
+		{
+			LLFloaterCamera::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowMovementControls"))
+		{
+			LLFloaterMove::showInstance();
+		}
+
+		if (gSavedSettings.getBOOL("ShowActiveSpeakers"))
+		{
+			LLFloaterActiveSpeakers::showInstance();
+		}
+
+		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
+		{
+			LLFloaterBeacons::showInstance();
+		}
+		if (gSavedSettings.getBOOL("ShowAvatarFloater"))
+		{
+			LLFloaterAvatar::showInstance();
+		}
+		if (gSavedSettings.getBOOL("DestinationGuideShown"))
+		{
+			LLFloaterDestinations::showInstance();
+		}
+
 		LLMessageSystem* msg = gMessageSystem;
 		msg->setHandlerFuncFast(_PREHASH_SoundTrigger,				hooked_process_sound_trigger);
 		msg->setHandlerFuncFast(_PREHASH_PreloadSound,				process_preload_sound);
@@ -2607,7 +2664,6 @@ bool idle_startup()
 	{
 		set_startup_status(1.0, "", "");
 		display_startup();
-		LLViewerParcelMedia::loadDomainFilterList();
 
 		// Let the map know about the inventory.
 		LLFloaterWorldMap* floater_world_map = gFloaterWorldMap;
@@ -2936,6 +2992,22 @@ void pass_processObjectPropertiesFamily(LLMessageSystem *msg, void**)
 	JCFloaterAreaSearch::processObjectPropertiesFamily(msg, NULL);
 }
 
+void process_script_running_reply(LLMessageSystem* msg, void** v)
+{
+	LLLiveLSLEditor::processScriptRunningReply(msg, v);
+	if (ScriptCounter::sCheckMap.size())
+	{
+		LLUUID item_id;
+		msg->getUUIDFast(_PREHASH_Script, _PREHASH_ItemID, item_id);
+		std::map<LLUUID,ScriptCounter*>::iterator it = ScriptCounter::sCheckMap.find(item_id);
+		if (it != ScriptCounter::sCheckMap.end())
+		{
+			it->second->processRunningReply(msg);
+			ScriptCounter::sCheckMap.erase(it);
+		}
+	}
+}
+
 void register_viewer_callbacks(LLMessageSystem* msg)
 {
 	msg->setHandlerFuncFast(_PREHASH_LayerData,				process_layer_data );
@@ -2986,8 +3058,7 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	msg->setHandlerFuncFast(_PREHASH_CoarseLocationUpdate,		LLWorld::processCoarseUpdate, NULL);
 	msg->setHandlerFuncFast(_PREHASH_ReplyTaskInventory, 		LLViewerObject::processTaskInv,	NULL);
 	msg->setHandlerFuncFast(_PREHASH_DerezContainer,			process_derez_container, NULL);
-	msg->setHandlerFuncFast(_PREHASH_ScriptRunningReply,
-						&LLLiveLSLEditor::processScriptRunningReply);
+	msg->setHandlerFuncFast(_PREHASH_ScriptRunningReply, process_script_running_reply);
 
 	msg->setHandlerFuncFast(_PREHASH_DeRezAck, process_derez_ack);
 
@@ -4041,7 +4112,8 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 		LLWorldMap::gotMapServerURL(true);
 	}
 
-	if(gHippoGridManager->getConnectedGrid()->isOpenSimulator())
+	bool opensim = gHippoGridManager->getConnectedGrid()->isOpenSimulator();
+	if (opensim)
 	{
 		std::string web_profile_url = response["web_profile_url"];
 		//if(!web_profile_url.empty()) // Singu Note: We're using this to check if this grid supports web profiles at all, so set empty if empty.
@@ -4134,7 +4206,15 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setPasswordUrl(tmp);
 	tmp = response["search"].asString();
 	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
-	if (gHippoGridManager->getConnectedGrid()->isOpenSimulator()) gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
+	else if (opensim) tmp = gHippoGridManager->getConnectedGrid()->getSearchUrl(); // Fallback from grid info response for setting
+	if (opensim)
+	{
+		gSavedSettings.setString("SearchURL", tmp); // Singu Note: For web search purposes, always set this setting
+		tmp = response["avatar_picker_url"].asString();
+		gSavedSettings.setString("AvatarPickerURL", tmp);
+		gMenuBarView->getChildView("Avatar Picker")->setVisible(!tmp.empty());
+		gSavedSettings.setString("DestinationGuideURL", response["destination_guide_url"].asString());
+	}
 	tmp = response["currency"].asString();
 	if (!tmp.empty())
 	{

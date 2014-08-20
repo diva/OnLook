@@ -55,8 +55,9 @@ class LLVoiceCallCapResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLVoiceCallCapResponder(const LLUUID& session_id) : mSessionID(session_id) {};
 
-	/*virtual*/ void error(U32 status, const std::string& reason);	// called with bad status codes
-	/*virtual*/ void result(const LLSD& content);
+	// called with bad status codes
+	virtual void httpFailure(void);
+	virtual void httpSuccess(void);
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return voiceCallCapResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLVoiceCallCapResponder"; }
 
@@ -65,14 +66,14 @@ private:
 };
 
 
-void LLVoiceCallCapResponder::error(U32 status, const std::string& reason)
+void LLVoiceCallCapResponder::httpFailure(void)
 {
 	LL_WARNS("Voice") << "LLVoiceCallCapResponder error [status:"
-		<< status << "]: " << reason << LL_ENDL;
+		<< mStatus << "]: " << mReason << LL_ENDL;
 	LLVoiceChannel* channelp = LLVoiceChannel::getChannelByID(mSessionID);
 	if ( channelp )
 	{
-		if ( 403 == status )
+		if ( 403 == mStatus )
 		{
 			//403 == no ability
 			LLNotificationsUtil::add(
@@ -89,22 +90,22 @@ void LLVoiceCallCapResponder::error(U32 status, const std::string& reason)
 	}
 }
 
-void LLVoiceCallCapResponder::result(const LLSD& content)
+void LLVoiceCallCapResponder::httpSuccess(void)
 {
 	LLVoiceChannel* channelp = LLVoiceChannel::getChannelByID(mSessionID);
 	if (channelp)
 	{
 		// *TODO: DEBUG SPAM
 		LLSD::map_const_iterator iter;
-		for(iter = content.beginMap(); iter != content.endMap(); ++iter)
+		for(iter = mContent.beginMap(); iter != mContent.endMap(); ++iter)
 		{
 			LL_DEBUGS("Voice") << "LLVoiceCallCapResponder::result got "
 				<< iter->first << LL_ENDL;
 		}
 
 		channelp->setChannelInfo(
-			content["voice_credentials"]["channel_uri"].asString(),
-			content["voice_credentials"]["channel_credentials"].asString());
+			mContent["voice_credentials"]["channel_uri"].asString(),
+			mContent["voice_credentials"]["channel_credentials"].asString());
 	}
 }
 
@@ -412,7 +413,7 @@ void LLVoiceChannel::doSetState(const EState& new_state)
 	mState = new_state;
 
 	if (!mStateChangedCallback.empty())
-		mStateChangedCallback(old_state, mState, mCallDirection, mCallEndedByAgent);
+		mStateChangedCallback(old_state, mState, mCallDirection, mCallEndedByAgent, mSessionID);
 }
 
 //static

@@ -197,7 +197,6 @@ protected:
 
 	LLTextEditor* getEditor() { return mScriptEd->mEditor; }
 	/*virtual*/ const char *getTitleName() const { return "Script"; }
-	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
 	// <edit>
 	/*virtual*/ BOOL canSaveAs() const;
 	/*virtual*/ void saveAs();

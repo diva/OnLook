@@ -55,7 +55,7 @@
           </menu_item_call>
         </pie_menu>
 		<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
-			<on_click function="ShowFloater" userdata="inspect" />
+			<on_click function="ShowFloater" userdata="show inspect" />
 			<on_enable function="Object.EnableInspect"/>
 		</menu_item_call>
 		<menu_item_call enabled="false" label="Data" mouse_opaque="true" name="Data">

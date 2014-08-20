@@ -36,39 +36,17 @@
 #include "llpanelcontents.h"
 
 // linden library includes
-#include "llerror.h"
-#include "llrect.h"
-#include "llstring.h"
-#include "llmaterialtable.h"
-#include "llfontgl.h"
-#include "m3math.h"
-#include "llpermissionsflags.h"
-#include "lleconomy.h"
-#include "material_codes.h"
 #include "llinventorydefines.h"
 
 // project includes
-#include "llui.h"
-#include "llspinctrl.h"
-#include "llcheckboxctrl.h"
-#include "lltextbox.h"
-#include "llbutton.h"
-#include "llcombobox.h"
-#include "llfloaterbulkpermission.h"
-
 #include "llagent.h"
-#include "llviewerwindow.h"
-#include "llviewerassettype.h"
-#include "llworld.h"
-#include "llviewerobject.h"
-#include "llviewerregion.h"
-#include "llresmgr.h"
-#include "llselectmgr.h"
-#include "llpreviewscript.h"
-#include "lltool.h"
-#include "lltoolmgr.h"
-#include "lltoolcomp.h"
+#include "llfloaterbulkpermission.h"
+#include "llfloaterperms.h"
 #include "llpanelobjectinventory.h"
+#include "llpreviewscript.h"
+#include "llselectmgr.h"
+#include "llviewerassettype.h"
+#include "llviewerobject.h"
 // [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.2.0c)
 #include "rlvhandler.h"
 #include "rlvlocks.h"
@@ -203,12 +181,14 @@ void LLPanelContents::onClickNewScript(void *userdata)
 
 		LLPermissions perm;
 		perm.init(gAgent.getID(), gAgent.getID(), LLUUID::null, LLUUID::null);
+
+		// Parameters are base, owner, everyone, group, next
 		perm.initMasks(
 			PERM_ALL,
 			PERM_ALL,
-			PERM_NONE,
-			PERM_NONE,
-			PERM_MOVE | PERM_TRANSFER);
+			LLFloaterPerms::getEveryonePerms("Scripts"),
+			LLFloaterPerms::getGroupPerms("Scripts"),
+			LLFloaterPerms::getNextOwnerPerms("Scripts"));
 		std::string desc;
 		LLViewerAssetType::generateDescriptionFor(LLAssetType::AT_LSL_TEXT, desc);
 		LLPointer<LLViewerInventoryItem> new_item =

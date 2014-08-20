@@ -336,16 +336,13 @@ void LLFloaterChat::addChatHistory(const LLChat& chat, bool log_to_file)
 // static
 void LLFloaterChat::setHistoryCursorAndScrollToEnd()
 {
-	LLViewerTextEditor*	history_editor = LLFloaterChat::getInstance(LLSD())->getChild<LLViewerTextEditor>("Chat History Editor");
-	LLViewerTextEditor*	history_editor_with_mute = LLFloaterChat::getInstance(LLSD())->getChild<LLViewerTextEditor>("Chat History Editor with mute");
-	
-	if (history_editor) 
+	if (LLViewerTextEditor* editor = getInstance()->findChild<LLViewerTextEditor>("Chat History Editor")) 
 	{
-		history_editor->setCursorAndScrollToEnd();
+		editor->setCursorAndScrollToEnd();
 	}
-	if (history_editor_with_mute)
+	if (LLViewerTextEditor* editor = getInstance()->findChild<LLViewerTextEditor>("Chat History Editor with mute"))
 	{
-		 history_editor_with_mute->setCursorAndScrollToEnd();
+		 editor->setCursorAndScrollToEnd();
 	}
 }
 

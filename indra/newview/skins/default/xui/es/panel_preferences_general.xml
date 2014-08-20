@@ -30,6 +30,9 @@
 		<combo_item name="Display Names only">
 			Solamente Nombres Mostrados
 		</combo_item>
+		<combo_item name="Old Names (with Display Names)">
+			Nombres Antiguos (c/Nombres Mostrados)
+		</combo_item>
 	</combo_box>
 	<check_box label="Mostrar 'Resident'" name="show_resident_checkbox" left_delta="164"/>
 	<check_box label="Nombres de Avatar en pequeño" name="small_avatar_names_checkbox"/>

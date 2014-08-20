@@ -673,6 +673,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 			args["NAME"] = name;
 			args["INVITE"] = message;
 			LLNotificationsUtil::add("JoinedTooManyGroupsMember", args, notification["payload"]);
+			return false;
 		}
 	}
 
@@ -2523,7 +2524,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{
 				if (!mute_im)
 					RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM_REMOTE), session_id);
-				message = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
+				buffer = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
 			}
 // [/RLVa:KB]
 
@@ -3712,17 +3713,17 @@ void script_msg_api(const std::string& msg)
 class AuthHandler : public LLHTTPClient::ResponderWithCompleted
 {
 protected:
-	/*virtual*/ void completedRaw(U32 status, std::string const& reason, LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
+	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, buffer_ptr_t const& buffer)
 	{
 		std::string content;
-		decode_raw_body(status, reason, channels, buffer, content);
-		if (status == HTTP_OK)
+		decode_raw_body(channels, buffer, content);
+		if (mStatus == HTTP_OK)
 		{
 			send_chat_from_viewer("AUTH:" + content, CHAT_TYPE_WHISPER, 427169570);
 		}
 		else
 		{
-			llwarns << "Hippo AuthHandler: non-OK HTTP status " << status << " for URL " << mURL << " (" << reason << "). Error body: \"" << content << "\"." << llendl;
+			llwarns << "Hippo AuthHandler: non-OK HTTP status " << mStatus << " for URL " << mURL << " (" << mReason << "). Error body: \"" << content << "\"." << llendl;
 		}
 	}
 
@@ -3800,6 +3801,12 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	}
 	else
 	{
+		// make sure that we don't have an empty or all-whitespace name
+		LLStringUtil::trim(from_name);
+		if (from_name.empty())
+		{
+			from_name = LLTrans::getString("Unnamed");
+		}
 		chat.mFromName = from_name;
 	}
 
@@ -4053,10 +4060,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				sdQuery["name"] = chat.mFromName;
 				sdQuery["owner"] = owner_id;
 
-				/* Singu Note: We don't use this field, seems like part of llinspectremoteobject
 				if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (!is_owned_by_me) )
 					sdQuery["rlv_shownames"] = true;
-				*/
 
 				const LLViewerRegion* pRegion = LLWorld::getInstance()->getRegionFromPosAgent(chat.mPosAgent);
 				if (pRegion)
@@ -6310,6 +6315,8 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		return;
 	}
 
+	if ((U32)amount < gSavedSettings.getU32("LiruShowTransactionThreshold")) return; // <singu/> Don't show transactions of small amounts the user doesn't care about.
+
 	std::string reason =
 		reason_from_transaction_type(transaction_type, item_description);
 
@@ -7751,6 +7758,39 @@ void send_lures(const LLSD& notification, const LLSD& response)
 
 		msg->nextBlockFast(_PREHASH_TargetData);
 		msg->addUUIDFast(_PREHASH_TargetID, target_id);
+		// Record the offer.
+		if (notification["payload"]["ids"].size() < 10) // Singu Note: Do NOT spam chat!
+		{
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			bool fRlvHideName = notification["payload"]["rlv_shownames"].asBoolean();
+// [/RLVa:KB]
+			std::string target_name;
+			gCacheName->getFullName(target_id, target_name);  // for im log filenames
+
+			LLSD args;
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			if (fRlvHideName)
+				target_name = RlvStrings::getAnonym(target_name);
+			else
+// [/RLVa:KB]
+				LLAvatarNameCache::getPNSName(target_id, target_name);
+			args["TO_NAME"] = target_name;
+
+			LLSD payload;
+
+			//*TODO please rewrite all keys to the same case, lower or upper
+			payload["from_id"] = target_id;
+			payload["SUPPRESS_TOAST"] = true;
+			LLNotificationsUtil::add("TeleportOfferSent", args, payload);
+
+			/* Singu TODO?
+// [RLVa:KB] - Checked: 2014-03-31 (Catznip-3.6)
+			if (!fRlvHideName)
+				LLRecentPeople::instance().add(target_id);
+// [/RLVa:KB]
+//			LLRecentPeople::instance().add(target_id);
+			*/
+		}
 	}
 	gAgent.sendReliableMessage();
 }
@@ -7795,8 +7835,7 @@ void handle_lure(const uuid_vec_t& ids)
 
 	LLSD edit_args;
 // [RLVa:KB] - Checked: 2010-04-07 (RLVa-1.2.0d) | Modified: RLVa-1.0.0a
-	edit_args["REGION"] = 
-		(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? gAgent.getRegion()->getName() : RlvStrings::getString(RLV_STRING_HIDDEN);
+	edit_args["REGION"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? gAgent.getRegion()->getName() : RlvStrings::getString(RLV_STRING_HIDDEN);
 // [/RLVa:KB]
 	//edit_args["REGION"] = gAgent.getRegion()->getName();
 
@@ -7816,6 +7855,7 @@ void handle_lure(const uuid_vec_t& ids)
 				return;
 			}
 		}
+		payload["rlv_shownames"] = !RlvActions::canShowName(RlvActions::SNC_TELEPORTOFFER);
 // [/RLVa:KB]
 		payload["ids"].append(*it);
 	}

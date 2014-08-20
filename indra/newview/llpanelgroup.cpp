@@ -157,6 +157,7 @@ LLPanelGroup::LLPanelGroup(const LLUUID& group_id)
 	mFactoryMap["members_sub_tab"] = LLCallbackMap(LLPanelGroupMembersSubTab::createTab, &mID);
 	mFactoryMap["roles_sub_tab"] = LLCallbackMap(LLPanelGroupRolesSubTab::createTab, &mID);
 	mFactoryMap["actions_sub_tab"] = LLCallbackMap(LLPanelGroupActionsSubTab::createTab, &mID);
+	mFactoryMap["banlist_sub_tab"] = LLCallbackMap(LLPanelGroupBanListSubTab::createTab, &mID);
 
 	LLGroupMgr::getInstance()->addObserver(this);
 

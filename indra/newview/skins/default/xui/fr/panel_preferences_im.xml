@@ -16,7 +16,7 @@
 	<check_box label="Inclure les heures" name="log_chat_timestamp"/>
 	<check_box label="Inclure les IM reçus" name="log_chat_IM"/>
 	<check_box label="Inclure la date avec les heures" name="log_date_timestamp"/>
-	<check_box label="Joindre la date dans le nom du fichier de log" left="148" name="logfile_name_datestamp" width="237"/>
-	<button label="Changer d'emplacement" label_selected="Changer d'emplacement" name="log_path_button" width="180"/>
-	<line_editor left="308" name="log_path_string"/>
+	<check_box label="Joindre la date dans le nom du fichier de log" name="logfile_name_datestamp"/>
+	<button label="Changer d'emplacement" label_selected="Changer d'emplacement" name="log_path_button" left="30" width="180"/>
+	<line_editor left="196" name="log_path_string"/>
 </panel>

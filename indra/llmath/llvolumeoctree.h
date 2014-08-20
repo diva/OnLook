@@ -127,13 +127,14 @@ public:
 	LL_ALIGN_16(LLVector4a mExtents[2]); // extents (min, max) of this node and all its children
 };
 
+LL_ALIGN_PREFIX(16)
 class LLOctreeTriangleRayIntersect : public LLOctreeTraveler<LLVolumeTriangle>
 {
 public:
 	const LLVolumeFace* mFace;
-	LLVector4a mStart;
-	LLVector4a mDir;
-	LLVector4a mEnd;
+	LL_ALIGN_16(LLVector4a mStart);
+	LL_ALIGN_16(LLVector4a mDir);
+	LL_ALIGN_16(LLVector4a mEnd);
 	LLVector4a* mIntersection;
 	LLVector2* mTexCoord;
 	LLVector4a* mNormal;
@@ -148,7 +149,7 @@ public:
 	void traverse(const LLOctreeNode<LLVolumeTriangle>* node);
 
 	virtual void visit(const LLOctreeNode<LLVolumeTriangle>* node);
-};
+} LL_ALIGN_POSTFIX(16);
 
 class LLVolumeOctreeValidate : public LLOctreeTraveler<LLVolumeTriangle>
 {

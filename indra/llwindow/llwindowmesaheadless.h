@@ -30,7 +30,6 @@
 #if LL_MESA_HEADLESS
 
 #include "llwindow.h"
-#include "GL/glu.h"
 #include "GL/osmesa.h"
 
 class LLWindowMesaHeadless : public LLWindow

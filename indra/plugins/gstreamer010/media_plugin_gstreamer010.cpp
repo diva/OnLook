@@ -793,10 +793,13 @@ MediaPluginGStreamer010::startup()
 	// only do global GStreamer initialization once.
 	if (!mDoneInit)
 	{
-		g_thread_init(NULL);
-
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+#if !GLIB_CHECK_VERSION(2, 32, 0)
+		if (!g_thread_supported()) g_thread_init(NULL);
+#endif
 		// Init the glib type system - we need it.
 		g_type_init();
+#endif
 		set_gst_plugin_path();
 
 

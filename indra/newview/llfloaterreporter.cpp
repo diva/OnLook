@@ -723,12 +723,12 @@ class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
 public:
 	LLUserReportResponder() { }
 
-	/*virtual*/ void error(U32 status, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		// *TODO do some user messaging here
 		LLUploadDialog::modalUploadFinished();
 	}
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		// we don't care about what the server returns
 		LLUploadDialog::modalUploadFinished();

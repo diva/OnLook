@@ -709,13 +709,13 @@ class ViewerStatsResponder : public LLHTTPClient::ResponderWithResult
 public:
     ViewerStatsResponder() { }
 
-    /*virtual*/ void error(U32 statusNum, const std::string& reason)
+    /*virtual*/ void httpFailure(void)
     {
-		llinfos << "ViewerStatsResponder::error " << statusNum << " "
-				<< reason << llendl;
+		llinfos << "ViewerStatsResponder::error " << mStatus << " "
+				<< mReason << llendl;
     }
 
-    /*virtual*/ void result(const LLSD& content)
+    /*virtual*/ void httpSuccess(void)
     {
 		llinfos << "ViewerStatsResponder::result" << llendl;
 	}

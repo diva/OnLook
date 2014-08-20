@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel label="Prohibir Residentes" name="bulk_ban_panel" width="210">
+    <panel.string name="loading">
+        (cargando...)
+    </panel.string>
+    <panel.string name="ban_selection_too_large">
+        Prohibiciones de Grupo no enviadas: Demasiados residentes seleccionados. La Prohibición de Grupo está limitada a 100 residentes por requerimiento.
+    </panel.string>
+    <panel.string name="already_banned">
+        Invitación al Grupo no enviada: el residente '[RESIDENT]' se encuentra prohibido.
+    </panel.string>
+    <text name="help_text">
+        Puedes seleccionar múltiples residentesYou can select multiple Residents to
+para prohibirles el acceso al grupo. Pulsa &apos;Abrir
+Selector de Residentes&apos; para comenzar.
+    </text>
+    <button label="Abrir Selector de Residentes" name="add_button"/>
+    <name_list name="banned_agent_list" tool_tip="Mantén presionada la tecla Ctrl y pulsa sobre el nombre del residente para selección múltiple"/>
+    <button label="Quitar seleccionado de la lista" name="remove_button" tool_tip="Eliminar de la lista de prohibición a los residentes seleccionados"/>
+    <button label="Prohibir Residentes" name="ban_button"/>
+    <button label="Cancelar" name="cancel_button"/>
+    <string name="GroupBulkBan">
+        Prohibición al Grupo
+    </string>
+</panel>

@@ -2,31 +2,25 @@
  * @file llcamera.h
  * @brief Header file for the LLCamera class.
  *
- * $LicenseInfo:firstyear=2000&license=viewergpl$
- * 
- * Copyright (c) 2000-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2000&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -55,7 +49,7 @@ const F32 MIN_FAR_PLANE 	= 0.2f;
 
 // Min/Max FOV values for square views. Call getMin/MaxView to get extremes based on current aspect ratio.
 static const F32 MIN_FIELD_OF_VIEW = 5.0f * DEG_TO_RAD;
-static const F32 MAX_FIELD_OF_VIEW = 175.f * DEG_TO_RAD;
+static const F32 MAX_FIELD_OF_VIEW = 320.f * DEG_TO_RAD;
 
 // An LLCamera is an LLCoorFrame with a view frustum.
 // This means that it has several methods for moving it around 
@@ -128,6 +122,8 @@ public:
 
 private:
 	LL_ALIGN_16(LLPlane mAgentPlanes[AGENT_PLANE_USER_CLIP_NUM]);  //frustum planes in agent space a la gluUnproject (I'm a bastard, I know) - DaveP
+	LL_ALIGN_16(LLPlane mRegionPlanes[AGENT_PLANE_USER_CLIP_NUM]);  //frustum planes in a local region space, derived from mAgentPlanes
+	LL_ALIGN_16(LLPlane mLastAgentPlanes[AGENT_PLANE_USER_CLIP_NUM]);
 	U8 mPlaneMask[PLANE_MASK_NUM];         // 8 for alignment	
 	
 	F32 mView;					// angle between top and bottom frustum planes in radians.
@@ -156,6 +152,7 @@ public:
 	LLCamera(F32 vertical_fov_rads, F32 aspect_ratio, S32 view_height_in_pixels, F32 near_plane, F32 far_plane);
 	virtual ~LLCamera();
 	
+	bool isChanged(); //check if mAgentPlanes changed since last frame.
 
 	void setUserClipPlane(const LLPlane& plane);
 	void disableUserClipPlane();
@@ -197,6 +194,7 @@ public:
 	// Return number of bytes copied.
 	size_t readFrustumFromBuffer(const char *buffer);
 	void calcAgentFrustumPlanes(LLVector3* frust);
+	void calcRegionFrustumPlanes(const LLVector3& shift, F32 far_clip_distance); //calculate regional planes from mAgentPlanes.
 	void ignoreAgentFrustumPlane(S32 idx);
 
 	// Returns 1 if partly in, 2 if fully in.
@@ -205,8 +203,10 @@ public:
 	S32 sphereInFrustum(const LLVector3 &center, const F32 radius) const;
 	S32 pointInFrustum(const LLVector3 &point) const { return sphereInFrustum(point, 0.0f); }
 	S32 sphereInFrustumFull(const LLVector3 &center, const F32 radius) const { return sphereInFrustum(center, radius); }
-	S32 AABBInFrustum(const LLVector4a& center, const LLVector4a& radius);
-	S32 AABBInFrustumNoFarClip(const LLVector4a& center, const LLVector4a& radius);
+	S32 AABBInFrustum(const LLVector4a& center, const LLVector4a& radius, const LLPlane* planes = NULL);
+	S32 AABBInRegionFrustum(const LLVector4a& center, const LLVector4a& radius);
+	S32 AABBInFrustumNoFarClip(const LLVector4a& center, const LLVector4a& radius, const LLPlane* planes = NULL);
+	S32 AABBInRegionFrustumNoFarClip(const LLVector4a& center, const LLVector4a& radius);
 
 	//does a quick 'n dirty sphere-sphere check
 	S32 sphereInFrustumQuick(const LLVector3 &sphere_center, const F32 radius); 

@@ -53,6 +53,7 @@ class LLMediaCtrl;
 class LLTool;
 class LLParcelSelection;
 class LLObjectSelection;
+class LLLandImpactsObserver;
 
 typedef LLSafeHandle<LLObjectSelection> LLObjectSelectionHandle;
 
@@ -110,6 +111,7 @@ public:
 	void updateMediaTitle();
 	void navigateToTitleMedia( const std::string url );
 	bool selectedMediaEditable();
+	void updateLandImpacts();
 
 	LLPanelFace* getPanelFace() { return mPanelFace; }
 
@@ -178,7 +180,6 @@ public:
 	LLCheckBoxCtrl	*mCheckCopyRotates;
 
 	// Land buttons
-//	LLCheckBoxCtrl	*mRadioEditLand;
 	LLCheckBoxCtrl	*mRadioSelectLand;
 
 	LLCheckBoxCtrl	*mRadioDozerFlatten;
@@ -202,18 +203,21 @@ public:
 	LLPanelFace				*mPanelFace;
 	LLPanelLandInfo			*mPanelLandInfo;
 
+	LLLandImpactsObserver*  mLandImpactsObserver;
+
 	LLParcelSelectionHandle	mParcelSelection;
 	LLObjectSelectionHandle	mObjectSelection;
 
 	LLMediaCtrl				*mTitleMedia;
 	bool					mNeedMediaTitle;
+
 private:
 	BOOL					mDirty;
 
 	std::map<std::string, std::string> mStatusText;
 
+	void onSelectTreesGrass();
 	void updateTreeGrassCombo(bool visible);
-	static void onSelectTreesGrass(LLUICtrl*, void*);
 protected:
 	LLSD				mMediaSettings;
 };

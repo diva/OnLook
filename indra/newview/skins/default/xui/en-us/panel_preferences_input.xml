@@ -4,7 +4,9 @@
 	<text bottom="-20" follows="top" height="10" left="148" name=" Mouse Sensitivity:">Mouse Sensitivity:</text>
 	<slider_bar bottom="-26" follows="top" height="16" increment="0.25" initial_val="2" left="276" max_val="15" min_val="0" name="mouse_sensitivity" width="128"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Invert Mouse" left="148" name="invert_mouse"/>
+	<check_box bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookInstantZoom" label="Make rightclick zoom instantaneous, not smooth" name="instant_zoom"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Show Avatar in Mouselook" name="first_person_avatar_visible"/>
+	<check_box bottom_delta="-18" follows="top" height="16" control_name="UseRealisticMouselook" label="Use 'realistic' Camera behavior in Mouselook" name="UseRealisticMouselook"/>
 	<text bottom_delta="-18" follows="top" height="16" name="UI Hidden in mouselook:">UI Hidden in mouselook:</text>
 	<check_box bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookHidesFloaters" name="mouselook_hides_floaters" label="Floaters"/>
 	<check_box left_delta="80" bottom_delta="0" follows="top" height="16" control_name="LiruMouselookHidesNotices" name="mouselook_hides_notices" label="Notices"/>
@@ -13,6 +15,7 @@
 	<text bottom_delta="-30" follows="top" height="10" left="10" name=" Movement Options:">Movement Options:</text>
 	<check_box bottom_delta="-6" follows="top" height="16" label="Fly/land on holding up/down" left="148" name="automatic_fly"/>
 	<check_box bottom_delta="-18" follows="top" height="16" label="Allow crouch toggle by holding shift" name="crouch_toggle" control_name="SGShiftCrouchToggle"/>
+	<check_box bottom_delta="-18" follows="top" height="16" label="Use azerty layout instead of qwerty layout" name="azerty_keys" control_name="LiruUseZQSDKeys"/>
 	<text bottom_delta="-30" follows="top" height="10" left="10" name=" Camera Options:">Camera Options:</text>
   <text bottom_delta="0" follows="top" height="10" left="148" name="camera_fov_label">Camera View Angle:</text>
   <slider bottom_delta="-6" can_edit_text="true" decimal_digits="2" follows="top" width="128" height="16" increment=".025" initial_val="1.57" left="276" max_val="2.97" min_val=".17" name="camera_fov" value="60"/>

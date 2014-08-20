@@ -49,6 +49,7 @@
 
 #include "llxmltree.h"
 // <edit>
+#include "llavatarnamecache.h"
 #include "llresmgr.h"
 #include "llhudrender.h"
 #include "llviewerwindow.h"
@@ -532,10 +533,26 @@ void LLHUDEffectLookAt::render()
 
 			gGL.vertex3f(0.f, 0.f, -1.f);
 			gGL.vertex3f(0.f, 0.f, 1.f);
+			static const LLCachedControl<bool> lookAtLines(gSavedSettings, "AlchemyLookAtLines", false);
+			if (lookAtLines)
+			{
+				const std::string targname = (*mAttentions)[mTargetType].mName;
+				if (targname != "None" && targname != "Idle" && targname != "AutoListen")
+				{
+					LLVector3 dist = (mSourceObject->getWorldPosition() - mTargetPos) * 10/3;
+					gGL.vertex3f(0.f, 0.f, 0.f);
+					gGL.vertex3f(dist.mV[VX], dist.mV[VY], dist.mV[VZ] + 0.5f);
+				}
+			}
 		} gGL.end();
 		gGL.popMatrix();
 		// <edit>
-		const std::string text = ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->getFullname();
+		static const LLCachedControl<S32> lookAtNames("LookAtNameSystem");
+		if (lookAtNames < 0) return;
+		std::string text;
+		if (!LLAvatarNameCache::getPNSName(static_cast<LLVOAvatar*>(mSourceObject.get())->getID(), text, lookAtNames)) return;
+		if (text.length() > 9 && 0 == text.compare(text.length() - 9, 9, " Resident"))
+			text.erase(text.length() - 9);
 		LLVector3 offset = gAgentCamera.getCameraPositionAgent() - target;
 		offset.normalize();
 		LLVector3 shadow_offset = offset * 0.49f;

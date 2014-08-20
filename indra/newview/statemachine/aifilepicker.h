@@ -188,6 +188,8 @@ public:
 	std::string getFolder(void) const;
 	std::vector<std::string> const& getFilenames(void) const { return mFilenames; }
 
+	/*virtual*/ const char* getName() const { return "AIFilePicker"; }
+
 	// Load the sContextMap from disk.
 	static bool loadFile(std::string const& filename);
 	// Save the sContextMap to disk.

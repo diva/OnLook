@@ -117,7 +117,7 @@ public:
 		mInvitiationType = invitation_type;
 	}
 
-	/*virtual*/ void result(const LLSD& content)
+	/*virtual*/ void httpSuccess(void)
 	{
 		if ( gIMMgr)
 		{
@@ -137,7 +137,7 @@ public:
 				//but unfortunately, our base that we are receiving here
 				//may not be the most up to date.  It was accurate at
 				//some point in time though.
-				speaker_mgr->setSpeakers(content);
+				speaker_mgr->setSpeakers(mContent);
 
 				//we now have our base of users in the session
 				//that was accurate at some point, but maybe not now
@@ -167,10 +167,10 @@ public:
 		}
 	}
 
-	/*virtual*/ void error(U32 statusNum, const std::string& reason)
+	/*virtual*/ void httpFailure(void)
 	{
 		llwarns << "LLViewerChatterBoxInvitationAcceptResponder error [status:"
-				<< statusNum << "]: " << reason << llendl;
+				<< mStatus << "]: " << mReason << llendl;
 		//throw something back to the viewer here?
 		if ( gIMMgr )
 		{
@@ -181,7 +181,7 @@ public:
 
 			if ( floaterp )
 			{
-				if ( 404 == statusNum )
+				if ( 404 == mStatus )
 				{
 					std::string error_string;
 					error_string = "session_does_not_exist_error";
@@ -448,8 +448,8 @@ void LLIMMgr::addMessage(
 	// create IM window as necessary
 	if(!floater)
 	{
-		// Return now if we're blocking this group's chat
-		if (getIgnoreGroup(session_id) && gAgent.isInGroup(session_id))
+               // Return now if we're blocking this group's chat or conferences
+               if (gAgent.isInGroup(session_id) ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && gSavedSettings.getBOOL("LiruBlockConferences"))
 			return;
 
 		std::string name = (session_name.size() > 1) ? session_name : from;
@@ -1423,6 +1423,17 @@ public:
 };
 
 
+void leave_group_chat(const LLUUID& from_id, const LLUUID& session_id)
+{
+	// Tell the server we've left group chat
+	std::string name;
+	gAgent.buildFullname(name);
+	pack_instant_message(gMessageSystem, gAgentID, false, gAgentSessionID, from_id,
+		name, LLStringUtil::null, IM_ONLINE, IM_SESSION_LEAVE, session_id);
+	gAgent.sendReliableMessage();
+	gIMMgr->removeSession(session_id);
+}
+
 class LLViewerChatterBoxInvitation : public LLHTTPNode
 {
 public:
@@ -1535,13 +1546,7 @@ public:
 			{
 				if (gIMMgr->getIgnoreGroup(session_id))
 				{
-					// Tell the server we've left group chat
-					std::string name;
-					gAgent.buildFullname(name);
-					pack_instant_message(gMessageSystem, gAgentID, false, gAgent.getSessionID(), from_id,
-						name, LLStringUtil::null, IM_ONLINE, IM_SESSION_LEAVE, session_id);
-					gAgent.sendReliableMessage();
-					gIMMgr->removeSession(session_id);
+					leave_group_chat(from_id, session_id);
 					return;
 				}
 				else if (gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
@@ -1555,6 +1560,11 @@ public:
 			}
 			else
 			{
+				if (from_id != session_id && gSavedSettings.getBOOL("LiruBlockConferences")) // from and session are equal for IMs only.
+				{
+					leave_group_chat(from_id, session_id);
+					return;
+				}
 				prepend_msg = std::string("IM: ");
 			}
 			chat.mText = prepend_msg + name + separator_string + saved + message.substr(message_offset);

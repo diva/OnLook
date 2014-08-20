@@ -107,22 +107,10 @@ void LLFloaterTeleportHistory::addPendingEntry(std::string regionName, S16 x, S1
 
 
 	// Set pending entry timestamp
-	U32 utc_time;
-	utc_time = time_corrected();
-	struct tm* internal_time;
-	internal_time = utc_to_pacific_time(utc_time, gPacificDaylightTime);
+	struct tm* internal_time = utc_to_pacific_time(time_corrected(), gPacificDaylightTime);
+	timeStructToFormattedString(internal_time, gSavedSettings.getString("ShortDateFormat") + gSavedSettings.getString("LongTimeFormat"), mPendingTimeString);
 	// check if we are in daylight savings time
-	std::string timeZone = " PST";
-	if (gPacificDaylightTime)
-	{
-		timeZone = " PDT";
-	}
-#ifdef LOCALIZED_TIME
-	timeStructToFormattedString(internal_time, gSavedSettings.getString("LongTimeFormat"), mPendingTimeString);
-	mPendingTimeString += timeZone;
-#else
-	mPendingTimeString = llformat("%02d:%02d:%02d", internal_time->tm_hour, internal_time->tm_min, internal_time->tm_sec) + timeZone;
-#endif
+	mPendingTimeString += gPacificDaylightTime ? " PDT" : " PST";
 
 	// Set pending region name
 	mPendingRegionName = regionName;

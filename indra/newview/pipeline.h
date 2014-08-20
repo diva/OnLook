@@ -81,14 +81,10 @@ BOOL compute_min_max(LLMatrix4& box, LLVector2& min, LLVector2& max); // Shouldn
 bool LLRayAABB(const LLVector3 &center, const LLVector3 &size, const LLVector3& origin, const LLVector3& dir, LLVector3 &coord, F32 epsilon = 0);
 BOOL setup_hud_matrices(); // use whole screen to render hud
 BOOL setup_hud_matrices(const LLRect& screen_region); // specify portion of screen (in pixels) to render hud attachments from (for picking)
-glh::matrix4f glh_copy_matrix(F32* src);
-glh::matrix4f glh_get_current_modelview();
-void glh_set_current_modelview(const glh::matrix4f& mat);
-glh::matrix4f glh_get_current_projection();
-void glh_set_current_projection(glh::matrix4f& mat);
-glh::matrix4f gl_ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat znear, GLfloat zfar);
-glh::matrix4f gl_perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar);
-glh::matrix4f gl_lookat(LLVector3 eye, LLVector3 center, LLVector3 up);
+const LLMatrix4a& glh_get_current_modelview();
+void glh_set_current_modelview(const LLMatrix4a& mat);
+const LLMatrix4a& glh_get_current_projection();
+void glh_set_current_projection(const LLMatrix4a& mat);
 
 extern LLFastTimer::DeclareTimer FTM_RENDER_GEOMETRY;
 extern LLFastTimer::DeclareTimer FTM_RENDER_GRASS;
@@ -112,6 +108,7 @@ extern LLFastTimer::DeclareTimer FTM_PIPELINE;
 extern LLFastTimer::DeclareTimer FTM_CLIENT_COPY;
 
 
+LL_ALIGN_PREFIX(16)
 class LLPipeline
 {
 public:
@@ -306,7 +303,7 @@ public:
 	void generateSunShadow(LLCamera& camera);
 
 
-	void renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera& camera, LLCullResult& result, BOOL use_shader, BOOL use_occlusion, U32 target_width);
+	void renderShadow(const LLMatrix4a& view, const LLMatrix4a& proj, LLCamera& camera, LLCullResult& result, BOOL use_shader, BOOL use_occlusion, U32 target_width);
 	void renderHighlights();
 	void renderDebug();
 	void renderPhysicsDisplay();
@@ -434,6 +431,8 @@ private:
 	bool assertInitialized() { const bool is_init = isInit(); if (!is_init) assertInitializedDoError(); return is_init; };
 	void hideDrawable( LLDrawable *pDrawable );
 	void unhideDrawable( LLDrawable *pDrawable );
+
+	void drawFullScreenRect( U32 data_mask );
 public:
 	enum {GPU_CLASS_MAX = 3 };
 
@@ -552,11 +551,6 @@ public:
 	
 	LLSpatialPartition* getSpatialPartition(LLViewerObject* vobj);
 
-	void updateCamera(BOOL reset = FALSE);
-	
-	LLVector3				mFlyCamPosition;
-	LLQuaternion			mFlyCamRotation;
-
 	BOOL					 mBackfaceCull;
 	S32						 mBatchCount;
 	S32						 mMatrixOpCount;
@@ -566,18 +560,6 @@ public:
 	S32						 mMeanBatchSize;
 	S32						 mTrianglesDrawn;
 	S32						 mNumVisibleNodes;
-	S32						 mVerticesRelit;
-
-	S32						 mDebugTextureUploadCost;
-	S32						 mDebugSculptUploadCost;
-	S32						 mDebugMeshUploadCost;
-
-	S32						 mLightingChanges;
-	S32						 mGeometryChanges;
-
-	S32						 mNumVisibleFaces;
-
-	static S32				sCompiles;
 
 	static BOOL				sShowHUDAttachments;
 	static BOOL				sForceOldBakedUpload; // If true will not use capabilities to upload baked textures.
@@ -587,7 +569,6 @@ public:
 	static BOOL				sAutoMaskAlphaNonDeferred;
 	static BOOL				sDisableShaders; // if TRUE, rendering will be done without shaders
 	static BOOL				sRenderBump;
-	static BOOL				sBakeSunlight;
 	static BOOL				sNoAlpha;
 	static BOOL				sUseFarClip;
 	static BOOL				sShadowRender;
@@ -610,61 +591,57 @@ public:
 	static F32				sMinRenderSize;
 	static BOOL				sRenderingHUDs;
 
-	//screen texture
 
+public:
+	//screen texture
 	LLRenderTarget			mScreen;
 	LLRenderTarget			mDeferredScreen;
+private:
 	LLRenderTarget			mFXAABuffer;
-	LLRenderTarget			mEdgeMap;
+public:
 	LLRenderTarget			mDeferredDepth;
+private:
 	LLRenderTarget			mDeferredDownsampledDepth;
 	LLRenderTarget			mOcclusionDepth;
 	LLRenderTarget			mDeferredLight;
+public:
 	LLMultisampleBuffer		mSampleBuffer;
+private:
 	LLRenderTarget			mPhysicsDisplay;
 
 	//utility buffer for rendering post effects, gets abused by renderDeferredLighting
-	LLPointer<LLVertexBuffer> mDeferredVB;
+	LLPointer<LLVertexBuffer> mAuxScreenRectVB;
 
+public:
 	//utility buffer for rendering cubes, 8 vertices are corners of a cube [-1, 1]
 	LLPointer<LLVertexBuffer> mCubeVB;
 
+private:
 	//sun shadow map
 	LLRenderTarget			mShadow[6];
 	LLRenderTarget			mShadowOcclusion[6];
 	std::vector<LLVector3>	mShadowFrustPoints[4];
-	LLVector4				mShadowError;
-	LLVector4				mShadowFOV;
-	LLVector3				mShadowFrustOrigin[4];
+public:
 	LLCamera				mShadowCamera[8];
+private:
 	LLVector3				mShadowExtents[4][2];
-	glh::matrix4f			mSunShadowMatrix[6];
-	glh::matrix4f			mShadowModelview[6];
-	glh::matrix4f			mShadowProjection[6];
-	glh::matrix4f			mGIMatrix;
-	glh::matrix4f			mGIMatrixProj;
-	glh::matrix4f			mGIModelview;
-	glh::matrix4f			mGIProjection;
-	glh::matrix4f			mGINormalMatrix;
-	glh::matrix4f			mGIInvProj;
-	LLVector2				mGIRange;
-	F32						mGILightRadius;
+	LLMatrix4a				mSunShadowMatrix[6];
+	LLMatrix4a				mShadowModelview[6];
+	LLMatrix4a				mShadowProjection[6];
 	
 	LLPointer<LLDrawable>				mShadowSpotLight[2];
 	F32									mSpotLightFade[2];
 	LLPointer<LLDrawable>				mTargetShadowSpotLight[2];
 
 	LLVector4				mSunClipPlanes;
-	LLVector4				mSunOrthoClipPlanes;
-
-	LLVector2				mScreenScale;
-
+public:
 	//water reflection texture
 	LLRenderTarget				mWaterRef;
 
 	//water distortion texture (refraction)
 	LLRenderTarget				mWaterDis;
 
+private:
 	//texture for making the glow
 	LLRenderTarget				mGlow[2];
 
@@ -675,14 +652,15 @@ public:
 
 	LLColor4				mSunDiffuse;
 	LLVector3				mSunDir;
-	LLVector3				mTransformedSunDir;
+	LL_ALIGN_16(LLVector4a	mTransformedSunDir);
 
+public:
 	BOOL					mInitialized;
 	BOOL					mVertexShadersEnabled;
 	S32						mVertexShadersLoaded; // 0 = no, 1 = yes, -1 = failed
 
 	U32						mTransformFeedbackPrimitives; //number of primitives expected to be generated by transform feedback
-protected:
+private:
 	BOOL					mRenderTypeEnabled[NUM_RENDER_TYPES];
 	std::stack<std::string> mRenderTypeEnableStack;
 
@@ -847,13 +825,13 @@ public:
 
 	//debug use
 	static U32              sCurRenderPoolType ;
-};
+} LL_ALIGN_POSTFIX(16);
 
 void render_bbox(const LLVector3 &min, const LLVector3 &max);
 void render_hud_elements();
 
 extern LLPipeline gPipeline;
 extern BOOL gDebugPipeline;
-extern const LLMatrix4* gGLLastMatrix;
+extern const LLMatrix4a* gGLLastMatrix;
 
 #endif

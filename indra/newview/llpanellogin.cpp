@@ -154,7 +154,6 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-
 //---------------------------------------------------------------------------
 // Public methods
 //---------------------------------------------------------------------------
@@ -190,6 +189,8 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 	// STEAM-14: When user presses Enter with this field in focus, initiate login
 	password_edit->setCommitCallback(mungePassword, this);
 	password_edit->setDrawAsterixes(TRUE);
+
+	getChild<LLUICtrl>("remove_login")->setCommitCallback(boost::bind(&LLPanelLogin::confirmDelete, this));
 
 	// change z sort of clickable text to be behind buttons
 	sendChildToBack(getChildView("channel_text"));
@@ -354,6 +355,8 @@ void LLPanelLogin::reshapeBrowser()
 
 LLPanelLogin::~LLPanelLogin()
 {
+	std::string login_hist_filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
+	LLSavedLogins::saveFile(mLoginHistoryData, login_hist_filepath);
 	LLPanelLogin::sInstance = NULL;
 
 	if ( gFocusMgr.getDefaultKeyboardFocus() == this )
@@ -738,21 +741,24 @@ void LLPanelLogin::updateGridCombo()
 	const HippoGridInfo *curGrid = gHippoGridManager->getCurrentGrid();
 	const HippoGridInfo *defGrid = gHippoGridManager->getGrid(defaultGrid);
 
+	S32 idx(-1);
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
 	for (it = gHippoGridManager->beginGrid(); it != end; ++it)
 	{
 		std::string grid = it->second->getGridName();
-		if(grid.empty() || it->second == defGrid || it->second == curGrid)
+		if (grid.empty() || it->second == defGrid)
 			continue;
+		if (it->second == curGrid) idx = grids->getItemCount();
 		grids->add(grid);
 	}
-	if(curGrid || defGrid)
+	if (curGrid || defGrid)
 	{
-		if(defGrid)
+		if (defGrid)
+		{
 			grids->add(defGrid->getGridName(),ADD_TOP);
-		if(curGrid && defGrid != curGrid)
-			grids->add(curGrid->getGridName(),ADD_TOP);
-		grids->setCurrentByIndex(0);
+			++idx;
+		}
+		grids->setCurrentByIndex(idx);
 	}
 	else
 	{
@@ -1126,4 +1132,24 @@ void LLPanelLogin::clearPassword()
 	sInstance->childSetText("password_edit", blank);
 	sInstance->mIncomingPassword = blank;
 	sInstance->mMungedPassword = blank;
+}
+
+void LLPanelLogin::confirmDelete()
+{
+	LLNotificationsUtil::add("ConfirmDeleteUser", LLSD(), LLSD(), boost::bind(&LLPanelLogin::removeLogin, this, boost::bind(LLNotificationsUtil::getSelectedOption, _1, _2)));
+}
+
+void LLPanelLogin::removeLogin(bool knot)
+{
+	if (knot) return;
+	LLComboBox* combo(getChild<LLComboBox>("username_combo"));
+	const std::string label(combo->getTextEntry());
+	if (combo->isTextDirty() || !combo->itemExists(label)) return; // Text entries aren't in the list
+	const LLSD& selected = combo->getSelectedValue();
+	if (!selected.isUndefined())
+	{
+		mLoginHistoryData.deleteEntry(selected.get("firstname").asString(), selected.get("lastname").asString(), selected.get("grid").asString());
+		combo->remove(label);
+		combo->selectFirstItem();
+	}
 }

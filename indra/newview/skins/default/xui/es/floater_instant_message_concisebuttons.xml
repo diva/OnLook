@@ -31,11 +31,13 @@
 		Ofrecido un Ítem de Inventario
 	</string>
 	<flyout_button label="Perfil" name="instant_message_flyout">
+		<flyout_button_item label="Perfil" name="profile_item"/>
 		<flyout_button_item label="Historial" name="history_btn"/>
 		<flyout_button_item label="Ofrecer Teleporte" name="profile_tele_btn"/>
 		<flyout_button_item label="Solicitar Teleporte" name="request_teleport_item"/>
 		<flyout_button_item label="Pagar" name="pay_item"/>
 		<flyout_button_item label="Invitar  a Grupo" name="group_invite_item"/>
+		<flyout_button_item label="Copiar SLURL" name="copy_slurl_item"/>
 	</flyout_button>
 	<string name="ding on" value="Timbre en Nuevos Mensajes (Encendido)"/>
     <string name="ding off" value="Timbre en Nuevos Mensajes (Apagado)"/>

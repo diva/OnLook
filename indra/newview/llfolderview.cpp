@@ -1570,18 +1570,17 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 		if((mSelectedItems.size() > 0) && mScrollContainer)
 		{
 			LLFolderViewItem* last_selected = getCurSelectedItem();
+			bool shift_select = mask & MASK_SHIFT;
+			LLFolderViewItem* next = last_selected->getNextOpenNode();
 
-			if (!mKeyboardSelection)
+			if (!mKeyboardSelection || (!shift_select && (!next || next == last_selected)))
 			{
 				setSelection(last_selected, FALSE, TRUE);
 				mKeyboardSelection = TRUE;
 			}
 
-			LLFolderViewItem* next = NULL;
-			if (mask & MASK_SHIFT)
+			if (shift_select)
 			{
-				// don't shift select down to children of folders (they are implicitly selected through parent)
-				next = last_selected->getNextOpenNode(FALSE);
 				if (next)
 				{
 					if (next->isSelected())
@@ -1598,7 +1597,6 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 			}
 			else
 			{
-				next = last_selected->getNextOpenNode();
 				if( next )
 				{
 					if (next == last_selected)
@@ -1634,18 +1632,18 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 		if((mSelectedItems.size() > 0) && mScrollContainer)
 		{
 			LLFolderViewItem* last_selected = mSelectedItems.back();
+			bool shift_select = mask & MASK_SHIFT;
+			// don't shift select down to children of folders (they are implicitly selected through parent)
+			LLFolderViewItem* prev = last_selected->getPreviousOpenNode(!shift_select);
 
-			if (!mKeyboardSelection)
+			if (!mKeyboardSelection || (!shift_select && prev == this))
 			{
 				setSelection(last_selected, FALSE, TRUE);
 				mKeyboardSelection = TRUE;
 			}
 
-			LLFolderViewItem* prev = NULL;
-			if (mask & MASK_SHIFT)
+			if (shift_select)
 			{
-				// don't shift select down to children of folders (they are implicitly selected through parent)
-				prev = last_selected->getPreviousOpenNode(FALSE);
 				if (prev)
 				{
 					if (prev->isSelected())
@@ -1662,7 +1660,6 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 			}
 			else
 			{
-				prev = last_selected->getPreviousOpenNode();
 				if( prev )
 				{
 					if (prev == this)

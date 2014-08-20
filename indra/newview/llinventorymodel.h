@@ -87,8 +87,8 @@ public:
 	{
 	public:
 		fetchInventoryResponder(const LLSD& request_sd) : mRequestSD(request_sd) {};
-		/*virtual*/ void result(const LLSD& content);			
-		/*virtual*/ void error(U32 status, const std::string& reason);
+		/*virtual*/ void httpSuccess(void);
+		/*virtual*/ void httpFailure(void);
 		/*virtual*/ AICapabilityType capability_type(void) const { return cap_inventory; }
 		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return fetchInventoryResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "fetchInventoryResponder"; }
@@ -523,7 +523,6 @@ public:
 	// File I/O
 	//--------------------------------------------------------------------
 protected:
-	friend class LLLocalInventory;
 	static bool loadFromFile(const std::string& filename,
 							 cat_array_t& categories,
 							 item_array_t& items,

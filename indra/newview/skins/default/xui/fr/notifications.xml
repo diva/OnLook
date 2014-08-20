@@ -37,24 +37,10 @@ Vous pouvez choisir de permettre ou refuser:
   </notification>
 
   <notification
-   icon="alert.tga"
-   name="MediaListed"
-   type="alert">
-Media/audio URLs pour [DOMAIN] now [LISTED]
-  </notification>
-
-  <notification
    icon="notifytip.tga"
    name="MediaBlocked"
    type="notifytip">
 Media/audio sont bloqués pour [DOMAIN]
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
-   name="MediaFiltersCleared"
-   type="alertmodal">
-Filtres medias ont été reinitialisés
   </notification>
 
 	<notification functor="GenericAcknowledge" label="Message d'alerte inconnu" name="MissingAlert">
@@ -87,7 +73,7 @@ Aucun didacticiel n'est disponible actuellement.
 
 
 	<notification name="BadInstallation">
-Une erreur est survenue lors de la mise à jour de Singularity. Veuillez télécharger la dernière version depuis singularityviewer.org
+Une erreur est survenue lors de la mise à jour de [SHORT_APP_NAME]. Veuillez télécharger la dernière version depuis [APP_SITE]
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 
@@ -242,10 +228,6 @@ Vous pouvez proposer à un autre résident de devenir votre partenaire ou dissou
 
 Aller sur le site de [SECOND_LIFE_GRID] pour avoir plus d'informations sur les partenariats?
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Aller sur cette page"/>
-	</notification>
-
-	<notification name="ClickUploadHelpPermissions">
-		Il est possible que vos droits par défaut ne fonctionnent pas dans les anciennes régions.
 	</notification>
 
 	<notification name="ClickWebProfileHelpAvatar">
@@ -3124,10 +3106,10 @@ The folder '[FOLDERNAME]' is a system folder. Deleting system folders can cause 
    icon="alertmodal.tga"
    name="WebLaunchSinguIssue"
    type="alertmodal">
-Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+Visit the [SHORT_APP_NAME] Issue Tracker, to report bugs and issues with [SHORT_APP_NAME] Viewer.
 Please be sure that your report won't be a duplicate of an existing one.
     <usetemplate
-     ignoretext="Quand vous lancez votre navigateur pour aller sur le Singularity Public Issue Tracker"
+     ignoretext="Quand vous lancez votre navigateur pour aller sur le [SHORT_APP_NAME] Public Issue Tracker"
      name="okcancelignore"
      notext="Cancel"
      yestext="Go to page"/>

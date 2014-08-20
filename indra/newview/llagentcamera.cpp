@@ -395,7 +395,7 @@ void LLAgentCamera::slamLookAt(const LLVector3 &look_at)
 //-----------------------------------------------------------------------------
 LLVector3 LLAgentCamera::calcFocusOffset(LLViewerObject *object, LLVector3 original_focus_point, S32 x, S32 y)
 {
-	LLMatrix4 obj_matrix = object->getRenderMatrix();
+	const LLMatrix4a& obj_matrix = object->getRenderMatrix();
 	LLQuaternion obj_rot = object->getRenderRotation();
 	LLVector3 obj_pos = object->getRenderPosition();
 
@@ -427,24 +427,24 @@ LLVector3 LLAgentCamera::calcFocusOffset(LLViewerObject *object, LLVector3 origi
 
 	// find the largest ratio stored in obj_to_cam_ray_proportions
 	// this corresponds to the object's local axial plane (XY, YZ, XZ) that is *most* facing the camera
-	LLVector3 longest_object_axis;
+	LLVector4a focus_plane_normal;
 	// is x-axis longest?
 	if (obj_to_cam_ray_proportions.mV[VX] > obj_to_cam_ray_proportions.mV[VY] 
 		&& obj_to_cam_ray_proportions.mV[VX] > obj_to_cam_ray_proportions.mV[VZ])
 	{
 		// then grab it
-		longest_object_axis.setVec(obj_matrix.getFwdRow4());
+		focus_plane_normal = obj_matrix.getRow<LLMatrix4a::ROW_FWD>();
 	}
 	// is y-axis longest?
 	else if (obj_to_cam_ray_proportions.mV[VY] > obj_to_cam_ray_proportions.mV[VZ])
 	{
 		// then grab it
-		longest_object_axis.setVec(obj_matrix.getLeftRow4());
+		focus_plane_normal = obj_matrix.getRow<LLMatrix4a::ROW_LEFT>();
 	}
 	// otherwise, use z axis
 	else
 	{
-		longest_object_axis.setVec(obj_matrix.getUpRow4());
+		focus_plane_normal = obj_matrix.getRow<LLMatrix4a::ROW_UP>();
 	}
 
 	// Use this axis as the normal to project mouse click on to plane with that normal, at the object center.
@@ -453,11 +453,10 @@ LLVector3 LLAgentCamera::calcFocusOffset(LLViewerObject *object, LLVector3 origi
 	// We do this to allow the camera rotation tool to "tumble" the object by rotating the camera.
 	// If the focus point were the object surface under the mouse, camera rotation would introduce an undesirable
 	// eccentricity to the object orientation
-	LLVector3 focus_plane_normal(longest_object_axis);
-	focus_plane_normal.normalize();
+	focus_plane_normal.normalize3fast();
 
 	LLVector3d focus_pt_global;
-	gViewerWindow->mousePointOnPlaneGlobal(focus_pt_global, x, y, gAgent.getPosGlobalFromAgent(obj_pos), focus_plane_normal);
+	gViewerWindow->mousePointOnPlaneGlobal(focus_pt_global, x, y, gAgent.getPosGlobalFromAgent(obj_pos), LLVector3(focus_plane_normal.getF32ptr()));
 	LLVector3 focus_pt = gAgent.getPosAgentFromGlobal(focus_pt_global);
 
 	// find vector from camera to focus point in object space
@@ -941,6 +940,8 @@ void LLAgentCamera::cameraZoomIn(const F32 fraction)
 	F32 max_distance = /*llmin(mDrawDistance*/ INT_MAX - DIST_FUDGE//, 
 							 /*LLWorld::getInstance()->getRegionWidthInMeters() - DIST_FUDGE )*/;
 
+	max_distance = llmin(max_distance, current_distance * 4.f); //Scaled max relative to current distance.  MAINT-3154
+
 	if (new_distance > max_distance)
 	{
 		// <edit> screw cam constraints
@@ -1178,7 +1179,9 @@ void LLAgentCamera::updateCamera()
 
 	validateFocusObject();
 
-	if (isAgentAvatarValid() && 
+	static const LLCachedControl<bool> realistic_ml("UseRealisticMouselook");
+	if (isAgentAvatarValid() &&
+		!realistic_ml &&
 		gAgentAvatarp->isSitting() &&
 		camera_mode == CAMERA_MODE_MOUSELOOK)
 	{
@@ -1461,13 +1464,11 @@ void LLAgentCamera::updateCamera()
 	}
 	gAgent.setLastPositionGlobal(global_pos);
 	
-	if (LLVOAvatar::sVisibleInFirstPerson && isAgentAvatarValid() && !gAgentAvatarp->isSitting() && cameraMouselook())
+	if (LLVOAvatar::sVisibleInFirstPerson && isAgentAvatarValid() && (realistic_ml || !gAgentAvatarp->isSitting()) && cameraMouselook())
 	{
 		LLVector3 head_pos = gAgentAvatarp->mHeadp->getWorldPosition() + 
 			LLVector3(0.08f, 0.f, 0.05f) * gAgentAvatarp->mHeadp->getWorldRotation() + 
 			LLVector3(0.1f, 0.f, 0.f) * gAgentAvatarp->mPelvisp->getWorldRotation();
-		LLVector3 diff = mCameraPositionAgent - head_pos;
-		diff = diff * ~gAgentAvatarp->mRoot->getWorldRotation();
 
 		LLJoint* torso_joint = gAgentAvatarp->mTorsop;
 		LLJoint* chest_joint = gAgentAvatarp->mChestp;
@@ -1489,7 +1490,19 @@ void LLAgentCamera::updateCamera()
 			diff.mV[VZ] = 0.f;
 		}*/
 
-		gAgentAvatarp->mPelvisp->setPosition(gAgentAvatarp->mPelvisp->getPosition() + diff);
+		if (realistic_ml)
+		{
+			LLQuaternion agent_rot(gAgent.getFrameAgent().getQuaternion());
+			if (LLViewerObject* parent = static_cast<LLViewerObject*>(gAgentAvatarp->getParent()))
+				if (static_cast<LLViewerObject*>(gAgentAvatarp->getRoot())->flagCameraDecoupled())
+					agent_rot *= parent->getRenderRotation();
+			LLViewerCamera::getInstance()->updateCameraLocation(head_pos, mCameraUpVector, gAgentAvatarp->mHeadp->getWorldPosition() + LLVector3(1.0, 0.0, 0.0) * agent_rot);
+		}
+		else
+		{
+			const LLVector3 diff((mCameraPositionAgent - head_pos) * ~gAgentAvatarp->mRoot->getWorldRotation());
+			gAgentAvatarp->mPelvisp->setPosition(gAgentAvatarp->mPelvisp->getPosition() + diff);
+		}
 
 		gAgentAvatarp->mRoot->updateWorldMatrixChildren();
 
@@ -1781,7 +1794,7 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 			head_offset.mdV[VX] = gAgentAvatarp->mHeadOffset.mV[VX];
 			head_offset.mdV[VY] = gAgentAvatarp->mHeadOffset.mV[VY];
 			head_offset.mdV[VZ] = gAgentAvatarp->mHeadOffset.mV[VZ] + 0.1f;
-			const LLMatrix4& mat = ((LLViewerObject*) gAgentAvatarp->getParent())->getRenderMatrix();
+			const LLMatrix4 mat(((LLViewerObject*) gAgentAvatarp->getParent())->getRenderMatrix().getF32ptr());
 			camera_position_global = gAgent.getPosGlobalFromAgent
 								((gAgentAvatarp->getPosition()+
 								 LLVector3(head_offset)*gAgentAvatarp->getRotation()) * mat);
@@ -2433,9 +2446,12 @@ void LLAgentCamera::changeCameraToCustomizeAvatar()
 		at.normalize();
 		gAgent.resetAxes(at);
 
-		gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
-		gAgent.setCustomAnim(TRUE);
-		gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		if (gSavedSettings.getBOOL("LiruCustomizeAnim"))
+		{
+			gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
+			gAgent.setCustomAnim(TRUE);
+			gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+		}
 		LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
 
 		if (turn_motion)

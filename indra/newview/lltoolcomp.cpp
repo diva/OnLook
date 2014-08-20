@@ -783,6 +783,7 @@ BOOL LLToolCompGun::handleRightMouseUp(S32 x, S32 y, MASK mask)
 
 		mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
 		mTargetFOV = mOriginalFOV;
+		gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV) :
 		mTimerFOV.start();
 	}
 
@@ -814,6 +815,7 @@ BOOL LLToolCompGun::handleRightMouseDown(S32 x, S32 y, MASK mask)
 	else mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
 
 	mTargetFOV = gSavedSettings.getF32("ExodusAlternativeFOV");
+	gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV) :
 	mTimerFOV.start();
 
 	return TRUE;
@@ -832,6 +834,7 @@ BOOL LLToolCompGun::handleScrollWheel(S32 x, S32 y, S32 clicks)
 				llclamp(mTargetFOV -= (0.05f * -clicks), 0.1f, 3.0f)
 		);
 
+		gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV) :
 		mTimerFOV.start();
 	}
 	else if (clicks > 0) gAgentCamera.changeCameraToDefault();

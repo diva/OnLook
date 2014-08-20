@@ -49,7 +49,7 @@ private:
 protected:
 	void			draw();
 
-	LLPreviewAnimation mAnimPreview;
+	LL_ALIGN_16(LLPreviewAnimation mAnimPreview);
 	LLRect				mPreviewRect;
 	S32					mLastMouseX;
 	S32					mLastMouseY;
