@@ -757,8 +757,8 @@ void LLViewerTexture::removeFace(U32 ch, LLFace* facep)
 	if(mNumFaces[ch] > 1)
 	{
 		S32 index = facep->getIndexInTex(ch) ; 
-		llassert(index < mFaceList[ch].size());
-		llassert(index < mNumFaces[ch]);
+		llassert(index < (S32)mFaceList[ch].size());
+		llassert(index < (S32)mNumFaces[ch]);
 		mFaceList[ch][index] = mFaceList[ch][--mNumFaces[ch]] ;
 		mFaceList[ch][index]->setIndexInTex(ch, index) ;
 	}
@@ -808,8 +808,8 @@ void LLViewerTexture::removeVolume(LLVOVolume* volumep)
 	if(mNumVolumes > 1)
 	{
 		S32 index = volumep->getIndexInTex() ; 
-		llassert(index < mVolumeList.size());
-		llassert(index < mNumVolumes);
+		llassert(index < (S32)mVolumeList.size());
+		llassert(index < (S32)mNumVolumes);
 		mVolumeList[index] = mVolumeList[--mNumVolumes] ;
 		mVolumeList[index]->setIndexInTex(index) ;
 	}

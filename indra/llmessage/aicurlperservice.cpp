@@ -610,7 +610,7 @@ void AIPerService::purge(void)
 	  per_service_w->mCapabilityType[i].mQueuedRequests.clear();
 	  if (is_approved((AICapabilityType)i))
 	  {
-		llassert(total_queued_w->approved >= s);
+		llassert(total_queued_w->approved >= (S32)s);
 		total_queued_w->approved -= s;
 	  }
 	}

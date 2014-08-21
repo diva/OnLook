@@ -7324,9 +7324,9 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				
 				if (!LLViewerCamera::getInstance()->cameraUnderWater())
 				{
-					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2);
+					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2f);
 				} else {
-					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0);
+					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0f);
 				}
 
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
@@ -7362,9 +7362,9 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			
 			if (!LLViewerCamera::getInstance()->cameraUnderWater())
 			{
-				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2);
+				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2f);
 			} else {
-				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0);
+				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0f);
 			}
 
 			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);

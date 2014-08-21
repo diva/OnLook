@@ -579,7 +579,7 @@ void LLViewerJoystick::cursorSlide(F32 inc)
 void LLViewerJoystick::cursorPush(F32 inc)
 {
 	static F32 prev_inc = 0.f;  // Smooth a little.
-	if (!is_approx_zero(0.001))
+	if (!is_approx_zero(0.001f))
 	{
 		S32 x, y;
 		LLUI::getMousePositionScreen(&x, &y);
