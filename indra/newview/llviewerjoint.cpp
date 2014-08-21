@@ -146,6 +146,8 @@ U32 LLViewerJoint::render( F32 pixelArea, BOOL first_pass, BOOL is_dummy )
 		 iter != mChildren.end(); ++iter)
 	{
 		LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
+		if (!joint)
+			continue;
 		F32 jointLOD = joint->getLOD();
 		if (pixelArea >= jointLOD || sDisableLOD)
 		{
