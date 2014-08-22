@@ -3377,7 +3377,7 @@ void LLFolderBridge::buildContextMenuBaseOptions(U32 flags)
 	else if (!isAgentInventory())
 	{
 		const LLUUID& library(gInventory.getLibraryRootFolderID());
-		if (library == mUUID || gInventory.isObjectDescendentOf(mUUID, library))
+		if (library != mUUID && gInventory.isObjectDescendentOf(mUUID, library))
 			 mItems.push_back(std::string("Move to Lost And Found"));
 	}
 	// </singu>
