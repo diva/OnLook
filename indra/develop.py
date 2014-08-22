@@ -221,6 +221,7 @@ class UnixSetup(PlatformSetup):
     exe_suffixes = ('',)
 
     def __init__(self):
+        PlatformSetup.__init__(self)
         super(UnixSetup, self).__init__()
         self.generator = 'Unix Makefiles'
 
@@ -263,6 +264,7 @@ class UnixSetup(PlatformSetup):
 
 class LinuxSetup(UnixSetup):
     def __init__(self):
+        UnixSetup.__init__(self)
         super(LinuxSetup, self).__init__()
         try:
             self.debian_sarge = open('/etc/debian_version').read().strip() == '3.1'
@@ -384,6 +386,7 @@ class LinuxSetup(UnixSetup):
         
 class DarwinSetup(UnixSetup):
     def __init__(self):
+        UnixSetup.__init__(self)
         super(DarwinSetup, self).__init__()
         self.generator = 'Xcode'
 
@@ -457,6 +460,7 @@ class WindowsSetup(PlatformSetup):
     exe_suffixes = ('.exe', '.bat', '.com')
 
     def __init__(self):
+        PlatformSetup.__init__(self)
         super(WindowsSetup, self).__init__()
         self._generator = None
         self.incredibuild = False
@@ -497,7 +501,10 @@ class WindowsSetup(PlatformSetup):
         return 'win32'
 
     def build_dirs(self):
-        return ['build-' + self.generator]
+        if self.word_size == 64:
+            return ['build-' + self.generator + '-Win64']
+        else:
+            return ['build-' + self.generator]
 
     def cmake_commandline(self, src_dir, build_dir, opts, simple):
         args = dict(
