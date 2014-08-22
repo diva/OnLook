@@ -2049,20 +2049,23 @@ void LLMeshHeaderResponder::completedRaw(LLChannelDescriptors const& channels,
 
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
-	static U8 data[16384];
-	llassert_always(data_size <= sizeof(data));
-	memset(data + data_size, 0, sizeof(data)-data_size);
+	static const U32 BUFF_MAX_STATIC_SIZE = 16384;	//If we exceed this size just bump the vector back to BUFF_MAX_STATIC_SIZE after we're done.
+	static std::vector<U8> data(BUFF_MAX_STATIC_SIZE);
+	if (data_size > (S32)data.size())
+		data.resize(data_size);
+	else
+		memset(&data[0] + data_size, 0, data.size() - data_size);
 
 	if (data_size > 0)
 	{
 		AIStateMachine::StateTimer timer("readAfter");
-		buffer->readAfter(channels.in(), NULL, data, data_size);
+		buffer->readAfter(channels.in(), NULL, &data[0], data_size);
 	}
 
 	LLMeshRepository::sBytesReceived += llmin(data_size, 4096);
 
 	AIStateMachine::StateTimer timer("headerReceived");
-	bool success = gMeshRepo.mThread->headerReceived(mMeshParams, data, data_size);
+	bool success = gMeshRepo.mThread->headerReceived(mMeshParams, &data[0], data_size);
 	
 	llassert(success);
 
@@ -2114,17 +2117,20 @@ void LLMeshHeaderResponder::completedRaw(LLChannelDescriptors const& channels,
 				S32 bytes_remaining = bytes;
 				while (bytes_remaining > 0)
 				{
-					const S32 bytes_written = llmin(bytes_remaining, (S32)sizeof(data));
-					file.write(data, bytes_written);
-					if (bytes_remaining == bytes && bytes_written < bytes_remaining)
+					const S32 bytes_to_write = llmin(bytes_remaining, data_size);
+					file.write(&data[0], bytes_to_write);
+					if (bytes_remaining == bytes && bytes_to_write < bytes_remaining)
 					{
-						memset(data, 0, data_size);
+						memset(&data[0], 0, data.size());
 					}
-					bytes_remaining -= llmin(bytes_remaining, bytes_written);
+					bytes_remaining -= llmin(bytes_remaining, bytes_to_write);
 				}
 			}
 		}
 	}
+
+	if (data.size() > BUFF_MAX_STATIC_SIZE)
+		data.resize(BUFF_MAX_STATIC_SIZE);
 }
 
 
