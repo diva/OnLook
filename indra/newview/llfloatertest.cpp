@@ -81,8 +81,6 @@ private:
 	LLIconCtrl* mIcon;
 	LLLineEditor* mLineEditor;
 	LLRadioGroup* mRadioGroup;
-	LLRadioCtrl* mRadio1;
-	LLRadioCtrl* mRadio2;
 	LLScrollContainer* mScroll;
 	LLScrollListCtrl* mScrollList;
 	LLTabContainer* mTab;

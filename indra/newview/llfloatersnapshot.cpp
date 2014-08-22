@@ -1787,7 +1787,7 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater, bool de
 			child_list_t::const_iterator it, end=childs->end();
 			for (it=childs->begin(); it!=end; ++it) 
 			{
-				LLRadioCtrl *ctrl = dynamic_cast<LLRadioCtrl*>(*it);
+				LLView* ctrl = *it;
 				if (ctrl && (ctrl->getName() == "texture"))
 				{
 					ctrl->setLabelArg("[UPLOADFEE]", fee);

@@ -227,6 +227,9 @@
 	     name="Delete" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="delete" />
 	</menu_item_call>
+    <menu_item_call label="Move to Lost And Found" mouse_opaque="true" name="Move to Lost And Found">
+        <on_click function="Inventory.DoToSelected" userdata="move_to_lost_and_found" />
+    </menu_item_call>
     <menu_item_call label="Delete System Folder" mouse_opaque="true" name="Delete System Folder">
         <on_click function="Inventory.DoToSelected" userdata="delete_system_folder" />
     </menu_item_call>
