@@ -447,12 +447,12 @@ LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 				createRect(child, item_rect, radio_group, rect);
 
 				std::string item_label = child->getTextContents();
-				node->getAttributeString("label", item_label);
+				child->getAttributeString("label", item_label);
 				std::string item_name("radio");
-				node->getAttributeString("name", item_name);
+				child->getAttributeString("name", item_name);
 				std::string payload(item_name); // Support old-style name as payload
-				node->getAttributeString("value", payload);
-				node->getAttributeString("initial_value", payload); // Synonym
+				child->getAttributeString("value", payload);
+				child->getAttributeString("initial_value", payload); // Synonym
 				LLRadioCtrl* radio = radio_group->addRadioButton(item_name, item_label, item_rect, font, payload);
 
 				radio->initFromXML(child, radio_group);
