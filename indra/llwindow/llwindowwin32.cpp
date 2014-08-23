@@ -2291,7 +2291,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 				if (!sHandleDoubleClick)
 				{
 					sHandleDoubleClick = true;
-					break;
+					//break; // <singu/> Broke first double click every session.
 				}
 
 				// Because we move the cursor position in the app, we need to query
