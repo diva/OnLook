@@ -12,10 +12,10 @@
 	     name="comment_text" word_wrap="true" />
 	<radio_group bottom_delta="-48" draw_border="false" follows="bottom|left|right" height="36"
 	     left="15" name="boolean_combo" visible="false">
-		<radio_item bottom="-18" height="15" name="TRUE" value="true">
+		<radio_item bottom="-18" height="15" name="TRUE" value="TRUE">
 			True
 		</radio_item>
-		<radio_item bottom="-36" height="15" name="FALSE" value="">
+		<radio_item bottom="-36" height="15" name="FALSE" value="FALSE">
 			False
 		</radio_item>
 		<radio_group.commit_callback function="CommitSettings"/>
