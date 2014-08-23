@@ -1595,7 +1595,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 				gGL.getTexUnit(specular_channel)->bind(face->getTexture(LLRender::SPECULAR_MAP));
 
 				LLColor4 col = mat->getSpecularLightColor();
-				F32 spec = mat->getSpecularLightExponent()/255.f;
+				F32 spec = llmax(0.0001f, mat->getSpecularLightExponent() / 255.f);
 
 				F32 env = mat->getEnvironmentIntensity()/255.f;
 
