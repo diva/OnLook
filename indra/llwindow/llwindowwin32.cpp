@@ -172,7 +172,7 @@ LLWinImm LLWinImm::sTheInstance;
 LLWinImm::LLWinImm() : mHImmDll(NULL)
 {
 	// Check system metrics 
-	if ( !GetSystemMetrics( SM_DBCSENABLED ) )
+	if ( !GetSystemMetrics( SM_IMMENABLED ) )
 		return;
 
 	mHImmDll = LoadLibraryA("Imm32");
@@ -671,7 +671,7 @@ LLWindowWin32::~LLWindowWin32()
 	delete [] mSupportedResolutions;
 	mSupportedResolutions = NULL;
 
-	delete mWindowClassName;
+	delete [] mWindowClassName;
 	mWindowClassName = NULL;
 }
 
@@ -760,7 +760,7 @@ void LLWindowWin32::close()
 	LL_DEBUGS("Window") << "Destroying Window" << LL_ENDL;
 	
 	// Don't process events in our mainWindowProc any longer.
-	SetWindowLongPtr(mWindowHandle, GWLP_USERDATA, NULL);
+	SetWindowLongPtr(mWindowHandle, GWLP_USERDATA, NULL); // <alchemy/>
 
 	// Make sure we don't leave a blank toolbar button.
 	ShowWindow(mWindowHandle, SW_HIDE);
@@ -1886,7 +1886,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 	// This is to avoid triggering double click teleport after returning focus (see MAINT-3786).
 	static bool sHandleDoubleClick = true;
 
-	LLWindowWin32 *window_imp = (LLWindowWin32 *)GetWindowLongPtr(h_wnd, GWLP_USERDATA);
+	LLWindowWin32 *window_imp = (LLWindowWin32 *)GetWindowLongPtr(h_wnd, GWLP_USERDATA); // <alchemy/>
 
 
 	if (NULL != window_imp)
@@ -3282,7 +3282,6 @@ void LLWindowWin32::spawnWebBrowser(const std::string& escaped_url, bool async)
 	{
 		sei.fMask = SEE_MASK_ASYNCOK;
 	}
-	
 	else
 	{
 		sei.fMask = SEE_MASK_FLAG_DDEWAIT;
