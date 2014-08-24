@@ -169,7 +169,7 @@ class PlatformSetup(object):
             raise
 
     def parse_build_opts(self, arguments):
-        opts, targets = getopt.getopt(arguments, 'o:', ['option='])
+        opts, targets = getopt.getopt(arguments, 'D:o:', ['option='])
         build_opts = []
         for o, a in opts:
             if o in ('-o', '--option'):
