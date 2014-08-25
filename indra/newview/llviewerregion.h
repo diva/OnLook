@@ -48,7 +48,7 @@
 #include "lluuid.h"
 #include "llweb.h"
 #include "llcapabilityprovider.h"
-#include "m4math.h"					// LLMatrix4
+#include "llmatrix4a.h"					// LLMatrix4a
 #include "llhttpclient.h"
 
 // Surface id's
