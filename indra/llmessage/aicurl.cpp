@@ -366,7 +366,7 @@ void initCurl(void)
 	if (ssl_version.find("OpenSSL") != std::string::npos)
 	  gSSLlib = ssl_openssl;										// See http://www.openssl.org/docs/crypto/threads.html#DESCRIPTION
 	else if (ssl_version.find("GnuTLS") != std::string::npos)
-	  gSSLlib = ssl_gnutls;											// See http://www.gnu.org/software/gnutls/manual/html_node/Thread-safety.html
+	  gSSLlib = ssl_gnutls;											// See http://www.gnutls.org/manual/html_node/Thread-safety.html#Thread-safety
 	else if (ssl_version.find("NSS") != std::string::npos)
 	  gSSLlib = ssl_nss;											// Supposedly thread-safe without any requirements.
 
@@ -387,10 +387,10 @@ void initCurl(void)
 	  }
 	  case ssl_gnutls:
 	  {
-		// I don't think we ever get here, do we? --Aleric
-		llassert_always(gSSLlib != ssl_gnutls);
-		// If we do, then didn't curl_global_init already call gnutls_global_init?
-		// It seems there is nothing to do for us here.
+		// Prior to GnuTLS version 3.3.0 mutex locks are setup by calling gnutls_global_init,
+		// however curl_global_init already called that for us.
+		// There is nothing to do for us here.
+		break;
 	  }
 	  case ssl_nss:
 	  {
