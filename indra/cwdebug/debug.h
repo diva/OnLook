@@ -28,96 +28,15 @@
 #ifndef CWDEBUG
 
 #ifdef DEBUG_CURLIO
-
-// If CWDEBUG is not defined, but DEBUG_CURLIO is, then replace
-// some of the cwd macro's with something that generates viewer
-// specific debug output. Note that this generates a LOT of
-// output and should not normally be defined.
-
-#include <string>
-#include "llpreprocessor.h"
-
-namespace debug {
-namespace libcwd {
-
-struct buf2str {
-  buf2str(char const* buf, int size) : mBuf(buf), mSize(size) { }
-  char const* mBuf;
-  int mSize;
-};
-
-struct libcwd_do_type {
- void on() const { }
-};
-extern LL_COMMON_API libcwd_do_type const libcw_do;
-
-} // namespace libcwd
-
-enum print_thread_id_t { print_thread_id };
-inline void init() { }
-struct Indent {
-  int M_indent;
-  static ll_thread_local int S_indentation;
-  enum LL_COMMON_API print_nt { print };
-  LL_COMMON_API Indent(int indent);
-  LL_COMMON_API ~Indent();
-};
-
-extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, libcwd::buf2str const& b2s);
-extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, Indent::print_nt);
-extern LL_COMMON_API std::ostream& operator<<(std::ostream& os, print_thread_id_t);
-
-namespace dc {
-
-struct fake_channel {
-  int mOn;
-  char const* mLabel;
-  fake_channel(int on, char const* label) : mOn(on), mLabel(label) { }
-  fake_channel(void) : mOn(0) { }
-  fake_channel& operator()(bool) { return *this; }
-  fake_channel const& operator()(bool) const { return *this; }
-  bool is_on() const { return !!mOn; }
-  bool is_off() const { return !mOn; }
-  void on() const { }
-  void off() const { }
-};
-extern LL_COMMON_API fake_channel const warning;
-extern LL_COMMON_API fake_channel const curl;
-extern LL_COMMON_API fake_channel const curlio;
-extern LL_COMMON_API fake_channel const curltr;
-extern LL_COMMON_API fake_channel const statemachine;
-extern LL_COMMON_API fake_channel const notice;
-extern LL_COMMON_API fake_channel const snapshot;
-
-} // namespace dc
-} // namespace debug
-
-#define LIBCWD_DEBUG_CHANNELS debug
-#define LibcwDoutScopeBegin(a, b, c) do { using namespace debug; using namespace debug::libcwd; llinfos_nf << print_thread_id << (c).mLabel << ": " << Indent::print;
-#define LibcwDoutStream llcont
-#define LibcwDoutScopeEnd llcont << llendl; } while(0)
-
-#define Debug(x) do { using namespace debug; using namespace debug::libcwd; x; } while(0)
-#define Dout(a, b) do { using namespace debug; using namespace debug::libcwd; if ((a).mOn) { llinfos_nf << print_thread_id << (a).mLabel << ": " << Indent::print << b << llendl; } } while(0)
-#define DoutEntering(a, b) \
-  int __slviewer_debug_indentation = 2; \
-  { \
-	using namespace debug; \
-	using namespace debug::libcwd; \
-	if ((a).mOn) \
-	  llinfos_nf << print_thread_id << (a).mLabel << ": " << Indent::print << "Entering " << b << llendl; \
-    else \
-	  __slviewer_debug_indentation = 0; \
-  } \
-  debug::Indent __slviewer_debug_indent(__slviewer_debug_indentation);
-
-#else // !DEBUG_CURLIO
+#error DEBUG_CURLIO is not supported without libcwd.
+// In order to use DEBUG_CURLIO you must install and use libcwd.
+// Download libcwd:
+// git clone https://github.com/CarloWood/libcwd.git
+#endif
 
 #define Debug(x)
 #define Dout(a, b)
 #define DoutEntering(a, b)
-
-#endif // !DEBUG_CURLIO
 
 #ifndef DOXYGEN         // No need to document this.  See http://libcwd.sourceforge.net/ for more info.
 

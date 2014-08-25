@@ -61,7 +61,7 @@ char const* AIFilePicker::state_str_impl(state_type run_state) const
 }
 
 AIFilePicker::AIFilePicker(CWD_ONLY(bool debug)) :
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	AIStateMachine(debug),
 #endif
 	mPluginManager(NULL), mCanceled(false)

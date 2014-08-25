@@ -320,7 +320,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	LLPointer<curlthread::HTTPTimeout> mTimeout;// Timeout administration object associated with last created CurlSocketInfo.
 	bool mTimeoutIsOrphan;						// Set to true when mTimeout is not (yet) associated with a CurlSocketInfo.
 	bool mIsHttps;								// Set if the url starts with "https:".
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
   public:
 	bool mDebugIsHeadOrGetMethod;
 #endif
@@ -342,7 +342,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// This class may only be created as base class of BufferedCurlEasyRequest.
 	// Throws AICurlNoEasyHandle.
 	CurlEasyRequest(void) : mHeaders(NULL), mHandleEventsTarget(NULL), mContentLength(0), mResult(CURLE_FAILED_INIT), mTimeoutPolicy(NULL), mTimeoutIsOrphan(false)
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 		, mDebugIsHeadOrGetMethod(false)
 #endif
 		{ applyDefaultOptions(); }
@@ -475,7 +475,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 	// Return true if any data was received.
 	bool received_data(void) const { return mTotalRawBytes > 0; }
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	// Connection accounting for debug purposes.
 	void connection_established(int connectionnr);
 	void connection_closed(int connectionnr);

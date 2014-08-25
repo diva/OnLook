@@ -77,7 +77,7 @@ class AITimer : public AIStateMachine {
 
   public:
 	AITimer(CWD_ONLY(bool debug = false)) :
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 		AIStateMachine(debug),
 #endif
 		mInterval(0) { DoutEntering(dc::statemachine(mSMDebug), "AITimer(void) [" << (void*)this << "]"); }

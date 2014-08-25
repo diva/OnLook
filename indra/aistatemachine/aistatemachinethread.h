@@ -182,7 +182,7 @@ class AIStateMachineThreadBase : public AIStateMachine {
 
   protected:
 	AIStateMachineThreadBase(CWD_ONLY(bool debug))
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	  : AIStateMachine(debug)
 #endif
 	{ }
@@ -222,7 +222,7 @@ class AIStateMachineThread : public AIStateMachineThreadBase {
   public:
 	// Constructor.
 	AIStateMachineThread(CWD_ONLY(bool debug))
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 		: AIStateMachineThreadBase(debug)
 #endif
 	{

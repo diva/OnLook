@@ -527,7 +527,7 @@ namespace AICurlPrivate {
 
 using AICurlInterface::Stats;
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 // CURLOPT_DEBUGFUNCTION function.
 extern int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr);
 #endif
@@ -1181,7 +1181,7 @@ void CurlEasyRequest::set_timeout_opts(void)
 void CurlEasyRequest::create_timeout_object(void)
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = NULL;
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
   lockobj = static_cast<BufferedCurlEasyRequest*>(this)->get_lockobj();
 #endif
   mTimeout = new curlthread::HTTPTimeout(mTimeoutPolicy, lockobj);
@@ -1352,7 +1352,7 @@ void BufferedCurlEasyRequest::aborted(U32 http_status, std::string const& reason
   }
 }
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 static AIPerServicePtr sConnections[64];
 
 void BufferedCurlEasyRequest::connection_established(int connectionnr)
