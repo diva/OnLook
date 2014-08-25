@@ -293,7 +293,36 @@ void AIEngine::add(AIStateMachine* state_machine)
   }
 }
 
-extern void print_statemachine_diagnostics(U64 total_clocks, U64 max_delta, AIEngine::queued_type::const_reference slowest_state_machine);
+#if STATE_MACHINE_PROFILING
+// Called from AIStateMachine::mainloop
+void print_statemachine_diagnostics(U64 total_clocks, AIStateMachine::StateTimerBase::TimeData& slowest_timer, AIEngine::queued_type::const_reference slowest_element)
+{
+	AIStateMachine const& slowest_state_machine = slowest_element.statemachine();
+	F64 const tfactor = 1000 / calc_clock_frequency();
+	std::ostringstream msg;
+
+	U64 max_delta = slowest_timer.GetDuration();
+
+	if (total_clocks > max_delta)
+	{
+		msg << "AIStateMachine::mainloop did run for " << (total_clocks * tfactor) << " ms. The slowest ";
+	}
+	else
+	{
+		msg << "AIStateMachine::mainloop: A ";
+	}
+	msg << "state machine " << "(" << slowest_state_machine.getName() << ") " << "ran for " << (max_delta * tfactor) << " ms";
+	if (slowest_state_machine.getRuntime() > max_delta)
+	{
+		msg << " (" << (slowest_state_machine.getRuntime() * tfactor) << " ms in total now)";
+	}
+	msg << ".\n";
+
+	AIStateMachine::StateTimerBase::DumpTimers(msg);
+
+	llwarns << msg.str() << llendl;
+}
+#endif
 
 // MAIN-THREAD
 void AIEngine::mainloop(void)
@@ -305,28 +334,33 @@ void AIEngine::mainloop(void)
 	queued_element = engine_state_w->list.begin();
   }
   U64 total_clocks = 0;
-#ifndef LL_RELEASE_FOR_DOWNLOAD
-  U64 max_delta = 0;
+#if STATE_MACHINE_PROFILING
   queued_type::value_type slowest_element(NULL);
+  AIStateMachine::StateTimerRoot::TimeData slowest_timer;
 #endif
   while (queued_element != end)
   {
 	AIStateMachine& state_machine(queued_element->statemachine());
-	U64 start = get_clock_count();
-	if (!state_machine.sleep(start))
+	AIStateMachine::StateTimerBase::TimeData time_data;
+	if (!state_machine.sleep(get_clock_count()))
 	{
-	  state_machine.multiplex(AIStateMachine::normal_run);
+		AIStateMachine::StateTimerRoot timer(state_machine.getName());
+		state_machine.multiplex(AIStateMachine::normal_run);
+		time_data = timer.GetTimerData();
 	}
-	U64 delta = get_clock_count() - start;
-	state_machine.add(delta);
-	total_clocks += delta;
-#ifndef LL_RELEASE_FOR_DOWNLOAD
-	if (delta > max_delta)
+	if (U64 delta = time_data.GetDuration())
 	{
-	  max_delta = delta;
-	  slowest_element = *queued_element;
-	}
+		state_machine.add(delta);
+		total_clocks += delta;
+#if STATE_MACHINE_PROFILING
+		if (delta > slowest_timer.GetDuration())
+		{
+			slowest_element = *queued_element;
+			slowest_timer = time_data;
+		}
 #endif
+	}
+
 	bool active = state_machine.active(this);		// This locks mState shortly, so it must be called before locking mEngineState because add() locks mEngineState while holding mState.
 	engine_state_type_wat engine_state_w(mEngineState);
 	if (!active)
@@ -340,8 +374,8 @@ void AIEngine::mainloop(void)
 	}
 	if (total_clocks >= sMaxCount)
 	{
-#ifndef LL_RELEASE_FOR_DOWNLOAD
-	  print_statemachine_diagnostics(total_clocks, max_delta, slowest_element);
+#if STATE_MACHINE_PROFILING
+		print_statemachine_diagnostics(total_clocks, slowest_timer, slowest_element);
 #endif
 	  Dout(dc::statemachine, "Sorting " << engine_state_w->list.size() << " state machines.");
 	  engine_state_w->list.sort(QueueElementComp());
@@ -751,6 +785,22 @@ void AIStateMachine::multiplex(event_type event)
 	unref();
   }
 }
+
+#if STATE_MACHINE_PROFILING
+std::vector<AIStateMachine::StateTimerBase*> AIStateMachine::StateTimerBase::mTimerStack;
+AIStateMachine::StateTimerBase::TimeData AIStateMachine::StateTimerBase::TimeData::sRoot("");
+void AIStateMachine::StateTimer::TimeData::DumpTimer(std::ostringstream& msg, std::string prefix)
+{
+	F64 const tfactor = 1000 / calc_clock_frequency();
+	msg << prefix << mName << " " << (mEnd - mStart)*tfactor << "ms" << std::endl;
+	prefix.push_back(' ');
+	std::vector<TimeData>::iterator it;
+	for (it = mChildren.begin(); it != mChildren.end(); ++it)
+	{
+		it->DumpTimer(msg, prefix);
+	}
+}
+#endif
 
 AIStateMachine::state_type AIStateMachine::begin_loop(base_state_type base_state)
 {

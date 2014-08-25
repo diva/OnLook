@@ -316,7 +316,10 @@ Make sure you entered the correct Login URI. An example of a Login URI is: \"htt
 
 	<!-- build floater -->
 	<string name="multiple_textures">Multiple</string>
+
 	<string name="use_texture">Use texture</string>
+    <string name="manip_hint1">Move mouse cursor over ruler</string>
+    <string name="manip_hint2">to snap to grid</string>
 
 	<!-- world map -->
 	<string name="texture_loading">Loading...</string>
@@ -2722,6 +2725,26 @@ string input = string to test for match
 string pattern = string to use as pattern
 returns boolean TRUE/FALSE.
 	</string>
+	<string name="LSLTipText_osForceCreateLink">
+osForceCreateLink(key target, integer parent)
+Link the script's object with target, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osForceBreakLink">
+osForceBreakLink(integer link)
+De-links the prim with the given link number in a linked set, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osForceBreakAllLinks">
+osForceBreakAllLinks()
+De-links all prims in a link set, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osGetRegionSize">
+vector osGetRegionSize()
+Returns the size of the region in metres.
+	</string>
+	<string name="LSLTipText_osGetPhysicsEngineType">
+string osGetPhysicsEngineType()
+Returns a string containing the name of the Physics Engine.
+	</string>
 
 	<string name="LSLTipText_cmSetWindlightScene">
 cmSetWindlightScene(list rules)
@@ -4402,6 +4425,12 @@ Try enclosing path to the editor with double quotes.
 
   <!-- teleport_strings.xml's strings we need -->
   <string name="completed_from">Teleport completed from</string>
+  
+  <!-- Media filter -->
+  <string name="audio">audio</string>
+  <string name="media">media</string>
+  <string name="MediaFilterBlacklist">blacklist</string>
+  <string name="MediaFilterWhitelist">whitelist</string>
 
   <!-- AIAlert messages -->
   <!-- These two do not need translation ;) -->

@@ -50,7 +50,6 @@
 #include "llstl.h"
 #include "llsdserialize.h"
 #include "llvector4a.h"
-#include "llmatrix4a.h"
 #include "lltimer.h"
 
 #define DEBUG_SILHOUETTE_BINORMALS 0
@@ -1649,7 +1648,7 @@ BOOL LLPath::generate(const LLPathParams& params, F32 detail, S32 split,
 			F32 t = (F32)i * mStep;
 			mPath[i].mPos.set(0,
 								lerp(0,   -sin(F_PI*params.getTwist()*t)*0.5f,t),
-								lerp(-0.5, cos(F_PI*params.getTwist()*t)*0.5f,t));
+								lerp(-0.5f, cos(F_PI*params.getTwist()*t)*0.5f,t));
 			mPath[i].mScale.set(lerp(1,params.getScale().mV[0],t),
 								lerp(1,params.getScale().mV[1],t), 0,1);
 			mPath[i].mTexT  = t;
@@ -2184,7 +2183,7 @@ BOOL LLVolume::generate()
 				0, 0, scale[2], 0,
 					0, 0, 0, 1 };
 			
-			LLMatrix4 rot((F32*) mPathp->mPath[s].mRot.mMatrix);
+			LLMatrix4 rot(mPathp->mPath[s].mRot.getF32ptr());
 			LLMatrix4 scale_mat(sc);
 			
 			scale_mat *= rot;
@@ -3670,16 +3669,14 @@ S32 LLVolume::getNumTriangles(S32* vcount) const
 void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 										  std::vector<LLVector3> &normals,
 										  const LLVector3& obj_cam_vec_in,
-										  const LLMatrix4& mat_in,
-										  const LLMatrix3& norm_mat_in,
+										  const LLMatrix4a& mat_in,
+										  const LLMatrix4a& norm_mat_in,
 										  S32 face_mask)
 {
-	LLMatrix4a mat;
-	mat.loadu(mat_in);
+	const LLMatrix4a& mat = mat_in;
 
-	LLMatrix4a norm_mat;
-	norm_mat.loadu(norm_mat_in);
-		
+	const LLMatrix4a& norm_mat = norm_mat_in;
+
 	LLVector4a obj_cam_vec;
 	obj_cam_vec.load3(obj_cam_vec_in.mV);
 

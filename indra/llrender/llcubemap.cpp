@@ -34,6 +34,7 @@
 #include "v3dmath.h"
 #include "m3math.h"
 #include "m4math.h"
+#include "llmatrix4a.h"
 
 #include "llrender.h"
 #include "llglslshader.h"
@@ -265,18 +266,19 @@ void LLCubeMap::setMatrix(S32 stage)
 		gGL.getTexUnit(stage)->activate();
 	}
 
-	LLVector3 x(gGLModelView+0);
-	LLVector3 y(gGLModelView+4);
-	LLVector3 z(gGLModelView+8);
+	LLVector3 x(gGLModelView.getRow<0>().getF32ptr());
+	LLVector3 y(gGLModelView.getRow<1>().getF32ptr());
+	LLVector3 z(gGLModelView.getRow<2>().getF32ptr());
 
 	LLMatrix3 mat3;
 	mat3.setRows(x,y,z);
-	LLMatrix4 trans(mat3);
+	LLMatrix4a trans;
+	trans.loadu(mat3);
 	trans.transpose();
 
 	gGL.matrixMode(LLRender::MM_TEXTURE);
 	gGL.pushMatrix();
-	gGL.loadMatrix((F32 *)trans.mMatrix);
+	gGL.loadMatrix(trans);
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	
 	/*if (stage > 0)

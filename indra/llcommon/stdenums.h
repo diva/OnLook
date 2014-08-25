@@ -118,16 +118,6 @@ enum EAddPosition
 	ADD_BOTTOM
 };
 
-enum LLGroupChange
-{
-	GC_PROPERTIES,
-	GC_MEMBER_DATA,
-	GC_ROLE_DATA,
-	GC_ROLE_MEMBER_DATA,
-	GC_TITLES,
-	GC_ALL
-};
-
 //----------------------------------------------------------------------------
 // DEPRECATED - create new, more specific files for shared enums/constants
 //----------------------------------------------------------------------------

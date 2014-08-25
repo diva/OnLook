@@ -1543,6 +1543,8 @@ class UpdateItemSM : public AIStateMachine
 
 	static void add(UpdateItem const& ui);
 
+	/*virtual*/ const char* getName() const { return "UpdateItemSM"; }
+
   private:
 	static UpdateItemSM* sSelf;
 	typedef std::deque<UpdateItem> updateQueue_type;

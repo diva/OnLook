@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="floater_about" title="Über Singularity">
+<floater name="floater_about" title="Über [SHORT_APP_NAME]">
   <tab_container name="about_tab">
     <panel label="Info" name="support_panel">
       <button label="In Zwischenablage kopieren" name="copy_btn"/>

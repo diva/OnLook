@@ -83,7 +83,6 @@
 		<menu_item_check label="Intervenants actifs" name="Active Speakers"/>
 		<menu_item_check label="Liste des ignorés - Mute" name="Mute List"/>
 		<menu_item_check label="Historique des TP" name="Teleport History"/>
-		<menu_item_check label="Filtre Médias" name="Media Filter"/>
 		<menu_item_separator label="-----------" name="separator2"/>
 		<menu_item_check label="Contrôles de la caméra" name="Camera Controls"/>
 		<menu_item_check label="Contrôle des déplacements" name="Movement Controls"/>
@@ -141,6 +140,7 @@
 		<menu_item_separator label="-----------" name="separator5"/>
         <menu_item_call label="Mes Ensembles" name="My Outfits"/>
         <menu_item_call label="Favoris" name="Favorites"/>
+        <menu_item_check label="Avatars de Base" name="Avatar Picker"/>
         <menu_item_separator label="-----------" name="separator5"/>
 		<menu_item_call label="Mes terrains" name="My Land..."/>
 		<menu_item_call label="À propos du terrain" name="About Land..."/>
@@ -148,11 +148,11 @@
 		<menu_item_call label="Région et domaine" name="Region/Estate..."/>
 		<menu_item_separator label="-----------" name="separator6"/>
 		<menu label="Environnement" name="Environment Settings">
-			<menu_item_call label="Aube" name="Sunrise"/>
-			<menu_item_call label="Midi" name="Noon"/>
-			<menu_item_call label="Coucher de soleil" name="Sunset"/>
-			<menu_item_call label="Minuit" name="Midnight"/>
-			<menu_item_call label="Revenir aux options par défaut" name="Revert to Region Default"/>
+			<menu_item_check label="Aube" name="Sunrise"/>
+			<menu_item_check label="Midi" name="Noon"/>
+			<menu_item_check label="Coucher de soleil" name="Sunset"/>
+			<menu_item_check label="Minuit" name="Midnight"/>
+			<menu_item_check label="Revenir aux options par défaut" name="Revert to Region Default"/>
 			<menu_item_separator label="-----------" name="separator"/>
 			<menu_item_call label="Editeur d&apos;environnement" name="Environment Editor"/>
             <menu_item_call label="Editeur du jour" name="Day Cycle Editor"/>
@@ -242,5 +242,20 @@
 			<menu_item_call label="Signaler un bug" name="Report Bug..."/>
 		</menu>
 		<menu_item_call label="A propos de [APP_NAME]" name="About Second Life..."/>
+	</menu>
+	<menu name="Singularity">
+		<menu_item_call label="Fermer toutes les Notices des Groupes" name="Close All Dialogs"/>
+		<menu_item_call label="Faux Absent (Simuler qu'on est ... Aplula)" name="Fake Away Status"/>
+		<menu_item_call label="Force le 'Ground Sit' (Assis par terre, plus bouger !)" name="Force Ground Sit"/>
+		<menu_item_call label="AO Intégré" name="Animation Override ..."/>
+		<menu_item_check label="Nimble/Super Saut ? (Dur à traduire, littéralement...Agile !)" name="Nimble"/>
+		<menu_item_check label="Object Area Search/Recherche par Zone des Objets" name="Object Area Search"/>
+		<menu_item_check label="Sound Explorer/Panneau des Sons" name="Sound Explorer"/>
+		<menu_item_check label="Asset Blacklist/Liste des Derenders" name="Asset Blacklist"/>
+		<menu_item_check label="Filtre des Médias" name="Media Filter"/>
+		<menu_item_check label="Affichage des Titres de la Radio + Egaliseur (joli)" name="Streaming Audio Display"/>
+		<menu_item_check label="Pose Stand (En français quel intérêt ? Pose Stand et puis voilà)" name="Pose Stand"/>
+		<menu_item_check label="Console de 'Debug' pour la région" name="Region Debug Console"/>
+		<menu_item_call label="Rebake/Rafraîchir" name="Rebake"/>
 	</menu>
 </menu_bar>

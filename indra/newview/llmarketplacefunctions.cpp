@@ -41,7 +41,7 @@
 // Helpers
 //
 
-static std::string getLoginUriDomain()
+std::string getLoginUriDomain()
 {
 	LLURI uri(gHippoGridManager->getConnectedGrid()->getLoginUri());
 	std::string hostname = uri.hostName();	// Ie, "login.<gridid>.lindenlab.com"

@@ -321,6 +321,9 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 {
 	// Moved this up... -> mWidth = region_width_meters;
 // </FS:CR>
+
+	mRenderMatrix.setIdentity();
+
 	mImpl->mOriginGlobal = from_region_handle(handle); 
 	updateRenderMatrix();
 
@@ -547,7 +550,7 @@ void LLViewerRegion::setOriginGlobal(const LLVector3d &origin_global)
 
 void LLViewerRegion::updateRenderMatrix()
 {
-	mRenderMatrix.setTranslation(getOriginAgent());
+	mRenderMatrix.setTranslate_affine(getOriginAgent());
 }
 
 void LLViewerRegion::setTimeDilation(F32 time_dilation)
@@ -1719,6 +1722,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
 	capabilityNames.append("GetTexture");
+	capabilityNames.append("GroupAPIv1");
 	capabilityNames.append("GroupMemberData");
 	capabilityNames.append("GroupProposalBallot");
 	capabilityNames.append("HomeLocation");

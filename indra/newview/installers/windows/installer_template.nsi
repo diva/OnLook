@@ -210,7 +210,8 @@ Function CloseSecondLife
   Push $0
   FindWindow $0 "Second Life" ""
   IntCmp $0 0 DONE
-  MessageBox MB_OKCANCEL $(CloseSecondLifeInstMB) IDOK CLOSE IDCANCEL CANCEL_INSTALL
+  MessageBox MB_YESNOCANCEL $(CloseSecondLifeInstMB) IDYES CLOSE IDNO DONE
+  Goto CANCEL_INSTALL ; IDCANCEL
 
   CANCEL_INSTALL:
     Quit
@@ -436,7 +437,8 @@ Function un.CloseSecondLife
   Push $0
   FindWindow $0 "Second Life" ""
   IntCmp $0 0 DONE
-  MessageBox MB_OKCANCEL $(CloseSecondLifeUnInstMB) IDOK CLOSE IDCANCEL CANCEL_UNINSTALL
+  MessageBox MB_YESNOCANCEL $(CloseSecondLifeUnInstMB) IDYES CLOSE IDNO DONE
+  Goto CANCEL_UNINSTALL ; IDCANCEL
 
   CANCEL_UNINSTALL:
     Quit

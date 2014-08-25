@@ -41,6 +41,7 @@
 	</menu>
 	<menu label="Moderación" name="Moderation">
 		<menu_item_call label="Ignorar/No Ignorar" name="Mute/Unmute"/>
+		<menu_item_call label="Prohibir en Grupo" name="Ban From Group"/>
 		<menu_item_call label="Reportar Abuso" name="Report Abuse"/>
 		<menu_item_separator/>
 		<menu_item_call label="Congelar" name="Freeze"/>
@@ -53,6 +54,7 @@
 		<menu_item_check label="Posición" name="Position"/>
 		<menu_item_check label="Altitud" name="Altitude"/>
 		<menu_item_check label="Actividad" name="Activity"/>
+		<menu_item_check label="Voz" name="Voice"/>
 		<menu_item_check label="Edad" name="Age"/>
 		<menu_item_check label="Tiempo" name="Time"/>
 		<menu_item_check label="Visor" name="Client"/>

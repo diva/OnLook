@@ -104,24 +104,46 @@ void LLDrawPoolTree::render(S32 pass)
 	LLGLState test(GL_ALPHA_TEST, LLGLSLShader::sNoFixedFunction ? 0 : 1);
 	LLOverrideFaceColor color(this, 1.f, 1.f, 1.f, 1.f);
 
-	static LLCachedControl<bool> sRenderAnimateTrees("RenderAnimateTrees", false);
-	if (sRenderAnimateTrees)
-	{
-		renderTree();
-	}
-	else
 	gGL.getTexUnit(sDiffTex)->bind(mTexturep);
-					
+	
 	for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
 			 iter != mDrawFace.end(); iter++)
 	{
 		LLFace *face = *iter;
+		if(face->getViewerObject())
+		{
+			LLVOTree* pTree = dynamic_cast<LLVOTree*>(face->getViewerObject());
+			if(pTree && !pTree->mDrawList.empty() )
+			{
+				LLMatrix4a* model_matrix = &(face->getDrawable()->getRegion()->mRenderMatrix);
+
+				gGL.loadMatrix(gGLModelView);
+				gGL.multMatrix(*model_matrix);
+				gPipeline.mMatrixOpCount++;
+
+				for(std::vector<LLPointer<LLDrawInfo> >::iterator iter2 = pTree->mDrawList.begin();
+					iter2 != pTree->mDrawList.end(); iter2++)
+				{
+					LLDrawInfo& params = *iter2->get();
+					gGL.pushMatrix();
+					gGL.multMatrix(*params.mModelMatrix);
+					gPipeline.mMatrixOpCount++;
+					params.mVertexBuffer->setBuffer(LLDrawPoolTree::VERTEX_DATA_MASK);
+					params.mVertexBuffer->drawRange(params.mDrawMode, params.mStart, params.mEnd, params.mCount, params.mOffset);
+					gGL.popMatrix();
+				}
+				continue;
+			}
+		}
 		LLVertexBuffer* buff = face->getVertexBuffer();
 
 		if(buff)
 		{
-			LLMatrix4* model_matrix = &(face->getDrawable()->getRegion()->mRenderMatrix);
-
+			LLMatrix4a* model_matrix = &(face->getDrawable()->getRegion()->mRenderMatrix);
+			if(model_matrix && model_matrix->isIdentity())
+			{
+				model_matrix = NULL;
+			}
 			if (model_matrix != gGLLastMatrix)
 			{
 				gGLLastMatrix = model_matrix;
@@ -129,7 +151,7 @@ void LLDrawPoolTree::render(S32 pass)
 				if (model_matrix)
 				{
 					llassert(gGL.getMatrixMode() == LLRender::MM_MODELVIEW);
-					gGL.multMatrix((GLfloat*) model_matrix->mMatrix);
+					gGL.multMatrix(*model_matrix);
 				}
 				gPipeline.mMatrixOpCount++;
 			}
@@ -208,130 +230,6 @@ void LLDrawPoolTree::endShadowPass(S32 pass)
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 	gDeferredTreeShadowProgram.unbind();
 }
-
-//
-void LLDrawPoolTree::renderTree(BOOL selecting)
-{
-	LLGLState normalize(GL_NORMALIZE, TRUE);
-	
-	// Bind the texture for this tree.
-	gGL.getTexUnit(sDiffTex)->bind(mTexturep.get(), TRUE);
-		
-	U32 indices_drawn = 0;
-
-	gGL.matrixMode(LLRender::MM_MODELVIEW);
-	
-	for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
-		 iter != mDrawFace.end(); iter++)
-	{
-		LLFace *face = *iter;
-		LLDrawable *drawablep = face->getDrawable();
-
-		if (drawablep->isDead() || !face->getVertexBuffer())
-		{
-			continue;
-		}
-
-		face->getVertexBuffer()->setBuffer(LLDrawPoolTree::VERTEX_DATA_MASK);
-		U16* indicesp = (U16*) face->getVertexBuffer()->getIndicesPointer();
-
-		// Render each of the trees
-		LLVOTree *treep = (LLVOTree *)drawablep->getVObj().get();
-
-		LLColor4U color(255,255,255,255);
-
-		if (!selecting || treep->mGLName != 0)
-		{
-			if (selecting)
-			{
-				S32 name = treep->mGLName;
-				
-				color = LLColor4U((U8)(name >> 16), (U8)(name >> 8), (U8)name, 255);
-			}
-			
-			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
-			//gGL.pushMatrix();
-
-			LLMatrix4 matrix(gGLModelView);
-			
-			// Translate to tree base  HACK - adjustment in Z plants tree underground
-			const LLVector3 &pos_agent = treep->getPositionAgent();
-			//gGL.translatef(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
-			LLMatrix4 trans_mat;
-			trans_mat.setTranslation(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
-			trans_mat *= matrix;
-			
-			// Rotate to tree position and bend for current trunk/wind
-			// Note that trunk stiffness controls the amount of bend at the trunk as 
-			// opposed to the crown of the tree
-			// 
-			const F32 TRUNK_STIFF = 22.f;
-			
-			LLQuaternion rot = 
-				LLQuaternion(treep->mTrunkBend.magVec()*TRUNK_STIFF*DEG_TO_RAD, LLVector4(treep->mTrunkBend.mV[VX], treep->mTrunkBend.mV[VY], 0)) *
-				LLQuaternion(90.f*DEG_TO_RAD, LLVector4(0,0,1)) *
-				treep->getRotation();
-
-			LLMatrix4 rot_mat(rot);
-			rot_mat *= trans_mat;
-
-			F32 radius = treep->getScale().magVec()*0.05f;
-			LLMatrix4 scale_mat;
-			scale_mat.mMatrix[0][0] = 
-				scale_mat.mMatrix[1][1] =
-				scale_mat.mMatrix[2][2] = radius;
-
-			scale_mat *= rot_mat;
-
-			//TO-DO: Make these set-able?
-			const F32 THRESH_ANGLE_FOR_BILLBOARD = 7.5f; //Made LoD now a little less aggressive here -Shyotl
-			const F32 BLEND_RANGE_FOR_BILLBOARD = 1.5f;
-
-			F32 droop = treep->mDroop + 25.f*(1.f - treep->mTrunkBend.magVec());
-			
-			S32 stop_depth = 0;
-			F32 app_angle = treep->getAppAngle()*LLVOTree::sTreeFactor;
-			F32 alpha = 1.0;
-			S32 trunk_LOD = LLVOTree::sMAX_NUM_TREE_LOD_LEVELS;
-
-			for (S32 j = 0; j < 4; j++)
-			{
-
-				if (app_angle > LLVOTree::sLODAngles[j])
-				{
-					trunk_LOD = j;
-					break;
-				}
-			} 
-			if(trunk_LOD >= LLVOTree::sMAX_NUM_TREE_LOD_LEVELS)
-			{
-				continue ; //do not render.
-			}
-
-			if (app_angle < (THRESH_ANGLE_FOR_BILLBOARD - BLEND_RANGE_FOR_BILLBOARD))
-			{
-				//
-				//  Draw only the billboard 
-				//
-				//  Only the billboard, can use closer to normal alpha func.
-				stop_depth = -1;
-				LLFacePool::LLOverrideFaceColor clr(this, color); 
-				indices_drawn += treep->drawBranchPipeline(scale_mat, indicesp, trunk_LOD, stop_depth, treep->mDepth, treep->mTrunkDepth, 1.0, treep->mTwist, droop, treep->mBranches, alpha);
-			}
-			else // if (app_angle > (THRESH_ANGLE_FOR_BILLBOARD + BLEND_RANGE_FOR_BILLBOARD))
-			{
-				//
-				//  Draw only the full geometry tree
-				//
-				LLFacePool::LLOverrideFaceColor clr(this, color); 
-				indices_drawn += treep->drawBranchPipeline(scale_mat, indicesp, trunk_LOD, stop_depth, treep->mDepth, treep->mTrunkDepth, 1.0, treep->mTwist, droop, treep->mBranches, alpha);
-			}
-			
-			//gGL.popMatrix();
-		}
-	}
-}//
 
 BOOL LLDrawPoolTree::verify() const
 {

@@ -105,8 +105,9 @@ void LLAvatarJoint::setValid( BOOL valid, BOOL recursive )
 		for (child_list_t::iterator iter = mChildren.begin();
 			 iter != mChildren.end(); ++iter)
 		{
-			LLAvatarJoint* joint = (LLAvatarJoint*)(*iter);
-			joint->setValid(valid, TRUE);
+			LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
+			if (joint)
+				joint->setValid(valid, TRUE);
 		}
 	}
 
@@ -124,7 +125,8 @@ void LLAvatarJoint::setSkeletonComponents( U32 comp, BOOL recursive )
 			 iter != mChildren.end(); ++iter)
 		{
 			LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
-			joint->setSkeletonComponents(comp, recursive);
+			if (joint)
+				joint->setSkeletonComponents(comp, recursive);
 		}
 	}
 }
@@ -138,8 +140,9 @@ void LLAvatarJoint::setVisible(BOOL visible, BOOL recursive)
 		for (child_list_t::iterator iter = mChildren.begin();
 			 iter != mChildren.end(); ++iter)
 		{
-			LLAvatarJoint* joint = (LLAvatarJoint*)(*iter);
-			joint->setVisible(visible, recursive);
+			LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
+			if(joint)
+				joint->setVisible(visible, recursive);
 		}
 	}
 }
@@ -150,7 +153,8 @@ void LLAvatarJoint::updateFaceSizes(U32 &num_vertices, U32& num_indices, F32 pix
 		 iter != mChildren.end(); ++iter)
 	{
 		LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
-		joint->updateFaceSizes(num_vertices, num_indices, pixel_area);
+		if (joint)
+			joint->updateFaceSizes(num_vertices, num_indices, pixel_area);
 	}
 }
 
@@ -160,7 +164,8 @@ void LLAvatarJoint::updateFaceData(LLFace *face, F32 pixel_area, BOOL damp_wind,
 		 iter != mChildren.end(); ++iter)
 	{
 		LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
-		joint->updateFaceData(face, pixel_area, damp_wind, terse_update);
+		if (joint)
+			joint->updateFaceData(face, pixel_area, damp_wind, terse_update);
 	}
 }
 
@@ -170,7 +175,8 @@ void LLAvatarJoint::updateJointGeometry()
 		 iter != mChildren.end(); ++iter)
 	{
 		LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
-		joint->updateJointGeometry();
+		if (joint)
+			joint->updateJointGeometry();
 	}
 }
 
@@ -184,6 +190,9 @@ BOOL LLAvatarJoint::updateLOD(F32 pixel_area, BOOL activate)
 		 iter != mChildren.end(); ++iter)
 	{
 		LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
+		if (!joint)
+			continue;
+
 		F32 jointLOD = joint->getLOD();
 		
 		if (found_lod || jointLOD == DEFAULT_AVATAR_JOINT_LOD)
@@ -213,7 +222,8 @@ void LLAvatarJoint::dump()
 		 iter != mChildren.end(); ++iter)
 	{
 		LLAvatarJoint* joint = dynamic_cast<LLAvatarJoint*>(*iter);
-		joint->dump();
+		if (joint)
+			joint->dump();
 	}
 }
 
@@ -260,7 +270,7 @@ void LLAvatarJointCollisionVolume::renderCollision()
 	updateWorldMatrix();
 	
 	gGL.pushMatrix();
-	gGL.multMatrix( &mXform.getWorldMatrix().mMatrix[0][0] );
+	gGL.multMatrix( mXform.getWorldMatrix() );
 
 	gGL.diffuseColor3f( 0.f, 0.f, 1.f );
 	

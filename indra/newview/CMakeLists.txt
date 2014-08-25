@@ -183,6 +183,7 @@ set(viewer_SOURCE_FILES
     llfloateractivespeakers.cpp
     llfloaterauction.cpp
     llfloaterautoreplacesettings.cpp
+    llfloateravatar.cpp
     llfloateravatarinfo.cpp
     llfloateravatarlist.cpp
     llfloateravatarpicker.cpp
@@ -204,6 +205,7 @@ set(viewer_SOURCE_FILES
     llfloatercolorpicker.cpp
     llfloatercustomize.cpp
     llfloaterdaycycle.cpp
+    llfloaterdestinations.cpp
     llfloaterdirectory.cpp
     llfloaterdisplayname.cpp
     llfloatereditui.cpp
@@ -216,6 +218,7 @@ set(viewer_SOURCE_FILES
     llfloaterfriends.cpp
     llfloatergesture.cpp
     llfloatergodtools.cpp
+    llfloatergroupbulkban.cpp
     llfloatergroupinfo.cpp
     llfloatergroupinvite.cpp
     llfloatergroups.cpp
@@ -231,6 +234,7 @@ set(viewer_SOURCE_FILES
     llfloaterlandholdings.cpp
     llfloaterlandmark.cpp
     llfloatermap.cpp
+    llfloatermediafilter.cpp
     llfloatermediasettings.cpp
     llfloatermemleak.cpp
     llfloatermessagelog.cpp
@@ -333,6 +337,7 @@ set(viewer_SOURCE_FILES
     llmaterialmgr.cpp
     llmediactrl.cpp
     llmediadataclient.cpp
+    llmediafilter.cpp
     llmediaremotectrl.cpp
     llmenucommands.cpp
     llmenuoptionpathfindingrebakenavmesh.cpp
@@ -368,6 +373,8 @@ set(viewer_SOURCE_FILES
     llpanelface.cpp
     llpanelgeneral.cpp
     llpanelgroup.cpp
+    llpanelgroupbulk.cpp
+    llpanelgroupbulkban.cpp
     llpanelgroupgeneral.cpp
     llpanelgroupinvite.cpp
     llpanelgrouplandmoney.cpp
@@ -591,7 +598,6 @@ set(viewer_SOURCE_FILES
     sgversion.cpp
     shcommandhandler.cpp
     shfloatermediaticker.cpp
-    slfloatermediafilter.cpp
     wlfPanel_AdvSettings.cpp
     )
 
@@ -706,6 +712,7 @@ set(viewer_HEADER_FILES
     llfloateractivespeakers.h
     llfloaterauction.h
     llfloaterautoreplacesettings.h
+    llfloateravatar.h
     llfloateravatarinfo.h
     llfloateravatarlist.h
     llfloateravatarpicker.h
@@ -727,6 +734,7 @@ set(viewer_HEADER_FILES
     llfloatercolorpicker.h
     llfloatercustomize.h
     llfloaterdaycycle.h
+    llfloaterdestinations.h
     llfloaterdirectory.h
     llfloaterdisplayname.h
     llfloatereditui.h
@@ -739,6 +747,7 @@ set(viewer_HEADER_FILES
     llfloaterfriends.h
     llfloatergesture.h
     llfloatergodtools.h
+    llfloatergroupbulkban.h
     llfloatergroupinfo.h
     llfloatergroupinvite.h
     llfloatergroups.h
@@ -754,6 +763,7 @@ set(viewer_HEADER_FILES
     llfloaterlandholdings.h
     llfloaterlandmark.h
     llfloatermap.h
+    llfloatermediafilter.h
     llfloatermediasettings.h
     llfloatermemleak.h
     llfloatermessagelog.h
@@ -856,6 +866,7 @@ set(viewer_HEADER_FILES
     llmaterialmgr.h
     llmediactrl.h
     llmediadataclient.h
+    llmediafilter.h
     llmediaremotectrl.h
     llmenucommands.h
     llmenuoptionpathfindingrebakenavmesh.h
@@ -891,6 +902,9 @@ set(viewer_HEADER_FILES
     llpanelface.h
     llpanelgeneral.h
     llpanelgroup.h
+    llpanelgroupbulk.h
+    llpanelgroupbulkban.h
+    llpanelgroupbulkimpl.h
     llpanelgroupgeneral.h
     llpanelgroupinvite.h
     llpanelgrouplandmoney.h
@@ -1117,12 +1131,12 @@ set(viewer_HEADER_FILES
     rlvinventory.h
     rlvlocks.h
     rlvui.h
+    roles_constants.h
     scriptcounter.h
     sgmemstat.h
     sgversion.h
     shcommandhandler.h
     shfloatermediaticker.h
-    slfloatermediafilter.h
     wlfPanel_AdvSettings.h
     VertexCache.h
     VorbisFramework.h
@@ -1284,6 +1298,7 @@ if (WINDOWS)
         shell32
         user32
         Vfw32
+        Wbemuuid
         winspool
         )
 

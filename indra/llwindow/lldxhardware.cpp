@@ -2,31 +2,25 @@
  * @file lldxhardware.cpp
  * @brief LLDXHardware implementation
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -40,9 +34,12 @@
 #include <dxdiag.h>
 #undef INITGUID
 
+#include <wbemidl.h>
+
 #include <boost/tokenizer.hpp>
 
 #include "lldxhardware.h"
+
 #include "llerror.h"
 
 #include "llstring.h"
@@ -59,11 +56,160 @@ LLDXHardware gDXHardware;
 #define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
 
-std::string get_string(IDxDiagContainer *containerp, WCHAR *wszPropName)
+typedef BOOL ( WINAPI* PfnCoSetProxyBlanket )( IUnknown* pProxy, DWORD dwAuthnSvc, DWORD dwAuthzSvc,
+											   OLECHAR* pServerPrincName, DWORD dwAuthnLevel, DWORD dwImpLevel,
+											   RPC_AUTH_IDENTITY_HANDLE pAuthInfo, DWORD dwCapabilities );
+
+HRESULT GetVideoMemoryViaWMI( WCHAR* strInputDeviceID, DWORD* pdwAdapterRam )
 {
-    HRESULT hr;
+	HRESULT hr;
+	bool bGotMemory = false;
+	HRESULT hrCoInitialize = S_OK;
+	IWbemLocator* pIWbemLocator = nullptr;
+	IWbemServices* pIWbemServices = nullptr;
+	BSTR pNamespace = nullptr;
+
+	*pdwAdapterRam = 0;
+	hrCoInitialize = CoInitialize( 0 );
+
+	hr = CoCreateInstance( CLSID_WbemLocator,
+						   nullptr,
+						   CLSCTX_INPROC_SERVER,
+						   IID_IWbemLocator,
+						   ( LPVOID* )&pIWbemLocator );
+#ifdef PRINTF_DEBUGGING
+	if( FAILED( hr ) ) wprintf( L"WMI: CoCreateInstance failed: 0x%0.8x\n", hr );
+#endif
+
+	if( SUCCEEDED( hr ) && pIWbemLocator )
+	{
+		// Using the locator, connect to WMI in the given namespace.
+		pNamespace = SysAllocString( L"\\\\.\\root\\cimv2" );
+
+		hr = pIWbemLocator->ConnectServer( pNamespace, nullptr, nullptr, 0L,
+										   0L, nullptr, nullptr, &pIWbemServices );
+#ifdef PRINTF_DEBUGGING
+		if( FAILED( hr ) ) wprintf( L"WMI: pIWbemLocator->ConnectServer failed: 0x%0.8x\n", hr );
+#endif
+		if( SUCCEEDED( hr ) && pIWbemServices != 0 )
+		{
+			HINSTANCE hinstOle32 = nullptr;
+
+			hinstOle32 = LoadLibraryW( L"ole32.dll" );
+			if( hinstOle32 )
+			{
+				PfnCoSetProxyBlanket pfnCoSetProxyBlanket = nullptr;
+
+				pfnCoSetProxyBlanket = ( PfnCoSetProxyBlanket )GetProcAddress( hinstOle32, "CoSetProxyBlanket" );
+				if( pfnCoSetProxyBlanket != 0 )
+				{
+					// Switch security level to IMPERSONATE.
+					pfnCoSetProxyBlanket( pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
+										  RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, nullptr, 0 );
+				}
+
+				FreeLibrary( hinstOle32 );
+			}
+
+			IEnumWbemClassObject* pEnumVideoControllers = nullptr;
+			BSTR pClassName = nullptr;
+
+			pClassName = SysAllocString( L"Win32_VideoController" );
+
+			hr = pIWbemServices->CreateInstanceEnum( pClassName, 0,
+													 nullptr, &pEnumVideoControllers );
+#ifdef PRINTF_DEBUGGING
+			if( FAILED( hr ) ) wprintf( L"WMI: pIWbemServices->CreateInstanceEnum failed: 0x%0.8x\n", hr );
+#endif
+
+			if( SUCCEEDED( hr ) && pEnumVideoControllers )
+			{
+				IWbemClassObject* pVideoControllers[10] = {0};
+				DWORD uReturned = 0;
+				BSTR pPropName = nullptr;
+
+				// Get the first one in the list
+				pEnumVideoControllers->Reset();
+				hr = pEnumVideoControllers->Next( 5000,             // timeout in 5 seconds
+												  10,                  // return the first 10
+												  pVideoControllers,
+												  &uReturned );
+#ifdef PRINTF_DEBUGGING
+				if( FAILED( hr ) ) wprintf( L"WMI: pEnumVideoControllers->Next failed: 0x%0.8x\n", hr );
+				if( uReturned == 0 ) wprintf( L"WMI: pEnumVideoControllers uReturned == 0\n" );
+#endif
+
+				VARIANT var;
+				if( SUCCEEDED( hr ) )
+				{
+					bool bFound = false;
+					for( UINT iController = 0; iController < uReturned; iController++ )
+					{
+						if ( !pVideoControllers[iController] )
+							continue;
+
+						pPropName = SysAllocString( L"PNPDeviceID" );
+						hr = pVideoControllers[iController]->Get( pPropName, 0L, &var, nullptr, nullptr );
+#ifdef PRINTF_DEBUGGING
+						if( FAILED( hr ) )
+							wprintf( L"WMI: pVideoControllers[iController]->Get PNPDeviceID failed: 0x%0.8x\n", hr );
+#endif
+						if( SUCCEEDED( hr ) )
+						{
+							if( wcsstr( var.bstrVal, strInputDeviceID ) != 0 )
+								bFound = true;
+						}
+						VariantClear( &var );
+						if( pPropName ) SysFreeString( pPropName );
+
+						if( bFound )
+						{
+							pPropName = SysAllocString( L"AdapterRAM" );
+							hr = pVideoControllers[iController]->Get( pPropName, 0L, &var, nullptr, nullptr );
+#ifdef PRINTF_DEBUGGING
+							if( FAILED( hr ) )
+								wprintf( L"WMI: pVideoControllers[iController]->Get AdapterRAM failed: 0x%0.8x\n",
+										 hr );
+#endif
+							if( SUCCEEDED( hr ) )
+							{
+								bGotMemory = true;
+								*pdwAdapterRam = var.ulVal;
+							}
+							VariantClear( &var );
+							if( pPropName ) SysFreeString( pPropName );
+							break;
+						}
+						SAFE_RELEASE( pVideoControllers[iController] );
+					}
+				}
+			}
+
+			if( pClassName )
+				SysFreeString( pClassName );
+			SAFE_RELEASE( pEnumVideoControllers );
+		}
+
+		if( pNamespace )
+			SysFreeString( pNamespace );
+		SAFE_RELEASE( pIWbemServices );
+	}
+
+	SAFE_RELEASE( pIWbemLocator );
+
+	if( SUCCEEDED( hrCoInitialize ) )
+		CoUninitialize();
+
+	if( bGotMemory )
+		return S_OK;
+	else
+		return E_FAIL;
+}
+
+void get_wstring(IDxDiagContainer* containerp, WCHAR* wszPropName, WCHAR* wszPropValue, int outputSize)
+{
+	HRESULT hr;
 	VARIANT var;
-	WCHAR wszPropValue[256];
 
 	VariantInit( &var );
 	hr = containerp->GetProp(wszPropName, &var );
@@ -82,13 +228,19 @@ std::string get_string(IDxDiagContainer *containerp, WCHAR *wszPropName)
 				wcscpy( wszPropValue, (var.boolVal) ? L"true" : L"false" );	/* Flawfinder: ignore */
 				break;
 			case VT_BSTR:
-				wcsncpy( wszPropValue, var.bstrVal, 255 );	/* Flawfinder: ignore */
-				wszPropValue[255] = 0;
+				wcsncpy( wszPropValue, var.bstrVal, outputSize-1 );	/* Flawfinder: ignore */
+				wszPropValue[outputSize-1] = 0;
 				break;
 		}
 	}
 	// Clear the variant (this is needed to free BSTR memory)
 	VariantClear( &var );
+}
+
+std::string get_string(IDxDiagContainer *containerp, WCHAR *wszPropName)
+{
+	WCHAR wszPropValue[256];
+	get_wstring(containerp, wszPropName, wszPropValue, 256);
 
 	return utf16str_to_utf8str(wszPropValue);
 }
@@ -126,7 +278,7 @@ BOOL LLVersion::set(const std::string &version_string)
 	}
 	if (count < 4)
 	{
-		//llwarns << "Potentially bogus version string!" << version_string << llendl;
+		//LL_WARNS() << "Potentially bogus version string!" << version_string << LL_ENDL;
 		for (i = 0; i < 4; i++)
 		{
 			mFields[i] = 0;
@@ -177,6 +329,7 @@ std::string LLDXDriverFile::dump()
 LLDXDevice::~LLDXDevice()
 {
 	for_each(mDriverFiles.begin(), mDriverFiles.end(), DeletePairedPointer());
+	mDriverFiles.clear();
 }
 
 std::string LLDXDevice::dump()
@@ -236,6 +389,7 @@ LLDXHardware::LLDXHardware()
 void LLDXHardware::cleanup()
 {
   // for_each(mDevices.begin(), mDevices.end(), DeletePairedPointer());
+  // mDevices.clear();
 }
 
 /*
@@ -365,8 +519,18 @@ BOOL LLDXHardware::getInfo(BOOL vram_only)
             goto LCleanup;
 		}
 		
-		// Get the English VRAM string
+		DWORD vram = 0;
+
+		WCHAR deviceID[512];
+
+		get_wstring(device_containerp, L"szDeviceID", deviceID, 512);
+
+		if (SUCCEEDED(GetVideoMemoryViaWMI(deviceID, &vram)))
 		{
+			mVRAM = vram/(1024*1024);
+		}
+		else
+		{ // Get the English VRAM string
 		  std::string ram_str = get_string(device_containerp, L"szDisplayMemoryEnglish");
 
 		  // We don't need the device any more

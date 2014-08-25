@@ -53,7 +53,8 @@ LLNameListCtrl::LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL
 :	LLScrollListCtrl(name, rect, NULL, allow_multiple_selection, draw_border,draw_heading),
 	mNameColumnIndex(name_column_index),
 	mAllowCallingCardDrop(false),
-	mNameSystem(name_system)
+	mNameSystem(name_system),
+	mPendingLookupsRemaining(0)
 {
 	setToolTip(tooltip);
 }
@@ -203,6 +204,17 @@ LLScrollListItem* LLNameListCtrl::addNameItemRow(
 				mAvatarNameCacheConnections.erase(it);
 			}
 			mAvatarNameCacheConnections[id] = LLAvatarNameCache::get(id,boost::bind(&LLNameListCtrl::onAvatarNameCache,this, _1, _2, suffix, item->getHandle()));
+
+			if (mPendingLookupsRemaining <= 0)
+			{
+				// BAKER TODO:
+				// We might get into a state where mPendingLookupsRemainig might
+				//	go negative.  So just reset it right now and figure out if it's
+				//	possible later :)
+				mPendingLookupsRemaining = 0;
+				mNameListCompleteSignal(false);
+			}
+			mPendingLookupsRemaining++;
 		}
 		break;
 	}
@@ -254,6 +266,8 @@ void LLNameListCtrl::removeNameItem(const LLUUID& agent_id)
 	{
 		selectNthItem(idx); // not sure whether this is needed, taken from previous implementation
 		deleteSingleItem(idx);
+
+		mPendingLookupsRemaining--;
 	}
 }
 
@@ -291,6 +305,23 @@ void LLNameListCtrl::onAvatarNameCache(const LLUUID& agent_id,
 			setNeedsSort();
 		}
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// BAKER - FIX NameListCtrl
+	//if (mPendingLookupsRemaining <= 0)
+	{
+		// We might get into a state where mPendingLookupsRemaining might
+		//	go negative.  So just reset it right now and figure out if it's
+		//	possible later :)
+		//mPendingLookupsRemaining = 0;
+
+		mNameListCompleteSignal(true);
+	}
+	//else
+	{
+	//	mPendingLookupsRemaining--;
+	}
+	//////////////////////////////////////////////////////////////////////////
 
 	dirtyColumns();
 }

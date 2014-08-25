@@ -89,6 +89,7 @@ LLPanelAudioPrefs::~LLPanelAudioPrefs()
 
 BOOL LLPanelAudioPrefs::postBuild()
 {
+	getChildView("filter_group")->setValue(S32(gSavedSettings.getU32("MediaFilterEnable")));
 	refreshValues(); // initialize member data from saved settings
 	childSetLabelArg("currency_change_threshold", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
@@ -115,6 +116,7 @@ void LLPanelAudioPrefs::refreshValues()
 
 	mPreviousMuteAudio = gSavedSettings.getBOOL("MuteAudio");
 	mPreviousMuteWhenMinimized = gSavedSettings.getBOOL("MuteWhenMinimized");
+	gSavedSettings.setU32("MediaFilterEnable", getChildView("filter_group")->getValue().asInteger());
 }
 
 void LLPanelAudioPrefs::cancel()

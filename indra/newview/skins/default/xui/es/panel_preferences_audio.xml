@@ -10,7 +10,12 @@
 		Preferencias de Audio:
 	</text>
 	<panel label="Volumen" name="Volume Panel"/>
-		<check_box label="Solicitar Permiso (Activar Filtro de Media)" name="media_filter_enable"/>
+		<text name="Media Filtering">Filtro de Medios</text>
+		<radio_group name="filter_group" width="314">
+			<radio_item name="0">Apagado</radio_item>
+			<radio_item name="1">Solo Lista Negra</radio_item>
+			<radio_item name="2">Preguntar</radio_item>
+		</radio_group>
 		<check_box label="Reproducir Música cuando esté disponible (usa más ancho de banda)" name="streaming_music"/>
 		<check_box label="Reproducir Media cuando esté disponible (usa más ancho de banda)" name="streaming_video"/>
 		<check_box label="Reproducir automáticamente media en prims" name="auto_prim_streaming_video"/>

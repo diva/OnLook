@@ -144,6 +144,7 @@ BOOL LLFloaterSearch::postBuild()
 	setRectControl("FloaterSearchRect");
 	applyRectControl();
 	search(SearchQuery());
+	gSavedSettings.getControl("SearchURL")->getSignal()->connect(boost::bind(&LLFloaterSearch::search, this, SearchQuery()));
 
 	return TRUE;
 }
@@ -160,7 +161,9 @@ void LLFloaterSearch::showInstance(const SearchQuery& search, bool web)
 	else
 	{
 		const std::string category(search.category());
-		if (category.empty() || category == "all")
+		if (category.empty())
+			LLFloaterDirectory::searchInAll(search.query);
+		else if (category == "all")
 			LLFloaterDirectory::showFindAll(search.query);
 		else if (category == "people")
 			LLFloaterDirectory::showPeople(search.query);

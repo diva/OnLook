@@ -153,7 +153,7 @@ const F32 BACKLIGHT_NIGHT_MAGNITUDE_OBJECT = 0.08f;
 const S32 MAX_ACTIVE_OBJECT_QUIET_FRAMES = 40;
 const S32 MAX_OFFSCREEN_GEOMETRY_CHANGES_PER_FRAME = 10;
 const U32 REFLECTION_MAP_RES = 128;
-const U32 DEFERRED_VB_MASK = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
+const U32 AUX_VB_MASK = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
 // Max number of occluders to search for. JC
 const S32 MAX_OCCLUDER_COUNT = 2;
 
@@ -170,7 +170,7 @@ BOOL	gAvatarBacklight = FALSE;
 
 BOOL	gDebugPipeline = FALSE;
 LLPipeline gPipeline;
-const LLMatrix4* gGLLastMatrix = NULL;
+const LLMatrix4a* gGLLastMatrix = NULL;
 
 LLFastTimer::DeclareTimer FTM_RENDER_GEOMETRY("Geometry");
 LLFastTimer::DeclareTimer FTM_RENDER_GRASS("Grass");
@@ -249,66 +249,48 @@ void drawBoxOutline(const LLVector3& pos, const LLVector3& size);
 U32 nhpo2(U32 v);
 LLVertexBuffer* ll_create_cube_vb(U32 type_mask, U32 usage);
 
-glh::matrix4f glh_copy_matrix(F32* src)
+const LLMatrix4a& glh_get_current_modelview()
 {
-	glh::matrix4f ret;
-	ret.set_value(src);
-	return ret;
+	return gGLModelView;
 }
 
-glh::matrix4f glh_get_current_modelview()
+const LLMatrix4a& glh_get_current_projection()
 {
-	return glh_copy_matrix(gGLModelView);
+	return gGLProjection;
 }
 
-glh::matrix4f glh_get_current_projection()
+inline const LLMatrix4a& glh_get_last_modelview()
 {
-	return glh_copy_matrix(gGLProjection);
+	return gGLLastModelView;
 }
 
-glh::matrix4f glh_get_last_modelview()
+inline const LLMatrix4a& glh_get_last_projection()
 {
-	return glh_copy_matrix(gGLLastModelView);
+	return gGLLastProjection;
 }
 
-glh::matrix4f glh_get_last_projection()
+void glh_set_current_modelview(const LLMatrix4a& mat)
 {
-	return glh_copy_matrix(gGLLastProjection);
+	gGLModelView = mat;
 }
 
-void glh_copy_matrix(const glh::matrix4f& src, F32* dst)
+void glh_set_current_projection(const LLMatrix4a& mat)
 {
-	for (U32 i = 0; i < 16; i++)
-	{
-		dst[i] = src.m[i];
-	}
+	gGLProjection = mat;
 }
 
-void glh_set_current_modelview(const glh::matrix4f& mat)
+inline void glh_set_last_modelview(const LLMatrix4a& mat)
 {
-	glh_copy_matrix(mat, gGLModelView);
+	gGLLastModelView = mat;
 }
 
-void glh_set_current_projection(glh::matrix4f& mat)
+void glh_set_last_projection(const LLMatrix4a& mat)
 {
-	glh_copy_matrix(mat, gGLProjection);
-}
-
-glh::matrix4f gl_ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat znear, GLfloat zfar)
-{
-	glh::matrix4f ret(
-		2.f/(right-left), 0.f, 0.f, -(right+left)/(right-left),
-		0.f, 2.f/(top-bottom), 0.f, -(top+bottom)/(top-bottom),
-		0.f, 0.f, -2.f/(zfar-znear),  -(zfar+znear)/(zfar-znear),
-		0.f, 0.f, 0.f, 1.f);
-
-	return ret;
+	gGLLastProjection = mat;
 }
 
 void display_update_camera(bool tiling=false);
 //----------------------------------------
-
-S32		LLPipeline::sCompiles = 0;
 
 BOOL	LLPipeline::sPickAvatar = TRUE;
 BOOL	LLPipeline::sDynamicLOD = TRUE;
@@ -329,7 +311,6 @@ BOOL	LLPipeline::sAutoMaskAlphaDeferred = TRUE;
 BOOL	LLPipeline::sAutoMaskAlphaNonDeferred = FALSE;
 BOOL	LLPipeline::sDisableShaders = FALSE;
 BOOL	LLPipeline::sRenderBump = TRUE;
-BOOL	LLPipeline::sBakeSunlight = FALSE;
 BOOL	LLPipeline::sNoAlpha = FALSE;
 BOOL	LLPipeline::sUseFarClip = TRUE;
 BOOL	LLPipeline::sShadowRender = FALSE;
@@ -348,7 +329,7 @@ BOOL	LLPipeline::sRenderDeferred = FALSE;
 BOOL    LLPipeline::sMemAllocationThrottled = FALSE;
 S32		LLPipeline::sVisibleLightCount = 0;
 F32		LLPipeline::sMinRenderSize = 0.f;
-BOOL	LLPipeline::sRenderingHUDs;
+BOOL	LLPipeline::sRenderingHUDs = FALSE;
 
 
 static LLCullResult* sCull = NULL;
@@ -383,10 +364,6 @@ LLPipeline::LLPipeline() :
 	mMeanBatchSize(0),
 	mTrianglesDrawn(0),
 	mNumVisibleNodes(0),
-	mVerticesRelit(0),
-	mLightingChanges(0),
-	mGeometryChanges(0),
-	mNumVisibleFaces(0),
 
 	mInitialized(FALSE),
 	mVertexShadersEnabled(FALSE),
@@ -600,7 +577,7 @@ void LLPipeline::cleanup()
 
 	mInitialized = FALSE;
 
-	mDeferredVB = NULL;
+	mAuxScreenRectVB = NULL;
 	mCubeVB = NULL;
 }
 
@@ -798,6 +775,8 @@ LLPipeline::eFBOStatus LLPipeline::doAllocateScreenBuffer(U32 resX, U32 resY)
 
 bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 {
+	mAuxScreenRectVB = NULL;
+
 	refreshCachedSettings();
 	U32 res_mod = gSavedSettings.getU32("RenderResolutionDivisor");
 	if (res_mod > 1 && res_mod < resX && res_mod < resY)
@@ -1837,11 +1816,6 @@ void LLPipeline::resetFrameStats()
 		mMeanBatchSize = gPipeline.mTrianglesDrawn/gPipeline.mBatchCount;
 	}
 	mTrianglesDrawn = 0;
-	sCompiles        = 0;
-	mVerticesRelit   = 0;
-	mLightingChanges = 0;
-	mGeometryChanges = 0;
-	mNumVisibleFaces = 0;
 
 	if (mOldRenderDebugMask != mRenderDebugMask)
 	{
@@ -2339,11 +2313,11 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 
 	gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-	gGL.loadMatrix(gGLLastProjection);
+	gGL.loadMatrix(glh_get_last_projection());
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLLastModelView);
+	gGL.loadMatrix(glh_get_last_modelview());
 
 	LLGLDisable blend(GL_BLEND);
 	LLGLDisable test(GL_ALPHA_TEST);
@@ -2378,8 +2352,8 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 		}
 	}
 	
-	glh::matrix4f modelview = glh_get_last_modelview();
-	glh::matrix4f proj = glh_get_last_projection();
+	const LLMatrix4a& modelview = glh_get_last_modelview();
+	const LLMatrix4a& proj = glh_get_last_projection();
 	LLGLUserClipPlane clip(plane, modelview, proj, water_clip != 0 && LLPipeline::sReflectionRender);
 
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
@@ -2558,18 +2532,6 @@ void LLPipeline::downsampleDepthBuffer(LLRenderTarget& source, LLRenderTarget& d
 
 	dest.bindTarget();
 	dest.clear(GL_DEPTH_BUFFER_BIT);
-
-	if(mDeferredVB.isNull())
-	{
-		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-		mDeferredVB->allocateBuffer(8, 0, true);
-		LLStrider<LLVector3> vert; 
-		mDeferredVB->getVertexStrider(vert);
-		
-		vert[0].set(-1,1,0);
-		vert[1].set(-1,-3,0);
-		vert[2].set(3,1,0);
-	}
 	
 	if (source.getUsage() == LLTexUnit::TT_RECT_TEXTURE)
 	{
@@ -2590,8 +2552,7 @@ void LLPipeline::downsampleDepthBuffer(LLRenderTarget& source, LLRenderTarget& d
 
 	{
 		LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
-		mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-		mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 	}
 	
 	dest.flush();
@@ -2684,7 +2645,6 @@ BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
 	if (update_complete && assertInitialized())
 	{
 		drawablep->setState(LLDrawable::BUILT);
-		mGeometryChanges++;
 	}
 	return update_complete;
 }
@@ -3474,9 +3434,6 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 			}
 		}
 	}
-	
-
-	mNumVisibleFaces += drawablep->getNumFaces();
 }
 
 
@@ -4105,17 +4062,14 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 
 	assertInitialized();
 
-	F32 saved_modelview[16];
-	F32 saved_projection[16];
+	LLMatrix4a saved_modelview;
+	LLMatrix4a saved_projection;
 
 	//HACK: preserve/restore matrices around HUD render
 	if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
 	{
-		for (U32 i = 0; i < 16; i++)
-		{
-			saved_modelview[i] = gGLModelView[i];
-			saved_projection[i] = gGLProjection[i];
-		}
+		saved_modelview = glh_get_current_modelview();
+		saved_projection = glh_get_current_projection();
 	}
 
 	///////////////////////////////////////////
@@ -4219,7 +4173,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			{
 				occlude = FALSE;
 				gGLLastMatrix = NULL;
-				gGL.loadMatrix(gGLModelView);
+				gGL.loadMatrix(glh_get_current_modelview());
 				LLGLSLShader::bindNoShader();
 				doOcclusion(camera);
 			}
@@ -4230,7 +4184,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 				LLFastTimer t(FTM_POOLRENDER);
 
 				gGLLastMatrix = NULL;
-				gGL.loadMatrix(gGLModelView);
+				gGL.loadMatrix(glh_get_current_modelview());
 			
 				for( S32 i = 0; i < poolp->getNumPasses(); i++ )
 				{
@@ -4279,13 +4233,13 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	LLVertexBuffer::unbind();
 		
 		gGLLastMatrix = NULL;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(glh_get_current_modelview());
 
 		if (occlude)
 		{
 			occlude = FALSE;
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(glh_get_current_modelview());
 			LLGLSLShader::bindNoShader();
 			doOcclusion(camera);
 		}
@@ -4348,11 +4302,8 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 		//HACK: preserve/restore matrices around HUD render
 		if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
 		{
-			for (U32 i = 0; i < 16; i++)
-			{
-				gGLModelView[i] = saved_modelview[i];
-				gGLProjection[i] = saved_projection[i];
-			}
+			glh_set_current_modelview(saved_modelview);
+			glh_set_current_projection(saved_projection);
 		}
 	}
 
@@ -4414,7 +4365,7 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 			LLFastTimer t(FTM_DEFERRED_POOLRENDER);
 
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(glh_get_current_modelview());
 		
 			for( S32 i = 0; i < poolp->getNumDeferredPasses(); i++ )
 			{
@@ -4458,7 +4409,7 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 	}
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 
 	gGL.setColorMask(true, false);
 }
@@ -4491,7 +4442,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 		{
 			occlude = FALSE;
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(glh_get_current_modelview());
 			LLGLSLShader::bindNoShader();
 			doOcclusion(camera/*, mScreen, mOcclusionDepth, &mDeferredDepth*/);
 			gGL.setColorMask(true, false);
@@ -4503,7 +4454,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 			LLFastTimer t(FTM_POST_DEFERRED_POOLRENDER);
 
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(glh_get_current_modelview());
 		
 			for( S32 i = 0; i < poolp->getNumPostDeferredPasses(); i++ )
 			{
@@ -4545,17 +4496,17 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera, bool do_occlusion)
 	}
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 
 	if (occlude)
 	{
 		occlude = FALSE;
 		gGLLastMatrix = NULL;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(glh_get_current_modelview());
 		LLGLSLShader::bindNoShader();
 		doOcclusion(camera);
 		gGLLastMatrix = NULL;
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(glh_get_current_modelview());
 	}
 }
 
@@ -4581,7 +4532,7 @@ void LLPipeline::renderGeomShadow(LLCamera& camera)
 			poolp->prerender() ;
 
 			gGLLastMatrix = NULL;
-			gGL.loadMatrix(gGLModelView);
+			gGL.loadMatrix(glh_get_current_modelview());
 		
 			for( S32 i = 0; i < poolp->getNumShadowPasses(); i++ )
 			{
@@ -4620,7 +4571,7 @@ void LLPipeline::renderGeomShadow(LLCamera& camera)
 	}
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 }
 
 
@@ -4695,7 +4646,7 @@ void LLPipeline::renderPhysicsDisplay()
 		if (!bridge->isDead() && hasRenderType(bridge->mDrawableType))
 		{
 			gGL.pushMatrix();
-			gGL.multMatrix((F32*)bridge->mDrawable->getRenderMatrix().mMatrix);
+			gGL.multMatrix(bridge->mDrawable->getRenderMatrix());
 			bridge->renderPhysicsShapes();
 			gGL.popMatrix();
 		}
@@ -4720,7 +4671,7 @@ void LLPipeline::renderDebug()
 	gGL.color4f(1,1,1,1);
 
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 	gGL.setColorMask(true, false);
 	bool hud_only = hasRenderType(LLPipeline::RENDER_TYPE_HUD);
 
@@ -4797,7 +4748,7 @@ void LLPipeline::renderDebug()
 		if (!bridge->isDead() && hasRenderType(bridge->mDrawableType))
 		{
 			gGL.pushMatrix();
-			gGL.multMatrix((F32*)bridge->mDrawable->getRenderMatrix().mMatrix);
+			gGL.multMatrix(bridge->mDrawable->getRenderMatrix());
 			bridge->renderDebug();
 			gGL.popMatrix();
 		}
@@ -4992,7 +4943,7 @@ void LLPipeline::renderDebug()
 		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sWhiteImagep);
 		
 		gGL.pushMatrix();
-		gGL.loadMatrix(gGLModelView);
+		gGL.loadMatrix(glh_get_current_modelview());
 		gGLLastMatrix = NULL;
 
 		for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ2.begin(); iter != mGroupQ2.end(); ++iter)
@@ -5013,7 +4964,7 @@ void LLPipeline::renderDebug()
 			if (bridge)
 			{
 				gGL.pushMatrix();
-				gGL.multMatrix((F32*)bridge->mDrawable->getRenderMatrix().mMatrix);
+				gGL.multMatrix(bridge->mDrawable->getRenderMatrix());
 			}
 
 			F32 alpha = llclamp((F32) (size-count)/size, 0.f, 1.f);
@@ -5409,13 +5360,15 @@ void LLPipeline::setupAvatarLights(BOOL for_edit)
 	if (for_edit)
 	{
 		LLColor4 diffuse(1.f, 1.f, 1.f, 0.f);
-		LLVector4 light_pos_cam(-8.f, 0.25f, 10.f, 0.f);  // w==0 => directional light
-		LLMatrix4 camera_mat = LLViewerCamera::getInstance()->getModelview();
-		LLMatrix4 camera_rot(camera_mat.getMat3());
+		LLVector4a light_pos_cam(-8.f, 0.25f, 10.f, 0.f);  // w==0 => directional light
+		LLMatrix4a camera_rot = LLViewerCamera::getInstance()->getModelview();
+		camera_rot.extractRotation_affine();
 		camera_rot.invert();
-		LLVector4 light_pos = light_pos_cam * camera_rot;
+		LLVector4a light_pos;
 		
-		light_pos.normalize();
+		camera_rot.rotate(light_pos_cam,light_pos);
+		
+		light_pos.normalize3fast();
 
 		LLLightState* light = gGL.getLight(1);
 
@@ -5424,7 +5377,7 @@ void LLPipeline::setupAvatarLights(BOOL for_edit)
 		light->setDiffuse(diffuse);
 		light->setAmbient(LLColor4::black);
 		light->setSpecular(LLColor4::black);
-		light->setPosition(light_pos);
+		light->setPosition(LLVector4(light_pos.getF32ptr()));
 		light->setConstantAttenuation(1.f);
 		light->setLinearAttenuation(0.f);
 		light->setQuadraticAttenuation(0.f);
@@ -5528,11 +5481,11 @@ void LLPipeline::resetLocalLights()
 		pLight->setConstantAttenuation(0.f);
 		pLight->setDiffuse(LLColor4::black);
 		pLight->setLinearAttenuation(0.f);
-		pLight->setPosition(LLVector4(0.f,0.f,0.f,0.f));
+		pLight->setPosition(LLVector4(0.f,0.f,1.f,0.f));
 		pLight->setQuadraticAttenuation(0.f);
 		pLight->setSpecular(LLColor4::black);
 		pLight->setSpotCutoff(0.f);
-		pLight->setSpotDirection(LLVector3(0.f,0.f,0.f));
+		pLight->setSpotDirection(LLVector3(0.f,0.f,-1.f));
 		pLight->setSpotExponent(0.f);
 		pLight->disable();
 	}
@@ -6801,7 +6754,7 @@ void LLPipeline::doResetVertexBuffers()
 	mResetVertexBuffers = false;
 
 	mCubeVB = NULL;
-	mDeferredVB = NULL;
+	mAuxScreenRectVB = NULL;
 
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
@@ -6846,7 +6799,6 @@ void LLPipeline::doResetVertexBuffers()
 	LLVertexBuffer::sPreferStreamDraw = gSavedSettings.getBOOL("RenderPreferStreamDraw");
 	LLVertexBuffer::sEnableVBOs = gSavedSettings.getBOOL("RenderVBOEnable");
 	LLVertexBuffer::sDisableVBOMapping = LLVertexBuffer::sEnableVBOs;// && gSavedSettings.getBOOL("RenderVBOMappingDisable") ; //Temporary workaround for vbo mapping being straight up broken
-	sBakeSunlight = gSavedSettings.getBOOL("RenderBakeSunlight");
 	sNoAlpha = gSavedSettings.getBOOL("RenderNoAlpha");
 	LLPipeline::sTextureBindTest = gSavedSettings.getBOOL("RenderDebugTextureBind");
 
@@ -6858,48 +6810,58 @@ void LLPipeline::doResetVertexBuffers()
 void LLPipeline::renderObjects(U32 type, U32 mask, BOOL texture, BOOL batch_texture)
 {
 	assertInitialized();
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 	gGLLastMatrix = NULL;
 	mSimplePool->pushBatches(type, mask, texture, batch_texture);
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 	gGLLastMatrix = NULL;		
 }
 
 void LLPipeline::renderMaskedObjects(U32 type, U32 mask, BOOL texture, BOOL batch_texture)
 {
 	assertInitialized();
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 	gGLLastMatrix = NULL;
 	mAlphaMaskPool->pushMaskBatches(type, mask, texture, batch_texture);
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 	gGLLastMatrix = NULL;		
 }
 
 
 void apply_cube_face_rotation(U32 face)
 {
+	static const LLMatrix4a x_90 = gGL.genRot( 90.f, 1.f, 0.f, 0.f );
+	static const LLMatrix4a y_90 = gGL.genRot( 90.f, 0.f, 1.f, 0.f );
+	static const LLMatrix4a x_90_neg = gGL.genRot( -90.f, 1.f, 0.f, 0.f );
+	static const LLMatrix4a y_90_neg = gGL.genRot( -90.f, 0.f, 1.f, 0.f );
+
+	static const LLMatrix4a x_180 = gGL.genRot( 180.f, 1.f, 0.f, 0.f );
+	static const LLMatrix4a y_180 = gGL.genRot( 180.f, 0.f, 1.f, 0.f );
+	static const LLMatrix4a z_180 = gGL.genRot( 180.f, 0.f, 0.f, 1.f );
+
 	switch (face)
 	{
 		case 0: 
-			gGL.rotatef(90.f, 0, 1, 0);
-			gGL.rotatef(180.f, 1, 0, 0);
+
+			gGL.rotatef(y_90);
+			gGL.rotatef(x_180);
 		break;
 		case 2: 
-			gGL.rotatef(-90.f, 1, 0, 0);
+			gGL.rotatef(x_90_neg);
 		break;
 		case 4:
-			gGL.rotatef(180.f, 0, 1, 0);
-			gGL.rotatef(180.f, 0, 0, 1);
+			gGL.rotatef(y_180);
+			gGL.rotatef(z_180);
 		break;
 		case 1: 
-			gGL.rotatef(-90.f, 0, 1, 0);
-			gGL.rotatef(180.f, 1, 0, 0);
+			gGL.rotatef(y_90_neg);
+			gGL.rotatef(x_180);
 		break;
 		case 3:
-			gGL.rotatef(90, 1, 0, 0);
+			gGL.rotatef(x_90);
 		break;
 		case 5: 
-			gGL.rotatef(180, 0, 0, 1);
+			gGL.rotatef(z_180);
 		break;
 	}
 }
@@ -6981,10 +6943,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 	//U32 res_mod = RenderResolutionDivisor;//.get();	
 
-	LLVector2 tc1(0,0);
-	LLVector2 tc2((F32) mScreen.getWidth()*2,
-				  (F32) mScreen.getHeight()*2);
-
 	/*if (res_mod > 1)
 	{
 		tc2 /= (F32) res_mod;
@@ -7029,29 +6987,36 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			llassert(zoom_factor > 0.0); // Non-zero, non-negative.
 			const F32 tile_size = 1.0/zoom_factor;
 			
-			tc1 = tile*tile_size; // Top left texture coordinates
-			tc2 = (tile+LLVector2(1,1))*tile_size; // Bottom right texture coordinates
+			LLVector2 tc1 = tile*tile_size; // Top left texture coordinates
+			LLVector2 tc2 = (tile+LLVector2(1,1))*tile_size; // Bottom right texture coordinates
 			
 			LLGLEnable blend(GL_BLEND);
 			gGL.setSceneBlendType(LLRender::BT_ADD);
-				
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.color4f(1,1,1,1);
-			gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-			gGL.vertex2f(-1,-1);
-			
-			gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-			gGL.vertex2f(-1,1);
-			
-			gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-			gGL.vertex2f(1,-1);
-			
-			gGL.texCoord2f(tc2.mV[0], tc2.mV[1]);
-			gGL.vertex2f(1,1);
+						
+			LLPointer<LLVertexBuffer> buff = new LLVertexBuffer(AUX_VB_MASK, 0);
+			buff->allocateBuffer(4, 0, true);
+			LLStrider<LLVector3> vert;
+			LLStrider<LLVector2> texcoord0, texcoord1;
+			buff->getVertexStrider(vert);
+			buff->getTexCoord0Strider(texcoord0);
+			buff->getTexCoord1Strider(texcoord1);
 
-			gGL.end();
+			vert[0].set(-1.f,-1.f,0.f);
+			vert[1].set(-1.f,1.f,0.f);
+			vert[2].set(1.f,-1.f,0.f);
+			vert[3].set(1.f,1.f,0.f);
 
-			gGL.flush();
+			//Texcoord 0 is actually for texture 1, which is unbound and thus all components = 0,0,0,0. Just zero out the texcoords.
+			texcoord0[0] = texcoord0[1] = texcoord0[2] = texcoord0[3] = LLVector2::zero;
+
+			texcoord1[0].set(tc1.mV[0], tc1.mV[1]);
+			texcoord1[1].set(tc1.mV[0], tc2.mV[1]);
+			texcoord1[2].set(tc2.mV[0], tc1.mV[1]);
+			texcoord1[3].set(tc2.mV[0], tc2.mV[1]);
+
+			buff->setBuffer(AUX_VB_MASK);
+			buff->drawArrays(LLRender::TRIANGLE_STRIP, 0, 4);
+
 			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		}
 
@@ -7095,25 +7060,13 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		
 		gGL.color4f(1,1,1,1);
 		gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
-		gGL.begin(LLRender::TRIANGLE_STRIP);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-		
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
+
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 		
 		gGL.getTexUnit(0)->unbind(mScreen.getUsage());
 
 		mGlow[1].flush();
 	}
-
-	tc1.setVec(0,0);
-	tc2.setVec(2,2);
 
 	// power of two between 1 and 1024
 	U32 glowResPow = RenderGlowResolutionPow;
@@ -7152,17 +7105,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			gGlowProgram.uniform2f(LLShaderMgr::GLOW_DELTA, 0, delta);
 		}
 
-		gGL.begin(LLRender::TRIANGLE_STRIP);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD1);
 		
 		mGlow[i%2].flush();
 	}
@@ -7180,9 +7123,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	gGLViewport[2] = gViewerWindow->getWorldViewRectRaw().getWidth();
 	gGLViewport[3] = gViewerWindow->getWorldViewRectRaw().getHeight();
 	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
-
-	tc2.setVec((F32) mScreen.getWidth(),
-			(F32) mScreen.getHeight());
 
 	gGL.flush();
 	
@@ -7325,17 +7265,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
 				shader->uniform1f(LLShaderMgr::DOF_RES_SCALE, CameraDoFResScale);
 
-				gGL.begin(LLRender::TRIANGLE_STRIP);
-				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-				gGL.vertex2f(-1,-1);
-		
-				gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-				gGL.vertex2f(-1,3);
-		
-				gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-				gGL.vertex2f(3,-1);
-		
-				gGL.end();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 				unbindDeferredShader(*shader);
 				mDeferredLight.flush();
@@ -7360,17 +7290,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
 				shader->uniform1f(LLShaderMgr::DOF_RES_SCALE, CameraDoFResScale);
 
-				gGL.begin(LLRender::TRIANGLE_STRIP);
-				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-				gGL.vertex2f(-1,-1);
-		
-				gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-				gGL.vertex2f(-1,3);
-		
-				gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-				gGL.vertex2f(3,-1);
-		
-				gGL.end();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 				unbindDeferredShader(*shader);
 				mScreen.flush();
@@ -7404,9 +7324,9 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				
 				if (!LLViewerCamera::getInstance()->cameraUnderWater())
 				{
-					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2);
+					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2f);
 				} else {
-					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0);
+					shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0f);
 				}
 
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
@@ -7414,17 +7334,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				shader->uniform1f(LLShaderMgr::DOF_WIDTH, dof_width-1);
 				shader->uniform1f(LLShaderMgr::DOF_HEIGHT, dof_height-1);
 
-				gGL.begin(LLRender::TRIANGLE_STRIP);
-				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-				gGL.vertex2f(-1,-1);
-		
-				gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-				gGL.vertex2f(-1,3);
-		
-				gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-				gGL.vertex2f(3,-1);
-		
-				gGL.end();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 				unbindDeferredShader(*shader);
 
@@ -7452,22 +7362,12 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			
 			if (!LLViewerCamera::getInstance()->cameraUnderWater())
 			{
-				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2);
+				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 2.2f);
 			} else {
-				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0);
+				shader->uniform1f(LLShaderMgr::GLOBAL_GAMMA, 1.0f);
 			}
 
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-			gGL.vertex2f(-1,-1);
-		
-			gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-			gGL.vertex2f(-1,3);
-		
-			gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-			gGL.vertex2f(3,-1);
-		
-			gGL.end();
+			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 			unbindDeferredShader(*shader);
 
@@ -7497,13 +7397,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				mDeferredLight.bindTexture(0, channel);
 			}
 						
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.vertex2f(-1,-1);
-			gGL.vertex2f(-1,3);
-			gGL.vertex2f(3,-1);
-			gGL.end();
-
-			gGL.flush();
+			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
 			shader->disableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mDeferredLight.getUsage());
 			shader->unbind();
@@ -7533,13 +7427,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			shader->uniform4f(LLShaderMgr::FXAA_RCP_FRAME_OPT, -0.5f/width*scale_x, -0.5f/height*scale_y, 0.5f/width*scale_x, 0.5f/height*scale_y);
 			shader->uniform4f(LLShaderMgr::FXAA_RCP_FRAME_OPT2, -2.f/width*scale_x, -2.f/height*scale_y, 2.f/width*scale_x, 2.f/height*scale_y);
 			
-			gGL.begin(LLRender::TRIANGLE_STRIP);
-			gGL.vertex2f(-1,-1);
-			gGL.vertex2f(-1,3);
-			gGL.vertex2f(3,-1);
-			gGL.end();
+			drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
-			gGL.flush();
 			shader->unbind();
 		}
 	}
@@ -7549,32 +7438,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		{
 			tc2 /= (F32) res_mod;
 		}*/
-
-		U32 mask = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
-		LLPointer<LLVertexBuffer> buff = new LLVertexBuffer(mask, 0);
-		buff->allocateBuffer(3,0,TRUE);
-
-		LLStrider<LLVector3> v;
-		LLStrider<LLVector2> uv1;
-		LLStrider<LLVector2> uv2;
-
-		buff->getVertexStrider(v);
-		buff->getTexCoord0Strider(uv1);
-		buff->getTexCoord1Strider(uv2);
-		
-		uv1[0] = LLVector2(0, 0);
-		uv1[1] = LLVector2(0, 2);
-		uv1[2] = LLVector2(2, 0);
-		
-		uv2[0] = LLVector2(0, 0);
-		uv2[1] = LLVector2(0, tc2.mV[1]*2.f);
-		uv2[2] = LLVector2(tc2.mV[0]*2.f, 0);
-		
-		v[0] = LLVector3(-1,-1,0);
-		v[1] = LLVector3(-1,3,0);
-		v[2] = LLVector3(3,-1,0);
-				
-		buff->flush();
 
 		LLGLDisable blend(GL_BLEND);
 
@@ -7595,8 +7458,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		
 		LLGLEnable multisample(RenderFSAASamples > 0 ? GL_MULTISAMPLE_ARB : 0);
 		
-		buff->setBuffer(mask);
-		buff->drawArrays(LLRender::TRIANGLE_STRIP, 0, 3);
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1);
 		
 		if (LLGLSLShader::sNoFixedFunction)
 		{
@@ -7624,27 +7486,12 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 		gGL.setColorMask(true, false);
 
-		LLVector2 tc1(0,0);
-		LLVector2 tc2((F32) gViewerWindow->getWorldViewWidthRaw()*2,
-				  (F32) gViewerWindow->getWorldViewHeightRaw()*2);
-
 		LLGLEnable blend(GL_BLEND);
 		gGL.color4f(1,1,1,0.75f);
 
 		gGL.getTexUnit(0)->bind(&mPhysicsDisplay);
 
-		gGL.begin(LLRender::TRIANGLES);
-		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
-		gGL.vertex2f(-1,-1);
-		
-		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
-		gGL.vertex2f(-1,3);
-		
-		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
-		gGL.vertex2f(3,-1);
-		
-		gGL.end();
-		gGL.flush();
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 
 		if (LLGLSLShader::sNoFixedFunction)
 		{
@@ -7747,10 +7594,10 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 
 		stop_glerror();
 
-		glh::matrix4f projection = glh_get_current_projection();
-		glh::matrix4f inv_proj = projection.inverse();
+		LLMatrix4a inv_proj = glh_get_current_projection();
+		inv_proj.invert();
 		
-		shader.uniformMatrix4fv(LLShaderMgr::INVERSE_PROJECTION_MATRIX, 1, FALSE, inv_proj.m);
+		shader.uniformMatrix4fv(LLShaderMgr::INVERSE_PROJECTION_MATRIX, 1, FALSE, inv_proj.getF32ptr());
 		shader.uniform4f(LLShaderMgr::VIEWPORT, (F32) gGLViewport[0],
 									(F32) gGLViewport[1],
 									(F32) gGLViewport[2],
@@ -7834,18 +7681,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 
 	if(shader.getUniformLocation(LLShaderMgr::DEFERRED_SHADOW_MATRIX) >= 0)
 	{
-		F32 mat[16*6];
-		for (U32 i = 0; i < 16; i++)
-		{
-			mat[i] = mSunShadowMatrix[0].m[i];
-			mat[i+16] = mSunShadowMatrix[1].m[i];
-			mat[i+32] = mSunShadowMatrix[2].m[i];
-			mat[i+48] = mSunShadowMatrix[3].m[i];
-			mat[i+64] = mSunShadowMatrix[4].m[i];
-			mat[i+80] = mSunShadowMatrix[5].m[i];
-		}
-
-		shader.uniformMatrix4fv(LLShaderMgr::DEFERRED_SHADOW_MATRIX, 6, FALSE, mat);
+		shader.uniformMatrix4fv(LLShaderMgr::DEFERRED_SHADOW_MATRIX, 6, FALSE, mSunShadowMatrix[0].getF32ptr());
 
 		stop_glerror();
 	}
@@ -7858,7 +7694,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 		{
 			cube_map->enable(channel);
 			cube_map->bind();
-			F32* m = gGLModelView;
+			const F32* m = glh_get_current_modelview().getF32ptr();
 						
 			F32 mat[] = { m[0], m[1], m[2],
 						  m[4], m[5], m[6],
@@ -7893,7 +7729,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 	shader.uniform1f(LLShaderMgr::DEFERRED_SPOT_SHADOW_OFFSET, RenderSpotShadowOffset);
 	shader.uniform1f(LLShaderMgr::DEFERRED_SPOT_SHADOW_BIAS, RenderSpotShadowBias);	
 
-	shader.uniform3fv(LLShaderMgr::DEFERRED_SUN_DIR, 1, mTransformedSunDir.mV);
+	shader.uniform3fv(LLShaderMgr::DEFERRED_SUN_DIR, 1, mTransformedSunDir.getF32ptr());
 	shader.uniform2f(LLShaderMgr::DEFERRED_SHADOW_RES, mShadow[0].getWidth(), mShadow[0].getHeight());
 	shader.uniform2f(LLShaderMgr::DEFERRED_PROJ_SHADOW_RES, mShadow[4].getWidth(), mShadow[4].getHeight());
 	shader.uniform1f(LLShaderMgr::DEFERRED_DEPTH_CUTOFF, RenderEdgeDepthCutoff);
@@ -7902,8 +7738,10 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 
 	if (shader.getUniformLocation(LLShaderMgr::DEFERRED_NORM_MATRIX) >= 0)
 	{
-		glh::matrix4f norm_mat = glh_get_current_modelview().inverse().transpose();
-		shader.uniformMatrix4fv(LLShaderMgr::DEFERRED_NORM_MATRIX, 1, FALSE, norm_mat.m);
+		LLMatrix4a norm_mat = glh_get_current_modelview();
+		norm_mat.invert();
+		norm_mat.transpose();
+		shader.uniformMatrix4fv(LLShaderMgr::DEFERRED_NORM_MATRIX, 1, FALSE, norm_mat.getF32ptr());
 	}
 
 	shader.uniform1f(LLShaderMgr::DEFERRED_DOWNSAMPLED_DEPTH_SCALE, llclamp(RenderSSAOResolutionScale.get(),.01f,1.f));
@@ -7968,26 +7806,10 @@ void LLPipeline::renderDeferredLighting()
 		LLGLEnable cull(GL_CULL_FACE);
 		LLGLEnable blend(GL_BLEND);
 
-		glh::matrix4f mat = glh_copy_matrix(gGLModelView);
-
-		if(mDeferredVB.isNull())
-		{
-			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-			mDeferredVB->allocateBuffer(8, 0, true);
-			LLStrider<LLVector3> vert; 
-			mDeferredVB->getVertexStrider(vert);
-		
-			vert[0].set(-1,1,0);
-			vert[1].set(-1,-3,0);
-			vert[2].set(3,1,0);
-		}
-
 		{
 			setupHWLights(NULL); //to set mSunDir;
-			LLVector4 dir(mSunDir, 0.f);
-			glh::vec4f tc(dir.mV);
-			mat.mult_matrix_vec(tc);
-			mTransformedSunDir.set(tc.v);
+			mTransformedSunDir.load3(mSunDir.mV);
+			glh_get_current_modelview().rotate(mTransformedSunDir,mTransformedSunDir);
 		}
 
 		gGL.pushMatrix();
@@ -8009,12 +7831,9 @@ void LLPipeline::renderDeferredLighting()
 				mDeferredDownsampledDepth.clear(GL_DEPTH_BUFFER_BIT);
 				bindDeferredShader(gDeferredDownsampleDepthNearestProgram, 0);
 				gDeferredDownsampleDepthNearestProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mDeferredDownsampledDepth.flush();
 				unbindDeferredShader(gDeferredDownsampleDepthNearestProgram);
@@ -8032,12 +7851,9 @@ void LLPipeline::renderDeferredLighting()
 					glViewport(0,0,mDeferredDownsampledDepth.getWidth(),mDeferredDownsampledDepth.getHeight());
 					gDeferredSSAOProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);
 				}
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_FALSE);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mScreen.flush();
 				unbindDeferredShader(gDeferredSSAOProgram);
@@ -8050,46 +7866,9 @@ void LLPipeline::renderDeferredLighting()
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
 				LLFastTimer ftm(FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram, 0);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				glClearColor(1,1,1,1);
 				mDeferredLight.clear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0,0,0,0);
-
-				/*glh::matrix4f inv_trans = glh_get_current_modelview().inverse().transpose();
-
-				const U32 slice = 32;
-				F32 offset[slice*3];
-				for (U32 i = 0; i < 4; i++)
-				{
-					for (U32 j = 0; j < 8; j++)
-					{
-						glh::vec3f v;
-						v.set_value(sinf(6.284f/8*j), cosf(6.284f/8*j), -(F32) i);
-#if 0
-						// Singu note: the call to mult_matrix_vec can crash, because it attempts to divide by zero.
-						v.normalize();
-						inv_trans.mult_matrix_vec(v);
-#else
-						// However, because afterwards we normalize the vector anyway, there is an alternative
-						// way to calculate the same thing without the division (which happens to be faster, too).
-						glh::vec4f src(v, v.length());				// Make a copy of the source and extent it with its length.
-						glh::vec4f dst;
-						inv_trans.mult_matrix_vec(src, dst);		// Do a normal 4D multiplication.
-						dst.get_value(v[0], v[1], v[2], dst[3]);	// Copy the first 3 coordinates to v.
-						// At this point v is equal to what it used to be, except for a constant factor (v.length() * dst[3]),
-						// but that doesn't matter because the next step is normalizaton. The old computation would crash
-						// if v.length() is zero in the commented out v.normalize(), and in inv_trans.mult_matrix_vec(v)
-						// if dst[3] is zero (which some times happens). Now we will only crash if v.length() is zero
-						// and well in the next line (but this never happens).	--Aleric
-#endif
-						v.normalize();
-						offset[(i*8+j)*3+0] = v.v[0];
-						offset[(i*8+j)*3+1] = v.v[2];
-						offset[(i*8+j)*3+2] = v.v[1];
-					}
-				}
-
-				gDeferredSunProgram.uniform3fv(sOffset, slice, offset);*/
 
 				gDeferredSunProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredLight.getWidth(), mDeferredLight.getHeight());
 
@@ -8105,9 +7884,7 @@ void LLPipeline::renderDeferredLighting()
 				{
 					LLGLDisable blend(GL_BLEND);
 					LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				if (channel > -1)
@@ -8131,7 +7908,6 @@ void LLPipeline::renderDeferredLighting()
 			glClearColor(0,0,0,0);
 			
 			bindDeferredShader(gDeferredBlurLightProgram);
-			mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 			LLVector3 go = RenderShadowGaussian;
 			const U32 kern_length = 4;
 			F32 blur_size = RenderShadowBlurSize;
@@ -8158,16 +7934,13 @@ void LLPipeline::renderDeferredLighting()
 			{
 				LLGLDisable blend(GL_BLEND);
 				LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-				stop_glerror();
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-				stop_glerror();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 			}
 			
 			mScreen.flush();
 			unbindDeferredShader(gDeferredBlurLightProgram);
 
 			bindDeferredShader(gDeferredBlurLightProgram, 1);
-			mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 			mDeferredLight.bindTarget();
 
 			gDeferredBlurLightProgram.uniform2f(sDelta, 0.f, 1.f);
@@ -8175,9 +7948,7 @@ void LLPipeline::renderDeferredLighting()
 			{
 				LLGLDisable blend(GL_BLEND);
 				LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-				stop_glerror();
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-				stop_glerror();
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 			}
 			mDeferredLight.flush();
 			unbindDeferredShader(gDeferredBlurLightProgram);
@@ -8212,9 +7983,7 @@ void LLPipeline::renderDeferredLighting()
 				gGL.pushMatrix();
 				gGL.loadIdentity();
 
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-				
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
 				gGL.popMatrix();
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -8353,11 +8122,12 @@ void LLPipeline::renderDeferredLighting()
 							fullscreen_spot_lights.push_back(drawablep);
 							continue;
 						}
-
-						glh::vec3f tc(c);
-						mat.mult_matrix_vec(tc);
-					
-						fullscreen_lights.push_back(LLVector4(tc.v[0], tc.v[1], tc.v[2], s));
+						
+						glh_get_current_modelview().affineTransform(center,center);
+						
+						LLVector4 tc(center.getF32ptr());
+						tc.mV[VW] = s;
+						fullscreen_lights.push_back(tc);
 						light_colors.push_back(LLVector4(col.mV[0], col.mV[1], col.mV[2], volume->getLightFalloff()*0.5f));
 					}
 				}
@@ -8446,8 +8216,7 @@ void LLPipeline::renderDeferredLighting()
 						gDeferredMultiLightProgram[idx].uniform1f(LLShaderMgr::MULTI_LIGHT_FAR_Z, far_z);
 						far_z = 0.f;
 						count = 0; 
-      mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-						mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+						drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 						unbindDeferredShader(gDeferredMultiLightProgram[idx]);
 					}
 				}
@@ -8456,8 +8225,6 @@ void LLPipeline::renderDeferredLighting()
 
 				gDeferredMultiSpotLightProgram.enableTexture(LLShaderMgr::DEFERRED_PROJECTION);
 
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-
 				for (LLDrawable::drawable_list_t::iterator iter = fullscreen_spot_lights.begin(); iter != fullscreen_spot_lights.end(); ++iter)
 				{
 					LLFastTimer ftm(FTM_PROJECTORS);
@@ -8465,14 +8232,13 @@ void LLPipeline::renderDeferredLighting()
 					
 					LLVOVolume* volume = drawablep->getVOVolume();
 
-					LLVector3 center = drawablep->getPositionAgent();
-					F32* c = center.mV;
+					LLVector4a center;
+					center.load3(drawablep->getPositionAgent().mV);
 					F32 s = volume->getLightRadius()*1.5f;
 
 					sVisibleLightCount++;
 
-					glh::vec3f tc(c);
-					mat.mult_matrix_vec(tc);
+					glh_get_current_modelview().affineTransform(center,center);
 					
 					setupSpotLight(gDeferredMultiSpotLightProgram, drawablep);
 
@@ -8482,11 +8248,11 @@ void LLPipeline::renderDeferredLighting()
 					col.mV[1] = powf(col.mV[1], 2.2f);
 					col.mV[2] = powf(col.mV[2], 2.2f);*/
 					
-					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::LIGHT_CENTER, 1, tc.v);
+					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::LIGHT_CENTER, 1, center.getF32ptr());
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_SIZE, s);
 					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::DIFFUSE_COLOR, 1, col.mV);
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_FALLOFF, volume->getLightFalloff()*0.5f);
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				gDeferredMultiSpotLightProgram.disableTexture(LLShaderMgr::DEFERRED_PROJECTION);
@@ -8518,7 +8284,6 @@ void LLPipeline::renderDeferredLighting()
 		mScreen.bindTarget();
 		// Apply gamma correction to the frame here.
 		gDeferredPostGammaCorrectProgram.bind();
-		mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 		S32 channel = 0;
 		channel = gDeferredPostGammaCorrectProgram.enableTexture(LLShaderMgr::DEFERRED_DIFFUSE, mScreen.getUsage());
 		if (channel > -1)
@@ -8529,7 +8294,7 @@ void LLPipeline::renderDeferredLighting()
 		
 		gDeferredPostGammaCorrectProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mScreen.getWidth(), mScreen.getHeight());
 		
-		mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+		drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 		
 		gGL.getTexUnit(channel)->unbind(mScreen.getUsage());
 		gDeferredPostGammaCorrectProgram.unbind();
@@ -8643,21 +8408,10 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 		LLGLEnable cull(GL_CULL_FACE);
 		LLGLEnable blend(GL_BLEND);
 
-		glh::matrix4f mat = glh_copy_matrix(gGLModelView);
-
-		LLStrider<LLVector3> vert; 
-		mDeferredVB->getVertexStrider(vert);
-		
-		vert[0].set(-1,1,0);
-		vert[1].set(-1,-3,0);
-		vert[2].set(3,1,0);
-		
 		{
 			setupHWLights(NULL); //to set mSunDir;
-			LLVector4 dir(mSunDir, 0.f);
-			glh::vec4f tc(dir.mV);
-			mat.mult_matrix_vec(tc);
-			mTransformedSunDir.set(tc.v);
+			mTransformedSunDir.load3(mSunDir.mV);
+			glh_get_current_modelview().rotate(mTransformedSunDir,mTransformedSunDir);
 		}
 
 		gGL.pushMatrix();
@@ -8679,12 +8433,9 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				mDeferredDownsampledDepth.clear(GL_DEPTH_BUFFER_BIT);
 				bindDeferredShader(gDeferredDownsampleDepthNearestProgram, 0);
 				gDeferredDownsampleDepthNearestProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_TRUE, GL_TRUE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mDeferredDownsampledDepth.flush();
 				unbindDeferredShader(gDeferredDownsampleDepthNearestProgram);
@@ -8702,12 +8453,9 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 					glViewport(0,0,mDeferredDownsampledDepth.getWidth(),mDeferredDownsampledDepth.getHeight());
 					gDeferredSSAOProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredDownsampledDepth.getWidth()/ssao_scale, mDeferredDownsampledDepth.getHeight()/ssao_scale);	
 				}
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				{
 					LLGLDepthTest depth(GL_FALSE);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 				mScreen.flush();
 				unbindDeferredShader(gDeferredSSAOProgram);
@@ -8720,31 +8468,10 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
 				LLFastTimer ftm(FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram);
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				glClearColor(1,1,1,1);
 				mDeferredLight.clear(GL_COLOR_BUFFER_BIT);
 				glClearColor(0,0,0,0);
 
-				/*glh::matrix4f inv_trans = glh_get_current_modelview().inverse().transpose();
-
-				const U32 slice = 32;
-				F32 offset[slice*3];
-				for (U32 i = 0; i < 4; i++)
-				{
-					for (U32 j = 0; j < 8; j++)
-					{
-						glh::vec3f v;
-						v.set_value(sinf(6.284f/8*j), cosf(6.284f/8*j), -(F32) i);
-						v.normalize();
-						inv_trans.mult_matrix_vec(v);
-						v.normalize();
-						offset[(i*8+j)*3+0] = v.v[0];
-						offset[(i*8+j)*3+1] = v.v[2];
-						offset[(i*8+j)*3+2] = v.v[1];
-					}
-				}
-
-				gDeferredSunProgram.uniform3fv(LLShaderMgr::DEFERRED_SHADOW_OFFSET, slice, offset);*/
 				gDeferredSunProgram.uniform2f(LLShaderMgr::DEFERRED_SCREEN_RES, mDeferredLight.getWidth(), mDeferredLight.getHeight());
 				
 				//Enable bilinear filtering, as the screen tex resolution may not match current framebuffer resolution. Eg, half-res SSAO
@@ -8759,9 +8486,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				{
 					LLGLDisable blend(GL_BLEND);
 					LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-					stop_glerror();
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
-					stop_glerror();
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				if (channel > -1)
@@ -8804,9 +8529,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				gGL.pushMatrix();
 				gGL.loadIdentity();
 
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-				
-				mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+				drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 
 				gGL.popMatrix();
 				gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -8950,10 +8673,11 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 							continue;
 						}
 
-						glh::vec3f tc(c);
-						mat.mult_matrix_vec(tc);
-					
-						fullscreen_lights.push_back(LLVector4(tc.v[0], tc.v[1], tc.v[2], s));
+						glh_get_current_modelview().affineTransform(center,center);
+						
+						LLVector4 tc(center.getF32ptr());
+						tc.mV[VW] = s;
+						fullscreen_lights.push_back(tc);
 						light_colors.push_back(LLVector4(col.mV[0], col.mV[1], col.mV[2], volume->getLightFalloff()*0.5f));
 					}
 				}
@@ -9002,12 +8726,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 				unbindDeferredShader(gDeferredSpotLightProgram);
 			}
 
-			//reset mDeferredVB to fullscreen triangle
-			mDeferredVB->getVertexStrider(vert);
-			vert[0].set(-1,1,0);
-			vert[1].set(-1,-3,0);
-			vert[2].set(3,1,0);
-
 			{
 				LLGLDepthTest depth(GL_FALSE);
 
@@ -9051,8 +8769,7 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 						gDeferredMultiLightProgram[idx].uniform1f(LLShaderMgr::MULTI_LIGHT_FAR_Z, far_z);
 						far_z = 0.f;
 						count = 0; 
-						mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-						mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+						drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 					}
 				}
 				
@@ -9062,8 +8779,6 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 
 				gDeferredMultiSpotLightProgram.enableTexture(LLShaderMgr::DEFERRED_PROJECTION);
 
-				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
-
 				for (LLDrawable::drawable_list_t::iterator iter = fullscreen_spot_lights.begin(); iter != fullscreen_spot_lights.end(); ++iter)
 				{
 					LLFastTimer ftm(FTM_PROJECTORS);
@@ -9071,14 +8786,13 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 					
 					LLVOVolume* volume = drawablep->getVOVolume();
 
-					LLVector3 center = drawablep->getPositionAgent();
-					F32* c = center.mV;
+					LLVector4a center;
+					center.load3(drawablep->getPositionAgent().mV);
 					F32 s = volume->getLightRadius()*1.5f;
 
 					sVisibleLightCount++;
 
-					glh::vec3f tc(c);
-					mat.mult_matrix_vec(tc);
+					glh_get_current_modelview().affineTransform(center,center);
 					
 					setupSpotLight(gDeferredMultiSpotLightProgram, drawablep);
 
@@ -9088,11 +8802,11 @@ void LLPipeline::renderDeferredLightingToRT(LLRenderTarget* target)
 					col.mV[1] = powf(col.mV[1], 2.2f);
 					col.mV[2] = powf(col.mV[2], 2.2f);*/
 					
-					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::LIGHT_CENTER, 1, tc.v);
+					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::LIGHT_CENTER, 1, center.getF32ptr());
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_SIZE, s);
 					gDeferredMultiSpotLightProgram.uniform3fv(LLShaderMgr::DIFFUSE_COLOR, 1, col.mV);
 					gDeferredMultiSpotLightProgram.uniform1f(LLShaderMgr::LIGHT_FALLOFF, volume->getLightFalloff()*0.5f);
-					mDeferredVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+					drawFullScreenRect(LLVertexBuffer::MAP_VERTEX);
 				}
 
 				gDeferredMultiSpotLightProgram.disableTexture(LLShaderMgr::DEFERRED_PROJECTION);
@@ -9227,12 +8941,14 @@ void LLPipeline::setupSpotLight(LLGLSLShader& shader, LLDrawable* drawablep)
 	LLVector3 origin = np - at_axis*dist;
 
 	//matrix from volume space to agent space
-	LLMatrix4 light_mat(quat, LLVector4(origin,1.f));
+	LLMatrix4 light_mat_(quat, LLVector4(origin,1.f));
 
-	glh::matrix4f light_to_agent((F32*) light_mat.mMatrix);
-	glh::matrix4f light_to_screen = glh_get_current_modelview() * light_to_agent;
-
-	glh::matrix4f screen_to_light = light_to_screen.inverse();
+	LLMatrix4a light_mat;
+	light_mat.loadu(light_mat_.mMatrix[0]);
+	LLMatrix4a light_to_screen;
+	light_to_screen.setMul(glh_get_current_modelview(),light_mat);
+	LLMatrix4a screen_to_light = light_to_screen;
+	screen_to_light.invert();
 
 	F32 s = volume->getLightRadius()*1.5f;
 	F32 near_clip = dist;
@@ -9243,31 +8959,29 @@ void LLPipeline::setupSpotLight(LLGLSLShader& shader, LLDrawable* drawablep)
 	F32 fovy = fov * RAD_TO_DEG;
 	F32 aspect = width/height;
 
-	glh::matrix4f trans(0.5f, 0.f, 0.f, 0.5f,
-				0.f, 0.5f, 0.f, 0.5f,
-				0.f, 0.f, 0.5f, 0.5f,
-				0.f, 0.f, 0.f, 1.f);
+	LLVector4a p1(0, 0, -(near_clip+0.01f));
+	LLVector4a p2(0, 0, -(near_clip+1.f));
 
-	glh::vec3f p1(0, 0, -(near_clip+0.01f));
-	glh::vec3f p2(0, 0, -(near_clip+1.f));
+	LLVector4a screen_origin(LLVector4a::getZero());
 
-	glh::vec3f screen_origin(0, 0, 0);
+	light_to_screen.affineTransform(p1,p1);
+	light_to_screen.affineTransform(p2,p2);
+	light_to_screen.affineTransform(screen_origin,screen_origin);
 
-	light_to_screen.mult_matrix_vec(p1);
-	light_to_screen.mult_matrix_vec(p2);
-	light_to_screen.mult_matrix_vec(screen_origin);
+	LLVector4a n;
+	n.setSub(p2,p1);
+	n.normalize3fast();
 
-	glh::vec3f n = p2-p1;
-	n.normalize();
-	
 	F32 proj_range = far_clip - near_clip;
-	glh::matrix4f light_proj = gl_perspective(fovy, aspect, near_clip, far_clip);
-	screen_to_light = trans * light_proj * screen_to_light;
-	shader.uniformMatrix4fv(LLShaderMgr::PROJECTOR_MATRIX, 1, FALSE, screen_to_light.m);
+	LLMatrix4a light_proj = gGL.genPersp(fovy, aspect, near_clip, far_clip);
+	light_proj.setMul(gGL.genNDCtoWC(),light_proj);
+	screen_to_light.setMul(light_proj,screen_to_light);
+
+	shader.uniformMatrix4fv(LLShaderMgr::PROJECTOR_MATRIX, 1, FALSE, screen_to_light.getF32ptr());
 	shader.uniform1f(LLShaderMgr::PROJECTOR_NEAR, near_clip);
-	shader.uniform3fv(LLShaderMgr::PROJECTOR_P, 1, p1.v);
-	shader.uniform3fv(LLShaderMgr::PROJECTOR_N, 1, n.v);
-	shader.uniform3fv(LLShaderMgr::PROJECTOR_ORIGIN, 1, screen_origin.v);
+	shader.uniform3fv(LLShaderMgr::PROJECTOR_P, 1, p1.getF32ptr());
+	shader.uniform3fv(LLShaderMgr::PROJECTOR_N, 1, n.getF32ptr());
+	shader.uniform3fv(LLShaderMgr::PROJECTOR_ORIGIN, 1, screen_origin.getF32ptr());
 	shader.uniform1f(LLShaderMgr::PROJECTOR_RANGE, proj_range);
 	shader.uniform1f(LLShaderMgr::PROJECTOR_AMBIANCE, params.mV[2]);
 	S32 s_idx = -1;
@@ -9418,8 +9132,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 		
 		gPipeline.pushRenderTypeMask();
 
-		glh::matrix4f projection = glh_get_current_projection();
-		glh::matrix4f mat;
+		const LLMatrix4a projection = glh_get_current_projection();
 
 		stop_glerror();
 		LLPlane plane;
@@ -9474,24 +9187,27 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 
 			gGL.pushMatrix();
 
-			mat.set_scale(glh::vec3f(1,1,-1));
-			mat.set_translate(glh::vec3f(0,0,height*2.f));
+			const LLMatrix4a saved_modelview = glh_get_current_modelview();
 
-			glh::matrix4f current = glh_get_current_modelview();
-
-			mat = current * mat;
+			LLMatrix4a mat;
+			mat.setIdentity();
+			mat.getRow<2>().negate();
+			mat.setTranslate_affine(LLVector3(0.f,0.f,height*2.f));
+			mat.setMul(saved_modelview,mat);
 
 			glh_set_current_modelview(mat);
-			gGL.loadMatrix(mat.m);
+			gGL.loadMatrix(mat);
 
 			LLViewerCamera::updateFrustumPlanes(camera, FALSE, TRUE);
 
-			glh::matrix4f inv_mat = mat.inverse();
+			LLMatrix4a inv_mat = mat;
+			inv_mat.invert();
 
-			glh::vec3f origin(0,0,0);
-			inv_mat.mult_matrix_vec(origin);
+			LLVector4a origin;
+			origin.clear();
+			inv_mat.affineTransform(origin,origin);
 
-			camera.setOrigin(origin.v);
+			camera.setOrigin(origin.getF32ptr());
 
 			glCullFace(GL_FRONT);
 
@@ -9598,7 +9314,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			glCullFace(GL_BACK);
 			gGL.popMatrix();
 			mWaterRef.flush();
-			glh_set_current_modelview(current);
+			glh_set_current_modelview(saved_modelview);
 			LLPipeline::sUseOcclusion = occlusion;
 		}
 
@@ -9639,10 +9355,9 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			if (!LLPipeline::sUnderWaterRender || LLDrawPoolWater::sNeedsReflectionUpdate)
 			{
 				//clip out geometry on the same side of water as the camera
-				mat = glh_get_current_modelview();
 				LLPlane plane(-pnorm, -(pd+pad));
 
-				LLGLUserClipPlane clip_plane(plane, mat, projection);
+				LLGLUserClipPlane clip_plane(plane, glh_get_current_modelview(), projection);
 				static LLCullResult result;
 				updateCull(camera, result, water_clip, &plane);
 				stateSort(camera, result);
@@ -9707,77 +9422,11 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 	}
 }
 
-glh::matrix4f look(const LLVector3 pos, const LLVector3 dir, const LLVector3 up)
-{
-	glh::matrix4f ret;
-
-	LLVector3 dirN;
-	LLVector3 upN;
-	LLVector3 lftN;
-
-	lftN = dir % up;
-	lftN.normVec();
-	
-	upN = lftN % dir;
-	upN.normVec();
-	
-	dirN = dir;
-	dirN.normVec();
-
-	ret.m[ 0] = lftN[0];
-	ret.m[ 1] = upN[0];
-	ret.m[ 2] = -dirN[0];
-	ret.m[ 3] = 0.f;
-
-	ret.m[ 4] = lftN[1];
-	ret.m[ 5] = upN[1];
-	ret.m[ 6] = -dirN[1];
-	ret.m[ 7] = 0.f;
-
-	ret.m[ 8] = lftN[2];
-	ret.m[ 9] = upN[2];
-	ret.m[10] = -dirN[2];
-	ret.m[11] = 0.f;
-
-	ret.m[12] = -(lftN*pos);
-	ret.m[13] = -(upN*pos);
-	ret.m[14] = dirN*pos;
-	ret.m[15] = 1.f;
-
-	return ret;
-}
-
-glh::matrix4f scale_translate_to_fit(const LLVector3 min, const LLVector3 max)
-{
-	glh::matrix4f ret;
-	ret.m[ 0] = 2/(max[0]-min[0]);
-	ret.m[ 4] = 0;
-	ret.m[ 8] = 0;
-	ret.m[12] = -(max[0]+min[0])/(max[0]-min[0]);
-
-	ret.m[ 1] = 0;
-	ret.m[ 5] = 2/(max[1]-min[1]);
-	ret.m[ 9] = 0;
-	ret.m[13] = -(max[1]+min[1])/(max[1]-min[1]);
-
-	ret.m[ 2] = 0;
-	ret.m[ 6] = 0;
-	ret.m[10] = 2/(max[2]-min[2]);
-	ret.m[14] = -(max[2]+min[2])/(max[2]-min[2]);
-
-	ret.m[ 3] = 0;
-	ret.m[ 7] = 0;
-	ret.m[11] = 0;
-	ret.m[15] = 1;
-
-	return ret;
-}
-
 static LLFastTimer::DeclareTimer FTM_SHADOW_RENDER("Render Shadows");
 static LLFastTimer::DeclareTimer FTM_SHADOW_ALPHA("Alpha Shadow");
 static LLFastTimer::DeclareTimer FTM_SHADOW_SIMPLE("Simple Shadow");
 
-void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera& shadow_cam, LLCullResult &result, BOOL use_shader, BOOL use_occlusion, U32 target_width)
+void LLPipeline::renderShadow(const LLMatrix4a& view, const LLMatrix4a& proj, LLCamera& shadow_cam, LLCullResult &result, BOOL use_shader, BOOL use_occlusion, U32 target_width)
 {
 	LLFastTimer t(FTM_SHADOW_RENDER);
 
@@ -9824,10 +9473,10 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	//generate shadow map
 	gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.pushMatrix();
-	gGL.loadMatrix(proj.m);
+	gGL.loadMatrix(proj);
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(view);	//Why was glh_get_current_modelview() used instead of view?
 
 	stop_glerror();
 	gGLLastMatrix = NULL;
@@ -9906,7 +9555,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 
 	gDeferredShadowCubeProgram.bind();
 	gGLLastMatrix = NULL;
-	gGL.loadMatrix(gGLModelView);
+	gGL.loadMatrix(glh_get_current_modelview());
 
 	//LLRenderTarget& occlusion_source = mShadow[LLViewerCamera::sCurCameraID-1];
 
@@ -10135,13 +9784,8 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 		gAgentAvatarp->updateAttachmentVisibility(CAMERA_MODE_THIRD_PERSON);
 	}
 
-	F64 last_modelview[16];
-	F64 last_projection[16];
-	for (U32 i = 0; i < 16; i++)
-	{ //store last_modelview of world camera
-		last_modelview[i] = gGLLastModelView[i];
-		last_projection[i] = gGLLastProjection[i];
-	}
+	LLMatrix4a last_modelview = glh_get_last_modelview();
+	LLMatrix4a last_projection = glh_get_last_projection();
 
 	pushRenderTypeMask();
 	andRenderTypeMask(LLPipeline::RENDER_TYPE_SIMPLE,
@@ -10187,13 +9831,14 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	//get sun view matrix
 	
 	//store current projection/modelview matrix
-	glh::matrix4f saved_proj = glh_get_current_projection();
-	glh::matrix4f saved_view = glh_get_current_modelview();
-	glh::matrix4f inv_view = saved_view.inverse();
+	const LLMatrix4a saved_proj = glh_get_current_projection();
+	const LLMatrix4a saved_view = glh_get_current_modelview();
+	LLMatrix4a inv_view(saved_view);
+	inv_view.invert();
 
-	glh::matrix4f view[6];
-	glh::matrix4f proj[6];
-	
+	LLMatrix4a view[6];
+	LLMatrix4a proj[6];
+
 	//clip contains parallel split distances for 3 splits
 	LLVector3 clip = RenderShadowClipPlanes;
 
@@ -10201,9 +9846,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 	//far clip on last split is minimum of camera view distance and 128
 	mSunClipPlanes = LLVector4(clip, clip.mV[2] * clip.mV[2]/clip.mV[1]);
-
-	clip = RenderShadowOrthoClipPlanes;
-	mSunOrthoClipPlanes = LLVector4(clip, clip.mV[2]*clip.mV[2]/clip.mV[1]);
 
 	//currently used for amount to extrude frusta corners for constructing shadow frusta
 	//LLVector3 n = RenderShadowNearDist;
@@ -10219,8 +9861,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 	LLVector3 lightDir = -mSunDir;
 	lightDir.normVec();
-
-	glh::vec3f light_dir(lightDir.mV);
 
 	//create light space camera matrix
 	
@@ -10278,9 +9918,10 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 		//get good split distances for frustum
 		for (U32 i = 0; i < fp.size(); ++i)
 		{
-			glh::vec3f v(fp[i].mV);
-			saved_view.mult_matrix_vec(v);
-			fp[i].setVec(v.v);
+			LLVector4a v;
+			v.load3(fp[i].mV);
+			saved_view.affineTransform(v,v);
+			fp[i].setVec(v.getF32ptr());
 		}
 
 		min = fp[0];
@@ -10402,9 +10043,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 				}
 				mShadow[j].flush();
 
-				mShadowError.mV[j] = 0.f;
-				mShadowFOV.mV[j] = 0.f;
-
 				continue;
 			}
 
@@ -10420,15 +10058,16 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 			LLVector3 origin;
 
 			//get a temporary view projection
-			view[j] = look(camera.getOrigin(), lightDir, -up);
+			view[j] = gGL.genLook(camera.getOrigin(), lightDir, -up);
 
 			std::vector<LLVector3> wpf;
 
 			for (U32 i = 0; i < fp.size(); i++)
 			{
-				glh::vec3f p = glh::vec3f(fp[i].mV);
-				view[j].mult_matrix_vec(p);
-				wpf.push_back(LLVector3(p.v));
+				LLVector4a p;
+				p.load3(fp[i].mV);
+				view[j].affineTransform(p,p);
+				wpf.push_back(LLVector3(p.getF32ptr()));
 			}
 
 			min = wpf[0];
@@ -10513,24 +10152,21 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 				bfb = lp.mV[1]-bfm*lp.mV[0];
 
 				//calculate error
-				mShadowError.mV[j] = 0.f;
+				F32 shadow_error = 0.f;
 
 				for (U32 i = 0; i < wpf.size(); ++i)
 				{
 					F32 lx = (wpf[i].mV[1]-bfb)/bfm;
-					mShadowError.mV[j] += fabsf(wpf[i].mV[0]-lx);
+					shadow_error += fabsf(wpf[i].mV[0]-lx);
 				}
 
-				mShadowError.mV[j] /= wpf.size();
-				mShadowError.mV[j] /= size.mV[0];
+				shadow_error /= wpf.size();
+				shadow_error /= size.mV[0];
 
-				if (mShadowError.mV[j] > RenderShadowErrorCutoff)
+				if (shadow_error > RenderShadowErrorCutoff)
 				{ //just use ortho projection
-					mShadowFOV.mV[j] = -1.f;
 					origin.clearVec();
-					proj[j] = gl_ortho(min.mV[0], max.mV[0],
-										min.mV[1], max.mV[1],
-										-max.mV[2], -min.mV[2]);
+					proj[j] = gGL.genOrtho(min.mV[0], max.mV[0], min.mV[1], max.mV[1], -max.mV[2], -min.mV[2]);
 				}
 				else
 				{
@@ -10569,8 +10205,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 					F32 cutoff = llmin((F32) RenderShadowFOVCutoff, 1.4f);
 				
-					mShadowFOV.mV[j] = fovx;
-				
 					if (fovx < cutoff && fovz > cutoff)
 					{
 						//x is a good fit, but z is too big, move away from zp enough so that fovz matches cutoff
@@ -10598,7 +10232,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 						fovx = acos(fovx);
 						fovz = acos(fovz);
 
-						mShadowFOV.mV[j] = cutoff;
 					}
 
 				
@@ -10618,37 +10251,29 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 					if (fovx > cutoff)
 					{ //just use ortho projection
 						origin.clearVec();
-						mShadowError.mV[j] = -1.f;
-						proj[j] = gl_ortho(min.mV[0], max.mV[0],
-								min.mV[1], max.mV[1],
-								-max.mV[2], -min.mV[2]);
+						proj[j] = gGL.genOrtho(min.mV[0], max.mV[0], min.mV[1], max.mV[1], -max.mV[2], -min.mV[2]);
 					}
 					else
 					{
 						//get perspective projection
-						view[j] = view[j].inverse();
+						view[j].invert();
+						LLVector4a origin_agent;
+						origin_agent.load3(origin.mV);
 
-						glh::vec3f origin_agent(origin.mV);
-					
 						//translate view to origin
-						view[j].mult_matrix_vec(origin_agent);
+						view[j].affineTransform(origin_agent,origin_agent);
 
-						eye = LLVector3(origin_agent.v);
+						eye = LLVector3(origin_agent.getF32ptr());
 
-						if (!hasRenderDebugMask(LLPipeline::RENDER_DEBUG_SHADOW_FRUSTA))
-						{
-							mShadowFrustOrigin[j] = eye;
-						}
-				
-						view[j] = look(LLVector3(origin_agent.v), lightDir, -up);
+						view[j] = gGL.genLook(LLVector3(origin_agent.getF32ptr()), lightDir, -up);
 
 						F32 fx = 1.f/tanf(fovx);
 						F32 fz = 1.f/tanf(fovz);
 
-						proj[j] = glh::matrix4f(-fx, 0, 0, 0,
-												0, (yfar+ynear)/(ynear-yfar), 0, (2.f*yfar*ynear)/(ynear-yfar),
-												0, 0, -fz, 0,
-												0, -1.f, 0, 0);
+						proj[j].setRow<0>(LLVector4a(	-fx,	0.f,							0.f));
+						proj[j].setRow<1>(LLVector4a(	0.f,	(yfar+ynear)/(ynear-yfar),		0.f,	-1.f));
+						proj[j].setRow<2>(LLVector4a(	0.f,	0.f,							-fz));
+						proj[j].setRow<3>(LLVector4a(	0.f,	(2.f*yfar*ynear)/(ynear-yfar),	0.f));
 					}
 				}
 			}
@@ -10666,26 +10291,19 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 			//shadow_cam.ignoreAgentFrustumPlane(LLCamera::AGENT_PLANE_NEAR);
 			shadow_cam.getAgentPlane(LLCamera::AGENT_PLANE_NEAR).set(shadow_near_clip);
 
-			//translate and scale to from [-1, 1] to [0, 1]
-			glh::matrix4f trans(0.5f, 0.f, 0.f, 0.5f,
-							0.f, 0.5f, 0.f, 0.5f,
-							0.f, 0.f, 0.5f, 0.5f,
-							0.f, 0.f, 0.f, 1.f);
-
 			glh_set_current_modelview(view[j]);
 			glh_set_current_projection(proj[j]);
 
-			for (U32 i = 0; i < 16; i++)
-			{
-				gGLLastModelView[i] = mShadowModelview[j].m[i];
-				gGLLastProjection[i] = mShadowProjection[j].m[i];
-			}
+			glh_set_last_modelview(mShadowModelview[j]);
+			glh_set_last_projection(mShadowProjection[j]);
 
 			mShadowModelview[j] = view[j];
 			mShadowProjection[j] = proj[j];
 
-	
-			mSunShadowMatrix[j] = trans*proj[j]*view[j]*inv_view;
+
+			mSunShadowMatrix[j].setMul(gGL.genNDCtoWC(),proj[j]);
+			mSunShadowMatrix[j].mul_affine(view[j]);
+			mSunShadowMatrix[j].mul_affine(inv_view);
 		
 			stop_glerror();
 
@@ -10791,9 +10409,9 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 			LLMatrix4 mat(quat, LLVector4(origin, 1.f));
 
-			view[i+4] = glh::matrix4f((F32*) mat.mMatrix);
+			view[i+4].loadu(mat.mMatrix[0]);
 
-			view[i+4] = view[i+4].inverse();
+			view[i+4].invert();
 
 			//get perspective matrix
 			F32 near_clip = dist+0.01f;
@@ -10803,28 +10421,21 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 			F32 fovy = fov * RAD_TO_DEG;
 			F32 aspect = width/height;
-			
-			proj[i+4] = gl_perspective(fovy, aspect, near_clip, far_clip);
 
-			//translate and scale to from [-1, 1] to [0, 1]
-			glh::matrix4f trans(0.5f, 0.f, 0.f, 0.5f,
-							0.f, 0.5f, 0.f, 0.5f,
-							0.f, 0.f, 0.5f, 0.5f,
-							0.f, 0.f, 0.f, 1.f);
+			proj[i+4] = gGL.genPersp(fovy, aspect, near_clip, far_clip);
 
 			glh_set_current_modelview(view[i+4]);
 			glh_set_current_projection(proj[i+4]);
 
-			mSunShadowMatrix[i+4] = trans*proj[i+4]*view[i+4]*inv_view;
-			
-			for (U32 j = 0; j < 16; j++)
-			{
-				gGLLastModelView[j] = mShadowModelview[i+4].m[j];
-				gGLLastProjection[j] = mShadowProjection[i+4].m[j];
-			}
+			glh_set_last_modelview(mShadowModelview[i+4]);
+			glh_set_last_projection(mShadowProjection[i+4]);
 
 			mShadowModelview[i+4] = view[i+4];
 			mShadowProjection[i+4] = proj[i+4];
+
+			mSunShadowMatrix[i+4].setMul(gGL.genNDCtoWC(),proj[i+4]);
+			mSunShadowMatrix[i+4].mul_affine(view[i+4]);
+			mSunShadowMatrix[i+4].mul_affine(inv_view);
 
 			LLCamera shadow_cam = camera;
 			shadow_cam.setFar(far_clip);
@@ -10864,18 +10475,15 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	{
 		glh_set_current_modelview(view[1]);
 		glh_set_current_projection(proj[1]);
-		gGL.loadMatrix(view[1].m);
+		gGL.loadMatrix(view[1]);
 		gGL.matrixMode(LLRender::MM_PROJECTION);
-		gGL.loadMatrix(proj[1].m);
+		gGL.loadMatrix(proj[1]);
 		gGL.matrixMode(LLRender::MM_MODELVIEW);
 	}
 	gGL.setColorMask(true, false);
 
-	for (U32 i = 0; i < 16; i++)
-	{
-		gGLLastModelView[i] = last_modelview[i];
-		gGLLastProjection[i] = last_projection[i];
-	}
+	glh_set_last_modelview(last_modelview);
+	glh_set_last_projection(last_projection);
 
 	popRenderTypeMask();
 
@@ -11034,18 +10642,19 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 		F32 distance = (pos-camera.getOrigin()).length();
 		F32 fov = atanf(tdim.mV[1]/distance)*2.f*RAD_TO_DEG;
 		F32 aspect = tdim.mV[0]/tdim.mV[1];
-		glh::matrix4f persp = gl_perspective(fov, aspect, 1.f, 256.f);
+		LLMatrix4a persp = gGL.genPersp(fov, aspect, 1.f, 256.f);
 		glh_set_current_projection(persp);
-		gGL.loadMatrix(persp.m);
+		gGL.loadMatrix(persp);
 
 		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		gGL.pushMatrix();
-		glh::matrix4f mat;
-		camera.getOpenGLTransform(mat.m);
+		LLMatrix4a mat;
+		camera.getOpenGLTransform(mat.getF32ptr());
 
-		mat = glh::matrix4f((GLfloat*) OGL_TO_CFR_ROTATION) * mat;
+		mat.setMul(OGL_TO_CFR_ROTATION, mat);
 
-		gGL.loadMatrix(mat.m);
+		gGL.loadMatrix(mat);
+
 		glh_set_current_modelview(mat);
 
 		glClearColor(0.0f,0.0f,0.0f,0.0f);
@@ -11457,4 +11066,32 @@ void LLPipeline::restoreHiddenObject( const LLUUID& id )
 	}
 }
 */
+
+void LLPipeline::drawFullScreenRect(U32 data_mask)
+{
+	if(mAuxScreenRectVB.isNull())
+	{
+		mAuxScreenRectVB = new LLVertexBuffer(AUX_VB_MASK, 0);
+		mAuxScreenRectVB->allocateBuffer(3, 0, true);
+		LLStrider<LLVector3> vert;
+		LLStrider<LLVector2> tc0, tc1;
+		mAuxScreenRectVB->getVertexStrider(vert);
+		mAuxScreenRectVB->getTexCoord0Strider(tc0);
+		mAuxScreenRectVB->getTexCoord1Strider(tc1);
+
+		vert[0].set(-1.f,-1.f,0.f);
+		vert[1].set(3.f,-1.f,0.f);
+		vert[2].set(-1.f,3.f,0.f);
+
+		tc0[0].set(0.f, 0.f);
+		tc0[1].set(mScreen.getWidth()*2.f, 0.f);
+		tc0[2].set(0.f, mScreen.getHeight()*2.f);
+
+		tc1[0].set(0.f, 0.f);
+		tc1[1].set(2.f, 0.f);
+		tc1[2].set(0.f, 2.f);
+	}
+	mAuxScreenRectVB->setBuffer(data_mask);
+	mAuxScreenRectVB->drawArrays(LLRender::TRIANGLES, 0, 3);
+}
 

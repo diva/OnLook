@@ -258,7 +258,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	mNextBtn = btn;
 
 	S32 btn_width = 80;
-	S32 wide_btn_width = 120;
+	S32 wide_btn_width = 136;
 	LLRect btn_rect;
 	x = 3 * HPAD;
 

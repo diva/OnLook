@@ -49,9 +49,9 @@ class LLSkinJoint
 public:
 	LLSkinJoint();
 	~LLSkinJoint();
-	BOOL setupSkinJoint( LLAvatarJoint *joint);
+	void setupSkinJoint( LLJoint *joint);
 
-	LLAvatarJoint	*mJoint;
+	LLJoint*		mJoint;
 	LLVector3		mRootToJointSkinOffset;
 	LLVector3		mRootToParentJointSkinOffset;
 };
@@ -122,7 +122,7 @@ public:
 	void setMesh( LLPolyMesh *mesh );
 
 	// Sets up joint matrix data for rendering
-	void setupJoint(LLAvatarJoint* current_joint);
+	void setupJoint(LLJoint* current_joint);
 
 	// Sets ID for picking
 	void setMeshID( S32 id ) {mMeshID = id;}

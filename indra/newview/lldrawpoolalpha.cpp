@@ -281,7 +281,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 			gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 		}
 
-		gGL.diffuseColor4f(0.9,0,0,0.4);
+		gGL.diffuseColor4f(0.9f,0.f,0.f,0.4f);
 				
 		LLViewerFetchedTexture::sSmokeImagep->addTextureStats(1024.f*1024.f);
 		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sSmokeImagep, TRUE) ;
@@ -515,7 +515,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 							tex_setup = true;
 							gGL.getTexUnit(0)->activate();
 							gGL.matrixMode(LLRender::MM_TEXTURE);
-							gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
+							gGL.loadMatrix(*params.mTextureMatrix);
 							gPipeline.mTextureMatrixOps++;
 						}
 					}

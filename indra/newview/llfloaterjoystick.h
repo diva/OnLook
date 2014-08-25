@@ -49,11 +49,10 @@ public:
 	virtual void apply();	// Apply the changed values.
 	virtual void cancel();	// Cancel the changed values.
 	virtual void draw();
-	static  void setSNDefaults();
 
 private:
 	static void onCommitJoystickEnabled(LLUICtrl*, void*);
-	static void onClickRestoreSNDefaults(void*);
+	void onClickDefault(const LLSD& val);
 	static void onClickCancel(void*);
 	static void onClickOK(void*);
 

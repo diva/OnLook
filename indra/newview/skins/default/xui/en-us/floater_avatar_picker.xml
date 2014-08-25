@@ -46,7 +46,7 @@
 			     height="20" label="Find" label_selected="Find" left_delta="20" right="-10"
 			     mouse_opaque="true" name="Find" scale_image="TRUE" width="95" />
 			<scroll_list background_visible="true" bottom_delta="-95" column_padding="5"
-			     draw_border="true" draw_heading="false" draw_stripes="true"
+			     draw_border="true" draw_heading="false" draw_stripes="true" menu_num="0"
 			     follows="left|top|right|bottom" height="90" left="10" mouse_opaque="true"
 			     multi_select="false" name="SearchResults" width="115" />
 		</panel>
@@ -68,7 +68,7 @@
               function="Refresh.FriendList"/>
             </button>
 			<scroll_list background_visible="true" bottom_delta="-115" column_padding="5"
-			     draw_border="true" draw_heading="false" draw_stripes="true"
+			     draw_border="true" draw_heading="false" draw_stripes="true" menu_num="0"
 			     follows="left|top|right|bottom" height="110" left="10" mouse_opaque="true"
 			     multi_select="false" name="Friends" width="115" />
 		</panel>
@@ -85,18 +85,18 @@
       <button bottom_delta="-3" left_delta="25" width="90" height="20" follows="top|right" 
            label="Refresh List" label_selected="Refresh List" halign="center"
            font="SansSerif" mouse_opaque="true" name="Refresh" scale_image="TRUE" />
-      <slider bottom_delta="-20" left="10" follows="left|top" width="175" height="15"
-           name="near_me_range" label="Range" control_name="NearMeRange" 
-           min_val="5" max_val="40" increment="1" initial_val="20" decimal_digits="0" />
+      <slider bottom_delta="-20" left="10" follows="left|top" width="300" height="15"
+           name="near_me_range" label="Range" control_name="NearMeRange" can_edit_text="true"
+           min_val="5" max_val="8192" increment="1" initial_val="20" decimal_digits="0" />
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-           bottom_delta="0" left="185" drop_shadow_visible="true" follows="left|top"
+           bottom_delta="0" left_delta="300" drop_shadow_visible="true" follows="left|top"
            font="SansSerifSmall" h_pad="0" halign="left" height="15"
            mouse_opaque="true" name="meters" v_pad="0"
            width="40">
         Meters
       </text>
       <scroll_list bottom_delta="-185" width="115" height="175" left="10" 
-           follows="left|top|right|bottom" draw_border="true" draw_heading="false" 
+           follows="left|top|right|bottom" draw_border="true" draw_heading="false" menu_num="0"
            draw_stripes="true" column_padding="5" sort_column="0" mouse_opaque="true"
            background_visible="true" multi_select="false" name="NearMe"  />
     </panel>

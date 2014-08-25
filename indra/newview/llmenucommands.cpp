@@ -47,6 +47,7 @@
 #include "llfloaterabout.h"
 #include "llfloateractivespeakers.h"
 #include "llfloaterautoreplacesettings.h"
+#include "llfloateravatar.h"
 #include "llfloateravatarlist.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterblacklist.h"
@@ -58,6 +59,7 @@
 #include "llfloaterchatterbox.h"
 #include "llfloatercustomize.h"
 #include "llfloaterdaycycle.h"
+#include "llfloaterdestinations.h"
 #include "llfloaterdisplayname.h"
 #include "llfloatereditui.h"
 #include "llfloaterenvsettings.h"
@@ -69,10 +71,12 @@
 #include "llfloaterhud.h"
 #include "llfloaterinspect.h"
 #include "llfloaterinventory.h"
+#include "llfloaterjoystick.h"
 #include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
 #include "llfloaterlandholdings.h"
 #include "llfloatermap.h"
+#include "llfloatermediafilter.h"
 #include "llfloatermemleak.h"
 #include "llfloatermessagelog.h"
 #include "llfloatermute.h"
@@ -111,7 +115,6 @@
 #include "rlvfloaters.h"
 // [/RLVa:LF]
 #include "shfloatermediaticker.h"
-#include "slfloatermediafilter.h"
 
 void handle_chat()
 {
@@ -219,17 +222,20 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterActiveSpeakers>		("active speakers");
 		registerFloater<JCFloaterAreaSearch>			("areasearch");
 		registerFloater<LLFloaterAutoReplaceSettings>	("autoreplace");
+		registerFloater<LLFloaterAvatar>				("avatar");
 		registerFloater<LLFloaterBeacons>				("beacons");
 		registerFloater<LLFloaterCamera>				("camera controls");
 		registerFloater<LLFloaterChat>					("chat history");
 		registerFloater<LLFloaterChatterBox>			("communicate");
+		registerFloater<LLFloaterDestinations>			("destinations");
 		registerFloater<LLFloaterMyFriends>				("friends", 0);
 		registerFloater<LLFloaterGesture>				("gestures");
 		registerFloater<LLFloaterMyFriends>				("groups", 1);
 		registerFloater<CommWrapper>					("im");
 		registerFloater<LLFloaterInspect>				("inspect");
+		registerFloater<LLFloaterJoystick>				("joystick");
 		registerFloater<LLFloaterLagMeter>				("lag meter");
-		registerFloater<SLFloaterMediaFilter>			("media filter");
+		registerFloater<LLFloaterMediaFilter>			("media filter");
 		registerFloater<LLFloaterMap>					("mini map");
 		registerFloater<LLFloaterMove>					("movement controls");
 		registerFloater<LLFloaterMute>					("mute list");
@@ -273,7 +279,7 @@ void show_floater(const std::string& floater_name)
 	if (it == MenuFloaterDict::instance().mEntries.end()) // Simple codeless floater
 	{
 		if (LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name))
-			gFloaterView->bringToFront(floater);
+			floater->isFrontmost() ? floater->close() : gFloaterView->bringToFront(floater);
 		else
 			LLUICtrlFactory::getInstance()->buildFloater(new LLFloater(), floater_name);
 	}

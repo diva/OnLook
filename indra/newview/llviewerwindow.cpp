@@ -696,32 +696,35 @@ public:
 		static const LLCachedControl<bool> debug_show_render_matrices("DebugShowRenderMatrices");
 		if (debug_show_render_matrices)
 		{
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLProjection[12], gGLProjection[13], gGLProjection[14], gGLProjection[15]));
+			F32* m = gGLProjection.getF32ptr();
+
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[12], m[13], m[14], m[15]));
 			ypos += y_inc;
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLProjection[8], gGLProjection[9], gGLProjection[10], gGLProjection[11]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[8], m[9], m[10], m[11]));
 			ypos += y_inc;
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLProjection[4], gGLProjection[5], gGLProjection[6], gGLProjection[7]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[4], m[5], m[6], m[7]));
 			ypos += y_inc;
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLProjection[0], gGLProjection[1], gGLProjection[2], gGLProjection[3]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[0], m[1], m[2], m[3]));
 			ypos += y_inc;
 
 			addText(xpos, ypos, "Projection Matrix");
 			ypos += y_inc;
 
+			m = gGLModelView.getF32ptr();
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLModelView[12], gGLModelView[13], gGLModelView[14], gGLModelView[15]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[12], m[13], m[14], m[15]));
 			ypos += y_inc;
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLModelView[8], gGLModelView[9], gGLModelView[10], gGLModelView[11]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[8], m[9], m[10], m[11]));
 			ypos += y_inc;
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLModelView[4], gGLModelView[5], gGLModelView[6], gGLModelView[7]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[4], m[5], m[6], m[7]));
 			ypos += y_inc;
 
-			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", gGLModelView[0], gGLModelView[1], gGLModelView[2], gGLModelView[3]));
+			addText(xpos, ypos, llformat("%.4f    .%4f    %.4f    %.4f", m[0], m[1], m[2], m[3]));
 			ypos += y_inc;
 
 			addText(xpos, ypos, "View Matrix");
@@ -1030,7 +1033,7 @@ BOOL LLViewerWindow::handleRightMouseDown(LLWindow *window,  LLCoordGL pos, MASK
 
 	// *HACK: this should be rolled into the composite tool logic, not
 	// hardcoded at the top level.
-	if (CAMERA_MODE_CUSTOMIZE_AVATAR != gAgentCamera.getCameraMode() && LLToolMgr::getInstance()->getCurrentTool() != LLToolPie::getInstance())
+	if (CAMERA_MODE_CUSTOMIZE_AVATAR != gAgentCamera.getCameraMode() && LLToolMgr::getInstance()->getCurrentTool() != LLToolPie::getInstance() && gAgent.isInitialized())
 	{
 		// If the current tool didn't process the click, we should show
 		// the pie menu.  This can be done by passing the event to the pie

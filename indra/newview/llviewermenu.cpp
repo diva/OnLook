@@ -2204,7 +2204,16 @@ void reload_objects(LLTextureReloader& texture_list, LLViewerObject::const_child
 		for (U8 i = 0; i < object->getNumTEs(); i++)
 		{
 			texture_list.addTexture(object->getTEImage(i));
+			const LLTextureEntry* te = object->getTE(i);
+			if (LLMaterial* mat = te ? te->getMaterialParams().get() : NULL)
+			{
+				if (mat->getSpecularID().notNull())
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(mat->getSpecularID()));
+				if (mat->getNormalID().notNull())
+					texture_list.addTexture(LLViewerTextureManager::getFetchedTexture(mat->getNormalID()));
+			}
 		}
+
 
 		if(recurse)
 		{
@@ -6471,6 +6480,15 @@ BOOL enable_buy_land(void*)
 				LLViewerParcelMgr::getInstance()->getParcelSelection()->getParcel(), false);
 }
 
+class LLWorldVisibleDestinations : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool visible(!LFSimFeatureHandler::instance().destinationGuideURL().empty());
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(visible);
+		return visible;
+	}
+};
 
 class LLObjectAttachToAvatar : public view_listener_t
 {
@@ -8762,6 +8780,44 @@ class LLWorldEnvSettings : public view_listener_t
 	}
 };
 
+class LLWorldEnableEnvSettings : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool result = false;
+		std::string tod = userdata.asString();
+
+		if (tod == "region")
+		{
+			return LLEnvManagerNew::instance().getUseRegionSettings();
+		}
+
+		if (LLEnvManagerNew::instance().getUseFixedSky())
+		{
+			if (tod == "sunrise")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Sunrise");
+			}
+			else if (tod == "noon")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Midday");
+			}
+			else if (tod == "sunset")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Sunset");
+			}
+			else if (tod == "midnight")
+			{
+				result = (LLEnvManagerNew::instance().getSkyPresetName() == "Midnight");
+			}
+			else
+			{
+				llwarns << "Unknown item" << llendl;
+			}
+		}
+		return result;
+	}
+};
 
 class SinguCloseAllDialogs : public view_listener_t
 {
@@ -8970,6 +9026,16 @@ class ListVisibleWebProfile : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(get_focused_list_num_selected() && !(gSavedSettings.getBOOL("UseWebProfiles") || gSavedSettings.getString("WebProfileURL").empty()));
+		return true;
+	}
+};
+
+void ban_from_group(const uuid_vec_t& ids);
+class ListBanFromGroup : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		ban_from_group(get_focused_list_ids_selected());
 		return true;
 	}
 };
@@ -9291,7 +9357,9 @@ void initialize_menus()
 	addMenu(new LLWorldEnableSetHomeLocation(), "World.EnableSetHomeLocation");
 	addMenu(new LLWorldEnableTeleportHome(), "World.EnableTeleportHome");
 	addMenu(new LLWorldEnableBuyLand(), "World.EnableBuyLand");
+	addMenu(new LLWorldVisibleDestinations(), "World.VisibleDestinations");
 	(new LLWorldEnvSettings())->registerListener(gMenuHolder, "World.EnvSettings");
+	(new LLWorldEnableEnvSettings())->registerListener(gMenuHolder, "World.EnableEnvSettings");
 
 
 	// Tools menu
@@ -9489,6 +9557,7 @@ void initialize_menus()
 	addMenu(new ListEnableMute(), "List.EnableMute");
 	addMenu(new ListEnableOfferTeleport(), "List.EnableOfferTeleport");
 	addMenu(new ListVisibleWebProfile(), "List.VisibleWebProfile");
+	addMenu(new ListBanFromGroup(), "List.BanFromGroup");
 	addMenu(new ListCopySLURL(), "List.CopySLURL");
 	addMenu(new ListCopyUUIDs(), "List.CopyUUIDs");
 	addMenu(new ListInviteToGroup(), "List.InviteToGroup");

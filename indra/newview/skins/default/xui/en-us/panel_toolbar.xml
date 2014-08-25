@@ -287,6 +287,11 @@
         <button.commit_callback function="ShowFloater" parameter="teleport history"/>
       </button>
     </layout_panel>
+    <layout_panel name="paneldestinations" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleDestinations">
+      <button bottom="0" height="24" label="Destinations" name="destinations_btn" image_overlay="icn_toolbar_destinations.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="destinations"/>
+      </button>
+    </layout_panel>
     <layout_panel name="panel11" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleWorldMap">
       <button bottom="0" height="24" label="Map" name="map_btn" image_overlay="icn_toolbar_map.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" tool_tip="Map of the world. (Ctrl-M)" width="50" follows="left|right" control_name="ShowWorldMap">
         <button.commit_callback function="ShowFloater" parameter="world map"/>
@@ -379,6 +384,11 @@
         <button.commit_callback function="ShowFloater" parameter="inventory"/>
       </button>
     </layout_panel>
+    <layout_panel name="panelavatar" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleAvatar">
+      <button bottom="0" height="24" label="Default Avatars" image_overlay="icn_toolbar_avatar.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" name="avatar_btn" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="avatar"/>
+      </button>
+    </layout_panel>
     <layout_panel name="paneloutfit" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleOutfit">
       <button bottom="0" height="24" label="Make Outfit" name="make_outfit_btn" image_overlay="icn_toolbar_make_outfit.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
         <button.commit_callback function="ShowFloater" parameter="outfit"/>
@@ -403,6 +413,12 @@
       <button bottom="0" height="24" label="Preferences" name="preferences_btn" tool_tip="Ctrl-P" image_overlay="icn_toolbar_preferences.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
         <button.commit_callback function="ShowFloater" parameter="preferences"/>
       </button>
+    </layout_panel>
+    <layout_panel name="paneljoystick" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleJoystick">
+      <button bottom="0" height="24" label="Joystick" name="joystick_btn" image_overlay="icn_toolbar_joystick.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="joystick"/>
+      </button>
+      <button bottom="-22" height="16" width="16" left="4" toggle="true" scale_image="false" image_unselected="checkbox_enabled_false.tga" image_selected="checkbox_enabled_true.tga" label="" control_name="JoystickEnabled" name="enable_joystick" tool_tip="Toggle Joystick controls on and off"/>
     </layout_panel>
     <layout_panel name="panelautoreplace" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleAutoReplace">
       <button bottom="0" height="24" label="Autoreplace" name="auto_replace_btn" image_overlay="icn_toolbar_auto_replace.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">

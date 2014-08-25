@@ -233,6 +233,11 @@ private:
 
 	void httpFailure(void)
 	{
+		// <singu> Prevent 404s from annoying the user all the tme
+		if (mStatus == HTTP_NOT_FOUND)
+			LL_INFOS("FloaterPermsResponder") << "Failed to send default permissions to simulator. 404, reason: " << mReason << LL_ENDL;
+		else
+		// </singu>
 		// Do not display the same error more than once in a row
 		if (mReason != sPreviousReason)
 		{

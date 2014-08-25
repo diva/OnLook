@@ -83,30 +83,28 @@ LLSkinJoint::~LLSkinJoint()
 //-----------------------------------------------------------------------------
 // LLSkinJoint::setupSkinJoint()
 //-----------------------------------------------------------------------------
-BOOL LLSkinJoint::setupSkinJoint( LLAvatarJoint *joint)
+void LLSkinJoint::setupSkinJoint( LLJoint *joint)
 {
+	mRootToJointSkinOffset.clearVec();
+	mRootToParentJointSkinOffset.clearVec();
+	
 	// find the named joint
-	mJoint = joint;
-	if ( !mJoint )
+	if (!(mJoint = joint))
 	{
 		llinfos << "Can't find joint" << llendl;
+		return;
 	}
 
 	// compute the inverse root skin matrix
-	mRootToJointSkinOffset.clearVec();
-
-	LLVector3 rootSkinOffset;
-	while (joint)
+	do
 	{
-		rootSkinOffset += joint->getSkinOffset();
-		joint = (LLAvatarJoint*)joint->getParent();
-	}
+		mRootToJointSkinOffset -= joint->getSkinOffset();
+	} while (joint = joint->getParent());
 
-	mRootToJointSkinOffset = -rootSkinOffset;
 	mRootToParentJointSkinOffset = mRootToJointSkinOffset;
 	mRootToParentJointSkinOffset += mJoint->getSkinOffset();
 
-	return TRUE;
+	return;
 }
 
 
@@ -307,15 +305,14 @@ void LLAvatarJointMesh::setMesh( LLPolyMesh *mesh )
 		for (jn = 0; jn < numJointNames; jn++)
 		{
 			//llinfos << "Setting up joint " << jointNames[jn] << llendl;
-			LLAvatarJoint* joint = (LLAvatarJoint*)(getRoot()->findJoint(jointNames[jn]) );
-			mSkinJoints[jn].setupSkinJoint( joint );
+			mSkinJoints[jn].setupSkinJoint( getRoot()->findJoint(jointNames[jn]) );
 		}
 	}
 
 	// setup joint array
 	if (!mMesh->isLOD())
 	{
-		setupJoint((LLAvatarJoint*)getRoot());
+		setupJoint(getRoot());
 	}
 
 //	llinfos << "joint render entries: " << mMesh->mJointRenderData.count() << llendl;
@@ -324,7 +321,7 @@ void LLAvatarJointMesh::setMesh( LLPolyMesh *mesh )
 //-----------------------------------------------------------------------------
 // setupJoint()
 //-----------------------------------------------------------------------------
-void LLAvatarJointMesh::setupJoint(LLAvatarJoint* current_joint)
+void LLAvatarJointMesh::setupJoint(LLJoint* current_joint)
 {
 //	llinfos << "Mesh: " << getName() << llendl;
 
@@ -345,7 +342,7 @@ void LLAvatarJointMesh::setupJoint(LLAvatarJoint* current_joint)
 		if(mMesh->mJointRenderData.count() && mMesh->mJointRenderData[mMesh->mJointRenderData.count() - 1]->mWorldMatrix == &current_joint->getParent()->getWorldMatrix())
 		{
 			// ...then just add ourselves
-			LLAvatarJoint* jointp = js.mJoint;
+			LLJoint* jointp = js.mJoint;
 			mMesh->mJointRenderData.put(new LLJointRenderData(&jointp->getWorldMatrix(), &js));
 //			llinfos << "joint " << joint_count << js.mJoint->getName() << llendl;
 //			joint_count++;
@@ -366,8 +363,9 @@ void LLAvatarJointMesh::setupJoint(LLAvatarJoint* current_joint)
 	for (LLJoint::child_list_t::iterator iter = current_joint->mChildren.begin();
 		 iter != current_joint->mChildren.end(); ++iter)
 	{
-		LLAvatarJoint* child_joint = (LLAvatarJoint*)(*iter);
-		setupJoint(child_joint);
+		LLAvatarJoint* child_joint = dynamic_cast<LLAvatarJoint*>(*iter);
+		if(child_joint)
+			setupJoint(child_joint);
 	}
 }
 

@@ -129,6 +129,7 @@ void LLPrefsAscentVan::refreshValues()
 	mUnfocusedFloatersOpaque = gSavedSettings.getBOOL("FloaterUnfocusedBackgroundOpaque");
 	mCompleteNameProfiles   = gSavedSettings.getBOOL("SinguCompleteNameProfiles");
 	mScriptErrorsStealFocus = gSavedSettings.getBOOL("LiruScriptErrorsStealFocus");
+	mConnectToNeighbors = gSavedSettings.getBOOL("AlchemyConnectToNeighbors");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentBroadcastTag     = gSavedSettings.getBOOL("AscentBroadcastTag");
@@ -199,6 +200,7 @@ void LLPrefsAscentVan::cancel()
 	gSavedSettings.setBOOL("FloaterUnfocusedBackgroundOpaque", mUnfocusedFloatersOpaque);
 	gSavedSettings.setBOOL("SinguCompleteNameProfiles",     mCompleteNameProfiles);
 	gSavedSettings.setBOOL("LiruScriptErrorsStealFocus",    mScriptErrorsStealFocus);
+	gSavedSettings.setBOOL("AlchemyConnectToNeighbors",     mConnectToNeighbors);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentBroadcastTag",         mAscentBroadcastTag);

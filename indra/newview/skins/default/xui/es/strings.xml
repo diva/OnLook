@@ -21,8 +21,6 @@ Asegurate que has ingresado el URI de inicio de sesión correcto. Un ejemplo de 
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
-	<string name="APP_NAME">Singularity Viewer</string>
-	<string name="CAPITALIZED_APP_NAME">SINGULARITY VIEWER</string>
 	<string name="SECOND_LIFE_GRID">Grid Second Life</string>
 	<string name="SUPPORT_SITE">Portal de Soporte de Second Life</string>
 	
@@ -310,6 +308,9 @@ Asegurate que has ingresado el URI de inicio de sesión correcto. Un ejemplo de 
 	<!-- build floater -->
 	<string name="multiple_textures">Múltiple</string>
 	<string name="use_texture">Usar textura</string>
+    <string name="manip_hint1">Mover cursor sobre la regla</string>
+    <string name="manip_hint2">para ajustar a la grilla</string>
+
 	
 	<!-- world map -->	
 	<string name="texture_loading">Cargando...</string>
@@ -2715,7 +2716,26 @@ string input = string to test for match
 string pattern = string to use as pattern
 returns boolean TRUE/FALSE.
 	</string>
-
+	<string name="LSLTipText_osForceCreateLink">
+osForceCreateLink(key target, integer parent)
+Link the script's object with target, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osForceBreakLink">
+osForceBreakLink(integer link)
+De-links the prim with the given link number in a linked set, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osForceBreakAllLinks">
+osForceBreakAllLinks()
+De-links all prims in a link set, without requiring link permissions.
+	</string>
+	<string name="LSLTipText_osGetRegionSize">
+vector osGetRegionSize()
+Returns the size of the region in metres.
+	</string>
+	<string name="LSLTipText_osGetPhysicsEngineType">
+string osGetPhysicsEngineType()
+Returns a string containing the name of the Physics Engine.
+	</string>
 	<string name="LSLTipText_cmSetWindlightScene">
 cmSetWindlightScene(list rules)
 Set the current WindLight scene. Estate managers and owners only.
@@ -3068,8 +3088,8 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 
     <!-- Non-standard LLChat strings -->
 	<string name="ScriptCounting">Contando scripts, espera por favor...</string>
-    <string name="ScriptCountAvatar">Contados [SCRIPTS] scripts en [OBJECTS] Accesorios en [NAME].</string>
-    <string name="ScriptCountObject">Contados [SCRIPTS] scripts en [OBJECTS] objetos.</string>
+    <string name="ScriptCountAvatar">Contados [SCRIPTS] scripts en [OBJECTS] Accesorios en [NAME]. ([RUNNING] ejecutándose, [MONO] mono.)</string>
+    <string name="ScriptCountObject">Contados [SCRIPTS] scripts en [OBJECTS] objetos. ([RUNNING] ejecutándose, [MONO] mono.)</string>
     <string name="ScriptDeleteObject">Borrados [SCRIPTS] scripts en [OBJECTS] objetos.</string>
     <string name="took_a_snapshot">ha tomado una fotografía</string>
 	 
@@ -4323,6 +4343,12 @@ Intenta entrecomillando el camino al editor.
 
 	<!-- teleport_strings.xml's strings we need -->
 	<string name="completed_from">Teleporte completado desde</string>
+
+	<!-- Media filter -->
+	<string name="audio">audio</string>
+	<string name="media">media</string>
+	<string name="MediaFilterBlacklist">Lista Negra</string>
+	<string name="MediaFilterWhitelist">Lista Blanca</string>
 
   <!-- AIAlert messages -->
 

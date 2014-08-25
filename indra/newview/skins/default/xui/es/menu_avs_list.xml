@@ -10,6 +10,7 @@
 	<menu_item_call label="Añadir Amigo" name="Add Friend"/>
 	<menu_item_call label="Quitar Amigo" name="Remove Friend"/>
 	<menu_item_call label="Invitar a Grupo" name="Invite To Group"/>
+	<menu_item_call label="Prohibir Grupo" name="Ban From Group"/>
 	<menu_item_call label="Ofrecer Teleporte" name="Offer Teleport"/>
 	<menu_item_call label="Solicitar Teleporte" name="Request Teleport"/>
 	<menu_item_separator/>

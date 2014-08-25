@@ -98,6 +98,7 @@
 #include "llprimitive.h"
 #include "llurlaction.h"
 #include "llurlentry.h"
+#include "llvolumemgr.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include <boost/bind.hpp>

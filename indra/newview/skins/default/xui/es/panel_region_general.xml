@@ -22,6 +22,7 @@
 	<button label="?" name="terraform_help" left="225"/>
 	<check_box label="Bloquear Volar" name="block_fly_check"/>
 	<button label="?" name="fly_help" left="225"/>
+	<check_box label="Bloquear volar sobre la Parcela" tool_tip="Extiende el control de la parcela hacia arriba para prevenir el vuelo sobre la misma" name="block_fly_over_check"/>
 	<check_box label="Permitir Daño" name="allow_damage_check"/>
 	<button label="?" name="damage_help" left="225"/>
 	<check_box label="Restringir Empujones" name="restrict_pushobject"/>

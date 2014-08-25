@@ -62,13 +62,13 @@ LLDir_Win32::LLDir_Win32()
 		if((*pSHGetKnownFolderPath)(FOLDERID_RoamingAppData, 0, NULL, &pPath) == S_OK)
 			wcscpy_s(w_str,pPath);
 		else
-			SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
+			SHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_DEFAULT, w_str );
 		if(pPath)
 			CoTaskMemFree(pPath);
 	}
 	else	//XP doesn't support SHGetKnownFolderPath
 	{
-		SHGetSpecialFolderPath(NULL, w_str, CSIDL_APPDATA, TRUE);
+		SHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_DEFAULT, w_str );
 	}
 
 	mOSUserDir = utf16str_to_utf8str(llutf16string(w_str));
@@ -91,13 +91,13 @@ LLDir_Win32::LLDir_Win32()
 		if((*pSHGetKnownFolderPath)(FOLDERID_LocalAppData, 0, NULL, &pPath) == S_OK)
 			wcscpy_s(w_str,pPath);
 		else
-			SHGetSpecialFolderPath(NULL, w_str, CSIDL_LOCAL_APPDATA, TRUE);
+			SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_DEFAULT, w_str );
 		if(pPath)
 			CoTaskMemFree(pPath);
 	}
 	else	//XP doesn't support SHGetKnownFolderPath
 	{
-		SHGetSpecialFolderPath(NULL, w_str, CSIDL_LOCAL_APPDATA, TRUE);
+		SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, NULL, SHGFP_TYPE_DEFAULT, w_str );
 	}
 
 	if(shell)

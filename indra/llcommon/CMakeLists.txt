@@ -254,7 +254,6 @@ set(llcommon_HEADER_FILES
     metapropertyt.h
     reflective.h
     reflectivet.h
-    roles_constants.h
     stdenums.h
     stdtypes.h
     string_table.h

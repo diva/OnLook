@@ -79,7 +79,12 @@
 	<text name="ZoomDeadZone">
 		Zona Muerta de Zoom
 	</text>
-	<button label="Predeterminado SpaceNavigator" name="SpaceNavigatorDefaults" left="330" width="210"/>
+    <flyout_button label="Definir por Defecto" name="Default">
+      <flyout_button_item name="Space Navigator" label="Space Navigator"/>
+      <flyout_button_item name="OUYA" label="Controlador OUYA"/>
+      <flyout_button_item name="XBOX" label="Controlador XBOX"/>
+      <flyout_button_item name="DS3" label="DualShock 3"/>
+    </flyout_button>
 	<button label="OK" label_selected="OK" name="ok_btn"/>
 	<button label="Cancelar" label_selected="Cancelar" name="cancel_btn"/>
 </floater>

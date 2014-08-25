@@ -102,15 +102,15 @@ public:
 
 	void validate();
 
-	LLVector4a mExtents[2];
+	LL_ALIGN_16(LLVector4a mExtents[2]);
 	
 	LLPointer<LLVertexBuffer> mVertexBuffer;
 	LLPointer<LLViewerTexture>     mTexture;
 	std::vector<LLPointer<LLViewerTexture> > mTextureList;
 
 	S32 mDebugColor;
-	const LLMatrix4* mTextureMatrix;
-	const LLMatrix4* mModelMatrix;
+	const LLMatrix4a* mTextureMatrix;
+	const LLMatrix4a* mModelMatrix;
 	U16 mStart;
 	U16 mEnd;
 	U32 mCount;

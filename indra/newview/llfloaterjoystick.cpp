@@ -126,7 +126,7 @@ BOOL LLFloaterJoystick::postBuild()
 	mCheckFlycamEnabled = getChild<LLCheckBoxCtrl>("JoystickFlycamEnabled");
 	childSetCommitCallback("JoystickFlycamEnabled",onCommitJoystickEnabled,this);
 
-	childSetAction("SpaceNavigatorDefaults", onClickRestoreSNDefaults, this);
+	getChild<LLUICtrl>("Default")->setCommitCallback(boost::bind(&LLFloaterJoystick::onClickDefault, this, _2));
 	childSetAction("cancel_btn", onClickCancel, this);
 	childSetAction("ok_btn", onClickOK, this);
 
@@ -301,9 +301,14 @@ void LLFloaterJoystick::onCommitJoystickEnabled(LLUICtrl*, void *joy_panel)
 	}
 }
 
-void LLFloaterJoystick::onClickRestoreSNDefaults(void *joy_panel)
+S32 get_joystick_type();
+void LLFloaterJoystick::onClickDefault(const LLSD& val)
 {
-	setSNDefaults();
+	S32 type(val.asInteger());
+	if (val.isUndefined()) // If button portion, set to default for device.
+		if ((type = get_joystick_type()) == -1) // Invalid/No device
+			return;
+	LLViewerJoystick::getInstance()->setSNDefaults(type);
 }
 
 void LLFloaterJoystick::onClickCancel(void *joy_panel)
@@ -331,9 +336,4 @@ void LLFloaterJoystick::onClickOK(void *joy_panel)
 			self->close();
 		}
 	}
-}
-
-void LLFloaterJoystick::setSNDefaults()
-{
-	LLViewerJoystick::getInstance()->setSNDefaults();
 }

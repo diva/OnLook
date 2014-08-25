@@ -5,47 +5,7 @@
 	<text name="WindowSizeLabel">
 		Tamaño de la Ventana:
 	</text>
-	<combo_box name="windowsize combo">
-		<combo_item name="800x600">
-			800x600
-		</combo_item>
-		<combo_item name="720x480">
-			720x480 (NTSC)
-		</combo_item>
-		<combo_item name="768x576">
-			768x576 (PAL)
-		</combo_item>
-		<combo_item name="1024x768">
-			1024x768
-		</combo_item>
-		<combo_item name="1280x720">
-			1280x720 (HD)
-		</combo_item>
-		<combo_item name="1366x768">
-			1366x768
-		</combo_item>
-		<combo_item name="1280x800">
-			1280x800
-		</combo_item>
-		<combo_item name="1440x900">
-			1440x900
-		</combo_item>
-		<combo_item name="1600x900">
-      1600x900 (HD+)
-    </combo_item>
-		<combo_item name="1680x1050">
-			1680x1050
-		</combo_item>
-		<combo_item name="1440x1080">
-			1440x1080 (HDV1080)
-		</combo_item>
-		<combo_item name="1920x1080">
-			1920x1080 (Full-HD)
-		</combo_item>
-		<combo_item name="2560x1440">
-			2560x1440
-		</combo_item>		
-	</combo_box>
+	<combo_box name="windowsize combo"/>
 	<text name="DisplayResLabel">
 		Resolución de Pantalla:
 	</text>
@@ -100,9 +60,8 @@
 			<check_box label="Luces Locales" name="LightingDetailRadio"/>
 			<check_box label="Sombreado Básico" name="BasicShaders" tool_tip="Desactivar esta opción puede prevenir fallos con algunas tarjetas gráficas."/>
 			<check_box label="Sombreado Atmosférico" name="WindLightUseAtmosShaders"/>
-			<check_box label="Iluminación y Sombras" tool_tip="Sombreado Diferido" name="RenderDeferred"/>
+			<check_box label="Modelo Avanzado de Iluminación" tool_tip="Sombreado Diferido" name="RenderDeferred"/>
 			<check_box label="Oclusión Ambiental" name="UseSSAO"/>
-			<check_box label="Profundidad de Campo" name="RenderDepthOfField"/>
 			<text name="TerrainScaleText">
 				Escala de Terreno:
 			</text>
@@ -155,20 +114,17 @@
 				</combo_item>
 			</combo_box>
 			
-			<slider label="  Física de Avatar:" name="AvatarPhysicsDetail" width="165"/>
+			<slider label="  Física de Avatar:" name="AvatarPhysicsDetail" width="165" label_width="82" />
 			<text name="AvatarPhysicsDetailText">
 				Apagada
 			</text>
-			<text name="DrawDistanceMeterText1">
+			<text name="DrawDistanceMeterText">
 				m
 			</text>			
-			<text name="DrawDistanceMeterText2">
-				m
-			</text>
-			<slider label="Distancia de Dibujo:" name="DrawDistance"/>
-			<slider label="Máximo de Partículas:" name="MaxParticleCount"/>
-			<slider label="Máx No Simulados" name="AvatarMaxVisible"/>
-			<slider label="PostProcesado:" name="RenderPostProcess"/>
+			<slider label="Distancia de Dibujo:" name="DrawDistance" label_width="106"/>
+			<slider label="Máximo de Partículas:" name="MaxParticleCount" label_width="106"/>
+			<slider label="Máx No Simulados:" name="AvatarMaxVisible" label_width="106"/>
+			<slider label="PostProcesado:" name="RenderPostProcess" label_width="106"/>
 			<text name="PostProcessText">
 				Bajo
 			</text>			
@@ -223,22 +179,16 @@
 			<text name="Antialiasing:">
 				Antialiasing:
 			</text>
-			<combo_box label="Antialiasing" name="fsaa">
+			<combo_box label="Antialiasing" name="fsaa"  width="84">
 				<combo_item name="FSAADisabled">
 					Desactivado
 				</combo_item>
-				<combo_item name="2x">
-					2x
-				</combo_item>
-				<combo_item name="4x">
-					4x
-				</combo_item>
-				<combo_item name="8x">
-					8x
-				</combo_item>
-				<combo_item name="16x">
-					16x
-				</combo_item>
+			</combo_box>
+			<text name="VSync:">Sincronización Vertical:</text>
+			<combo_box label="VSync" name="vsync" width="84">
+				<combo_item name="VSyncDisabled">Desactivada</combo_item>
+				<combo_item name="VSyncStandard">Estándar</combo_item>
+				<combo_item name="VSyncAdaptive">Adaptiva</combo_item>
 			</combo_box>
 			<spinner label="Memoria p/ Texturas (MB):" name="GrapicsCardTextureMemory" tool_tip="Cantidad de memoria asignada a las texturas. Por defecto es la memoria de la tarjeta de vídeo. Reducir esta cantidad puede mejorar el rendimiento, pero también puede hacer que las texturas se vean borrosas."/>
 			<check_box  label="Activar OpenGL Vertex Buffer Objects" name="vbo" tool_tip="Habilitar esta opción en hardware moderno puede proporcionar una mejora en el rendimiento. Sin embargo, el hardware antiguo ofrece una pobre implementación de VBOs y puede causar fallos cuando esta opcíon esté activada."/>
@@ -251,6 +201,15 @@
 Intensidad de la Niebla no están disponibles 
 cuando se activan las Sombras de la Atmósfera.
 			</text>
+		</panel>
+		<!-- =========================== -->
+		<panel name="DoF" label="Profundidad de Campo">
+			<check_box label="Habilitar Profundidad de Campo" tool_tip="Alterna el efecto de profundidad de campo en la cámara, a menudo utilizado para difuminar objetos lejanos que no deben estar en el foco" name="RenderDepthOfField"/>
+			<slider width="318" label_width="130" name="CameraFNum" label="Número F:" tool_tip="Valor de efecto de apertura del diafragma de la cámara para el efecto de Profundidad de Campo"/>
+			<slider width="318" label_width="130" name="CameraFocal" label="Longitud Focal (mm):" tool_tip="Longitud focal a de la Cámara para el efecto de Profundidad de Campo (en milímetros)"/>
+			<slider width="318" label_width="130" name="CameraCoF" label="Círculo de Confusión:" tool_tip="Define el Círculo de Confusión máximo de la Cámara"/>
+			<slider width="318" label_width="130" name="CameraFocusTrans" label="Tiempo de Transición (seg):" tool_tip="Tiempo que toma en cambiar el foco de un lugar al siguiente"/>
+			<slider width="318" label_width="130" name="CameraDoFRes" label="Resolución:" tool_tip="Definir la Resolución (Calidad) de cada pixel PDC (DOF)"/>
 		</panel>
 	</tab_container>
 	<string name="resolution_format">[RES_X] x [RES_Y]</string>

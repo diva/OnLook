@@ -117,9 +117,9 @@ void LLFloaterObjectWeights::onOpen()
 // virtual
 void LLFloaterObjectWeights::onWeightsUpdate(const SelectionCost& selection_cost)
 {
-	mSelectedDownloadWeight->setText(llformat("%.1f", selection_cost.mNetworkCost));
-	mSelectedPhysicsWeight->setText(llformat("%.1f", selection_cost.mPhysicsCost));
-	mSelectedServerWeight->setText(llformat("%.1f", selection_cost.mSimulationCost));
+	mSelectedDownloadWeight->setText(llformat("%.2f", selection_cost.mNetworkCost));
+	mSelectedPhysicsWeight->setText(llformat("%.2f", selection_cost.mPhysicsCost));
+	mSelectedServerWeight->setText(llformat("%.2f", selection_cost.mSimulationCost));
 
 	S32 render_cost = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectRenderCost();
 	mSelectedDisplayWeight->setText(llformat("%d", render_cost));

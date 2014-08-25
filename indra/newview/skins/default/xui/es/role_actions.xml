@@ -11,6 +11,7 @@
 			description="Expulsar a miembros del grupo" 
 			longdescription="Expulsar a miembros del grupo usando el botón &apos;Expulsar del grupo&apos; en Miembros y Roles &gt; subpestaña Miembros. Un propietario puede expulsar a cualquiera, excepto a otro propietario. Si no eres un propietario, un miembro del grupo puede expulsarte sólo si tiene concedida esta capacidad específica. Para quitar capacidades a los miembros, debes tener la de &apos;Quitar capacidades a miembros&apos;." 
 			name="member eject"/>
+		<action description="Administrar Lista de Prohibición" longdescription="Permitir a los miembros del grupo prohibir o quitar la prohibición a este grupo." name="allow ban"/>
 		<action 
 			description="Activar/desactivar &apos;Inscripción libre&apos; y cambiar &apos;Cuota de inscripción&apos;" 
 			longdescription="Activar/desactivar &apos;Inscripción libre&apos; para permitir o no que se unan sin invitación nuevos miembros, y cambiar la &apos;Cuota de inscripción&apos; en la sección Preferencias del grupo de la pestaña General." 

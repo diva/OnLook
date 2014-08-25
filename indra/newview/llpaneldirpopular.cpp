@@ -33,11 +33,13 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llpaneldirpopular.h"
+#include "lfsimfeaturehandler.h"
 
 LLPanelDirPopular::LLPanelDirPopular(const std::string& name, LLFloaterDirectory* floater)
 :	LLPanelDirFind(name, floater, "showcase_browser")
 {
 	// *NOTE: This is now the "Showcase" section
+	LFSimFeatureHandler::instance().setSearchURLCallback(boost::bind(&LLPanelDirPopular::navigateToDefaultPage, this));
 }
 
 // virtual

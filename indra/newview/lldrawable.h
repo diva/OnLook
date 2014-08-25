@@ -110,8 +110,8 @@ public:
 	const LLViewerObject *getVObj()	const						  { return mVObjp; }
 	LLVOVolume*	getVOVolume() const; // cast mVObjp tp LLVOVolume if OK
 
-	const LLMatrix4&      getWorldMatrix() const		{ return mXform.getWorldMatrix(); }
-	const LLMatrix4&	  getRenderMatrix() const;
+	const LLMatrix4a&      getWorldMatrix() const		{ return mXform.getWorldMatrix(); }
+	const LLMatrix4a&	  getRenderMatrix() const;
 	void				  setPosition(LLVector3 v) const { }
 	const LLVector3&	  getPosition() const			{ return mXform.getPosition(); }
 	const LLVector3&      getWorldPosition() const		{ return mXform.getPositionW(); }
@@ -305,7 +305,7 @@ private: //aligned members
 	LL_ALIGN_16(LLVector4a		mPositionGroup);
 	
 public:
-	LLXformMatrix       mXform;
+	LL_ALIGN_16(LLXformMatrix       mXform);
 
 	// vis data
 	LLPointer<LLDrawable> mParent;

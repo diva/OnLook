@@ -29,7 +29,7 @@
 LFFloaterInvPanel::LFFloaterInvPanel(const LLUUID& cat_id, LLInventoryModel* model, const std::string& name)
 : LLInstanceTracker<LFFloaterInvPanel, LLUUID>(cat_id)
 {
-	mCommitCallbackRegistrar.add("InvPanel.Search", boost::bind(&LFFloaterInvPanel::onSearch, this, _2));
+	mCommitCallbackRegistrar.add("InvPanel.Search", boost::bind(&LLInventoryPanel::setFilterSubString, boost::ref(mPanel), _2));
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_inv_panel.xml");
 	LLPanel* panel = getChild<LLPanel>("placeholder_panel");
 	mPanel = new LLInventoryPanel("inv_panel", LLInventoryPanel::DEFAULT_SORT_ORDER, cat_id.asString(), panel->getRect(), model, true);
@@ -82,9 +82,4 @@ BOOL LFFloaterInvPanel::handleKeyHere(KEY key, MASK mask)
 	}
 
 	return LLFloater::handleKeyHere(key, mask);
-}
-
-void LFFloaterInvPanel::onSearch(const LLSD& val)
-{
-	mPanel->setFilterSubString(val.asString());
 }

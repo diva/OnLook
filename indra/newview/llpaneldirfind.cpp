@@ -65,6 +65,7 @@
 #include "llpaneldirbrowser.h"
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 #if LL_MSVC
 // disable boost::lexical_cast warning
@@ -76,6 +77,92 @@
 //---------------------------------------------------------------------------
 // LLPanelDirFindAll - Google search appliance based search
 //---------------------------------------------------------------------------
+namespace
+{
+	std::string getSearchUrl()
+	{
+		return LFSimFeatureHandler::instance().searchURL();
+	}
+	enum SearchType
+	{
+		SEARCH_ALL_EMPTY,
+		SEARCH_ALL_QUERY,
+		SEARCH_ALL_TEMPLATE
+	};
+	std::string getSearchUrl(SearchType ty, bool is_web)
+	{
+		const std::string mSearchUrl(getSearchUrl());
+		if (is_web)
+		{
+			if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+			{
+				// Second Life defaults
+				if (ty == SEARCH_ALL_EMPTY)
+				{
+					return gSavedSettings.getString("SearchURLDefault");
+				}
+				else if (ty == SEARCH_ALL_QUERY)
+				{
+					return gSavedSettings.getString("SearchURLQuery");
+				}
+				else if (ty == SEARCH_ALL_TEMPLATE)
+				{
+					return gSavedSettings.getString("SearchURLSuffix2");
+				}
+			}
+			else if (!mSearchUrl.empty())
+			{
+				// Search url sent to us in the login response
+				if (ty == SEARCH_ALL_EMPTY)
+				{
+					return mSearchUrl;
+				}
+				else if (ty == SEARCH_ALL_QUERY)
+				{
+					return mSearchUrl + "q=[QUERY]&s=[COLLECTION]&";
+				}
+				else if (ty == SEARCH_ALL_TEMPLATE)
+				{
+					return "lang=[LANG]&mat=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
+				}
+			}
+			else
+			{
+				// OpenSim and other web search defaults
+				if (ty == SEARCH_ALL_EMPTY)
+				{
+					return gSavedSettings.getString("SearchURLDefaultOpenSim");
+				}
+				else if (ty == SEARCH_ALL_QUERY)
+				{
+					return gSavedSettings.getString("SearchURLQueryOpenSim");
+				}
+				else if (ty == SEARCH_ALL_TEMPLATE)
+				{
+					return gSavedSettings.getString("SearchURLSuffixOpenSim");
+				}
+			}
+		}
+		else
+		{
+			// Use the old search all
+			if (ty == SEARCH_ALL_EMPTY)
+			{
+				return mSearchUrl + "panel=All&";
+			}
+			else if (ty == SEARCH_ALL_QUERY)
+			{
+				return mSearchUrl + "q=[QUERY]&s=[COLLECTION]&";
+			}
+			else if (ty == SEARCH_ALL_TEMPLATE)
+			{
+				return "lang=[LANG]&m=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
+			}
+		}
+		llinfos << "Illegal search URL type " << ty << llendl;
+		return "";
+	}
+}
 
 class LLPanelDirFindAll
 :	public LLPanelDirFind
@@ -90,6 +177,7 @@ public:
 LLPanelDirFindAll::LLPanelDirFindAll(const std::string& name, LLFloaterDirectory* floater)
 :	LLPanelDirFind(name, floater, "find_browser")
 {
+	LFSimFeatureHandler::getInstance()->setSearchURLCallback(boost::bind(&LLPanelDirFindAll::navigateToDefaultPage, this));
 }
 
 //---------------------------------------------------------------------------
@@ -264,48 +352,38 @@ void LLPanelDirFind::focus()
 
 void LLPanelDirFind::navigateToDefaultPage()
 {
-	std::string start_url = "";
+	bool showcase(mBrowserName == "showcase_browser");
+	std::string start_url = showcase ? LLWeb::expandURLSubstitutions(LFSimFeatureHandler::instance().destinationGuideURL(), LLSD()) : getSearchUrl();
+	bool secondlife(gHippoGridManager->getConnectedGrid()->isSecondLife());
 	// Note: we use the web panel in OpenSim as well as Second Life -- MC
-	if (gHippoGridManager->getConnectedGrid()->getSearchUrl().empty() && 
-		!gHippoGridManager->getConnectedGrid()->isSecondLife())
+	if (start_url.empty() && !secondlife)
 	{
 		// OS-based but doesn't have its own web search url -- MC
 		start_url = gSavedSettings.getString("SearchURLDefaultOpenSim");
 	}
 	else
 	{
-		if (gHippoGridManager->getConnectedGrid()->isSecondLife()) 
+		if (!showcase)
 		{
-			if (mBrowserName == "showcase_browser")
-			{
-				// note that the showcase URL in floater_directory.xml is no longer used
-				start_url = gSavedSettings.getString("ShowcaseURLDefault");
-			}
-			else
-			{
+			if (secondlife) // Legacy Web Search
 				start_url = gSavedSettings.getString("SearchURLDefault");
-			}
-		}
-		else
-		{
-			// OS-based but has its own web search url -- MC
-			start_url = gHippoGridManager->getConnectedGrid()->getSearchUrl();
-			start_url += "panel=" + getName() + "&";
-		}
+			else // OS-based but has its own web search url -- MC
+				start_url += "panel=" + getName() + "&";
 
-		if (hasChild("incmature"))
-		{
-			bool inc_pg = childGetValue("incpg").asBoolean();
-			bool inc_mature = childGetValue("incmature").asBoolean();
-			bool inc_adult = childGetValue("incadult").asBoolean();
-			if (!(inc_pg || inc_mature || inc_adult))
+			if (hasChild("incmature"))
 			{
-				// if nothing's checked, just go for pg; we don't notify in
-				// this case because it's a default page.
-				inc_pg = true;
+				bool inc_pg = getChildView("incpg")->getValue().asBoolean();
+				bool inc_mature = getChildView("incmature")->getValue().asBoolean();
+				bool inc_adult = getChildView("incadult")->getValue().asBoolean();
+				if (!(inc_pg || inc_mature || inc_adult))
+				{
+					// if nothing's checked, just go for pg; we don't notify in
+					// this case because it's a default page.
+					inc_pg = true;
+				}
+
+				start_url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, true);
 			}
-	
-			start_url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, true);
 		}
 	}
 
@@ -323,7 +401,7 @@ const std::string LLPanelDirFind::buildSearchURL(const std::string& search_text,
 	std::string url;
 	if (search_text.empty()) 
 	{
-		url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_EMPTY, is_web);
+		url = getSearchUrl(SEARCH_ALL_EMPTY, is_web);
 	} 
 	else 
 	{
@@ -348,7 +426,7 @@ const std::string LLPanelDirFind::buildSearchURL(const std::string& search_text,
 			"-._~$+!*'()";
 		std::string query = LLURI::escape(search_text_with_plus, allowed);
 
-		url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_QUERY, is_web);
+		url = getSearchUrl(SEARCH_ALL_QUERY, is_web);
 		std::string substring = "[QUERY]";
 		std::string::size_type where = url.find(substring);
 		if (where != std::string::npos)
@@ -373,14 +451,13 @@ const std::string LLPanelDirFind::buildSearchURL(const std::string& search_text,
 
 const std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult, bool is_web) const
 {
-	std::string url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_TEMPLATE, is_web);
+	std::string url = getSearchUrl(SEARCH_ALL_TEMPLATE, is_web);
 	llinfos << "Suffix template " << url << llendl;
 
 	if (!url.empty())
 	{
 		// Note: opensim's default template (SearchURLSuffixOpenSim) is currently empty -- MC
-		if (gHippoGridManager->getConnectedGrid()->isSecondLife() || 
-			!gHippoGridManager->getConnectedGrid()->getSearchUrl().empty())
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife() || !getSearchUrl().empty())
 		{
 			// if the mature checkbox is unchecked, modify query to remove 
 			// terms with given phrase from the result set
@@ -524,11 +601,14 @@ LLPanelDirFindAll* LLPanelDirFindAllInterface::create(LLFloaterDirectory* floate
 	return new LLPanelDirFindAll("find_all_panel", floater);
 }
 
+static LLPanelDirFindAllOld* sFindAllOld = NULL;
 // static
 void LLPanelDirFindAllInterface::search(LLPanelDirFindAll* panel,
 										const std::string& search_text)
 {
-	panel->search(search_text);
+	bool secondlife(gHippoGridManager->getConnectedGrid()->isSecondLife());
+	if (secondlife || !getSearchUrl().empty()) panel->search(search_text);
+	if (!secondlife && sFindAllOld) sFindAllOld->search(search_text);
 }
 
 // static
@@ -544,6 +624,7 @@ void LLPanelDirFindAllInterface::focus(LLPanelDirFindAll* panel)
 LLPanelDirFindAllOld::LLPanelDirFindAllOld(const std::string& name, LLFloaterDirectory* floater)
 	:	LLPanelDirBrowser(name, floater)
 {
+	sFindAllOld = this;
 	mMinSearchChars = 3;
 }
 
@@ -565,6 +646,7 @@ BOOL LLPanelDirFindAllOld::postBuild()
 
 LLPanelDirFindAllOld::~LLPanelDirFindAllOld()
 {
+	sFindAllOld = NULL;
 	// Children all cleaned up by default view destructor.
 }
 
@@ -575,12 +657,18 @@ void LLPanelDirFindAllOld::draw()
 	LLPanelDirBrowser::draw();
 }
 
+void LLPanelDirFindAllOld::search(const std::string& query)
+{
+	getChildView("name")->setValue(query);
+	onClickSearch();
+}
+
 void LLPanelDirFindAllOld::onClickSearch()
 {
 	if (childGetValue("name").asString().length() < mMinSearchChars)
 	{
 		return;
-	};
+	}
 
 	BOOL inc_pg = childGetValue("incpg").asBoolean();
 	BOOL inc_mature = childGetValue("incmature").asBoolean();

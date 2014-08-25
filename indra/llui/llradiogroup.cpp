@@ -46,16 +46,36 @@
 
 static LLRegisterWidget<LLRadioGroup> r("radio_group");
 
+/*
+ * A checkbox control with use_radio_style == true.
+ */
+class LLRadioCtrl : public LLCheckBoxCtrl
+{
+public:
+	LLRadioCtrl(const std::string& name, const LLRect& rect, const std::string& label, const std::string& value = "", const LLFontGL* font = NULL, commit_callback_t commit_callback = NULL);
+	/*virtual*/ ~LLRadioCtrl();
+
+	virtual LLXMLNodePtr getXML(bool save_children = true) const;
+	/*virtual*/ void setValue(const LLSD& value);
+
+	LLSD getPayload() { return mPayload; }
+protected:
+	friend class LLUICtrlFactory;
+
+	LLSD mPayload;	// stores data that this item represents in the radio group
+};
+
 LLRadioGroup::LLRadioGroup(const std::string& name, const LLRect& rect,
 			   S32 initial_index, commit_callback_t commit_callback,
-			   BOOL border) :
+			   bool border, bool allow_deselect) :
 	LLUICtrl(name, rect, TRUE, commit_callback, FOLLOWS_LEFT | FOLLOWS_TOP),
-	mSelectedIndex(initial_index)
+	mSelectedIndex(initial_index),
+	mAllowDeselect(allow_deselect)
 {
 	init(border);
 }
 
-void LLRadioGroup::init(BOOL border)
+void LLRadioGroup::init(bool border)
 {
 	if (border)
 	{
@@ -67,12 +87,19 @@ void LLRadioGroup::init(BOOL border)
 }
 
 
-
-
 LLRadioGroup::~LLRadioGroup()
 {
 }
 
+// virtual
+BOOL LLRadioGroup::postBuild()
+{
+	if (!mRadioButtons.empty())
+	{
+		mRadioButtons[0]->setTabStop(true);
+	}
+	return TRUE;
+}
 
 // virtual
 void LLRadioGroup::setEnabled(BOOL enabled)
@@ -133,16 +160,39 @@ void LLRadioGroup::setIndexEnabled(S32 index, BOOL enabled)
 
 BOOL LLRadioGroup::setSelectedIndex(S32 index, BOOL from_event)
 {
-	if (index < 0 || index >= (S32)mRadioButtons.size())
+	if ((S32)mRadioButtons.size() <= index )
 	{
 		return FALSE;
 	}
 
+	if (mSelectedIndex >= 0)
+	{
+		LLRadioCtrl* old_radio_item = mRadioButtons[mSelectedIndex];
+		old_radio_item->setTabStop(false);
+		old_radio_item->setValue( FALSE );
+	}
+	else
+	{
+		mRadioButtons[0]->setTabStop(false);
+	}
+
 	mSelectedIndex = index;
+
+	if (mSelectedIndex >= 0)
+	{
+		LLRadioCtrl* radio_item = mRadioButtons[mSelectedIndex];
+		radio_item->setTabStop(true);
+		radio_item->setValue( TRUE );
+
+		if (hasFocus())
+		{
+			radio_item->focusFirstItem(FALSE, FALSE);
+		}
+	}
 
 	if (!from_event)
 	{
-		setControlValue(getSelectedIndex());
+		setControlValue(getValue());
 	}
 
 	return TRUE;
@@ -207,41 +257,23 @@ BOOL LLRadioGroup::handleKeyHere(KEY key, MASK mask)
 	return handled;
 }
 
-void LLRadioGroup::draw()
+BOOL LLRadioGroup::handleMouseDown(S32 x, S32 y, MASK mask)
 {
-	S32 current_button = 0;
-
-	BOOL take_focus = FALSE;
-	if (gFocusMgr.childHasKeyboardFocus(this))
+	// grab focus preemptively, before child button takes mousecapture
+	//
+	if (hasTabStop())
 	{
-		take_focus = TRUE;
+		focusFirstItem(FALSE, FALSE);
 	}
 
-	for (button_list_t::iterator iter = mRadioButtons.begin();
-		 iter != mRadioButtons.end(); ++iter)
-	{
-		LLRadioCtrl* radio = *iter;
-		BOOL selected = (current_button == mSelectedIndex);
-		radio->setValue( selected );
-		if (take_focus && selected && !gFocusMgr.childHasKeyboardFocus(radio))
-		{
-			// don't flash keyboard focus when navigating via keyboard
-			BOOL DONT_FLASH = FALSE;
-			radio->focusFirstItem(FALSE, DONT_FLASH);
-		}
-		current_button++;
-	}
-
-	LLView::draw();
+	return LLUICtrl::handleMouseDown(x, y, mask);
 }
-
 
 // When adding a button, we need to ensure that the radio
 // group gets a message when the button is clicked.
-LLRadioCtrl* LLRadioGroup::addRadioButton(const std::string& name, const std::string& label, const LLRect& rect, const LLFontGL* font )
+LLRadioCtrl* LLRadioGroup::addRadioButton(const std::string& name, const std::string& label, const LLRect& rect, const LLFontGL* font, const std::string& payload)
 {
-	// Highlight will get fixed in draw method above
-	LLRadioCtrl* radio = new LLRadioCtrl(name, rect, label, font, boost::bind(&LLRadioGroup::onClickButton, this, _1));
+	LLRadioCtrl* radio = new LLRadioCtrl(name, rect, label, payload, font, boost::bind(&LLRadioGroup::onClickButton, this, _1));
 	addChild(radio);
 	mRadioButtons.push_back(radio);
 	return radio;
@@ -252,7 +284,7 @@ LLRadioCtrl* LLRadioGroup::addRadioButton(const std::string& name, const std::st
 
 void LLRadioGroup::onClickButton(LLUICtrl* ctrl)
 {
-	// llinfos << "LLRadioGroup::onClickButton" << llendl;
+	// LL_INFOS() << "LLRadioGroup::onClickButton" << LL_ENDL;
 	LLRadioCtrl* clicked_radio = dynamic_cast<LLRadioCtrl*>(ctrl);
 	if (!clicked_radio)
 	    return;
@@ -263,9 +295,15 @@ void LLRadioGroup::onClickButton(LLUICtrl* ctrl)
 		LLRadioCtrl* radio = *iter;
 		if (radio == clicked_radio)
 		{
-			// llinfos << "clicked button " << counter << llendl;
-			setSelectedIndex(index);
-			setControlValue(index);
+			if (index == mSelectedIndex && mAllowDeselect)
+			{
+				// don't select anything
+				setSelectedIndex(-1);
+			}
+			else
+			{
+				setSelectedIndex(index);
+			}
 			
 			// BUG: Calls click callback even if button didn't actually change
 			onCommit();
@@ -281,13 +319,12 @@ void LLRadioGroup::onClickButton(LLUICtrl* ctrl)
 
 void LLRadioGroup::setValue( const LLSD& value )
 {
-	std::string value_name = value.asString();
 	int idx = 0;
 	for (button_list_t::const_iterator iter = mRadioButtons.begin();
 		 iter != mRadioButtons.end(); ++iter)
 	{
 		LLRadioCtrl* radio = *iter;
-		if (radio->getName() == value_name)
+		if (radio->getPayload().asString() == value.asString())
 		{
 			setSelectedIndex(idx);
 			idx = -1;
@@ -304,8 +341,7 @@ void LLRadioGroup::setValue( const LLSD& value )
 		}
 		else
 		{
-			llwarns << "LLRadioGroup::setValue: radio_item with name=\"" << value_name << "\" not found, radio_group values are set by radio_item name not value.  Falling back on LLUICtrl::setValue." << llendl;
-			LLUICtrl::setValue(value);
+			setSelectedIndex(-1, TRUE);
 		}
 	}
 }
@@ -317,7 +353,7 @@ LLSD LLRadioGroup::getValue() const
 	for (button_list_t::const_iterator iter = mRadioButtons.begin();
 		 iter != mRadioButtons.end(); ++iter)
 	{
-		if (idx == index) return LLSD((*iter)->getName());
+		if (idx == index) return LLSD((*iter)->getPayload());
 		++idx;
 	}
 	return LLSD();
@@ -333,6 +369,7 @@ LLXMLNodePtr LLRadioGroup::getXML(bool save_children) const
 	// Attributes
 
 	node->createChild("draw_border", TRUE)->setBoolValue(mHasBorder);
+	node->createChild("allow_deselect", TRUE)->setBoolValue(mAllowDeselect);
 
 	// Contents
 
@@ -355,17 +392,21 @@ LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 	U32 initial_value = 0;
 	node->getAttributeU32("initial_value", initial_value);
 
-	BOOL draw_border = TRUE;
-	node->getAttributeBOOL("draw_border", draw_border);
+	bool draw_border = true;
+	node->getAttribute_bool("draw_border", draw_border);
+
+	bool allow_deselect = false;
+	node->getAttribute_bool("allow_deselect", allow_deselect);
 
 	LLRect rect;
 	createRect(node, rect, parent, LLRect());
 
-	LLRadioGroup* radio_group = new LLRadioGroup("radio_group", 
+	LLRadioGroup* radio_group = new LLRadioGroup("radio_group",
 		rect,
 		initial_value,
 		NULL,
-		draw_border);
+		draw_border,
+		allow_deselect);
 
 	const std::string& contents = node->getValue();
 
@@ -406,7 +447,13 @@ LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 				createRect(child, item_rect, radio_group, rect);
 
 				std::string item_label = child->getTextContents();
-				LLRadioCtrl* radio = radio_group->addRadioButton("radio", item_label, item_rect, font);
+				child->getAttributeString("label", item_label);
+				std::string item_name("radio");
+				child->getAttributeString("name", item_name);
+				std::string payload(item_name); // Support old-style name as payload
+				child->getAttributeString("value", payload);
+				child->getAttributeString("initial_value", payload); // Synonym
+				LLRadioCtrl* radio = radio_group->addRadioButton(item_name, item_label, item_rect, font, payload);
 
 				radio->initFromXML(child, radio_group);
 			}
@@ -432,11 +479,10 @@ LLUUID	LLRadioGroup::getCurrentID() const
 BOOL	LLRadioGroup::setSelectedByValue(const LLSD& value, BOOL selected)
 {
 	S32 idx = 0;
-	std::string value_string = value.asString();
 	for (button_list_t::const_iterator iter = mRadioButtons.begin();
 		 iter != mRadioButtons.end(); ++iter)
 	{
-		if((*iter)->getName() == value_string)
+		if((*iter)->getPayload().asString() == value.asString())
 		{
 			setSelectedIndex(idx);
 			return TRUE;
@@ -455,11 +501,10 @@ LLSD	LLRadioGroup::getSelectedValue()
 BOOL	LLRadioGroup::isSelected(const LLSD& value) const
 {
 	S32 idx = 0;
-	std::string value_string = value.asString();
 	for (button_list_t::const_iterator iter = mRadioButtons.begin();
 		 iter != mRadioButtons.end(); ++iter)
 	{
-		if((*iter)->getName() == value_string)
+		if((*iter)->getPayload().asString() == value.asString())
 		{
 			if (idx == mSelectedIndex) 
 			{
@@ -481,6 +526,17 @@ BOOL	LLRadioGroup::operateOnAll(EOperation op)
 	return FALSE;
 }
 
+LLRadioCtrl::LLRadioCtrl(const std::string& name, const LLRect& rect, const std::string& label, const std::string& value, const LLFontGL* font, commit_callback_t commit_callback)
+:	LLCheckBoxCtrl(name, rect, label, font, commit_callback, FALSE, RADIO_STYLE),
+	mPayload(value)
+{
+	setTabStop(FALSE);
+	// use name as default "Value" for backwards compatibility
+	if (value.empty())
+	{
+		mPayload = name;
+	}
+}
 
 LLRadioCtrl::~LLRadioCtrl()
 {
@@ -499,7 +555,7 @@ LLXMLNodePtr LLRadioCtrl::getXML(bool save_children) const
 
 	node->setName(LL_RADIO_ITEM_TAG);
 
-	node->setStringValue(getLabel());
+	node->createChild("value", TRUE)->setStringValue(mPayload);
 
 	return node;
 }

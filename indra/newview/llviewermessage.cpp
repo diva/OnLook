@@ -3801,6 +3801,12 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	}
 	else
 	{
+		// make sure that we don't have an empty or all-whitespace name
+		LLStringUtil::trim(from_name);
+		if (from_name.empty())
+		{
+			from_name = LLTrans::getString("Unnamed");
+		}
 		chat.mFromName = from_name;
 	}
 
@@ -6308,6 +6314,8 @@ static void process_money_balance_reply_extended(LLMessageSystem* msg)
 		// this is a pure balance update, no notification required
 		return;
 	}
+
+	if ((U32)amount < gSavedSettings.getU32("LiruShowTransactionThreshold")) return; // <singu/> Don't show transactions of small amounts the user doesn't care about.
 
 	std::string reason =
 		reason_from_transaction_type(transaction_type, item_description);

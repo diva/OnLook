@@ -68,7 +68,7 @@ public:
 
 	LLDrawPoolAvatar();
 
-	static LLMatrix4& getModelView();
+	static const LLMatrix4a& getModelView();
 
 	/*virtual*/ LLDrawPool *instancePool();
 

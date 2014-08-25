@@ -114,6 +114,16 @@ public:
 				   const F32 region_width_meters);
 	~LLViewerRegion();
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	// Call this after you have the region name and handle.
 	void loadObjectCache();
 	void saveObjectCache();
@@ -130,7 +140,7 @@ public:
 	void setAllowSetHome(BOOL b) { setRegionFlag(REGION_FLAGS_ALLOW_SET_HOME, b); }
 	void setResetHomeOnTeleport(BOOL b) { setRegionFlag(REGION_FLAGS_RESET_HOME_ON_TELEPORT, b); }
 	void setSunFixed(BOOL b) { setRegionFlag(REGION_FLAGS_SUN_FIXED, b); }
-	void setBlockFly(BOOL b) { setRegionFlag(REGION_FLAGS_BLOCK_FLY, b); }
+	//void setBlockFly(BOOL b) { setRegionFlag(REGION_FLAGS_BLOCK_FLY, b); }		Never used
 	void setAllowDirectTeleport(BOOL b) { setRegionFlag(REGION_FLAGS_ALLOW_DIRECT_TELEPORT, b); }
 
 
@@ -400,7 +410,7 @@ public:
 	LLStat	mPacketsStat;
 	LLStat	mPacketsLostStat;
 
-	LLMatrix4 mRenderMatrix;
+	LL_ALIGN_16(LLMatrix4a mRenderMatrix);
 
 	// These arrays are maintained in parallel. Ideally they'd be combined into a
 	// single array of an aggrigate data type but for compatibility with the old

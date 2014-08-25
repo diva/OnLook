@@ -757,8 +757,8 @@ void LLViewerTexture::removeFace(U32 ch, LLFace* facep)
 	if(mNumFaces[ch] > 1)
 	{
 		S32 index = facep->getIndexInTex(ch) ; 
-		llassert(index < mFaceList[ch].size());
-		llassert(index < mNumFaces[ch]);
+		llassert(index < (S32)mFaceList[ch].size());
+		llassert(index < (S32)mNumFaces[ch]);
 		mFaceList[ch][index] = mFaceList[ch][--mNumFaces[ch]] ;
 		mFaceList[ch][index]->setIndexInTex(ch, index) ;
 	}
@@ -808,8 +808,8 @@ void LLViewerTexture::removeVolume(LLVOVolume* volumep)
 	if(mNumVolumes > 1)
 	{
 		S32 index = volumep->getIndexInTex() ; 
-		llassert(index < mVolumeList.size());
-		llassert(index < mNumVolumes);
+		llassert(index < (S32)mVolumeList.size());
+		llassert(index < (S32)mNumVolumes);
 		mVolumeList[index] = mVolumeList[--mNumVolumes] ;
 		mVolumeList[index]->setIndexInTex(index) ;
 	}
@@ -914,6 +914,7 @@ LLViewerFetchedTexture::LLViewerFetchedTexture(const LLUUID& id, const LLHost& h
 {
 	init(TRUE) ;
 	generateGLTexture() ;
+	mGLTexturep->setNeedsAlphaAndPickMask(TRUE) ;
 }
 	
 LLViewerFetchedTexture::LLViewerFetchedTexture(const LLImageRaw* raw, BOOL usemipmaps)
@@ -928,6 +929,7 @@ LLViewerFetchedTexture::LLViewerFetchedTexture(const std::string& url, const LLU
 {
 	init(TRUE) ;
 	generateGLTexture() ;
+	mGLTexturep->setNeedsAlphaAndPickMask(TRUE) ;
 }
 
 void LLViewerFetchedTexture::init(bool firstinit)
@@ -3172,8 +3174,6 @@ LLViewerMediaTexture::LLViewerMediaTexture(const LLUUID& id, BOOL usemipmaps, LL
 
 	mGLTexturep->setAllowCompression(false);
 
-	mGLTexturep->setNeedsAlphaAndPickMask(FALSE) ;
-
 	mIsPlaying = FALSE ;
 
 	setMediaImpl() ;
@@ -3204,7 +3204,6 @@ void LLViewerMediaTexture::reinit(BOOL usemipmaps /* = TRUE */)
 	mUseMipMaps = usemipmaps ;
 	getLastReferencedTimer()->reset() ;
 	mGLTexturep->setUseMipMaps(mUseMipMaps) ;
-	mGLTexturep->setNeedsAlphaAndPickMask(FALSE) ;
 }
 
 void LLViewerMediaTexture::setUseMipMaps(BOOL mipmap) 

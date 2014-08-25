@@ -936,6 +936,7 @@ P(fetchScriptLimitsRegionSummaryResponder);
 P(fnPtrResponder);
 P(floaterPermsResponder);
 P2(gamingDataReceived,							transfer_22s_connect_10s);
+P(groupBanDataResponder);
 P2(groupMemberDataResponder,					transfer_300s);
 P2(groupProposalBallotResponder,				transfer_300s);
 P(homeLocationResponder);

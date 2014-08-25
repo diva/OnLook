@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="floater_about" title="Acerca de Singularity Viewer">
+<floater name="floater_about" title="Acerca de [SHORT_APP_NAME]">
   <tab_container name="about_tab">
     <panel label="Información" name="support_panel">
       <button label="Copiar al portapapeles" name="copy_btn"/>

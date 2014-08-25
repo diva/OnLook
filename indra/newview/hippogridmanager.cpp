@@ -153,7 +153,7 @@ void HippoGridInfo::setGridNick(std::string gridNick)
 	{
 		mIsInProductionGrid = true;
 	}
-	if(gridNick == "avination")
+	else if(gridNick == "avination")
 	{
 		mIsInAvination = true;
 	}
@@ -177,12 +177,12 @@ void HippoGridInfo::setLoginUri(const std::string& loginUri)
 		useHttps();
 		setPlatform(PLATFORM_SECONDLIFE);
 	}
-	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.aditi.lindenlab.com")
+	else if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.aditi.lindenlab.com")
 	{
 		useHttps();
 		setPlatform(PLATFORM_SECONDLIFE);
 	}
-	if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.com" ||
+	else if (utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.com" ||
 		utf8str_tolower(LLURI(mLoginUri).hostName()) == "login.avination.net")
 	{
 		mIsInAvination = true;
@@ -259,99 +259,6 @@ void HippoGridInfo::setDirectoryFee(int fee)
 
 // ********************************************************************
 // Grid Info
-
-std::string HippoGridInfo::getSearchUrl(SearchType ty, bool is_web) const
-{
-	// Don't worry about whether or not mSearchUrl is empty here anymore -- MC
-	if (is_web)
-	{
-		if (mPlatform == PLATFORM_SECONDLIFE) 
-		{
-			// Second Life defaults
-			if (ty == SEARCH_ALL_EMPTY) 
-			{
-				return gSavedSettings.getString("SearchURLDefault");
-			} 
-			else if (ty == SEARCH_ALL_QUERY) 
-			{
-				return gSavedSettings.getString("SearchURLQuery");
-			} 
-			else if (ty == SEARCH_ALL_TEMPLATE) 
-			{
-				return gSavedSettings.getString("SearchURLSuffix2");
-			} 
-			else 
-			{
-				llinfos << "Illegal search URL type " << ty << llendl;
-				return "";
-			}
-		}
-		else if (!mSearchUrl.empty())
-		{
-			// Search url sent to us in the login response
-			if (ty == SEARCH_ALL_EMPTY) 
-			{
-				return (mSearchUrl);
-			} 
-			else if (ty == SEARCH_ALL_QUERY) 
-			{
-				return (mSearchUrl + "q=[QUERY]&s=[COLLECTION]&");
-			} 
-			else if (ty == SEARCH_ALL_TEMPLATE) 
-			{
-				return "lang=[LANG]&mat=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
-			} 
-			else 
-			{
-				llinfos << "Illegal search URL type " << ty << llendl;
-				return "";
-			}
-		}
-		else
-		{
-			// OpenSim and other web search defaults
-			if (ty == SEARCH_ALL_EMPTY) 
-			{
-				return gSavedSettings.getString("SearchURLDefaultOpenSim");
-			} 
-			else if (ty == SEARCH_ALL_QUERY) 
-			{
-				return gSavedSettings.getString("SearchURLQueryOpenSim");
-			} 
-			else if (ty == SEARCH_ALL_TEMPLATE) 
-			{
-				return gSavedSettings.getString("SearchURLSuffixOpenSim");
-			} 
-			else 
-			{
-				llinfos << "Illegal search URL type " << ty << llendl;
-				return "";
-			}
-		} 
-	}
-	else 
-	{
-	    // Use the old search all
-	    if (ty == SEARCH_ALL_EMPTY) 
-		{
-	    	return (mSearchUrl + "panel=All&");
-	    } 
-		else if (ty == SEARCH_ALL_QUERY) 
-		{
-	    	return (mSearchUrl + "q=[QUERY]&s=[COLLECTION]&");
-	    } 
-		else if (ty == SEARCH_ALL_TEMPLATE) 
-		{
-			return "lang=[LANG]&m=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
-	    } 
-		else 
-		{
-	    	llinfos << "Illegal search URL type " << ty << llendl;
-	    	return "";
-	    }
-	}
-}
-
 
 //static
 void HippoGridInfo::onXmlElementStart(void* userData, const XML_Char* name, const XML_Char** atts)
