@@ -1087,7 +1087,10 @@ void CurlEasyRequest::applyDefaultOptions(void)
 {
   CertificateAuthority_rat CertificateAuthority_r(gCertificateAuthority);
   setoptString(CURLOPT_CAINFO, CertificateAuthority_r->file);
-  setSSLCtxCallback(&curlCtxCallback, NULL);
+  if (gSSLlib == ssl_openssl)
+  {
+	setSSLCtxCallback(&curlCtxCallback, NULL);
+  }
   setopt(CURLOPT_NOSIGNAL, 1);
   // Cache DNS look ups an hour. If we set it smaller we risk frequent connect timeouts in cases where DNS look ups are slow.
   setopt(CURLOPT_DNS_CACHE_TIMEOUT, 3600);
