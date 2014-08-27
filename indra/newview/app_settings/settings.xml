@@ -742,6 +742,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>LiruHighlightNewInventory</key>
+    <map>
+      <key>Comment</key>
+      <string>When false, new inventory items will not be highlighted upon being accepted.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>1</boolean>
+    </map>
     <key>LiruLegacyDisplayMuteds</key>
     <map>
       <key>Comment</key>
