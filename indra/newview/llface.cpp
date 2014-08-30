@@ -987,15 +987,15 @@ void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_po
 {
 	const LLMatrix4a& vol_mat = getWorldMatrix();
 	const LLVolumeFace& vf = getViewerObject()->getVolume()->getVolumeFace(mTEOffset);
-	const LLVector4a& normal4a = vf.mNormals[0];
+	const LLVector4a& normal = vf.mNormals[0];
 	const LLVector4a& tangent = vf.mTangents[0];
 
-	LLVector4a binormal4a;
-	binormal4a.setCross3(normal4a, tangent);
-	binormal4a.mul(tangent.getF32ptr()[3]);
+	LLVector4a binormal;
+	binormal.setCross3(normal, tangent);
+	binormal.mul(tangent.getF32ptr()[3]);
 
 	LLVector2 projected_binormal;
-	planarProjection(projected_binormal, normal4a, *vf.mCenter, binormal4a);
+	planarProjection(projected_binormal, normal, *vf.mCenter, binormal);
 	projected_binormal -= LLVector2(0.5f, 0.5f); // this normally happens in xform()
 	*scale = projected_binormal.length();
 	// rotate binormal to match what planarProjection() thinks it is,
@@ -1004,19 +1004,15 @@ void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_po
 	F32 ang = acos(projected_binormal.mV[VY]);
 	ang = (projected_binormal.mV[VX] < 0.f) ? -ang : ang;
 
-	LLMatrix4a rot = gGL.genRot(ang, normal4a);
-	rot.rotate(binormal4a, binormal4a);
+	gGL.genRot(ang, normal).rotate(binormal, binormal);
 
 	LLVector4a x_axis;
-	x_axis.setCross3(binormal4a, normal4a);
+	x_axis.setCross3(binormal, normal);
 
-	LLQuaternion2 local_rot(LLQuaternion( LLVector3(x_axis.getF32ptr()), LLVector3(binormal4a.getF32ptr()), LLVector3(normal4a.getF32ptr()) ));
+	//VECTORIZE THIS
+	LLQuaternion local_rot(LLVector3(x_axis.getF32ptr()), LLVector3(binormal.getF32ptr()), LLVector3(normal.getF32ptr()));
+	*face_rot = local_rot * LLMatrix4(vol_mat.getF32ptr()).quaternion();
 
-	LLMatrix4 vol_mat2(vol_mat.getF32ptr());
-
-	local_rot.mul(LLQuaternion2(vol_mat2.quaternion()));
-
-	*face_rot = LLQuaternion(local_rot.getVector4a().getF32ptr());
 	face_pos->set(vol_mat.getRow<VW>().getF32ptr());
 }
 
