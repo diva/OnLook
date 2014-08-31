@@ -628,7 +628,7 @@ class WindowsSetup(PlatformSetup):
 
     def run(self, command, name=None):
         '''Run a program.  If the program fails, raise an exception.'''
-        ret = os.system(command)
+        ret = os.system(command.encode('utf-8'))
         if ret:
             if name is None:
                 name = command.split(None, 1)[0]
@@ -662,7 +662,7 @@ class WindowsSetup(PlatformSetup):
                           os.path.join(build_dir,'Singularity.sln') +
                           ' --config ' + self.build_type +
                           ' --startup secondlife-bin')
-            print 'Running %r in %r' % (vstool_cmd, getcwd())
+            print 'Running vstool %r in %r' % (vstool_cmd, getcwd())
             self.run(vstool_cmd)        
             print >> open(stamp, 'w'), self.build_type
         
@@ -676,11 +676,11 @@ class WindowsSetup(PlatformSetup):
                 if targets:
                     for t in targets:
                         cmd = '%s /project %s %s' % (build_cmd, t, ' '.join(opts))
-                        print 'Running %r in %r' % (cmd, d)
+                        print 'Running build(targets) %r in %r' % (cmd, d)
                         self.run(cmd)
                 else:
                     cmd = '%s %s' % (build_cmd, ' '.join(opts))
-                    print 'Running %r in %r' % (cmd, d)
+                    print 'Running build %r in %r' % (cmd, d)
                     self.run(cmd)
             finally:
                 os.chdir(cwd)
