@@ -3973,7 +3973,8 @@ bool LLAgent::teleportCore(bool is_local)
 	LLFloaterWorldMap::hide();
 
 	// hide land floater too - it'll be out of date
-	LLFloaterLand::hideInstance();
+	if (LLFloaterLand::findInstance())
+		LLFloaterLand::hideInstance();
 
 	LLViewerParcelMgr::getInstance()->deselectLand();
 	LLViewerMediaFocus::getInstance()->clearFocus();
