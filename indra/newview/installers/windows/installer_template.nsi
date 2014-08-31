@@ -77,8 +77,8 @@ Name "${VIEWERNAME}"
 SubCaption 0 $(LicenseSubTitleSetup)	; override "license agreement" text
 
 BrandingText "Prepare to Implode!"						; bottom of window text
-Icon          %%SOURCE%%\installers\windows\${INSTALL_ICON}
-UninstallIcon %%SOURCE%%\installers\windows\${UNINSTALL_ICON}
+Icon          "%%SOURCE%%\installers\windows\${INSTALL_ICON}"
+UninstallIcon "%%SOURCE%%\installers\windows\${UNINSTALL_ICON}"
 WindowIcon off							; show our icon in left corner
 # BGGradient 9090b0 000000 notext
 CRCCheck on								; make sure CRC is OK

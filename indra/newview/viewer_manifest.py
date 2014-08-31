@@ -453,14 +453,14 @@ class WindowsManifest(ViewerManifest):
         try:
             import _winreg as reg
             NSIS_path = reg.QueryValue(reg.HKEY_LOCAL_MACHINE, r"SOFTWARE\NSIS\Unicode") + '\\makensis.exe'
-            self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+            self.run_command('"' + proper_windows_path(NSIS_path) + '" "' + self.dst_path_of(tempfile) + '"')
         except:
             try:
                 NSIS_path = os.environ['ProgramFiles'] + '\\NSIS\\Unicode\\makensis.exe'
-                self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+                self.run_command('"' + proper_windows_path(NSIS_path) + '" "' + self.dst_path_of(tempfile) + '"')
             except:
                 NSIS_path = os.environ['ProgramFiles(X86)'] + '\\NSIS\\Unicode\\makensis.exe'
-                self.run_command('"' + proper_windows_path(NSIS_path) + '" ' + self.dst_path_of(tempfile))
+                self.run_command('"' + proper_windows_path(NSIS_path) + '" "' + self.dst_path_of(tempfile) + '"')
         # self.remove(self.dst_path_of(tempfile))
         # If we're on a build machine, sign the code using our Authenticode certificate. JC
         sign_py = os.path.expandvars("{SIGN_PY}")
