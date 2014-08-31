@@ -730,7 +730,7 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 //-----------------------------------------------------------------------------
 // CurlSocketInfo
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 #undef AI_CASE_RETURN
 #define AI_CASE_RETURN(x) case x: return #x;
 static char const* action_str(int action)
@@ -2373,7 +2373,7 @@ int BufferedCurlEasyRequest::curlProgressCallback(void* user_data, double dltota
   return 0;
 }
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size, void* user_ptr)
 {
   BufferedCurlEasyRequest* request = (BufferedCurlEasyRequest*)user_ptr;
@@ -2441,7 +2441,6 @@ int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size,
   }
 #endif
 
-#ifdef CWDEBUG
   using namespace ::libcwd;
   std::ostringstream marker;
   marker << (void*)request->get_lockobj() << ' ';
@@ -2450,14 +2449,6 @@ int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size,
   if (!debug::channels::dc::curlio.is_on())
 	debug::channels::dc::curlio.on();
   LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
-#else
-  if (infotype == CURLINFO_TEXT)
-  {
-	while (size > 0 && (buf[size - 1] == '\r' ||  buf[size - 1] == '\n'))
-	  --size;
-  }
-  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio)
-#endif
   switch (infotype)
   {
 	case CURLINFO_TEXT:
@@ -2535,12 +2526,10 @@ int debug_callback(CURL* handle, curl_infotype infotype, char* buf, size_t size,
   else
 	LibcwDoutStream << size << " bytes";
   LibcwDoutScopeEnd;
-#ifdef CWDEBUG
   libcw_do.pop_marker();
-#endif
   return 0;
 }
-#endif // defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#endif // CWDEBUG
 
 } // namespace AICurlPrivate
 

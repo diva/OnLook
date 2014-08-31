@@ -1261,6 +1261,7 @@ void open_inventory_offer(const uuid_vec_t& objects, const std::string& from_nam
 			LLInventoryView::showAgentInventory(TRUE);
 		}
 
+		if (!gSavedSettings.getBOOL("LiruHighlightNewInventory")) return;
 		////////////////////////////////////////////////////////////////////////////////
 		// Highlight item
 		LL_DEBUGS("Messaging") << "Highlighting" << obj_id  << LL_ENDL;

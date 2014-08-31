@@ -330,7 +330,7 @@ public:
 	bool mDebugAdvanceStatePending;				// True while advance_state() was called by not handled yet.
 	bool mDebugRefCalled;						// True when ref() is called (or will be called within the critial area of mMultiplexMutex).
 #endif
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
   protected:
 	bool mSMDebug;								// Print debug output only when true.
 #endif
@@ -343,7 +343,7 @@ public:
 		mThreadId(AIThreadID::none), mDebugLastState(bs_killed), mDebugShouldRun(false), mDebugAborted(false), mDebugContPending(false),
 		mDebugSetStatePending(false), mDebugAdvanceStatePending(false), mDebugRefCalled(false),
 #endif
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 		mSMDebug(debug),
 #endif
 		mRuntime(0)
@@ -428,7 +428,7 @@ public:
 
 	// Return stringified state, for debugging purposes.
 	char const* state_str(base_state_type state);
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	char const* event_str(event_type event);
 #endif
 

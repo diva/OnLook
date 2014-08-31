@@ -366,7 +366,7 @@ void initCurl(void)
 	if (ssl_version.find("OpenSSL") != std::string::npos)
 	  gSSLlib = ssl_openssl;										// See http://www.openssl.org/docs/crypto/threads.html#DESCRIPTION
 	else if (ssl_version.find("GnuTLS") != std::string::npos)
-	  gSSLlib = ssl_gnutls;											// See http://www.gnu.org/software/gnutls/manual/html_node/Thread-safety.html
+	  gSSLlib = ssl_gnutls;											// See http://www.gnutls.org/manual/html_node/Thread-safety.html#Thread-safety
 	else if (ssl_version.find("NSS") != std::string::npos)
 	  gSSLlib = ssl_nss;											// Supposedly thread-safe without any requirements.
 
@@ -387,10 +387,10 @@ void initCurl(void)
 	  }
 	  case ssl_gnutls:
 	  {
-		// I don't think we ever get here, do we? --Aleric
-		llassert_always(gSSLlib != ssl_gnutls);
-		// If we do, then didn't curl_global_init already call gnutls_global_init?
-		// It seems there is nothing to do for us here.
+		// Prior to GnuTLS version 3.3.0 mutex locks are setup by calling gnutls_global_init,
+		// however curl_global_init already called that for us.
+		// There is nothing to do for us here.
+		break;
 	  }
 	  case ssl_nss:
 	  {
@@ -527,7 +527,7 @@ namespace AICurlPrivate {
 
 using AICurlInterface::Stats;
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 // CURLOPT_DEBUGFUNCTION function.
 extern int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size, void* user_ptr);
 #endif
@@ -1087,7 +1087,10 @@ void CurlEasyRequest::applyDefaultOptions(void)
 {
   CertificateAuthority_rat CertificateAuthority_r(gCertificateAuthority);
   setoptString(CURLOPT_CAINFO, CertificateAuthority_r->file);
-  setSSLCtxCallback(&curlCtxCallback, NULL);
+  if (gSSLlib == ssl_openssl)
+  {
+	setSSLCtxCallback(&curlCtxCallback, NULL);
+  }
   setopt(CURLOPT_NOSIGNAL, 1);
   // Cache DNS look ups an hour. If we set it smaller we risk frequent connect timeouts in cases where DNS look ups are slow.
   setopt(CURLOPT_DNS_CACHE_TIMEOUT, 3600);
@@ -1181,7 +1184,7 @@ void CurlEasyRequest::set_timeout_opts(void)
 void CurlEasyRequest::create_timeout_object(void)
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = NULL;
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
   lockobj = static_cast<BufferedCurlEasyRequest*>(this)->get_lockobj();
 #endif
   mTimeout = new curlthread::HTTPTimeout(mTimeoutPolicy, lockobj);
@@ -1352,7 +1355,7 @@ void BufferedCurlEasyRequest::aborted(U32 http_status, std::string const& reason
   }
 }
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 static AIPerServicePtr sConnections[64];
 
 void BufferedCurlEasyRequest::connection_established(int connectionnr)

@@ -149,7 +149,7 @@ void AIServiceBar::draw()
 	start += LLFontGL::getFontMonospace()->getWidth(text);
   }
   start = mHTTPView->updateColumn(mc_col, start);
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
   text = llformat(" | %d,%d,%d/%d", total_added, event_polls, established_connections, concurrent_connections);
 #else
   text = llformat(" | %d/%d", total_added, concurrent_connections);

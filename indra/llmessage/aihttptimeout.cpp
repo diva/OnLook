@@ -86,7 +86,7 @@ public:
 #include "aihttptimeout.h"
 
 // If this is set, treat dc::curlio as off in the assertion below.
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 bool gCurlIo;
 #endif
 
@@ -180,7 +180,7 @@ void HTTPTimeout::upload_finished(void)
 //                                                                                             ^  ^   ^     ^    ^  ^ ^   ^
 //                                                                                             |  |   |     |    |  | |   |
 bool HTTPTimeout::data_received(size_t n/*,*/
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	ASSERT_ONLY_COMMA(bool upload_error_status)
 #else
 	ASSERT_ONLY_COMMA(bool)

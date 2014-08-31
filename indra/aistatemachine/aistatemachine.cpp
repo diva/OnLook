@@ -407,7 +407,7 @@ void AIEngine::setMaxCount(F32 StateMachineMaxTime)
   sMaxCount = calc_clock_frequency() * StateMachineMaxTime / 1000;
 }
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 char const* AIStateMachine::event_str(event_type event)
 {
   switch(event)

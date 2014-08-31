@@ -91,14 +91,14 @@ class HTTPTimeout : public LLRefCount {
 	static F64 const sClockWidth_10ms;			// Time between two clock ticks in 10 ms units.
 	static F64 const sClockWidth_40ms;			// Time between two clock ticks in 40 ms units.
 	static U64 sTime_10ms;						// Time since the epoch in 10 ms units.
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	ThreadSafeBufferedCurlEasyRequest* mLockObj;
 #endif
 
   public:
 	HTTPTimeout(AIHTTPTimeoutPolicy const* policy, ThreadSafeBufferedCurlEasyRequest* lock_obj) :
 		mPolicy(policy), mNothingReceivedYet(true), mLowSpeedOn(false), mLastBytesSent(false), mBeingRedirected(false), mUploadFinished(false), mStalled((U64)-1)
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 		, mLockObj(lock_obj)
 #endif
 		{ }
@@ -127,7 +127,7 @@ class HTTPTimeout : public LLRefCount {
 	// Called from BufferedCurlEasyRequest::processOutput if a timeout occurred.
 	void print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url);
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 	void* get_lockobj(void) const { return mLockObj; }
 #endif
 
@@ -146,7 +146,7 @@ class HTTPTimeout : public LLRefCount {
 } // namespace curlthread
 } // namespace AICurlPrivate
 
-#if defined(CWDEBUG) || defined(DEBUG_CURLIO)
+#ifdef CWDEBUG
 extern bool gCurlIo;
 #endif
 
