@@ -358,11 +358,11 @@ class WindowsManifest(ViewerManifest):
             if installed_dir != out_path:
                 if install:
                     out_path = installed_dir
-                    result += 'SetOutPath ' + out_path + '\n'
+                    result += 'SetOutPath "' + out_path + '"\n'
             if install:
                 result += 'File "' + pkg_file + '"\n'
             else:
-                result += 'Delete ' + wpath(os.path.join('$INSTDIR', rel_file)) + '\n'
+                result += 'Delete "' + wpath(os.path.join('$INSTDIR', rel_file)) + '"\n'
 
         # at the end of a delete, just rmdir all the directories
         if not install:
