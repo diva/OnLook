@@ -394,14 +394,14 @@ class LLManifest(object):
         debugging/informational purpoases, prints out the command's
         output as it is received."""
         print "Running command:", command
-        fd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        fd = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         lines = []
         while True:
-            lines.append(fd.stdout.readline().rstrip('\n'))
+            lines.append(fd.stdout.readline())
             if lines[-1] == '':
                 break
             else:
-                print lines[-1],
+                print lines[-1].rstrip('\n'),
         output = ''.join(lines)
         if fd.returncode:
             raise RuntimeError(

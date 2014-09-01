@@ -628,7 +628,7 @@ class WindowsSetup(PlatformSetup):
 
     def run(self, command, name=None):
         '''Run a program.  If the program fails, raise an exception.'''
-        ret = os.system(command.encode('utf-8'))
+        ret = os.system(command)
         if ret:
             if name is None:
                 name = command.split(None, 1)[0]
