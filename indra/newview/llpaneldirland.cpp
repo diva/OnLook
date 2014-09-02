@@ -126,7 +126,8 @@ BOOL LLPanelDirLand::postBuild()
 		}
 	}
 
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_LAND));
+	LLViewerRegion* region(gAgent.getRegion());
+	getChildView("filter_gaming")->setVisible(region && (region->getGamingFlags() & REGION_GAMING_PRESENT) && !(region->getGamingFlags() & REGION_GAMING_HIDE_FIND_LAND));
 
 	return TRUE;
 }

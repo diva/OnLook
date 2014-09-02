@@ -119,7 +119,8 @@ BOOL LLPanelDirClassified::postBuild()
 	// Don't do this every time we open find, it's expensive; require clicking 'search'
 	//requestClassified();
 
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_CLASSIFIEDS));
+	LLViewerRegion* region(gAgent.getRegion());
+	getChildView("filter_gaming")->setVisible(region && (region->getGamingFlags() & REGION_GAMING_PRESENT) && !(region->getGamingFlags() & REGION_GAMING_HIDE_FIND_CLASSIFIEDS));
 
 	return TRUE;
 }

@@ -93,7 +93,8 @@ BOOL LLPanelDirEvents::postBuild()
 	}
 	gDisplayEventHack = FALSE;
 
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_EVENTS));
+	LLViewerRegion* region(gAgent.getRegion());
+	getChildView("filter_gaming")->setVisible(region && (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_EVENTS));
 
 	return TRUE;
 }

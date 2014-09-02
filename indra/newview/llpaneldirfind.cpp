@@ -250,7 +250,10 @@ BOOL LLPanelDirFind::postBuild()
 	}
 
 	if (LLUICtrl* ctrl = findChild<LLUICtrl>("filter_gaming"))
-		ctrl->setVisible(gAgent.getRegion() && (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
+	{
+		const LLViewerRegion* region(gAgent.getRegion());
+		ctrl->setVisible(region && (region->getGamingFlags() & REGION_GAMING_PRESENT) && !(region->getGamingFlags() & REGION_GAMING_HIDE_FIND_ALL));
+	}
 
 	return TRUE;
 }

@@ -99,7 +99,8 @@ BOOL LLPanelDirPlaces::postBuild()
 		childSetEnabled("Category", true);
 	}
 	
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_SIMS));
+	LLViewerRegion* region(gAgent.getRegion());
+	getChildView("filter_gaming")->setVisible(region && (region->getGamingFlags() & REGION_GAMING_PRESENT) && !(region->getGamingFlags() & REGION_GAMING_HIDE_FIND_SIMS));
 
 	// Don't prepopulate the places list, as it hurts the database as of 2006-12-04. JC
 	// initialQuery();

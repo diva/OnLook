@@ -61,7 +61,8 @@ BOOL LLPanelDirGroups::postBuild()
 	childDisable("Search");
 	setDefaultBtn( "Search" );
 
-	childSetVisible("filter_gaming", (gAgent.getRegion()->getGamingFlags() & REGION_GAMING_PRESENT) && !(gAgent.getRegion()->getGamingFlags() & REGION_GAMING_HIDE_FIND_GROUPS));
+	LLViewerRegion* region(gAgent.getRegion());
+	getChildView("filter_gaming")->setVisible(region && (region->getGamingFlags() & REGION_GAMING_PRESENT) && !(region->getGamingFlags() & REGION_GAMING_HIDE_FIND_GROUPS));
 
 	return TRUE;
 }
