@@ -293,8 +293,8 @@ void LLViewerCamera::setPerspective(BOOL for_selection,
 		int pos_y = mZoomSubregion / llceil(mZoomFactor);
 		int pos_x = mZoomSubregion - (pos_y*llceil(mZoomFactor));
 
-		proj_mat.applyScale_affine(mZoomFactor,mZoomFactor,1.f);
 		proj_mat.applyTranslation_affine(offset - (F32)pos_x * 2.f, offset - (F32)pos_y * 2.f, 0.f);
+		proj_mat.applyScale_affine(mZoomFactor,mZoomFactor,1.f);
 	}
 
 	calcProjection(z_far); // Update the projection matrix cache

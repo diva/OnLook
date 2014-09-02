@@ -1004,7 +1004,7 @@ void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_po
 	F32 ang = acos(projected_binormal.mV[VY]);
 	ang = (projected_binormal.mV[VX] < 0.f) ? -ang : ang;
 
-	gGL.genRot(ang, normal).rotate(binormal, binormal);
+	gGL.genRot(RAD_TO_DEG * ang, normal).rotate(binormal, binormal);
 
 	LLVector4a x_axis;
 	x_axis.setCross3(binormal, normal);
