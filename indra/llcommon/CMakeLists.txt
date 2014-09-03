@@ -270,6 +270,9 @@ list(APPEND llcommon_SOURCE_FILES ${cwdebug_SOURCE_FILES})
 list(APPEND llcommon_SOURCE_FILES ${llcommon_HEADER_FILES})
 
 add_library (llcommon SHARED ${llcommon_SOURCE_FILES})
+if(WINDOWS)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
+endif(WINDOWS)
 add_dependencies(llcommon prepare)
 target_link_libraries(
     llcommon
