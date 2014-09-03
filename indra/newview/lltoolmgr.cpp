@@ -330,6 +330,11 @@ void LLToolMgr::toggleBuildMode()
 		// avoid spurious avatar movements
 		LLViewerJoystick::getInstance()->setNeedsReset();
 
+		if (gFocusMgr.getKeyboardFocus()) gFloaterTools->setFocus(true); // Focus isn't on the world, give it to the build tools.
+	}
+..	else if (gFloaterTools->getVisible() && !gFloaterTools->hasFocus() && gFocusMgr.getKeyboardFocus()) // Build tools is open, but not the focused floater, give it focus.
+	{
+		gFloaterTools->setFocus(true);
 	}
 	else
 	{
