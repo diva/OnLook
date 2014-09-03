@@ -2399,6 +2399,7 @@ void LLViewerWindow::reshape(S32 width, S32 height)
 		// Inform lower views of the change
 		// round up when converting coordinates to make sure there are no gaps at edge of window
 		LLView::sForceReshape = display_scale_changed;
+		if (/*display_scale_changed && */gSavedSettings.getBOOL("LiruResizeRootWithScreen")) // Singu Note: Nasty hack to keep floaters from repositioning on window resize.
 		mRootView->reshape(llceil((F32)width / mDisplayScale.mV[VX]), llceil((F32)height / mDisplayScale.mV[VY]));
 		LLView::sForceReshape = FALSE;
 
