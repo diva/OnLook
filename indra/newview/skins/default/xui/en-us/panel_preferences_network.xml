@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel border="true" bottom="-409" height="408" label="Network" left="102" name="network" width="517">
 	<text bottom="-20" follows="top" height="10" left="12" name="text_box">Maximum Bandwidth:</text>
-	<slider bottom_delta="-4" left_delta="110" can_edit_text="true" decimal_digits="0" follows="top" height="15" increment="10" initial_val="50" max_val="5000" min_val="50" name="max_bandwidth" show_text="true" value="500" width="180"/>
+	<slider bottom_delta="-4" left_delta="110" can_edit_text="true" decimal_digits="0" follows="top" height="15" increment="10" initial_val="50" max_val="10000" min_val="50" name="max_bandwidth" show_text="true" value="500" width="180"/>
 	<text bottom_delta="4" follows="top" height="10" left_delta="186" name="text_box2">kbps (kilobits per second)</text>
 	<text bottom_delta="-20" follows="top" height="10" left="12" name="text_box3">Texture Bandwidth:</text>
-	<slider bottom_delta="-4" left_delta="110" can_edit_text="true" decimal_digits="0" follows="top" height="15" increment="10" initial_val="50" max_val="5000" min_val="50" name="tex_bandwidth" show_text="true" value="500" width="180"/>
+	<slider bottom_delta="-4" left_delta="110" can_edit_text="true" decimal_digits="0" follows="top" height="15" increment="10" initial_val="50" max_val="10000" min_val="50" name="tex_bandwidth" show_text="true" value="500" width="180"/>
 	<text bottom_delta="4" follows="top" height="10" left_delta="186" name="text_box4">kbps (kilobits per second)</text>
 	<text bottom_delta="-25" follows="top" height="10" left="12" name="use_http_for">Use HTTP for:</text>
 	<check_box bottom_delta="-5" follows="top" left_delta="90" label="Textures" name="http_textures"/>
