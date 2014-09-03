@@ -836,8 +836,7 @@ void LLVivoxVoiceClient::stateMachine()
 					{
 						// vivox executable exists.  Build the command line and launch the daemon.
 						std::string args, cmd;
-						// SLIM SDK: these arguments are no longer necessary.
-//						std::string args = " -p tcp -h -c";
+
 						std::string loglevel = gSavedSettings.getString("VivoxDebugLevel");
 						if(loglevel.empty())
 						{
