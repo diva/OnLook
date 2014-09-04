@@ -94,6 +94,7 @@ public:
 private:
 	static void performQueryOn(const std::string& name, const std::string& search_text);
 	static void performQueryOn2(const std::string& name, const std::string& search_text);
+	static void start();
 	static void showPanel(const std::string& tabname);
 	/*virtual*/ void onClose(bool app_quitting);
 	void focusCurrentPanel();
