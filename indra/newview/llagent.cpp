@@ -103,6 +103,7 @@
 
 #include "lluictrlfactory.h" //For LLUICtrlFactory::getLayeredXMLNode
 
+#include "hippolimits.h" // for getMaxAgentGroups
 // [RLVa:KB] - Checked: 2011-11-04 (RLVa-1.4.4a)
 #include "rlvactions.h"
 #include "rlvhandler.h"
@@ -246,6 +247,7 @@ protected:
 private:
 
 };
+
 //--------------------------------------------------------------------
 // Statics
 //
@@ -272,11 +274,10 @@ void LLAgentFriendObserver::changed(U32 mask)
 	}
 }
 
-// static
-void LLAgent::parcelChangedCallback()
+
+void LLAgent::setCanEditParcel() // called via mParcelChangedSignal
 {
 	bool can_edit = LLToolMgr::getInstance()->canEdit();
-
 	gAgent.mCanEditParcel = can_edit;
 }
 
@@ -435,6 +436,8 @@ LLAgent::LLAgent() :
 		mControlsTakenCount[i] = 0;
 		mControlsTakenPassedOnCount[i] = 0;
 	}
+
+	addParcelChangedCallback(&setCanEditParcel);
 }
 
 // Requires gSavedSettings to be initialized.
@@ -444,9 +447,9 @@ LLAgent::LLAgent() :
 void LLAgent::init()
 {
 
+	// *Note: this is where LLViewerCamera::getInstance() used to be constructed.
+
 	setFlying( gSavedSettings.getBOOL("FlyingAtExit") );
-
-
 
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
@@ -457,8 +460,6 @@ void LLAgent::init()
 	mLastKnownResponseMaturity = static_cast<U8>(gSavedSettings.getU32("PreferredMaturity"));
 	mLastKnownRequestMaturity = mLastKnownResponseMaturity;
 	mIsDoSendMaturityPreferenceToServer = true;
-
-	LLViewerParcelMgr::getInstance()->addAgentParcelChangedCallback(boost::bind(&LLAgent::parcelChangedCallback));
 
 	if (!mTeleportFinishedSlot.connected())
 	{
@@ -706,8 +707,7 @@ BOOL LLAgent::canFly()
 
 	// <edit>
 	static const LLCachedControl<bool> ascent_fly_always_enabled("AscentFlyAlwaysEnabled",false);
-	if(ascent_fly_always_enabled) 
-		return TRUE;
+	if(ascent_fly_always_enabled) return TRUE;
 	// </edit>
 
 	LLViewerRegion* regionp = getRegion();
@@ -759,10 +759,7 @@ void LLAgent::setFlying(BOOL fly)
 	if (fly)
 	{
 // [RLVa:KB] - Checked: 2010-03-02 (RLVa-1.2.0d) | Modified: RLVa-1.0.0c
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_FLY))
-		{
-			return;
-		}
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_FLY)) return;
 // [/RLVa:KB]
 
 		BOOL was_flying = getFlying();
@@ -858,22 +855,30 @@ void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
 	}
 }
 
+void LLAgent::changeParcels()
+{
+	LL_DEBUGS("AgentLocation") << "Calling ParcelChanged callbacks" << LL_ENDL;
+	// Notify anything that wants to know about parcel changes
+	mParcelChangedSignal();
+}
+
+boost::signals2::connection LLAgent::addParcelChangedCallback(parcel_changed_callback_t cb)
+{
+	return mParcelChangedSignal.connect(cb);
+}
+
 //-----------------------------------------------------------------------------
 // setRegion()
 //-----------------------------------------------------------------------------
 void LLAgent::setRegion(LLViewerRegion *regionp)
 {
-	bool teleport = true;
-
 	llassert(regionp);
 	if (mRegionp != regionp)
 	{
-		// std::string host_name;
-		// host_name = regionp->getHost().getHostName();
 
 		std::string ip = regionp->getHost().getString();
-		llinfos << "Moving agent into region: " << regionp->getName()
-				<< " located at " << ip << llendl;
+		LL_INFOS("AgentLocation") << "Moving agent into region: " << regionp->getName()
+				<< " located at " << ip << LL_ENDL;
 		if (mRegionp)
 		{
 			// NaCl - Antispam Registry
@@ -905,9 +910,6 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 			{
 				gSky.mVOGroundp->setRegion(regionp);
 			}
-
-			// Notify windlight managers
-			teleport = (gAgent.getTeleportState() != LLAgent::TELEPORT_NONE);
 		}
 		else
 		{
@@ -929,6 +931,7 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 		// Pass new region along to metrics components that care about this level of detail.
 		LLAppViewer::metricsUpdateRegion(regionp->getHandle());
 	}
+
 	mRegionp = regionp;
 
 	// Must shift hole-covering water object locations because local
@@ -943,33 +946,18 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 
 	LLSelectMgr::getInstance()->updateSelectionCenter();
 
-	if (teleport)
-	{
-		LLEnvManagerNew::instance().onTeleport();
-	}
-	else
-	{
-		LLEnvManagerNew::instance().onRegionCrossing();
-	}
-
-	// If the newly entered region is using server bakes, and our
-	// current appearance is non-baked, request appearance update from
-	// server.
-	if (mRegionp->capabilitiesReceived())
-	{
-		handleServerBakeRegionTransition(mRegionp->getRegionID());
-	}
-	else
-	{
-		// Need to handle via callback after caps arrive.
-		mRegionp->setCapabilitiesReceivedCallback(boost::bind(&LLAgent::handleServerBakeRegionTransition,this,_1));
-	}
+	LL_DEBUGS("AgentLocation") << "Calling RegionChanged callbacks" << LL_ENDL;
+	mRegionChangedSignal();
 }
 
 
 //-----------------------------------------------------------------------------
 // getRegion()
 //-----------------------------------------------------------------------------
+LLViewerRegion *LLAgent::getRegion() const
+{
+	return mRegionp;
+}
 
 const LLHost& LLAgent::getRegionHost() const
 {
@@ -981,6 +969,16 @@ const LLHost& LLAgent::getRegionHost() const
 	{
 		return LLHost::invalid;
 	}
+}
+
+boost::signals2::connection LLAgent::addRegionChangedCallback(const region_changed_signal_t::slot_type& cb)
+{
+	return mRegionChangedSignal.connect(cb);
+}
+
+void LLAgent::removeRegionChangedCallback(boost::signals2::connection callback)
+{
+	mRegionChangedSignal.disconnect(callback);
 }
 
 //-----------------------------------------------------------------------------
@@ -1906,12 +1904,6 @@ std::ostream& operator<<(std::ostream &s, const LLAgent &agent)
 	return s;
 }
 
-
-// ------------------- Beginning of legacy LLCamera hack ----------------------
-// This section is included for legacy LLCamera support until
-// it is no longer needed.  Some legacy code must exist in 
-// non-legacy functions, and is labeled with "// legacy" comments.
-
 // TRUE if your own avatar needs to be rendered.  Usually only
 // in third person and build.
 //-----------------------------------------------------------------------------
@@ -1950,8 +1942,8 @@ void LLAgent::startTyping()
 
 	if (mChatTimer.getElapsedTimeF32() < 2.f)
 	{
-		LLVOAvatar* chatter = gObjectList.findAvatar(mLastChatterID);
-		if (chatter)
+		LLViewerObject* chatter = gObjectList.findObject(mLastChatterID);
+		if (chatter && chatter->isAvatar())
 		{
 			gAgentCamera.setLookAt(LOOKAT_TARGET_RESPOND, chatter, LLVector3::zero);
 		}
@@ -1961,7 +1953,8 @@ void LLAgent::startTyping()
 	{
 		sendAnimationRequest(ANIM_AGENT_TYPE, ANIM_REQUEST_START);
 	}
-	gChatBar->sendChatFromViewer("", CHAT_TYPE_START, FALSE);
+	gChatBar->
+			sendChatFromViewer("", CHAT_TYPE_START, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -1973,7 +1966,8 @@ void LLAgent::stopTyping()
 	{
 		clearRenderState(AGENT_STATE_TYPING);
 		sendAnimationRequest(ANIM_AGENT_TYPE, ANIM_REQUEST_STOP);
-		gChatBar->sendChatFromViewer("", CHAT_TYPE_STOP, FALSE);
+		gChatBar->
+				sendChatFromViewer("", CHAT_TYPE_STOP, FALSE);
 	}
 }
 
@@ -2067,6 +2061,7 @@ void LLAgent::endAnimationUpdateUI()
 			gFloaterView->popVisibleAll(skip_list);
 			mViewsPushed = FALSE;
 		}
+
 
 		gAgentCamera.setLookAt(LOOKAT_TARGET_CLEAR);
 		if( gMorphView )
@@ -2223,13 +2218,6 @@ void LLAgent::endAnimationUpdateUI()
 		LLToolMgr::getInstance()->setCurrentToolset(gFaceEditToolset);
 
 		LLFloaterMap::getInstance()->pushVisible(FALSE);
-		/*
-		LLView *view;
-		for (view = gFloaterView->getFirstChild(); view; view = gFloaterView->getNextChild())
-		{
-			view->pushVisible(FALSE);
-		}
-		*/
 
 		if( gMorphView )
 		{
@@ -2567,28 +2555,30 @@ int LLAgent::convertTextToMaturity(char text)
 	return LLAgentAccess::convertTextToMaturity(text);
 }
 
-extern AIHTTPTimeoutPolicy maturityPreferences_timeout;
 class LLMaturityPreferencesResponder : public LLHTTPClient::ResponderWithResult
 {
+	LOG_CLASS(LLMaturityPreferencesResponder);
 public:
 	LLMaturityPreferencesResponder(LLAgent *pAgent, U8 pPreferredMaturity, U8 pPreviousMaturity);
 	virtual ~LLMaturityPreferencesResponder();
 
-	/*virtual*/ void httpSuccess(void);
-	/*virtual*/ void httpFailure(void);
+protected:
+	virtual void httpSuccess();
+	virtual void httpFailure();
 
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return maturityPreferences_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLMaturityPreferencesResponder"; }
+protected:
 
 private:
-	U8 parseMaturityFromServerResponse(const LLSD &pContent);
+	U8 parseMaturityFromServerResponse(const LLSD &pContent) const;
 
 	LLAgent                                  *mAgent;
 	U8                                       mPreferredMaturity;
 	U8                                       mPreviousMaturity;
 };
 
-LLMaturityPreferencesResponder::LLMaturityPreferencesResponder(LLAgent *pAgent, U8 pPreferredMaturity, U8 pPreviousMaturity) :
+LLMaturityPreferencesResponder::LLMaturityPreferencesResponder(LLAgent *pAgent, U8 pPreferredMaturity, U8 pPreviousMaturity)
+	:
 	mAgent(pAgent),
 	mPreferredMaturity(pPreferredMaturity),
 	mPreviousMaturity(pPreviousMaturity)
@@ -2599,75 +2589,49 @@ LLMaturityPreferencesResponder::~LLMaturityPreferencesResponder()
 {
 }
 
-void LLMaturityPreferencesResponder::httpSuccess(void)
+void LLMaturityPreferencesResponder::httpSuccess()
 {
-	U8 actualMaturity = parseMaturityFromServerResponse(mContent);
+	U8 actualMaturity = parseMaturityFromServerResponse(getContent());
 
 	if (actualMaturity != mPreferredMaturity)
 	{
-		llwarns << "while attempting to change maturity preference from '" << LLViewerRegion::accessToString(mPreviousMaturity)
-			<< "' to '" << LLViewerRegion::accessToString(mPreferredMaturity) << "', the server responded with '"
-			<< LLViewerRegion::accessToString(actualMaturity) << "' [value:" << static_cast<U32>(actualMaturity) << ", llsd:"
-			<< mContent << "]" << llendl;
+		llwarns << "while attempting to change maturity preference from '"
+				   << LLViewerRegion::accessToString(mPreviousMaturity)
+				   << "' to '" << LLViewerRegion::accessToString(mPreferredMaturity) 
+				   << "', the server responded with '"
+				   << LLViewerRegion::accessToString(actualMaturity) 
+				   << "' [value:" << static_cast<U32>(actualMaturity) 
+				   << "], " << dumpResponse() << llendl;
 	}
 	mAgent->handlePreferredMaturityResult(actualMaturity);
 }
 
-void LLMaturityPreferencesResponder::httpFailure(void)
+void LLMaturityPreferencesResponder::httpFailure()
 {
-	llwarns << "while attempting to change maturity preference from '" << LLViewerRegion::accessToString(mPreviousMaturity)
-		<< "' to '" << LLViewerRegion::accessToString(mPreferredMaturity) << "', we got an error because '"
-		<< mReason << "' [status:" << mStatus << "]" << llendl;
+	llwarns << "while attempting to change maturity preference from '" 
+			   << LLViewerRegion::accessToString(mPreviousMaturity)
+			   << "' to '" << LLViewerRegion::accessToString(mPreferredMaturity) 
+			<< "', " << dumpResponse() << llendl;
 	mAgent->handlePreferredMaturityError();
 }
 
-U8 LLMaturityPreferencesResponder::parseMaturityFromServerResponse(const LLSD &pContent)
+U8 LLMaturityPreferencesResponder::parseMaturityFromServerResponse(const LLSD &pContent) const
 {
-	// stinson 05/24/2012 Pathfinding regions have re-defined the response behavior.  In the old server code,
-	// if you attempted to change the preferred maturity to the same value, the response content would be an
-	// undefined LLSD block.  In the new server code with pathfinding, the response content should always be
-	// defined.  Thus, the check for isUndefined() can be replaced with an assert after pathfinding is merged
-	// into server trunk and fully deployed.
 	U8 maturity = SIM_ACCESS_MIN;
-	if (pContent.isUndefined())
+
+	llassert(pContent.isDefined());
+	llassert(pContent.isMap());
+	llassert(pContent.has("access_prefs"));
+	llassert(pContent.get("access_prefs").isMap());
+	llassert(pContent.get("access_prefs").has("max"));
+	llassert(pContent.get("access_prefs").get("max").isString());
+	if (pContent.isDefined() && pContent.isMap() && pContent.has("access_prefs")
+		&& pContent.get("access_prefs").isMap() && pContent.get("access_prefs").has("max")
+		&& pContent.get("access_prefs").get("max").isString())
 	{
-		maturity = mPreferredMaturity;
-	}
-	else
-	{
-		llassert(!pContent.isUndefined());
-		llassert(pContent.isMap());
-	
-		if (!pContent.isUndefined() && pContent.isMap())
-		{
-			// stinson 05/24/2012 Pathfinding regions have re-defined the response syntax.  The if statement catches
-			// the new syntax, and the else statement catches the old syntax.  After pathfinding is merged into
-			// server trunk and fully deployed, we can remove the else statement.
-			if (pContent.has("access_prefs"))
-			{
-				llassert(pContent.has("access_prefs"));
-				llassert(pContent.get("access_prefs").isMap());
-				llassert(pContent.get("access_prefs").has("max"));
-				llassert(pContent.get("access_prefs").get("max").isString());
-				if (pContent.get("access_prefs").isMap() && pContent.get("access_prefs").has("max") &&
-					pContent.get("access_prefs").get("max").isString())
-				{
-					LLSD::String actualPreference = pContent.get("access_prefs").get("max").asString();
-					LLStringUtil::trim(actualPreference);
-					maturity = LLViewerRegion::shortStringToAccess(actualPreference);
-				}
-			}
-			else if (pContent.has("max"))
-			{
-				llassert(pContent.get("max").isString());
-				if (pContent.get("max").isString())
-				{
-					LLSD::String actualPreference = pContent.get("max").asString();
-					LLStringUtil::trim(actualPreference);
-					maturity = LLViewerRegion::shortStringToAccess(actualPreference);
-				}
-			}
-		}
+		LLSD::String actualPreference = pContent.get("access_prefs").get("max").asString();
+		LLStringUtil::trim(actualPreference);
+		maturity = LLViewerRegion::shortStringToAccess(actualPreference);
 	}
 
 	return maturity;
@@ -2802,7 +2766,7 @@ void LLAgent::sendMaturityPreferenceToServer(U8 pPreferredMaturity)
 		mLastKnownRequestMaturity = pPreferredMaturity;
 
 		// Create a response handler
-		boost::intrusive_ptr<LLMaturityPreferencesResponder> responderPtr = new LLMaturityPreferencesResponder(this, pPreferredMaturity, mLastKnownResponseMaturity);
+		boost::intrusive_ptr<LLHTTPClient::ResponderWithResult> responderPtr = boost::intrusive_ptr<LLHTTPClient::ResponderWithResult>(new LLMaturityPreferencesResponder(this, pPreferredMaturity, mLastKnownResponseMaturity));
 
 		// If we don't have a region, report it as an error
 		if (getRegion() == NULL)
@@ -2817,7 +2781,8 @@ void LLAgent::sendMaturityPreferenceToServer(U8 pPreferredMaturity)
 			// If the capability is not defined, report it as an error
 			if (url.empty())
 			{
-				responderPtr->failureResult(0U, "capability 'UpdateAgentInformation' is not defined for region", LLSD());
+				responderPtr->failureResult(0U,
+							"capability 'UpdateAgentInformation' is not defined for region", LLSD());
 			}
 			else
 			{
@@ -2881,12 +2846,11 @@ void LLAgent::handleMaturity(const LLSD &pNewValue)
 	sendMaturityPreferenceToServer(static_cast<U8>(pNewValue.asInteger()));
 }
 
+//----------------------------------------------------------------------------
+
 void LLAgent::buildFullname(std::string& name) const
 {
-	if (isAgentAvatarValid())
-	{
-		name = gAgentAvatarp->getFullname();
-	}
+	if (isAgentAvatarValid()) name = gAgentAvatarp->getFullname();
 }
 
 void LLAgent::buildFullnameAndTitle(std::string& name) const
@@ -2912,10 +2876,10 @@ BOOL LLAgent::isInGroup(const LLUUID& group_id, BOOL ignore_god_mode /* FALSE */
 	if (!ignore_god_mode && isGodlike())
 		return true;
 
-	S32 count = mGroups.count();
-	for(S32 i = 0; i < count; ++i)
+	U32 count = mGroups.size();
+	for(U32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
 			return TRUE;
 		}
@@ -2932,12 +2896,12 @@ BOOL LLAgent::hasPowerInGroup(const LLUUID& group_id, U64 power) const
 	// GP_NO_POWERS can also mean no power is enough to grant an ability.
 	if (GP_NO_POWERS == power) return FALSE;
 
-	S32 count = mGroups.count();
-	for(S32 i = 0; i < count; ++i)
+	U32 count = mGroups.size();
+	for(U32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
-			return (BOOL)((mGroups.get(i).mPowers & power) > 0);
+			return (BOOL)((mGroups[i].mPowers & power) > 0);
 		}
 	}
 	return FALSE;
@@ -2953,12 +2917,12 @@ U64 LLAgent::getPowerInGroup(const LLUUID& group_id) const
 	if (isGodlike())
 		return GP_ALL_POWERS;
 	
-	S32 count = mGroups.count();
-	for(S32 i = 0; i < count; ++i)
+	U32 count = mGroups.size();
+	for(U32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
-			return (mGroups.get(i).mPowers);
+			return (mGroups[i].mPowers);
 		}
 	}
 
@@ -2967,12 +2931,12 @@ U64 LLAgent::getPowerInGroup(const LLUUID& group_id) const
 
 BOOL LLAgent::getGroupData(const LLUUID& group_id, LLGroupData& data) const
 {
-	S32 count = mGroups.count();
+	S32 count = mGroups.size();
 	for(S32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
-			data = mGroups.get(i);
+			data = mGroups[i];
 			return TRUE;
 		}
 	}
@@ -2981,12 +2945,12 @@ BOOL LLAgent::getGroupData(const LLUUID& group_id, LLGroupData& data) const
 
 S32 LLAgent::getGroupContribution(const LLUUID& group_id) const
 {
-	S32 count = mGroups.count();
+	S32 count = mGroups.size();
 	for(S32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
-			S32 contribution = mGroups.get(i).mContribution;
+			S32 contribution = mGroups[i].mContribution;
 			return contribution;
 		}
 	}
@@ -2995,12 +2959,12 @@ S32 LLAgent::getGroupContribution(const LLUUID& group_id) const
 
 BOOL LLAgent::setGroupContribution(const LLUUID& group_id, S32 contribution)
 {
-	S32 count = mGroups.count();
+	S32 count = mGroups.size();
 	for(S32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
-			mGroups.get(i).mContribution = contribution;
+			mGroups[i].mContribution = contribution;
 			LLMessageSystem* msg = gMessageSystem;
 			msg->newMessage("SetGroupContribution");
 			msg->nextBlock("AgentData");
@@ -3018,14 +2982,13 @@ BOOL LLAgent::setGroupContribution(const LLUUID& group_id, S32 contribution)
 
 BOOL LLAgent::setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOOL list_in_profile)
 {
-	S32 count = mGroups.count();
+	S32 count = mGroups.size();
 	for(S32 i = 0; i < count; ++i)
 	{
-		LLGroupData &group = mGroups.get(i);
-		if(group.mID == group_id)
+		if(mGroups[i].mID == group_id)
 		{
-			group.mAcceptNotices = accept_notices;
-			group.mListInProfile = list_in_profile;
+			mGroups[i].mAcceptNotices = accept_notices;
+			mGroups[i].mListInProfile = list_in_profile;
 			LLMessageSystem* msg = gMessageSystem;
 			msg->newMessage("SetGroupAcceptNotices");
 			msg->nextBlock("AgentData");
@@ -3038,7 +3001,7 @@ BOOL LLAgent::setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOO
 			msg->addBOOL("ListInProfile", list_in_profile);
 			sendReliableMessage();
 
-			update_group_floaters(group.mID);
+			update_group_floaters(mGroups[i].mID);
 
 			return TRUE;
 		}
@@ -3046,6 +3009,10 @@ BOOL LLAgent::setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOO
 	return FALSE;
 }
 
+BOOL LLAgent::canJoinGroups() const
+{
+	return (S32)mGroups.size() < gHippoLimits->getMaxAgentGroups();
+}
 
 LLQuaternion LLAgent::getHeadRotation()
 {
@@ -3173,7 +3140,7 @@ void LLAgent::sendRevokePermissions(const LLUUID & target, U32 permissions)
 
 		msg->nextBlockFast(_PREHASH_Data);
 		msg->addUUIDFast(_PREHASH_ObjectID, target);		// Must be in the region
-		msg->addU32Fast(_PREHASH_ObjectPermissions, permissions);
+		msg->addS32Fast(_PREHASH_ObjectPermissions, (S32) permissions);
 
 		sendReliableMessage();
 	}
@@ -3312,9 +3279,19 @@ void LLAgent::getName(std::string& name)
 	}
 }
 
-const LLColor4 &LLAgent::getEffectColor()
+const LLColor4 LLAgent::getEffectColor()
 {
-	return *mEffectColor;
+	LLColor4 effect_color = *mEffectColor;
+
+	//<alchemy> Rainbow Particle Effects
+	static LLCachedControl<bool> AlchemyRainbowEffects(gSavedSettings, "AlchemyRainbowEffects");
+	if(AlchemyRainbowEffects)
+	{
+		LLColor3 rainbow;
+		rainbow.setHSL(fmodf((F32)LLFrameTimer::getElapsedSeconds()/4.f, 1.f), 1.f, 0.5f);
+		effect_color.set(rainbow, 1.0f);
+	}
+	return effect_color;
 }
 
 void LLAgent::setEffectColor(const LLColor4 &color)
@@ -3364,6 +3341,7 @@ BOOL LLAgent::downGrabbed() const
 
 void update_group_floaters(const LLUUID& group_id)
 {
+
 	LLGroupActions::refresh(group_id);
 
 	// update avatar info
@@ -3394,10 +3372,10 @@ void LLAgent::processAgentDropGroup(LLMessageSystem *msg, void **)
 	// Remove the group if it already exists remove it and add the new data to pick up changes.
 	LLGroupData gd;
 	gd.mID = group_id;
-	S32 index = gAgent.mGroups.find(gd);
-	if (index != -1)
+	std::vector<LLGroupData>::iterator found_it = std::find(gAgent.mGroups.begin(), gAgent.mGroups.end(), gd);
+	if (found_it != gAgent.mGroups.end())
 	{
-		gAgent.mGroups.remove(index);
+		gAgent.mGroups.erase(found_it);
 		if (gAgent.getGroupID() == group_id)
 		{
 			gAgent.mGroupID.setNull();
@@ -3434,8 +3412,7 @@ class LLAgentDropGroupViewerNode : public LLHTTPNode
 			!input.has("body") )
 		{
 			//what to do with badly formed message?
-			response->statusUnknownError(400);
-			response->result(LLSD("Invalid message parameters"));
+			response->extendedResult(HTTP_BAD_REQUEST, "", LLSD("Invalid message parameters"));
 		}
 
 		LLSD body = input["body"];
@@ -3473,10 +3450,10 @@ class LLAgentDropGroupViewerNode : public LLHTTPNode
 			// and add the new data to pick up changes.
 			LLGroupData gd;
 			gd.mID = group_id;
-			S32 index = gAgent.mGroups.find(gd);
-			if (index != -1)
+			std::vector<LLGroupData>::iterator found_it = std::find(gAgent.mGroups.begin(), gAgent.mGroups.end(), gd);
+			if (found_it != gAgent.mGroups.end())
 			{
-				gAgent.mGroups.remove(index);
+				gAgent.mGroups.erase(found_it);
 				if (gAgent.getGroupID() == group_id)
 				{
 					gAgent.mGroupID.setNull();
@@ -3507,8 +3484,7 @@ class LLAgentDropGroupViewerNode : public LLHTTPNode
 		else
 		{
 			//what to do with badly formed message?
-			response->statusUnknownError(400);
-			response->result(LLSD("Invalid message parameters"));
+			response->extendedResult(HTTP_BAD_REQUEST, "", LLSD("Invalid message parameters"));
 		}
 	}
 };
@@ -3532,7 +3508,6 @@ void LLAgent::processAgentGroupDataUpdate(LLMessageSystem *msg, void **)
 	
 	S32 count = msg->getNumberOfBlocksFast(_PREHASH_GroupData);
 	LLGroupData group;
-	S32 index = -1;
 	bool need_floater_update = false;
 	for(S32 i = 0; i < count; ++i)
 	{
@@ -3547,12 +3522,12 @@ void LLAgent::processAgentGroupDataUpdate(LLMessageSystem *msg, void **)
 		{
 			need_floater_update = true;
 			// Remove the group if it already exists remove it and add the new data to pick up changes.
-			index = gAgent.mGroups.find(group);
-			if (index != -1)
+			std::vector<LLGroupData>::iterator found_it = std::find(gAgent.mGroups.begin(), gAgent.mGroups.end(), group);
+			if (found_it != gAgent.mGroups.end())
 			{
-				gAgent.mGroups.remove(index);
+				gAgent.mGroups.erase(found_it);
 			}
-			gAgent.mGroups.put(group);
+			gAgent.mGroups.push_back(group);
 		}
 		if (need_floater_update)
 		{
@@ -3591,7 +3566,6 @@ class LLAgentGroupDataUpdateViewerNode : public LLHTTPNode
 		{
 
 			LLGroupData group;
-			S32 index = -1;
 			bool need_floater_update = false;
 
 			group.mID = (*iter_group)["GroupID"].asUUID();
@@ -3608,12 +3582,12 @@ class LLAgentGroupDataUpdateViewerNode : public LLHTTPNode
 			{
 				need_floater_update = true;
 				// Remove the group if it already exists remove it and add the new data to pick up changes.
-				index = gAgent.mGroups.find(group);
-				if (index != -1)
+				std::vector<LLGroupData>::iterator found_it = std::find(gAgent.mGroups.begin(), gAgent.mGroups.end(), group);
+				if (found_it != gAgent.mGroups.end())
 				{
-					gAgent.mGroups.remove(index);
+					gAgent.mGroups.erase(found_it);
 				}
-				gAgent.mGroups.put(group);
+				gAgent.mGroups.push_back(group);
 			}
 			if (need_floater_update)
 			{
@@ -3692,12 +3666,9 @@ void LLAgent::processScriptControlChange(LLMessageSystem *msg, void **)
 					total_count++;
 				}
 			}
-		
+
 			// Any control taken?  If so, might be first time.
-			if (total_count > 0)
-			{
-				LLFirstUse::useOverrideKeys();
-			}
+			if (total_count > 0) LLFirstUse::useOverrideKeys();
 		}
 		else
 		{
@@ -3813,7 +3784,7 @@ void LLAgent::processAgentCachedTextureResponse(LLMessageSystem *mesgsys, void *
 		return;
 	}
 
-	if (isAgentAvatarValid() && gAgentAvatarp->isEditingAppearance())
+	if (gAgentAvatarp->isEditingAppearance())
 	{
 		// ignore baked textures when in customize mode
 		return;

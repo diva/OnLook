@@ -41,7 +41,6 @@
 #include "llavatarnamecache.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
-#include "llenvmanager.h"
 #include "llfloater.h"
 #include "llfontgl.h"
 #include "llnotifications.h"
@@ -84,7 +83,7 @@ void LLFloaterPathfindingObjects::onOpen(/*const LLSD &pKey*/)
 
 	if (!mRegionBoundaryCrossingSlot.connected())
 	{
-		mRegionBoundaryCrossingSlot = LLEnvManagerNew::getInstance()->setRegionChangeCallback(boost::bind(&LLFloaterPathfindingObjects::onRegionBoundaryCrossed, this));
+		mRegionBoundaryCrossingSlot = gAgent.addRegionChangedCallback(boost::bind(&LLFloaterPathfindingObjects::onRegionBoundaryCrossed, this));
 	}
 
 	if (!mGodLevelChangeSlot.connected())
@@ -384,19 +383,31 @@ void LLFloaterPathfindingObjects::buildObjectsScrollList(const LLPathfindingObje
 
 void LLFloaterPathfindingObjects::addObjectToScrollList(const LLPathfindingObjectPtr pObjectPtr, const LLSD &pScrollListItemData)
 {
-	LLSD rowParams;
-	rowParams["id"] = pObjectPtr->getUUID();
+	LLScrollListCell::Params cellParams;
+	//cellParams.font = LLFontGL::getFontSansSerif();
+
+	LLScrollListItem::Params rowParams;
+	rowParams.value = pObjectPtr->getUUID().asString();
 
 	llassert(pScrollListItemData.isArray());
-	S32 idx = 0;
 	for (LLSD::array_const_iterator cellIter = pScrollListItemData.beginArray();
 		cellIter != pScrollListItemData.endArray(); ++cellIter)
 	{
-		rowParams["columns"][idx] = *cellIter;
-		idx++;
+		const LLSD &cellElement = *cellIter;
+
+		llassert(cellElement.has("column"));
+		llassert(cellElement.get("column").isString());
+		cellParams.column = cellElement.get("column").asString();
+
+		llassert(cellElement.has("value"));
+		llassert(cellElement.get("value").isString());
+		cellParams.value = cellElement.get("value").asString();
+
+		rowParams.columns.add(cellParams);
 	}
 
-	LLScrollListItem *scrollListItem = mObjectsScrollList->addElement(rowParams);
+	LLScrollListItem *scrollListItem = mObjectsScrollList->addRow(rowParams);
+
 	if (pObjectPtr->hasOwner() && !pObjectPtr->hasOwnerName())
 	{
 		mMissingNameObjectsScrollListItems.insert(std::make_pair(pObjectPtr->getUUID().asString(), scrollListItem));

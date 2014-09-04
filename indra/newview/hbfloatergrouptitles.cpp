@@ -162,7 +162,7 @@ void HBFloaterGroupTitles::onActivate(void* userdata)
 void update_titles_list(HBFloaterGroupTitles* self)
 {
 	S32 i;
-	S32 count = gAgent.mGroups.count();
+	S32 count = gAgent.mGroups.size();
 	LLUUID id;
 	LLUUID highlight_id = LLUUID::null;
 	LLUUID current_group_id = gAgent.getGroupID();
@@ -178,7 +178,7 @@ void update_titles_list(HBFloaterGroupTitles* self)
 
 	for (i = 0; i < count; ++i)
 	{
-		group_datap = &gAgent.mGroups.get(i);
+		group_datap = &gAgent.mGroups[i];
 		id = group_datap->mID;
 		if (self->mFirstUse)
 		{

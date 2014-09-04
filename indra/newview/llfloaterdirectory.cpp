@@ -54,7 +54,6 @@
 
 #include "hippogridmanager.h"
 #include "lfsimfeaturehandler.h"
-#include "llenvmanager.h"
 #include "llnotificationsutil.h"
 #include "llviewerregion.h"
 
@@ -279,7 +278,7 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 		LLPanelDirMarket* marketp = static_cast<LLPanelDirMarket*>(container->getPanelByName(market_panel));
 		container->removeTabPanel(marketp); // Until we get a MarketPlace URL, tab is removed.
 		marketp->handleRegionChange(container);
-		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLPanelDirMarket::handleRegionChange, marketp, container));
+		gAgent.addRegionChangedCallback(boost::bind(&LLPanelDirMarket::handleRegionChange, marketp, container));
 	}
 	container->setCommitCallback(boost::bind(&LLFloaterDirectory::onTabChanged,_2));
 }

@@ -1631,12 +1631,12 @@ void LLPanelAvatar::resetGroupList()
 
 			group_list->deleteAllItems();
 			
-			S32 count = gAgent.mGroups.count();
+			S32 count = gAgent.mGroups.size();
 			LLUUID id;
 			
 			for(S32 i = 0; i < count; ++i)
 			{
-				LLGroupData group_data = gAgent.mGroups.get(i);
+				LLGroupData group_data = gAgent.mGroups[i];
 				id = group_data.mID;
 				std::string group_string;
 				/* Show group title?  DUMMY_POWER for Don Grep

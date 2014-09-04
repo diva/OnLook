@@ -307,8 +307,10 @@ public:
 		virtual ~StaticRegistrar() {}
 		StaticRegistrar(ref_const_key_t key, ref_const_value_t value)
 		{
-			if(!singleton_t::instance().mStaticScope)
-				mStaticScope = new ScopedRegistrar();
+			if (singleton_t::instance().exists(key))
+			{
+				llerrs << "Duplicate registry entry under key \"" << key << "\"" << llendl;
+			}
 			singleton_t::instance().mStaticScope->add(key, value);
 		}
 	};
@@ -338,7 +340,7 @@ protected:
 
 	virtual void initSingleton()
 	{
-		//mStaticScope = new ScopedRegistrar();
+		mStaticScope = new ScopedRegistrar();
 	}
 
 	virtual ~LLRegistrySingleton() 

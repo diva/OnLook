@@ -45,10 +45,11 @@ private:
 	virtual BOOL tick();
 	virtual void refresh();
 	virtual void draw();
-	virtual void onClose(bool app_quitting);
+	virtual void regionChange();
 
 	class LLTextBox* mRestartSeconds;
 	U32 mSeconds;
+	std::string mName;
 	U32 mShakeIterations;
 	F32 mShakeMagnitude;
 	LLTimer mShakeTimer;

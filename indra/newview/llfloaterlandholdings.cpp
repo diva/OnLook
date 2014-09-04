@@ -100,33 +100,34 @@ BOOL LLFloaterLandHoldings::postBuild()
 	childSetAction("Teleport", onClickTeleport, this);
 	childSetAction("Show on Map", onClickMap, this);
 
-	LLScrollListCtrl *grant_list = getChild<LLScrollListCtrl>("grant list");
-
 	// Grant list
+	LLScrollListCtrl *grant_list = getChild<LLScrollListCtrl>("grant list");
 	grant_list->setDoubleClickCallback(boost::bind(LLGroupActions::show, boost::bind(&LLScrollListCtrl::getCurrentID, grant_list)));
 
 	LLCtrlListInterface *list = grant_list->getListInterface();
 	if (!list) return TRUE;
 
-	S32 count = gAgent.mGroups.count();
+	S32 count = gAgent.mGroups.size();
 	for(S32 i = 0; i < count; ++i)
 	{
-		LLUUID id(gAgent.mGroups.get(i).mID);
+		LLUUID id(gAgent.mGroups.at(i).mID);
 
 		LLSD element;
 		element["id"] = id;
 		element["columns"][0]["column"] = "group";
-		element["columns"][0]["value"] = gAgent.mGroups.get(i).mName;
+		element["columns"][0]["value"] = gAgent.mGroups.at(i).mName;
 		element["columns"][0]["font"] = "SANSSERIF";
 
 		LLUIString areastr = getString("area_string");
-		areastr.setArg("[AREA]", llformat("%d", gAgent.mGroups.get(i).mContribution));
+		areastr.setArg("[AREA]", llformat("%d", gAgent.mGroups.at(i).mContribution));
 		element["columns"][1]["column"] = "area";
 		element["columns"][1]["value"] = areastr;
 		element["columns"][1]["font"] = "SANSSERIF";
 
 		list->addElement(element, ADD_SORTED);
 	}
+
+	center();
 
 	return TRUE;
 }
@@ -157,8 +158,8 @@ void LLFloaterLandHoldings::refresh()
 		enable_btns = TRUE;
 	}
 
-	childSetEnabled("Teleport", enable_btns);
-	childSetEnabled("Show on Map", enable_btns);
+	getChildView("Teleport")->setEnabled(enable_btns);
+	getChildView("Show on Map")->setEnabled(enable_btns);
 
 	refreshAggregates();
 }
@@ -291,15 +292,16 @@ void LLFloaterLandHoldings::buttonCore(S32 which)
 	F64 global_z = gAgent.getPositionGlobal().mdV[VZ];
 
 	LLVector3d pos_global(global_x, global_y, global_z);
+	LLFloaterWorldMap* floater_world_map = gFloaterWorldMap;
 
 	switch(which)
 	{
 	case 0:
 		gAgent.teleportViaLocation(pos_global);
-		gFloaterWorldMap->trackLocation(pos_global);
+		if(floater_world_map) floater_world_map->trackLocation(pos_global);
 		break;
 	case 1:
-		gFloaterWorldMap->trackLocation(pos_global);
+		if(floater_world_map) floater_world_map->trackLocation(pos_global);
 		LLFloaterWorldMap::show(true);
 		break;
 	default:
@@ -329,7 +331,7 @@ void LLFloaterLandHoldings::refreshAggregates()
 	S32 current_area = gStatusBar->getSquareMetersCommitted();
 	S32 available_area = gStatusBar->getSquareMetersLeft();
 
-	childSetTextArg("allowed_text", "[AREA]", llformat("%d",allowed_area));
-	childSetTextArg("current_text", "[AREA]", llformat("%d",current_area));
-	childSetTextArg("available_text", "[AREA]", llformat("%d",available_area));
+	getChild<LLUICtrl>("allowed_text")->setTextArg("[AREA]", llformat("%d",allowed_area));
+	getChild<LLUICtrl>("current_text")->setTextArg("[AREA]", llformat("%d",current_area));
+	getChild<LLUICtrl>("available_text")->setTextArg("[AREA]", llformat("%d",available_area));
 }

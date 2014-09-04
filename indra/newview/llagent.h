@@ -36,7 +36,6 @@
 #include <set>
 
 #include "indra_constants.h"
-
 #include "llevent.h" 				// LLObservable base class
 #include "llagentconstants.h"
 #include "llagentdata.h" 			// gAgentID, gAgentSessionID
@@ -72,8 +71,11 @@ class LLSLURL;
 class LLSimInfo;
 class LLTeleportRequest;
 
-typedef std::vector<LLViewerObject*> llvo_vec_t;
 typedef boost::shared_ptr<LLTeleportRequest> LLTeleportRequestPtr;
+
+//--------------------------------------------------------------------
+// Types
+//--------------------------------------------------------------------
 
 enum EAnimRequest
 {
@@ -213,7 +215,7 @@ public:
 	//--------------------------------------------------------------------
 public:
 	const LLCoordFrame&	getFrameAgent()	const	{ return mFrameAgent; }
-	void			initOriginGlobal(const LLVector3d &origin_global); // Only to be used in ONE place! - djs 08/07/02
+	void			initOriginGlobal(const LLVector3d &origin_global); // Only to be used in ONE place
 	void			resetAxes();
 	void			resetAxes(const LLVector3 &look_at); // Makes reasonable left and up
 	// The following three get*Axis functions return direction avatar is looking, not camera.
@@ -239,13 +241,50 @@ private:
 	LLVector3		mHomePosRegion;
 
 	//--------------------------------------------------------------------
+	// Parcel
+	//--------------------------------------------------------------------
+public:
+	void changeParcels(); // called by LLViewerParcelMgr when we cross a parcel boundary
+
+	// Register a boost callback to be called when the agent changes parcels
+	typedef boost::function<void()> parcel_changed_callback_t;
+	boost::signals2::connection     addParcelChangedCallback(parcel_changed_callback_t);
+
+private:
+	typedef boost::signals2::signal<void()> parcel_changed_signal_t;
+	parcel_changed_signal_t		mParcelChangedSignal;
+
+	//--------------------------------------------------------------------
 	// Region
 	//--------------------------------------------------------------------
 public:
 	void			setRegion(LLViewerRegion *regionp);
-	LLViewerRegion	*getRegion() const  	{ return mRegionp; }
+	LLViewerRegion	*getRegion() const;
 	const LLHost&	getRegionHost() const;
 	BOOL			inPrelude();
+
+	/**
+	 * Register a boost callback to be called when the agent changes regions
+	 * Note that if you need to access a capability for the region, you may need to wait
+	 * for the capabilities to be received, since in some cases your region changed
+	 * callback will be called before the capabilities have been received.  Your callback
+	 * may need to look something like:
+	 *
+	 * 	 LLViewerRegion* region = gAgent.getRegion();
+	 * 	 if (region->capabilitiesReceived())
+	 * 	 {
+	 *       useCapability(region);
+	 * 	 }
+	 * 	 else // Need to handle via callback after caps arrive.
+	 * 	 {
+	 *       region->setCapabilitiesReceivedCallback(boost::bind(&useCapability,region,_1));
+	 *       // you may or may not want to remove that callback
+	 * 	 }
+	 */
+	typedef boost::signals2::signal<void()> region_changed_signal_t;
+
+	boost::signals2::connection     addRegionChangedCallback(const region_changed_signal_t::slot_type& cb);
+	void                            removeRegionChangedCallback(boost::signals2::connection callback);
 
 	// <edit>
 	struct SHLureRequest
@@ -260,9 +299,10 @@ public:
 	void showLureDestination(const std::string fromname, U64& handle, U32 x, U32 y, U32 z);
 	void onFoundLureDestination(LLSimInfo *siminfo = NULL);
 	// </edit>
-	
+
 private:
 	LLViewerRegion	*mRegionp;
+	region_changed_signal_t		            mRegionChangedSignal;
 
 	//--------------------------------------------------------------------
 	// History
@@ -274,6 +314,7 @@ public:
 	
 	const LLVector3d &getLastPositionGlobal() const { return mLastPositionGlobal; }
 	void			setLastPositionGlobal(const LLVector3d &pos) { mLastPositionGlobal = pos; }
+
 private:
 	std::set<U64>	mRegionsVisited;		// Stat - what distinct regions has the avatar been to?
 	F64				mDistanceTraveled;		// Stat - how far has the avatar moved?
@@ -654,6 +695,7 @@ private:
 
 	void            handleTeleportFinished();
 	void            handleTeleportFailed();
+public:
 	void			handleServerBakeRegionTransition(const LLUUID& region_id);
 
 	//--------------------------------------------------------------------
@@ -682,9 +724,10 @@ private:
 public:
 	bool			canEditParcel() const { return mCanEditParcel; }
 private:
+	static void     setCanEditParcel();
 	bool			mCanEditParcel;
 
-	static void parcelChangedCallback();
+
 
 /********************************************************************************
  **                                                                            **
@@ -807,7 +850,7 @@ private:
 	// HUD
 	//--------------------------------------------------------------------
 public:
-	const LLColor4	&getEffectColor();
+	const LLColor4	getEffectColor();
 	void			setEffectColor(const LLColor4 &color);
 private:
 	LLColor4 *mEffectColor;
@@ -831,6 +874,7 @@ public:
 	BOOL 			setGroupContribution(const LLUUID& group_id, S32 contribution);
 	BOOL 			setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOOL list_in_profile);
 	const std::string &getGroupName() const 	{ return mGroupName; }
+	BOOL			canJoinGroups() const;
 private:
 	std::string		mGroupName;
 	LLUUID			mGroupID;
@@ -845,7 +889,7 @@ protected:
 	// Only used for building titles.
 	BOOL			isGroupMember() const 		{ return !mGroupID.isNull(); } 
 public:
-	LLDynamicArray<LLGroupData> mGroups;
+	std::vector<LLGroupData> mGroups;
 
 	//--------------------------------------------------------------------
 	// Group Title

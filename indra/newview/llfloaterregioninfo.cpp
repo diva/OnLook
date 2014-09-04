@@ -61,6 +61,7 @@
 #include "llfloatergodtools.h"	// for send_sim_wide_deletes()
 #include "llfloatertopobjects.h" // added to fix SL-32336
 #include "llfloatergroups.h"
+#include "llfloaterregiondebugconsole.h"
 #include "llfloatertelehub.h"
 #include "llinventorymodel.h"
 #include "lllineeditor.h"
@@ -93,9 +94,6 @@
 
 const S32 TERRAIN_TEXTURE_COUNT = 4;
 const S32 CORNER_COUNT = 4;
-
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy estateChangeInfoResponder_timeout;
 
 ///----------------------------------------------------------------------------
 /// Local class declaration
@@ -252,7 +250,7 @@ BOOL LLFloaterRegionInfo::postBuild()
 		&processEstateOwnerRequest);
 
 	// Request region info when agent region changes.
-	LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLFloaterRegionInfo::requestRegionInfo, this));
+	gAgent.addRegionChangedCallback(boost::bind(&LLFloaterRegionInfo::requestRegionInfo, this));
 
 	return TRUE;
 }
@@ -269,6 +267,7 @@ void LLFloaterRegionInfo::onOpen()
 
 	refreshFromRegion(gAgent.getRegion());
 	requestRegionInfo();
+	requestMeshRezInfo();
 	LLFloater::onOpen();
 }
 
@@ -650,9 +649,10 @@ void LLPanelRegionInfo::initCtrl(const std::string& name)
 	getChild<LLUICtrl>(name)->setCommitCallback(boost::bind(&LLPanelRegionInfo::onChangeAnything, this));
 }
 
+// Singu TODO: Make this a callback registrar function instead.
 void LLPanelRegionInfo::initHelpBtn(const std::string& name, const std::string& xml_alert)
 {
-	childSetAction(name, boost::bind(&LLPanelRegionInfo::onClickHelp, this, xml_alert));
+	getChild<LLButton>(name)->setCommitCallback(boost::bind(&LLPanelRegionInfo::onClickHelp, this, xml_alert));
 }
 
 void LLPanelRegionInfo::onClickHelp(const std::string& xml_alert)
@@ -857,6 +857,46 @@ bool LLPanelRegionGeneralInfo::onMessageCommit(const LLSD& notification, const L
 	return false;
 }
 
+class ConsoleRequestResponder : public LLHTTPClient::ResponderIgnoreBody
+{
+	LOG_CLASS(ConsoleRequestResponder);
+protected:
+	/*virtual*/
+	void httpFailure()
+	{
+		llwarns << "error requesting mesh_rez_enabled " << dumpResponse() << llendl;
+	}
+	/*virtual*/ const char* getName() const { return "ConsoleRequestResponder"; }
+};
+
+
+// called if this request times out.
+class ConsoleUpdateResponder : public LLHTTPClient::ResponderIgnoreBody
+{
+	LOG_CLASS(ConsoleUpdateResponder);
+protected:
+	/* virtual */
+	void httpFailure()
+	{
+		llwarns << "error updating mesh enabled region setting " << dumpResponse() << llendl;
+	}
+};
+
+void LLFloaterRegionInfo::requestMeshRezInfo()
+{
+	std::string sim_console_url = gAgent.getRegion()->getCapability("SimConsoleAsync");
+
+	if (!sim_console_url.empty())
+	{
+		std::string request_str = "get mesh_rez_enabled";
+		
+		LLHTTPClient::post(
+			sim_console_url,
+			LLSD(request_str),
+			new ConsoleRequestResponder);
+	}
+}
+
 // setregioninfo
 // strings[0] = 'Y' - block terraform, 'N' - not
 // strings[1] = 'Y' - block fly, 'N' - not
@@ -969,6 +1009,7 @@ BOOL LLPanelRegionDebugInfo::postBuild()
 	childSetAction("top_scripts_btn", onClickTopScripts, this);
 	childSetAction("restart_btn", onClickRestart, this);
 	childSetAction("cancel_restart_btn", onClickCancelRestart, this);
+	childSetAction("region_debug_console_btn", onClickDebugConsole, this);
 
 	return TRUE;
 }
@@ -990,6 +1031,7 @@ bool LLPanelRegionDebugInfo::refreshFromRegion(LLViewerRegion* region)
 	getChildView("top_scripts_btn")->setEnabled(allow_modify);
 	getChildView("restart_btn")->setEnabled(allow_modify);
 	getChildView("cancel_restart_btn")->setEnabled(allow_modify);
+	getChildView("region_debug_console_btn")->setEnabled(allow_modify);
 
 	return LLPanelRegionInfo::refreshFromRegion(region);
 }
@@ -1145,6 +1187,11 @@ void LLPanelRegionDebugInfo::onClickCancelRestart(void* data)
 	self->sendEstateOwnerMessage(gMessageSystem, "restart", invoice, strings);
 }
 
+// static
+void LLPanelRegionDebugInfo::onClickDebugConsole(void* data)
+{
+	LLFloaterRegionDebugConsole::getInstance()->open();
+}
 
 BOOL LLPanelRegionTerrainInfo::validateTextureSizes()
 {
@@ -1162,7 +1209,7 @@ BOOL LLPanelRegionTerrainInfo::validateTextureSizes()
 		S32 width = img->getFullWidth();
 		S32 height = img->getFullHeight();
 
-		//llinfos << "texture detail " << i << " is " << width << "x" << height << "x" << components << llendl;
+		//LL_INFOS() << "texture detail " << i << " is " << width << "x" << height << "x" << components << LL_ENDL;
 
 		if (components != 3)
 		{
@@ -1173,7 +1220,7 @@ BOOL LLPanelRegionTerrainInfo::validateTextureSizes()
 			return FALSE;
 		}
 
-		if (width > 1024 || height > 1024)
+		if (width > 1024 || height > 1024) // <alchemy/>
 		{
 
 			LLSD args;
@@ -1590,7 +1637,7 @@ void LLPanelEstateInfo::onClickKickUser()
 void LLPanelEstateInfo::onKickUserCommit(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names)
 {
 	if (names.empty() || ids.empty()) return;
-	
+
 	//check to make sure there is one valid user and id
 	if( ids[0].isNull() )
 	{
@@ -1794,7 +1841,7 @@ void LLPanelEstateInfo::accessAddCore3(const uuid_vec_t& ids, LLEstateAccessChan
 			LLSD args;
 			args["NUM_ADDED"] = llformat("%d",ids.size());
 			args["MAX_AGENTS"] = llformat("%d",ESTATE_MAX_ACCESS_IDS);
-			args["LIST_TYPE"] = "Allowed Residents";
+			args["LIST_TYPE"] = LLTrans::getString("RegionInfoListTypeAllowedAgents");
 			args["NUM_EXCESS"] = llformat("%d",(ids.size()+currentCount)-ESTATE_MAX_ACCESS_IDS);
 			LLNotificationsUtil::add("MaxAgentOnRegionBatch", args);
 			delete change_info;
@@ -1810,7 +1857,7 @@ void LLPanelEstateInfo::accessAddCore3(const uuid_vec_t& ids, LLEstateAccessChan
 			LLSD args;
 			args["NUM_ADDED"] = llformat("%d",ids.size());
 			args["MAX_AGENTS"] = llformat("%d",ESTATE_MAX_ACCESS_IDS);
-			args["LIST_TYPE"] = "Banned Residents";
+			args["LIST_TYPE"] = LLTrans::getString("RegionInfoListTypeBannedAgents");
 			args["NUM_EXCESS"] = llformat("%d",(ids.size()+currentCount)-ESTATE_MAX_ACCESS_IDS);
 			LLNotificationsUtil::add("MaxAgentOnRegionBatch", args);
 			delete change_info;
@@ -2337,16 +2384,18 @@ void LLPanelEstateInfo::getEstateOwner()
 
 class LLEstateChangeInfoResponder : public LLHTTPClient::ResponderWithResult
 {
+	LOG_CLASS(LLEstateChangeInfoResponder);
 public:
 	LLEstateChangeInfoResponder(LLPanelEstateInfo* panel)
 	{
 		mpPanel = panel->getHandle();
 	}
 	
+protected:
 	// if we get a normal response, handle it here
-	/*virtual*/ void httpSuccess(void)
+	virtual void httpSuccess()
 	{
-		LL_INFOS("Windlight") << "Successfully committed estate info" << llendl;
+		LL_INFOS("Windlight") << "Successfully committed estate info" << LL_ENDL;
 
 	    // refresh the panel from the database
 		LLPanelEstateInfo* panel = dynamic_cast<LLPanelEstateInfo*>(mpPanel.get());
@@ -2355,13 +2404,11 @@ public:
 	}
 	
 	// if we get an error response
-	/*virtual*/ void httpFailure(void)
+	virtual void httpFailure()
 	{
-		llinfos << "LLEstateChangeInfoResponder::error [status:"
-			<< mStatus << "]: " << mReason << llendl;
+		LL_WARNS("Windlight") << dumpResponse() << LL_ENDL;
 	}
 
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return estateChangeInfoResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLEstateChangeInfoResponder"; }
 
 private:
@@ -2931,9 +2978,10 @@ bool LLDispatchSetEstateAccess::operator()(
 		}
 
 
-		std::string msg = llformat("Banned residents: (%d, max %d)",
-									totalBannedAgents,
-									ESTATE_MAX_ACCESS_IDS);
+		LLStringUtil::format_map_t args;
+		args["[BANNEDAGENTS]"] = llformat("%d", totalBannedAgents);
+		args["[MAXBANNED]"] = llformat("%d", ESTATE_MAX_ACCESS_IDS);
+		std::string msg = LLTrans::getString("RegionInfoBannedResidents", args);
 		panel->getChild<LLUICtrl>("ban_resident_label")->setValue(LLSD(msg));
 
 		if (banned_agent_name_list)
@@ -2953,9 +3001,10 @@ bool LLDispatchSetEstateAccess::operator()(
 
 	if (access_flags & ESTATE_ACCESS_MANAGERS)
 	{
-		std::string msg = llformat("Estate Managers: (%d, max %d)",
-									num_estate_managers,
-									ESTATE_MAX_MANAGERS);
+		LLStringUtil::format_map_t args;
+		args["[ESTATEMANAGERS]"] = llformat("%d", num_estate_managers);
+		args["[MAXMANAGERS]"] = llformat("%d", ESTATE_MAX_MANAGERS);
+		std::string msg = LLTrans::getString("RegionInfoEstateManagers", args);
 		panel->getChild<LLUICtrl>("estate_manager_label")->setValue(LLSD(msg));
 
 		LLNameListCtrl* estate_manager_name_list =
@@ -3586,12 +3635,9 @@ void LLFloaterRegionInfo::open()
 	// We'll allow access to the estate tools for estate managers (and for the sim owner)
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 	{
-		LLViewerRegion* pRegion = gAgent.getRegion();
-		if (!pRegion)
-			return;
-
+		const LLViewerRegion* region(gAgent.getRegion());
 		// Should be able to call LLRegion::canManageEstate() but then we can fake god like
-		if ( (!pRegion->isEstateManager()) && (pRegion->getOwner() != gAgent.getID()) )
+		if (!(region && region->isEstateManager() && region->getOwner() == gAgentID))
 			return;
 	}
 

@@ -657,13 +657,14 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 		LLNotificationsUtil::add("JoinGroup", args, notification["payload"]);
 		return false;
 	}
+
 	if(option == 0 && !group_id.isNull())
 	{
 		// check for promotion or demotion.
 		S32 max_groups = gHippoLimits->getMaxAgentGroups();
 		if(gAgent.isInGroup(group_id)) ++max_groups;
 
-		if(gAgent.mGroups.count() < max_groups)
+		if((S32)gAgent.mGroups.size() < max_groups)
 		{
 			accept_invite = true;
 		}

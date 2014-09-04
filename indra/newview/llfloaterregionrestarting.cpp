@@ -31,7 +31,6 @@
 #include "lluictrlfactory.h"
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llenvmanager.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 
@@ -103,29 +102,47 @@ LLFloaterRegionRestarting::LLFloaterRegionRestarting(const LLSD& key) :
 {
 	//buildFromFile("floater_region_restarting.xml");
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_region_restarting.xml");
-
-	LLStringUtil::format_map_t args;
-	args["[NAME]"] = key["NAME"].asString();
-	getChild<LLTextBox>("region_name")->setValue(getString("RegionName", args));
-	mRestartSeconds = getChild<LLTextBox>("restart_seconds");
+	mName = key["NAME"].asString(); // <alchemy/>
 	center();
 
-	refresh();
-
-	mRegionChangedConnection = LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLFloaterRegionRestarting::close, this, false));
-	if (mSeconds <= 20) emergency_teleport(); // <singu/> For emergency teleports
 }
 
 LLFloaterRegionRestarting::~LLFloaterRegionRestarting()
 {
+	if (sShakeState != SHAKE_DONE && sShakeState != SHAKE_START) // Finish shake if needed
+	{
+		gAgentCamera.resetView(TRUE, TRUE);
+		sShakeState = SHAKE_DONE;
+	}
 	mRegionChangedConnection.disconnect();
 }
 
 BOOL LLFloaterRegionRestarting::postBuild()
 {
+	mRegionChangedConnection = gAgent.addRegionChangedCallback(boost::bind(&LLFloaterRegionRestarting::regionChange, this));
+	if (mSeconds <= 20) emergency_teleport(); // <singu/> For emergency teleports
+
+	LLStringUtil::format_map_t args;
+	std::string text;
+
+	args["[NAME]"] = mName;
+	text = getString("RegionName", args);
+	LLTextBox* textbox = getChild<LLTextBox>("region_name");
+	textbox->setValue(text);
+
+	mRestartSeconds = getChild<LLTextBox>("restart_seconds");
+
 	setBackgroundColor(gColors.getColor("NotifyCautionBoxColor"));
 	sShakeState = SHAKE_START;
+
+	refresh();
+
 	return TRUE;
+}
+
+void LLFloaterRegionRestarting::regionChange()
+{
+	close();
 }
 
 BOOL LLFloaterRegionRestarting::tick()
@@ -150,9 +167,9 @@ void LLFloaterRegionRestarting::draw()
 {
 	LLFloater::draw();
 
-        static const LLCachedControl<bool> alchemyRegionShake(gSavedSettings, "AlchemyRegionRestartShake", true);
-        if (!alchemyRegionShake || isMinimized()) // If we're minimized, leave the user alone
-                return;
+	static const LLCachedControl<bool> alchemyRegionShake(gSavedSettings, "AlchemyRegionRestartShake", true);
+	if (!alchemyRegionShake || isMinimized()) // If we're minimized, leave the user alone
+		return;
 
 	const F32 SHAKE_INTERVAL = 0.025f;
 	const F32 SHAKE_TOTAL_DURATION = 1.8f; // the length of the default alert tone for this
@@ -211,16 +228,6 @@ void LLFloaterRegionRestarting::draw()
 		}
 		mShakeTimer.setTimerExpirySec(SHAKE_INTERVAL);
 	}
-}
-
-void LLFloaterRegionRestarting::onClose(bool app_quitting)
-{
-	if (sShakeState != SHAKE_DONE && sShakeState != SHAKE_START) // Finish shake if needed
-	{
-		gAgentCamera.resetView(TRUE, TRUE);
-		sShakeState = SHAKE_DONE;
-	}
-	LLFloater::onClose(app_quitting);
 }
 
 void LLFloaterRegionRestarting::updateTime(const U32& time)

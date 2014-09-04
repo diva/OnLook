@@ -37,10 +37,6 @@
 #include "llviewerregion.h"
 #include "lluictrlfactory.h"
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy asyncConsoleResponder_timeout;
-extern AIHTTPTimeoutPolicy consoleResponder_timeout;
-
 // Two versions of the sim console API are supported.
 //
 // SimConsole capability (deprecated):
@@ -81,7 +77,6 @@ namespace
 	{
 	public:
 		/*virtual*/ void httpFailure(void) { sConsoleReplySignal(UNABLE_TO_SEND_COMMAND); }
-		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return asyncConsoleResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "AsyncConsoleResponder"; }
 	};
 
@@ -111,7 +106,6 @@ namespace
 			}
 		}
 
-		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return consoleResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "ConsoleResponder"; }
 
 		LLTextEditor * mOutput;
