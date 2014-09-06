@@ -5,7 +5,8 @@
 <TitleBarFocusColor value="200, 85, 50, 255" />	          <!-- couleur --> <!-- Focused window title bar highlight, no equivalent for unfocused windows -->
 <FloaterFocusBorderColor value="250, 200, 150, 255" />
 <FloaterUnfocusBorderColor value="250, 160, 50, 255" /> <!-- couleur -->
-<FocusBackgroundColor value="220, 135, 65, 255"/>       <!-- couleur --><DefaultBackgroundColor value="204, 204, 204, 100" />	<!-- Background color for unfocused floaters -->
+<FocusBackgroundColor value="220, 135, 65, 255"/>       <!-- couleur -->
+<DefaultBackgroundColor value="204, 204, 204, 100" />	<!-- Background color for unfocused floaters -->
 <ColorDropShadow value="0, 0, 0, 200" />		<!-- The drop shadow behind windows and menus -->
 <DefaultHighlightDark value="254,254, 254, 204" />
 <DefaultHighlightLight value="102, 104, 0, 255" />
@@ -140,9 +141,6 @@
 
 <!-- RADAR -->
 
-<AvatarListTextAgeYoung value="255, 0, 0, 255"/>
-<AvatarListTextAgeNormal value="0, 0, 0, 255"/>
-
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />
 <NetMapYouOwnAboveWater value="0, 255, 255, 255" />
@@ -150,7 +148,7 @@
 <NetMapGroupOwnAboveWater value="255, 0, 255, 255" />
 <NetMapGroupOwnBelowWater value="200, 0, 200, 255" />
 <NetMapOtherOwnAboveWater value="60, 60, 60, 255" />
-<NetMapOtherOwnBelowWater value="30, 30, 30, 255" />
+<NetMapOtherOwnBelowWater value="30, 30, 30, 255" />
 <!-- HELP WINDOW -->
 <HelpBgColor value="200, 209, 204, 255" />
 <HelpFgColor value="0, 0, 0, 255" />
@@ -179,7 +177,9 @@
 <InventoryItemSuffixColor value="120, 70, 55, 255"/>
 <InventorySearchStatusColor value="0, 0, 0, 255" />
 <ComboBoxBg value="255, 255, 255, 255"/>
-<ConsoleBackground value="2, 2, 2, 155" /> <!-- Hudtext - chat console background --><FolderViewLoadingMessageTextColor value="240, 165, 90, 255"/>   <!-- couleur --><InventoryBackgroundColor value="255, 255, 255, 80"/>
+<ConsoleBackground value="2, 2, 2, 155" /> <!-- Hudtext - chat console background -->
+<FolderViewLoadingMessageTextColor value="240, 165, 90, 255"/>   <!-- couleur -->
+<InventoryBackgroundColor value="255, 255, 255, 80"/>
 <!-- Alert box colors -->
 <AlertBoxColor value="220, 135, 65, 255"/>            <!-- couleur -->
 <AlertTextColor value="0, 0, 0, 255"/>

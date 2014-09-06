@@ -2,7 +2,8 @@
 <settings version = "101">
 
 <!-- WINDOWS -->
-<TitleBarFocusColor value="255, 255, 255, 30" /><FloaterFocusBorderColor value="0, 0, 0, 0"/>
+<TitleBarFocusColor value="255, 255, 255, 30" />
+<FloaterFocusBorderColor value="0, 0, 0, 0"/>
 <FloaterUnfocusBorderColor value="0, 0, 0, 0"/>
 <FocusBackgroundColor value="176, 184, 184, 255" />	<!-- Background color of focused floaters -->
 <DefaultBackgroundColor value="176, 184, 184, 140"/>
