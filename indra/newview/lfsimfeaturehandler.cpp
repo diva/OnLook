@@ -20,7 +20,6 @@
 #include "lfsimfeaturehandler.h"
 
 #include "llagent.h"
-#include "llenvmanager.h"
 #include "llviewerregion.h"
 #include "hippogridmanager.h"
 
@@ -33,7 +32,7 @@ LFSimFeatureHandler::LFSimFeatureHandler()
 , mWhisperRange(10)
 {
 	if (!gHippoGridManager->getCurrentGrid()->isSecondLife()) // Remove this line if we ever handle SecondLife sim features
-		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
+		gAgent.addRegionChangedCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
 }
 
 ExportPolicy LFSimFeatureHandler::exportPolicy() const

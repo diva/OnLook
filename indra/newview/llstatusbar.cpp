@@ -38,7 +38,6 @@
 #include "llagent.h"
 #include "llbutton.h"
 #include "llcommandhandler.h"
-#include "llenvmanager.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterchat.h"
 #include "llfloaterinventory.h"
@@ -235,7 +234,7 @@ mIsNavMeshDirty(false)
 	LLButton* buybtn = getChild<LLButton>("buycurrency");
 	buybtn->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
-	mRegionCrossingSlot = LLEnvManagerNew::getInstance()->setRegionChangeCallback(boost::bind(&LLStatusBar::createNavMeshStatusListenerForCurrentRegion, this));
+	mRegionCrossingSlot = gAgent.addRegionChangedCallback(boost::bind(&LLStatusBar::createNavMeshStatusListenerForCurrentRegion, this));
 	createNavMeshStatusListenerForCurrentRegion();
 
 	// Adding Net Stat Graph

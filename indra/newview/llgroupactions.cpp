@@ -40,7 +40,6 @@
 #include "llpanelgroup.h"
 #include "llviewermessage.h"
 #include "groupchatlistener.h"
-#include "hippolimits.h" // for getMaxAgentGroups
 // [RLVa:KB] - Checked: 2011-03-28 (RLVa-1.3.0)
 #include "llslurl.h"
 #include "rlvactions.h"
@@ -239,7 +238,7 @@ void LLGroupActions::startCall(const LLUUID& group_id)
 // static
 void LLGroupActions::join(const LLUUID& group_id)
 {
-	if (gAgent.mGroups.count() >= gHippoLimits->getMaxAgentGroups()) //!gAgent.canJoinGroups()
+	if (!gAgent.canJoinGroups())
 	{
 		LLNotificationsUtil::add("JoinedTooManyGroups");
 		return;

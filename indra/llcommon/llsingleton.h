@@ -33,34 +33,25 @@
 
 /// @brief A global registry of all singletons to prevent duplicate allocations
 /// across shared library boundaries
-class LL_COMMON_API LLSingletonRegistry {
-	private:
-		typedef std::map<std::string, void *> TypeMap;
-		static TypeMap * sSingletonMap;
+class LL_COMMON_API LLSingletonRegistry
+{
+	typedef std::map<std::string, void *> TypeMap;
+	static TypeMap* sSingletonMap;
 
-		static void checkInit()
-		{
-			if(sSingletonMap == NULL)
-			{
-				sSingletonMap = new TypeMap();
-			}
-		}
+public:
+	template<typename T> static void * & get()
+	{
+		std::string name(typeid(T).name());
+		if (!sSingletonMap) sSingletonMap = new TypeMap();
 
-	public:
-		template<typename T> static void * & get()
-		{
-			std::string name(typeid(T).name());
+		// the first entry of the pair returned by insert will be either the existing
+		// iterator matching our key, or the newly inserted NULL initialized entry
+		// see "Insert element" in http://www.sgi.com/tech/stl/UniqueAssociativeContainer.html
+		TypeMap::iterator result =
+			sSingletonMap->insert(std::make_pair(name, (void*)NULL)).first;
 
-			checkInit();
-
-			// the first entry of the pair returned by insert will be either the existing
-			// iterator matching our key, or the newly inserted NULL initialized entry
-			// see "Insert element" in http://www.sgi.com/tech/stl/UniqueAssociativeContainer.html
-			TypeMap::iterator result =
-				sSingletonMap->insert(std::make_pair(name, (void*)NULL)).first;
-
-			return result->second;
-		}
+		return result->second;
+	}
 };
 
 // LLSingleton implements the getInstance() method part of the Singleton
@@ -90,7 +81,7 @@ class LL_COMMON_API LLSingletonRegistry {
 template <typename DERIVED_TYPE>
 class LLSingleton : private boost::noncopyable
 {
-	
+
 private:
 	typedef enum e_init_state
 	{
@@ -100,34 +91,46 @@ private:
 		INITIALIZED,
 		DELETED
 	} EInitState;
-	
-	// stores pointer to singleton instance
-	// and tracks initialization state of singleton
-	struct SingletonInstanceData
-	{
-		EInitState		mInitState;
-		DERIVED_TYPE*	mSingletonInstance;
-		
-		SingletonInstanceData()
-		:	mSingletonInstance(NULL),
-			mInitState(UNINITIALIZED)
-		{}
 
-		~SingletonInstanceData()
+	static DERIVED_TYPE* constructSingleton()
+	{
+		return new DERIVED_TYPE();
+	}
+
+	struct SingletonData;
+
+	// stores pointer to singleton instance
+	struct SingletonLifetimeManager
+	{
+		SingletonLifetimeManager()
 		{
-			if (mInitState != DELETED)
+			construct();
+		}
+
+		static void construct()
+		{
+			SingletonData& sData(getData());
+			sData.mInitState = CONSTRUCTING;
+			sData.mInstance = constructSingleton();
+			sData.mInitState = INITIALIZING;
+		}
+
+		~SingletonLifetimeManager()
+		{
+			SingletonData& sData(getData());
+			if (sData.mInitState != DELETED)
 			{
 				deleteSingleton();
 			}
 		}
 	};
-	
+
 public:
 	virtual ~LLSingleton()
 	{
-		SingletonInstanceData& data = getData();
-		data.mSingletonInstance = NULL;
-		data.mInitState = DELETED;
+		SingletonData& sData(getData());
+		sData.mInstance = NULL;
+		sData.mInitState = DELETED;
 	}
 
 	/**
@@ -152,37 +155,66 @@ public:
 	 */
 	static void deleteSingleton()
 	{
-		DERIVED_TYPE* instance = getData().mSingletonInstance;
-		getData().mInitState = DELETED;
-		getData().mSingletonInstance = NULL;
-		delete instance;
+		SingletonData& sData(getData());
+		delete sData.mInstance;
+		sData.mInstance = NULL;
+		sData.mInitState = DELETED;
 	}
 
-	static SingletonInstanceData& getData()
+	static SingletonData& getData()
 	{
 		// this is static to cache the lookup results
 		static void * & registry = LLSingletonRegistry::get<DERIVED_TYPE>();
 
 		// *TODO - look into making this threadsafe
-		if(NULL == registry)
+		if (!registry)
 		{
-			static SingletonInstanceData data;
+			static SingletonData data;
 			registry = &data;
 		}
 
-		return *static_cast<SingletonInstanceData *>(registry);
+		return *static_cast<SingletonData *>(registry);
 	}
 
 	static DERIVED_TYPE* getInstance()
 	{
-		SingletonInstanceData& data = getData();
+		static SingletonLifetimeManager sLifeTimeMgr;
+		SingletonData& sData(getData());
 
-		if (data.mInitState != INITIALIZED)
+		switch (sData.mInitState)
 		{
-			createInstance(data);
+		case UNINITIALIZED:
+			// should never be uninitialized at this point
+			llassert(false);
+			return NULL;
+		case CONSTRUCTING:
+			llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << LL_ENDL;
+			return NULL;
+		case INITIALIZING:
+			// go ahead and flag ourselves as initialized so we can be reentrant during initialization
+			sData.mInitState = INITIALIZED;	
+			// initialize singleton after constructing it so that it can reference other singletons which in turn depend on it,
+			// thus breaking cyclic dependencies
+			sData.mInstance->initSingleton(); 
+			return sData.mInstance;
+		case INITIALIZED:
+			return sData.mInstance;
+		case DELETED:
+			llwarns << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << LL_ENDL;
+			SingletonLifetimeManager::construct();
+			// same as first time construction
+			sData.mInitState = INITIALIZED;	
+			sData.mInstance->initSingleton(); 
+			return sData.mInstance;
 		}
 
-		return data.mSingletonInstance;
+		return NULL;
+	}
+
+	static DERIVED_TYPE* getIfExists()
+	{
+		SingletonData& sData(getData());
+		return sData.mInstance;
 	}
 
 	// Reference version of getInstance()
@@ -191,51 +223,34 @@ public:
 	{
 		return *getInstance();
 	}
-	
+
 	// Has this singleton been created uet?
 	// Use this to avoid accessing singletons before the can safely be constructed
 	static bool instanceExists()
 	{
-		return getData().mInitState == INITIALIZED;
+		SingletonData& sData(getData());
+		return sData.mInitState == INITIALIZED;
 	}
-	
+
 	// Has this singleton already been deleted?
 	// Use this to avoid accessing singletons from a static object's destructor
 	static bool destroyed()
 	{
-		return getData().mInitState == DELETED;
+		SingletonData& sData(getData());
+		return sData.mInitState == DELETED;
 	}
 
 private:
-	static void createInstance(SingletonInstanceData& data);
+
 	virtual void initSingleton() {}
+
+	struct SingletonData
+	{
+		// explicitly has a default constructor so that member variables are zero initialized in BSS
+		// and only changed by singleton logic, not constructor running during startup
+		EInitState		mInitState;
+		DERIVED_TYPE*	mInstance;
+	};
 };
-
-// Moved this here cause it's too big to be inlined --Aleric.
-template<typename DERIVED_TYPE>
-void LLSingleton<DERIVED_TYPE>::createInstance(SingletonInstanceData& data)
-{
-	if (data.mInitState == CONSTRUCTING)
-	{
-		llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << llendl;
-	}
-
-	if (data.mInitState == DELETED)
-	{
-		llwarns << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << llendl;
-	}
-	
-	if (data.mInitState == INITIALIZING)
-	{
-		llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from initSingleton(), using half-initialized object" << llendl;
-		return;
-	}
-
-	data.mInitState = CONSTRUCTING;
-	data.mSingletonInstance = new DERIVED_TYPE(); 
-	data.mInitState = INITIALIZING;
-	data.mSingletonInstance->initSingleton(); 
-	data.mInitState = INITIALIZED;	
-}
 
 #endif

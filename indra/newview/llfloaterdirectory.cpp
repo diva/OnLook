@@ -54,7 +54,6 @@
 
 #include "hippogridmanager.h"
 #include "lfsimfeaturehandler.h"
-#include "llenvmanager.h"
 #include "llnotificationsutil.h"
 #include "llviewerregion.h"
 
@@ -279,7 +278,7 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 		LLPanelDirMarket* marketp = static_cast<LLPanelDirMarket*>(container->getPanelByName(market_panel));
 		container->removeTabPanel(marketp); // Until we get a MarketPlace URL, tab is removed.
 		marketp->handleRegionChange(container);
-		LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLPanelDirMarket::handleRegionChange, marketp, container));
+		gAgent.addRegionChangedCallback(boost::bind(&LLPanelDirMarket::handleRegionChange, marketp, container));
 	}
 	container->setCommitCallback(boost::bind(&LLFloaterDirectory::onTabChanged,_2));
 }
@@ -455,13 +454,13 @@ void LLFloaterDirectory::requestClassifieds()
 
 void LLFloaterDirectory::searchInAll(const std::string& search_text)
 {
+	start();
 	LLPanelDirFindAllInterface::search(sInstance->mFindAllPanel, search_text);
 	performQueryOn2("classified_panel", search_text);
 	performQueryOn2("events_panel", search_text);
 	performQueryOn2("groups_panel", search_text);
 	performQueryOn2("people_panel", search_text);
 	performQueryOn2("places_panel", search_text);
-	sInstance->open();
 }
 
 void LLFloaterDirectory::showFindAll(const std::string& search_text)
@@ -583,7 +582,7 @@ void LLFloaterDirectory::focusCurrentPanel()
 }
 
 // static
-void LLFloaterDirectory::showPanel(const std::string& tabname)
+void LLFloaterDirectory::start()
 {
 	// This function gets called when web browser clicks are processed,
 	// so we don't delete the existing panel, which would delete the 
@@ -593,6 +592,12 @@ void LLFloaterDirectory::showPanel(const std::string& tabname)
 		sInstance =  new LLFloaterDirectory("directory");
 	}
 	sInstance->open();	/*Flawfinder: ignore*/
+}
+
+// static
+void LLFloaterDirectory::showPanel(const std::string& tabname)
+{
+	start();
 	sInstance->childShowTab("Directory Tabs", tabname);
 	sInstance->focusCurrentPanel();
 }

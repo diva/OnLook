@@ -95,11 +95,15 @@ public:
 	virtual void refresh();
 	
 	void requestRegionInfo();
+	void requestMeshRezInfo();
+
+private:
 
 protected:
 	LLFloaterRegionInfo(const LLSD& seed);
 	~LLFloaterRegionInfo();
 
+protected:
 	void onTabSelected(const LLSD& param);
 	void refreshFromRegion(LLViewerRegion* region);
 
@@ -211,6 +215,7 @@ protected:
 	static void onClickRestart(void* data);
 	bool callbackRestart(const LLSD& notification, const LLSD& response);
 	static void onClickCancelRestart(void* data);
+	static void onClickDebugConsole(void* data);
 	
 private:
 	LLUUID mTargetAvatar;
@@ -229,6 +234,7 @@ public:
 	virtual BOOL postBuild();												// LLPanel
 	
 	virtual bool refreshFromRegion(LLViewerRegion* region);					// refresh local settings from region update from simulator
+	void setEnvControls(bool available);									// Whether environment settings are available for this region
 
 	BOOL validateTextureSizes();
 

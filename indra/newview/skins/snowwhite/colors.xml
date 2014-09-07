@@ -74,7 +74,7 @@
 <ScrollbarThumbColor value="205, 205, 205, 255" />
 <ScrollbarTrackColor value="155, 155, 155, 255" />
 <DefaultListText value="0, 0, 0, 255"/> <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
-<DefaultListIcon value="255, 255, 255, 255"/>
+<DefaultListIcon value="255, 255, 255, 255"/>
 <!-- MENUS -->
 <MenuBarBgColor value="255, 255, 255, 255" />
 <MenuBarGodBgColor value="155, 155, 155, 255" />
@@ -143,9 +143,6 @@
 <MapMuted value="110, 110, 110, 255" />
 
 <!-- RADAR -->
-
-<AvatarListTextAgeYoung value="255, 255, 255, 255"/>
-<AvatarListTextAgeNormal value="0, 0, 0, 255"/>
 
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />

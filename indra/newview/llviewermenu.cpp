@@ -755,7 +755,7 @@ void init_menus()
 	ins = gMenuBarView->getChildView("insert_admin", true, false);
 	ins->setVisible(false);*/
 
-	LLEnvManagerNew::instance().setRegionChangeCallback(&region_change);
+	gAgent.addRegionChangedCallback(&region_change);
 }
 
 

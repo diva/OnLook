@@ -5,7 +5,8 @@
 <TitleBarFocusColor value="200, 0, 0, 255" />	          <!-- couleur bandeau haut titres des preferences -->
 <FloaterFocusBorderColor value="0, 255, 0, 255" />  <!-- couleur -->
 <FloaterUnfocusBorderColor value="240, 0, 25, 255" /> <!-- couleur -->
-<FocusBackgroundColor value="255, 255, 255, 255"/>       <!-- couleur comme le fond des preferences--><DefaultBackgroundColor value="255, 255, 255, 100" />	<!-- Background color for unfocused floaters -->
+<FocusBackgroundColor value="255, 255, 255, 255"/>       <!-- couleur comme le fond des preferences-->
+<DefaultBackgroundColor value="255, 255, 255, 100" />	<!-- Background color for unfocused floaters -->
 <ColorDropShadow value="0, 30, 60, 0" />		<!-- The drop shadow behind windows and menus -->
 <DefaultHighlightDark value="254,254, 254, 204" />
 <DefaultHighlightLight value="102, 104, 0, 255" />
@@ -36,7 +37,8 @@
 <ButtonUnselectedBgColor value=" 0, 220, 0, 255"/>        <!-- couleur -->
 <ButtonUnselectedFgColor value="255, 255, 255, 255"/>
 <ButtonBorderColor value="240, 0, 0, 0"/>                 <!-- couleur -->
-<ButtonFlashBgColor value="240, 0, 25, 180" />            <!-- couleur --><ButtonColor value="255, 255, 255, 255"/>				<!-- Blended with button art, usually left as opaque white -->
+<ButtonFlashBgColor value="240, 0, 25, 180" />            <!-- couleur -->
+<ButtonColor value="255, 255, 255, 255"/>				<!-- Blended with button art, usually left as opaque white -->
 <ButtonImageColor value="255, 255, 255, 255"/>			<!-- Blended with button art, usually left as opaque white -->
 
 <!-- SLIDERS -->
@@ -73,7 +75,8 @@
 <!-- MENUS -->
 <MenuBarBgColor value="0, 200, 50, 255"/>               <!-- couleur -->
 <MenuBarGodBgColor value="200, 200, 200, 255"/>
-<MenuNonProductionGodBgColor value="200, 200, 200, 255"/><MenuNonProductionBgColor value="230, 0, 0, 255"/>     <!-- couleur -->
+<MenuNonProductionGodBgColor value="200, 200, 200, 255"/>
+<MenuNonProductionBgColor value="230, 0, 0, 255"/>     <!-- couleur -->
 <MenuDefaultBgColor value="240, 240, 240, 255"/>           <!-- couleur -->
 <MenuItemDisabledColor value="48, 48, 48, 128"/>
 <MenuItemEnabledColor value="0, 30, 60, 255"/>
@@ -138,8 +141,6 @@
 
 <!-- RADAR -->
 
-<AvatarListTextAgeYoung value="240, 0, 25, 255"/>
-<AvatarListTextAgeNormal value="0, 30, 60, 255"/>
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 30, 60, 77"/>
 <NetMapYouOwnAboveWater value="0, 255, 255, 255"/>
@@ -155,7 +156,7 @@
 <HelpScrollTrackColor value="183, 184, 188, 255"/>
 <HelpScrollThumbColor value="160, 0, 0, 255"/>
 <HelpScrollHighlightColor value="115, 122, 133, 255"/>
-<HelpScrollShadowColor value="0, 30, 60, 255"/>
+<HelpScrollShadowColor value="0, 30, 60, 255"/>
 <!-- MISC -->
 <AvatarNameColor value="251, 0, 0, 255" /> 		<!-- Text color of avatar nametags -->
 <FocusColor value="240, 0, 25, 255" /> 		<!-- couleur --><!-- Color of the glow around UI controls with keyboard focus -->
@@ -177,7 +178,8 @@
 <InventorySearchStatusColor value="0, 30, 60, 255" />
 <ComboBoxBg value="255, 255, 255, 255"/>
 <ConsoleBackground value="2, 2, 2, 155" /> <!-- Hudtext - chat console background -->
-<FolderViewLoadingMessageTextColor value="240, 0, 0, 255"/>   <!-- couleur --><InventoryBackgroundColor value="255, 255, 255, 80"/>
+<FolderViewLoadingMessageTextColor value="240, 0, 0, 255"/>   <!-- couleur -->
+<InventoryBackgroundColor value="255, 255, 255, 80"/>
 <!-- Alert box colors -->
 <AlertBoxColor value="220, 0, 0, 255"/>            <!-- couleur -->
 <AlertTextColor value="0, 30, 60, 255"/>

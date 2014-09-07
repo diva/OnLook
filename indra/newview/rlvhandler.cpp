@@ -1750,9 +1750,9 @@ ERlvCmdRet RlvHandler::onForceGroup(const RlvCommand& rlvCmd) const
 	}
 	else
 	{
-		for (S32 idxGroup = 0, cntGroup = gAgent.mGroups.count(); (idxGroup < cntGroup) && (idGroup.isNull()); idxGroup++)
-			if (boost::iequals(gAgent.mGroups.get(idxGroup).mName, rlvCmd.getOption()))
-				idGroup = gAgent.mGroups.get(idxGroup).mID;
+		for (S32 idxGroup = 0, cntGroup = gAgent.mGroups.size(); (idxGroup < cntGroup) && (idGroup.isNull()); idxGroup++)
+			if (boost::iequals(gAgent.mGroups[idxGroup].mName, rlvCmd.getOption()))
+				idGroup = gAgent.mGroups[idxGroup].mID;
 		fValid = (idGroup.notNull()) || ("none" == rlvCmd.getOption());
 	}
 

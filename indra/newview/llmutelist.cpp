@@ -65,7 +65,6 @@
 #include "lluistring.h"
 #include "llviewerobject.h" 
 #include "llviewerobjectlist.h"
-#include "llenvmanager.h"
 
 namespace 
 {
@@ -235,7 +234,7 @@ LLMuteList::LLMuteList() :
 	gGenericDispatcher.addHandler("emptymutelist", &sDispatchEmptyMuteList);
 
 	checkNewRegion();
-	LLEnvManagerNew::instance().setRegionChangeCallback(boost::bind(&LLMuteList::checkNewRegion, this));
+	gAgent.addRegionChangedCallback(boost::bind(&LLMuteList::checkNewRegion, this));
 }
 
 //-----------------------------------------------------------------------------

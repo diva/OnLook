@@ -358,6 +358,10 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	// Create the object lists
 	initStats();
 	initPartitions();
+	// If the newly entered region is using server bakes, and our
+	// current appearance is non-baked, request appearance update from
+	// server.
+	setCapabilitiesReceivedCallback(boost::bind(&LLAgent::handleServerBakeRegionTransition, &gAgent, _1)); // Singu TODO: LLAvatarRenderInfoAccountant
 }
 
 void LLViewerRegion::initPartitions()

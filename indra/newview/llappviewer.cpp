@@ -881,9 +881,6 @@ bool LLAppViewer::init()
 	gGLManager.getGLInfo(gDebugInfo);
 	gGLManager.printGLInfoString();
 
-	//load key settings
-	bind_keyboard_functions();
-
 	// Load Default bindings
 	load_default_bindings(gSavedSettings.getBOOL("LiruUseZQSDKeys"));
 

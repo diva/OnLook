@@ -78,6 +78,8 @@ public:
 								   LLInventoryModel::item_array_t& items_to_kill);
 	void enforceItemRestrictions();
 
+	S32 getActiveCopyOperations() const;
+
 	// Copy all items and the src category itself.
 	void shallowCopyCategory(const LLUUID& src_id, const LLUUID& dst_id,
 							 LLPointer<LLInventoryCallback> cb);
@@ -153,6 +155,7 @@ public:
 
 	// Find COF entries referencing the given item.
 	LLInventoryModel::item_array_t findCOFItemLinks(const LLUUID& item_id);
+	bool isLinkedInCOF(const LLUUID& item_id);
 	
 	// Remove COF entries
 	void removeCOFItemLinks(const LLUUID& item_id);
@@ -213,6 +216,13 @@ public:
 
 	void requestServerAppearanceUpdate(LLHTTPClient::ResponderPtr responder_ptr = NULL);
 
+	void setAppearanceServiceURL(const std::string& url) { mAppearanceServiceURL = url; }
+	std::string getAppearanceServiceURL() const;
+
+private:
+	std::string		mAppearanceServiceURL;
+	
+
 protected:
 	LLAppearanceMgr();
 	~LLAppearanceMgr();
@@ -255,7 +265,7 @@ private:
 	 */
 	bool mOutfitLocked;
 
-	std::auto_ptr<LLOutfitUnLockTimer> mUnlockOutfitTimer;
+	boost::scoped_ptr<LLOutfitUnLockTimer> mUnlockOutfitTimer;
 
 // [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-18 (Catznip-3.0.0a) | Modified: Catznip-2.1.2e
 public:

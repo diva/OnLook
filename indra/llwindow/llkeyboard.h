@@ -28,6 +28,7 @@
 #define LL_LLKEYBOARD_H
 
 #include <map>
+#include <boost/function.hpp>
 
 #include "string_table.h"
 #include "lltimer.h"
@@ -40,7 +41,7 @@ enum EKeystate
 	KEYSTATE_UP 
 };
 
-typedef void (*LLKeyFunc)(EKeystate keystate);
+typedef boost::function<void(EKeystate keystate)> LLKeyFunc;
 
 enum EKeyboardInsertMode
 {

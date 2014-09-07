@@ -61,7 +61,6 @@ typedef enum e_keyboard_mode
 
 void bind_keyboard_functions();
 
-
 class LLViewerKeyboard
 {
 public:
@@ -69,10 +68,8 @@ public:
 
 	BOOL			handleKey(KEY key, MASK mask, BOOL repeated);
 
-	void			bindNamedFunction(const std::string& name, LLKeyFunc func);
-
 	S32				loadBindings(const std::string& filename);										// returns number bound, 0 on error
-	void				unloadBindings();
+	void			unloadBindings();
 	EKeyboardMode	getMode();
 
 	BOOL			modeFromString(const std::string& string, S32 *mode);			// False on failure
@@ -80,8 +77,6 @@ public:
 	void			scanKey(KEY key, BOOL key_down, BOOL key_up, BOOL key_level);
 protected:
 	BOOL			bindKey(const S32 mode, const KEY key, const MASK mask, const std::string& function_name);
-	S32				mNamedFunctionCount;
-	LLNamedFunction	mNamedFunctions[MAX_NAMED_FUNCTIONS];
 
 	// Hold all the ugly stuff torn out to make LLKeyboard non-viewer-specific here
 	S32				mBindingCount[MODE_COUNT];
@@ -95,4 +90,5 @@ protected:
 
 extern LLViewerKeyboard gViewerKeyboard;
 void agent_push_forward(EKeystate s);
+
 #endif // LL_LLVIEWERKEYBOARD_H
