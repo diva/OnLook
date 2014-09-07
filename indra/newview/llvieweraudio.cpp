@@ -243,12 +243,11 @@ void audio_update_wind(bool fade)
 			volume_delta = (LLFrameTimer::getFrameDeltaTimeF32() / WIND_SOUND_TRANSITION_TIME) * max_wind_volume;
 		}
 
-		static LLCachedControl<bool> MuteWind("MuteWind");
-		static LLCachedControl<bool> ContinueFlying("LiruContinueFlyingOnUnsit");
+		static LLCachedControl<bool> MuteWind(gSavedSettings, "MuteWind", false);
+		static LLCachedControl<bool> ContinueFlying(gSavedSettings, "LiruContinueFlyingOnUnsit", false);
 		// mute wind entirely when the user asked or when the user is seated, but flying
-		if (MuteWind || (ContinueFlying && gAgentAvatarp&& gAgentAvatarp->isSitting()))
+		if (MuteWind || (ContinueFlying && gAgentAvatarp && gAgentAvatarp->isSitting()))
 		{
-			// volume decreases by itself
 			gAudiop->mMaxWindGain = 0.f;
 		}
 		// mute wind when not /*flying*/ in air
