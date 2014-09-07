@@ -9052,7 +9052,7 @@ class ListInviteToGroup : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLAvatarActions::inviteToGroup(get_focused_list_id_selected());
+		LLAvatarActions::inviteToGroup(get_focused_list_ids_selected());
 		return true;
 	}
 };

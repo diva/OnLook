@@ -473,7 +473,7 @@ BOOL LLPanelAvatarSecondLife::postBuild(void)
 
 	getChild<LLUICtrl>("Find on Map")->setCommitCallback(boost::bind(LLAvatarActions::showOnMap, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 	getChild<LLUICtrl>("Instant Message...")->setCommitCallback(boost::bind(LLAvatarActions::startIM, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
-	getChild<LLUICtrl>("GroupInvite_Button")->setCommitCallback(boost::bind(LLAvatarActions::inviteToGroup, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
+	getChild<LLUICtrl>("GroupInvite_Button")->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::inviteToGroup), boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 
 	getChild<LLUICtrl>("Add Friend...")->setCommitCallback(boost::bind(LLAvatarActions::requestFriendshipDialog, boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 	getChild<LLUICtrl>("Pay...")->setCommitCallback(boost::bind(LLAvatarActions::pay, boost::bind(&LLPanelAvatar::getAvatarID, pa)));

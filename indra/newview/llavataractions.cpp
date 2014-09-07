@@ -687,13 +687,18 @@ bool LLAvatarActions::canOfferTeleport(const uuid_vec_t& ids)
 
 void LLAvatarActions::inviteToGroup(const LLUUID& id)
 {
-	LLFloaterGroupPicker* widget = LLFloaterGroupPicker::showInstance(LLSD(id));
+	inviteToGroup(uuid_vec_t(1, id));
+}
+
+void LLAvatarActions::inviteToGroup(const uuid_vec_t& ids)
+{
+	LLFloaterGroupPicker* widget = LLFloaterGroupPicker::showInstance(LLSD(ids.front()));
 	if (widget)
 	{
 		widget->center();
 		widget->setPowersMask(GP_MEMBER_INVITE);
 		widget->removeNoneOption();
-		widget->setSelectGroupCallback(boost::bind(callback_invite_to_group, _1, id));
+		widget->setSelectGroupCallback(boost::bind(callback_invite_to_group, _1, ids));
 	}
 }
 
@@ -767,11 +772,8 @@ void ban_from_group(const uuid_vec_t& ids)
 // </singu>
 
 // static
-void LLAvatarActions::callback_invite_to_group(LLUUID group_id, LLUUID id)
+void LLAvatarActions::callback_invite_to_group(LLUUID group_id, uuid_vec_t& agent_ids)
 {
-	uuid_vec_t agent_ids;
-	agent_ids.push_back(id);
-
 	LLFloaterGroupInvite::showForGroup(group_id, &agent_ids);
 }
 
