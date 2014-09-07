@@ -337,9 +337,9 @@ protected:
 	// Collision volumes
 	//--------------------------------------------------------------------
 public:
-  	S32			mNumCollisionVolumes;
-	LLAvatarJointCollisionVolume* mCollisionVolumes;
+	std::vector<LLAvatarJointCollisionVolume*> mCollisionVolumes;
 protected:
+	void		clearCollisionVolumes();
 	BOOL		allocateCollisionVolumes(U32 num);
 
 /**                    Physics

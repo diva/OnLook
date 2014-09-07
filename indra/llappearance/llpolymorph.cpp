@@ -647,11 +647,11 @@ BOOL LLPolyMorphTarget::setInfo(LLPolyMorphTargetInfo* info)
 	for (iter = getInfo()->mVolumeInfoList.begin(); iter != getInfo()->mVolumeInfoList.end(); iter++)
 	{
 		LLPolyVolumeMorphInfo *volume_info = &(*iter);
-		for (S32 i = 0; i < avatarp->mNumCollisionVolumes; i++)
+		for (S32 i = 0; i < (S32)avatarp->mCollisionVolumes.size(); i++)
 		{
-			if (avatarp->mCollisionVolumes[i].getName() == volume_info->mName)
+			if (avatarp->mCollisionVolumes[i]->getName() == volume_info->mName)
 			{
-				mVolumeMorphs.push_back(LLPolyVolumeMorph(&avatarp->mCollisionVolumes[i],
+				mVolumeMorphs.push_back(LLPolyVolumeMorph(avatarp->mCollisionVolumes[i],
 														  volume_info->mScale,
 														  volume_info->mPos));
 				break;
