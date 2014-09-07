@@ -3702,37 +3702,55 @@ static LLFastTimer::DeclareTimer FTM_VLMANAGER("VL Manager");
 ///////////////////////////////////////////////////////
 void LLAppViewer::idle()
 {
+//LAZY_FT is just temporary.
+#define LAZY_FT(str) static LLFastTimer::DeclareTimer ftm(str); LLFastTimer t(ftm)
 	pingMainloopTimeout("Main:Idle");
-	
+
 	// Update frame timers
 	static LLTimer idle_timer;
 
-	LLFrameTimer::updateFrameTimeAndCount();
-	LLEventTimer::updateClass();
-	LLCriticalDamp::updateInterpolants();
-	LLMortician::updateClass();
-	F32 dt_raw = idle_timer.getElapsedTimeAndResetF32();
-
-	// Cap out-of-control frame times
-	// Too low because in menus, swapping, debugger, etc.
-	// Too high because idle called with no objects in view, etc.
-	const F32 MIN_FRAME_RATE = 1.f;
-	const F32 MAX_FRAME_RATE = 200.f;
-
-	F32 frame_rate_clamped = 1.f / dt_raw;
-	frame_rate_clamped = llclamp(frame_rate_clamped, MIN_FRAME_RATE, MAX_FRAME_RATE);
-	gFrameDTClamped = 1.f / frame_rate_clamped;
-
-	// Global frame timer
-	// Smoothly weight toward current frame
-	gFPSClamped = (frame_rate_clamped + (4.f * gFPSClamped)) / 5.f;
-
-	F32 qas = gSavedSettings.getF32("QuitAfterSeconds");
-	if (qas > 0.f)
 	{
-		if (gRenderStartTime.getElapsedTimeF32() > qas)
+		LAZY_FT("updateFrameTimeAndCount");
+		LLFrameTimer::updateFrameTimeAndCount();
+	}
+	{
+		LAZY_FT("LLEventTimer::updateClass");
+		LLEventTimer::updateClass();
+	}
+	{
+		LAZY_FT("LLCriticalDamp::updateInterpolants");
+		LLCriticalDamp::updateInterpolants();
+	}
+	{
+		LAZY_FT("LLMortician::updateClass");
+		LLMortician::updateClass();
+	}
+	F32 dt_raw;
+	{
+		LAZY_FT("UpdateGlobalTimers");
+		dt_raw = idle_timer.getElapsedTimeAndResetF32();
+
+		// Cap out-of-control frame times
+		// Too low because in menus, swapping, debugger, etc.
+		// Too high because idle called with no objects in view, etc.
+		const F32 MIN_FRAME_RATE = 1.f;
+		const F32 MAX_FRAME_RATE = 200.f;
+
+		F32 frame_rate_clamped = 1.f / dt_raw;
+		frame_rate_clamped = llclamp(frame_rate_clamped, MIN_FRAME_RATE, MAX_FRAME_RATE);
+		gFrameDTClamped = 1.f / frame_rate_clamped;
+
+		// Global frame timer
+		// Smoothly weight toward current frame
+		gFPSClamped = (frame_rate_clamped + (4.f * gFPSClamped)) / 5.f;
+
+		F32 qas = gSavedSettings.getF32("QuitAfterSeconds");
+		if (qas > 0.f)
 		{
-			LLAppViewer::instance()->forceQuit();
+			if (gRenderStartTime.getElapsedTimeF32() > qas)
+			{
+				LLAppViewer::instance()->forceQuit();
+			}
 		}
 	}
 
@@ -3748,38 +3766,44 @@ void LLAppViewer::idle()
 
 	// Must wait until both have avatar object and mute list, so poll
 	// here.
-	request_initial_instant_messages();
+	{
+		LAZY_FT("request_initial_instant_messages");
+		request_initial_instant_messages();
+	}
 
 	///////////////////////////////////
 	//
 	// Special case idle if still starting up
 	//
-	if (LLStartUp::getStartupState() < STATE_STARTED)
 	{
-		// Skip rest if idle startup returns false (essentially, no world yet)
-		gGLActive = TRUE;
-		if (!idle_startup())
+		LAZY_FT("idle_startup");
+		if (LLStartUp::getStartupState() < STATE_STARTED)
 		{
+			// Skip rest if idle startup returns false (essentially, no world yet)
+			gGLActive = TRUE;
+			if (!idle_startup())
+			{
+				gGLActive = FALSE;
+				return;
+			}
 			gGLActive = FALSE;
-			return;
 		}
-		gGLActive = FALSE;
 	}
 
-	
-    F32 yaw = 0.f;				// radians
+
+	F32 yaw = 0.f;				// radians
 
 	if (!gDisconnected)
 	{
 		LLFastTimer t(FTM_NETWORK);
 		// Update spaceserver timeinfo
-	    LLWorld::getInstance()->setSpaceTimeUSec(LLWorld::getInstance()->getSpaceTimeUSec() + (U32)(dt_raw * SEC_TO_MICROSEC));
-    
-    
-	    //////////////////////////////////////
-	    //
-	    // Update simulator agent state
-	    //
+		LLWorld::getInstance()->setSpaceTimeUSec(LLWorld::getInstance()->getSpaceTimeUSec() + (U32)(dt_raw * SEC_TO_MICROSEC));
+
+
+		//////////////////////////////////////
+		//
+		// Update simulator agent state
+		//
 
 		if (gSavedSettings.getBOOL("RotateRight"))
 		{
@@ -3792,22 +3816,22 @@ void LLAppViewer::idle()
 			gAgentPilot.updateTarget();
 			gAgent.autoPilot(&yaw);
 		}
-    
-	    static LLFrameTimer agent_update_timer;
-	    static U32 				last_control_flags;
-    
-	    //	When appropriate, update agent location to the simulator.
-	    F32 agent_update_time = agent_update_timer.getElapsedTimeF32();
-	    BOOL flags_changed = gAgent.controlFlagsDirty() || (last_control_flags != gAgent.getControlFlags());
-    
-	    if (flags_changed || (agent_update_time > (1.0f / (F32) AGENT_UPDATES_PER_SECOND)))
-	    {
-		    LLFastTimer t(FTM_AGENT_UPDATE);
-		    // Send avatar and camera info
-		    last_control_flags = gAgent.getControlFlags();
+
+		static LLFrameTimer agent_update_timer;
+		static U32 				last_control_flags;
+
+		//	When appropriate, update agent location to the simulator.
+		F32 agent_update_time = agent_update_timer.getElapsedTimeF32();
+		BOOL flags_changed = gAgent.controlFlagsDirty() || (last_control_flags != gAgent.getControlFlags());
+
+		if (flags_changed || (agent_update_time > (1.0f / (F32)AGENT_UPDATES_PER_SECOND)))
+		{
+			LLFastTimer t(FTM_AGENT_UPDATE);
+			// Send avatar and camera info
+			last_control_flags = gAgent.getControlFlags();
 			send_agent_update(TRUE);
-		    agent_update_timer.reset();
-	    }
+			agent_update_timer.reset();
+		}
 	}
 
 	//////////////////////////////////////
@@ -3816,6 +3840,7 @@ void LLAppViewer::idle()
 	//
 	//
 	{
+		LAZY_FT("Frame Stats");
 		// Initialize the viewer_stats_timer with an already elapsed time
 		// of SEND_STATS_PERIOD so that the initial stats report will
 		// be sent immediately.
@@ -3859,26 +3884,26 @@ void LLAppViewer::idle()
 		}
 		gFrameStats.addFrameData();
 	}
-	
+
 	if (!gDisconnected)
 	{
 		LLFastTimer t(FTM_NETWORK);
-	
-	    ////////////////////////////////////////////////
-	    //
-	    // Network processing
-	    //
-	    // NOTE: Starting at this point, we may still have pointers to "dead" objects
-	    // floating throughout the various object lists.
-	    //
+
+		////////////////////////////////////////////////
+		//
+		// Network processing
+		//
+		// NOTE: Starting at this point, we may still have pointers to "dead" objects
+		// floating throughout the various object lists.
+		//
 		idleNameCache();
-    
-	    gFrameStats.start(LLFrameStats::IDLE_NETWORK);
+
+		gFrameStats.start(LLFrameStats::IDLE_NETWORK);
 		stop_glerror();
 		idleNetwork();
-	    stop_glerror();
-	        
-	    gFrameStats.start(LLFrameStats::AGENT_MISC);
+		stop_glerror();
+
+		gFrameStats.start(LLFrameStats::AGENT_MISC);
 
 		// Check for away from keyboard, kick idle agents.
 		idle_afk_check();
@@ -3894,15 +3919,15 @@ void LLAppViewer::idle()
 	//
 
 	{
-// 		LLFastTimer t(FTM_IDLE_CB);
+		LLFastTimer t(FTM_IDLE_CB);
 
 		// Do event notifications if necessary.  Yes, we may want to move this elsewhere.
 		gEventNotifier.update();
-		
+
 		gIdleCallbacks.callFunctions();
 		gInventory.idleNotifyObservers();
 	}
-	
+
 	// Metrics logging (LLViewerAssetStats, etc.)
 	{
 		static LLTimer report_interval;
@@ -3911,22 +3936,23 @@ void LLAppViewer::idle()
 		F32 seconds = report_interval.getElapsedTimeF32();
 		if (seconds >= app_metrics_interval)
 		{
-			metricsSend(! gDisconnected);
+			LAZY_FT("metricsSend");
+			metricsSend(!gDisconnected);
 			report_interval.reset();
 		}
 	}
 
 	if (gDisconnected)
-    {
+	{
 		return;
-    }
+	}
 
-	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens",false);
+	static const LLCachedControl<bool> hide_tp_screen("AscentDisableTeleportScreens", false);
 	LLAgent::ETeleportState tp_state = gAgent.getTeleportState();
 	if (!hide_tp_screen && tp_state != LLAgent::TELEPORT_NONE && tp_state != LLAgent::TELEPORT_LOCAL && tp_state != LLAgent::TELEPORT_PENDING)
-    {
+	{
 		return;
-    }
+	}
 
 	gViewerWindow->updateUI();
 
@@ -3936,11 +3962,12 @@ void LLAppViewer::idle()
 	///////////////////////////////////////
 	// Agent and camera movement
 	//
-		LLCoordGL current_mouse = gViewerWindow->getCurrentMouse();
+	LLCoordGL current_mouse = gViewerWindow->getCurrentMouse();
 
 	{
 		// After agent and camera moved, figure out if we need to
 		// deselect objects.
+		LAZY_FT("deselectAllIfTooFar");
 		LLSelectMgr::getInstance()->deselectAllIfTooFar();
 
 	}
@@ -3955,15 +3982,15 @@ void LLAppViewer::idle()
 	}
 
 	{
-		LLFastTimer t(FTM_OBJECTLIST_UPDATE); 
+		LLFastTimer t(FTM_OBJECTLIST_UPDATE);
 		gFrameStats.start(LLFrameStats::OBJECT_UPDATE);
-		
-        if (!(logoutRequestSent() && hasSavedFinalSnapshot()))
+
+		if (!(logoutRequestSent() && hasSavedFinalSnapshot()))
 		{
 			gObjectList.update(gAgent, *LLWorld::getInstance());
 		}
 	}
-	
+
 	//////////////////////////////////////
 	//
 	// Deletes objects...
@@ -3982,7 +4009,7 @@ void LLAppViewer::idle()
 			LLDrawable::cleanupDeadDrawables();
 		}
 	}
-	
+
 	//
 	// After this point, in theory we should never see a dead object
 	// in the various object/drawable lists.
@@ -4016,25 +4043,29 @@ void LLAppViewer::idle()
 		LLFastTimer t(FTM_NETWORK);
 		gVLManager.unpackData();
 	}
-	
+
 	/////////////////////////
 	//
 	// Update surfaces, and surface textures as well.
 	//
 
-	LLWorld::getInstance()->updateVisibilities();
+	{
+		LAZY_FT("updateVisibilities");
+		LLWorld::getInstance()->updateVisibilities();
+	}
 	{
 		const F32 max_region_update_time = .001f; // 1ms
 		LLFastTimer t(FTM_REGION_UPDATE);
 		LLWorld::getInstance()->updateRegions(max_region_update_time);
 	}
-	
+
 	/////////////////////////
 	//
 	// Update weather effects
 	//
 	if (!gNoRender)
 	{
+		LAZY_FT("Weather");
 #if ENABLE_CLASSIC_CLOUDS
 		LLWorld::getInstance()->updateClouds(gFrameDTClamped);
 #endif
@@ -4051,7 +4082,7 @@ void LLAppViewer::idle()
 			gWindVec = regionp->mWind.getVelocity(wind_position_region);
 
 			// Compute average wind and use to drive motion of water
-			
+
 			average_wind = regionp->mWind.getAverage();
 #if ENABLE_CLASSIC_CLOUDS
 			F32 cloud_density = regionp->mCloudLayer.getDensityRegion(wind_position_region);
@@ -4066,13 +4097,13 @@ void LLAppViewer::idle()
 		}
 	}
 	stop_glerror();
-	
+
 	//////////////////////////////////////
 	//
 	// Sort and cull in the new renderer are moved to pipeline.cpp
 	// Here, particles are updated and drawables are moved.
 	//
-	
+
 	if (!gNoRender)
 	{
 		LLFastTimer t(FTM_WORLD_UPDATE);
@@ -4084,26 +4115,38 @@ void LLAppViewer::idle()
 	}
 	stop_glerror();
 
-	if (LLViewerJoystick::getInstance()->getOverrideCamera())
 	{
-		LLViewerJoystick::getInstance()->moveFlycam();
-	}
-	else
-	{
-		if (LLToolMgr::getInstance()->inBuildMode())
+		LAZY_FT("Move*");
+		if (LLViewerJoystick::getInstance()->getOverrideCamera())
 		{
-			LLViewerJoystick::getInstance()->moveObjects();
+			LLViewerJoystick::getInstance()->moveFlycam();
 		}
+		else
+		{
+			if (LLToolMgr::getInstance()->inBuildMode())
+			{
+				LLViewerJoystick::getInstance()->moveObjects();
+			}
 
-		gAgentCamera.updateCamera();
+			gAgentCamera.updateCamera();
+		}
 	}
 
 	// update media focus
-	LLViewerMediaFocus::getInstance()->update();
-	
+	{
+		LAZY_FT("Media Focus");
+		LLViewerMediaFocus::getInstance()->update();
+	}
+
 	// Update marketplace
-	LLMarketplaceInventoryImporter::update();
-	LLMarketplaceInventoryNotifications::update();
+	{
+		LAZY_FT("MPII::update");
+		LLMarketplaceInventoryImporter::update();
+	}
+	{
+		LAZY_FT("MPIN::update");
+		LLMarketplaceInventoryNotifications::update();
+	}
 
 	// objects and camera should be in sync, do LOD calculations now
 	{
@@ -4112,7 +4155,10 @@ void LLAppViewer::idle()
 	}
 
 	// Execute deferred tasks.
-	LLDeferredTaskList::instance().run();
+	{
+		LAZY_FT("DeferredTaskRun");
+		LLDeferredTaskList::instance().run();
+	}
 	
 	// Handle shutdown process, for example, 
 	// wait for floaters to close, send quit message,
