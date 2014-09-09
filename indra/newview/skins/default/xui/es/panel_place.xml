@@ -4,7 +4,7 @@
 	<text name="name_label">
 		Nombre:
 	</text>
-	<text left_delta="65" name="name_editor" width="361" />	
+	<text left="75" name="name_editor" width="361" />	
 	<text name="description_label">
 		Descripción:
 	</text>

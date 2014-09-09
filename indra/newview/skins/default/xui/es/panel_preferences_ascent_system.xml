@@ -116,7 +116,8 @@
 			</combo_box>
 			<check_box label="Mostrar una línea desde la baliza Mirar a hasta el avatar" tool_tip="Ver una línea conectando el foco de la cámara a su avatar. Útil para encontrar donde se encuentra el avatar." name="lineslookat"/>
 			<check_box label="Notificar en el chat cuando alguien te empuja" name="announce_bumps"/>
-      <check_box label="Quitarse automáticamente el Bridge LSL" tool_tip="Quitar automáticamente el Bridge LSL de los visores Phoenix o Firestorm." name="detach_bridge"/>			
+      <check_box label="Quitarse automáticamente el Bridge LSL" tool_tip="Quitar automáticamente el Bridge LSL de los visores Phoenix o Firestorm." name="detach_bridge"/>
+			<check_box label="Dibujar avatares bloqueados" name="render_muted"/>
 			<check_box label="Captura silenciosa a Disco" tool_tip="Anula el sonido de la cámara y el alerta a los demás cuando realizas una captura al disco de tu PC" name="quiet_snapshots_check"/>
 			<check_box label="Al pararse, revoca el permiso de los objetos en los cuales estuvo sentado tu avatar" tool_tip="Los objetos retienen, generalmente, el permiso para tomar control y ejecutar animaciones hasta que se reinician u otro usuario le cede permisos. Activando esta opción te aseguras que los permisos serán revocados inmediatamente." name="revoke_perms_on_stand_up_check"/>
 			<check_box label="Desactivar click del ratón para sentarse en los objetos" tool_tip="Algunas herramientas de griefer se basan en forzarte o engañarte para que hagas click en un objeto el cual te hará sentar, dándole automáticamente al objeto permisos para ejecutar una animación entre de otras cosas. Esta opción desactivará la función llSitTarget - Esto significa que deberás seleccionar la opción 'Sentarse' en las bolas de animación o muebles." name="disable_click_sit_check"/>
