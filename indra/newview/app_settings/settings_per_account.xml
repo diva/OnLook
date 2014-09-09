@@ -216,31 +216,18 @@
 			</array>
 		</map>
 
-		<key>AscentInstantMessageResponseRepeat</key>
-		<map>
-			<key>Comment</key>
-			<string>Whether to keep on resending the autoresponse every line they send</string>
-			<key>Persist</key>
-			<integer>1</integer>
-			<key>Type</key>
-			<string>Boolean</string>
-			<key>Value</key>
-			<integer>0</integer>
-		</map>
-
-		<key>AscentInstantMessageShowOnTyping</key>
-		<map>
-			<key>Comment</key>
-			<string>Whether to perform the autorespond the moment they begin to type instead of waiting for an actual message</string>
-			<key>Persist</key>
-			<integer>1</integer>
-			<key>Type</key>
-			<string>Boolean</string>
-			<key>Value</key>
-			<integer>0</integer>
-		</map>
-
     <!-- Autoresponse Section -->
+    <key>AscentInstantMessageResponseRepeat</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to keep on resending the autoresponse every line they send</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>AutoresponseAnyone</key>
     <map>
       <key>Comment</key>
@@ -438,7 +425,7 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
-	  </map>
+    </map>
     <key>BusyModeResponseItemID</key>
     <map>
       <key>Comment</key>

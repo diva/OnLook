@@ -2464,8 +2464,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
 					if (show_autoresponded)
 					{
-							gIMMgr->addMessage(computed_session_id, from_id, name,
-								llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
+						gIMMgr->addMessage(computed_session_id, from_id, name,
+							llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
 					}
 				}
 			}
@@ -2636,7 +2636,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 						if (show_autoresponded)
 						{
 							gIMMgr->addMessage(computed_session_id, from_id, name,
-									llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
+								llformat("%s %s \"%s\"", pns_name.c_str(), LLTrans::getString("IM_autoresponse_sent_item").c_str(), item->getName().c_str()));
 						}
 					}
 				}
