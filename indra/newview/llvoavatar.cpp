@@ -1799,10 +1799,10 @@ void LLVOAvatar::renderCollisionVolumes()
 {
 	std::ostringstream ostr;
 	LLGLDepthTest gls_depth(GL_FALSE);
-	for (S32 i = 0; i < mNumCollisionVolumes; i++)
+	for (S32 i = 0; i < (S32)mCollisionVolumes.size(); i++)
 	{
-		mCollisionVolumes[i].renderCollision();
-		ostr << mCollisionVolumes[i].getName() << ", ";
+		mCollisionVolumes[i]->renderCollision();
+		ostr << mCollisionVolumes[i]->getName() << ", ";
 	}
 
 	if (mNameText.notNull())
@@ -1920,11 +1920,11 @@ BOOL LLVOAvatar::lineSegmentIntersect(const LLVector4a& start, const LLVector4a&
 
 	if (lineSegmentBoundingBox(start, end))
 	{
-		for (S32 i = 0; i < mNumCollisionVolumes; ++i)
+		for (S32 i = 0; i < (S32)mCollisionVolumes.size(); ++i)
 		{
-			mCollisionVolumes[i].updateWorldMatrix();
+			mCollisionVolumes[i]->updateWorldMatrix();
 
-			const LLMatrix4a& mat = mCollisionVolumes[i].getXform()->getWorldMatrix();
+			const LLMatrix4a& mat = mCollisionVolumes[i]->getXform()->getWorldMatrix();
 			LLMatrix4a inverse = mat;
 			inverse.invert();
 			LLMatrix4a norm_mat = inverse;
