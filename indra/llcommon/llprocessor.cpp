@@ -206,6 +206,7 @@ namespace
    		return "Unknown";
 	}
 
+#if LL_LINUX
 	std::string compute_CPUFamilyName(const char* cpu_vendor, int composed_family) 
 	{
 		const char* intel_string = "GenuineIntel";
@@ -221,6 +222,7 @@ namespace
 		return "Unknown";
 	}
 
+#else
 	std::string compute_CPUFamilyName(const char* cpu_vendor, int family, int ext_family) 
 	{
 		const char* intel_string = "GenuineIntel";
@@ -239,6 +241,7 @@ namespace
 		}
 		return "Unknown";
 	}
+#endif
 
 } // end unnamed namespace
 
