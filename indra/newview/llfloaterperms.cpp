@@ -1,7 +1,7 @@
 /** 
  * @file llfloaterperms.cpp
  * @brief Asset creation permission preferences.
- * @author Coco
+ * @author Jonathan Yap
  *
  * $LicenseInfo:firstyear=2001&license=viewergpl$
  * 
@@ -33,152 +33,57 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "lfsimfeaturehandler.h"
+#include "llagent.h"
 #include "llcheckboxctrl.h"
 #include "llfloaterperms.h"
 #include "llnotificationsutil.h"
 #include "llviewercontrol.h"
+#include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "lluictrlfactory.h"
 #include "llpermissions.h"
 #include "hippogridmanager.h"
 
-namespace
-{
-	bool everyone_export;
-	void handle_checkboxes(LLUICtrl* ctrl, const LLSD& value)
-	{
-		LLPanel* view = static_cast<LLPanel*>(ctrl->getParent());
-		if (ctrl->getName() == "everyone_export")
-		{
-			view->childSetEnabled("next_owner_copy", !value);
-			view->childSetEnabled("next_owner_modify", !value);
-			view->childSetEnabled("next_owner_transfer", !value);
-		}
-		else
-		{
-			if (ctrl->getName() == "next_owner_copy")
-			{
-				if (!value) // Implements fair use
-					gSavedSettings.setBOOL("NextOwnerTransfer", true);
-				view->childSetEnabled("next_owner_transfer", value);
-			}
-			if (!value) // If any of these are unchecked, export can no longer be checked.
-				view->childSetEnabled("everyone_export", false);
-			else
-				view->childSetEnabled("everyone_export", LFSimFeatureHandler::instance().simSupportsExport() && (LLFloaterPerms::getNextOwnerPerms() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
-		}
-	}
-}
+extern class AIHTTPTimeoutPolicy floaterPermsResponder_timeout;
 
-LLFloaterPerms::LLFloaterPerms(const LLSD& seed)
-{
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_perm_prefs.xml");
-}
-
-BOOL LLFloaterPerms::postBuild()
-{
-	//handle_checkboxes
-	{
-		bool export_support = LFSimFeatureHandler::instance().simSupportsExport();
-		const U32 next_owner_perms = getNextOwnerPerms();
-		childSetEnabled("everyone_export", export_support && (next_owner_perms & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
-		if (!gHippoGridManager->getCurrentGrid()->isSecondLife())
-			childSetVisible("everyone_export", false);
-
-		if (!(next_owner_perms & PERM_COPY))
-		{
-			childSetEnabled("next_owner_transfer", false);
-		}
-		else if (export_support)
-		{
-			bool export_off = !gSavedPerAccountSettings.getBOOL("EveryoneExport");
-			childSetEnabled("next_owner_copy", export_off);
-			childSetEnabled("next_owner_modify", export_off);
-			childSetEnabled("next_owner_transfer", export_off);
-		}
-		else // Set EveryoneExport false, just in case.
-			gSavedPerAccountSettings.setBOOL("EveryoneExport", false);
-	}
-	childSetAction("help",   onClickHelp,   this);
-	childSetAction("ok",     onClickOK,     this);
-	childSetAction("cancel", onClickCancel, this);
-	getChild<LLUICtrl>("next_owner_copy")->setCommitCallback(handle_checkboxes);
-	getChild<LLUICtrl>("next_owner_modify")->setCommitCallback(handle_checkboxes);
-	getChild<LLUICtrl>("next_owner_transfer")->setCommitCallback(handle_checkboxes);
-	getChild<LLUICtrl>("everyone_export")->setCommitCallback(handle_checkboxes);
-
-	refresh();
-	
-	return TRUE;
-}
-
-//static 
-void LLFloaterPerms::onClickOK(void* data)
-{
-	LLFloaterPerms* self = static_cast<LLFloaterPerms*>(data);
-	self->ok();
-	self->close();
-}
-
-//static 
-void LLFloaterPerms::onClickCancel(void* data)
-{
-	LLFloaterPerms* self = static_cast<LLFloaterPerms*>(data);
-	self->cancel();
-	self->close();
-}
-
-void LLFloaterPerms::ok()
-{
-	refresh(); // Changes were already applied to saved settings. Refreshing internal values makes it official.
-}
-
-void LLFloaterPerms::cancel()
-{
-	gSavedSettings.setBOOL("ShareWithGroup",    mShareWithGroup);
-	gSavedSettings.setBOOL("EveryoneCopy",      mEveryoneCopy);
-	gSavedSettings.setBOOL("NextOwnerCopy",     mNextOwnerCopy);
-	gSavedSettings.setBOOL("NextOwnerModify",   mNextOwnerModify);
-	gSavedSettings.setBOOL("NextOwnerTransfer", mNextOwnerTransfer);
-	gSavedPerAccountSettings.setBOOL("EveryoneExport", everyone_export);
-}
-
-void LLFloaterPerms::refresh()
-{
-	mShareWithGroup    = gSavedSettings.getBOOL("ShareWithGroup");
-	mEveryoneCopy      = gSavedSettings.getBOOL("EveryoneCopy");
-	mNextOwnerCopy     = gSavedSettings.getBOOL("NextOwnerCopy");
-	mNextOwnerModify   = gSavedSettings.getBOOL("NextOwnerModify");
-	mNextOwnerTransfer = gSavedSettings.getBOOL("NextOwnerTransfer");
-	everyone_export    = gSavedPerAccountSettings.getBOOL("EveryoneExport");
-}
-
-void LLFloaterPerms::onClose(bool app_quitting)
-{
-	// Cancel any unsaved changes before closing. 
-	// Note: when closed due to the OK button this amounts to a no-op.
-	cancel();
-	LLFloater::onClose(app_quitting);
-}
-
-//static 
+//static
 U32 LLFloaterPerms::getGroupPerms(std::string prefix)
-{	
-	return gSavedSettings.getBOOL(prefix+"ShareWithGroup") ? PERM_COPY : PERM_NONE;
+{
+	return gSavedSettings.getBOOL(prefix+"ShareWithGroup") ? PERM_COPY | PERM_MOVE | PERM_MODIFY : PERM_NONE;
 }
 
-//static 
+//static
 U32 LLFloaterPerms::getEveryonePerms(std::string prefix)
 {
 	U32 flags = PERM_NONE;
-	if (LFSimFeatureHandler::instance().simSupportsExport() && prefix.empty() && gSavedPerAccountSettings.getBOOL("EveryoneExport")) // TODO: Bulk enable export?
+	if (prefix != "Bulk" && LFSimFeatureHandler::instance().simSupportsExport() && prefix.empty() && gSavedPerAccountSettings.getBOOL(prefix+"EveryoneExport")) // Singu TODO: Bulk?
 		flags |= PERM_EXPORT;
 	if (gSavedSettings.getBOOL(prefix+"EveryoneCopy"))
 		flags |= PERM_COPY;
 	return flags;
 }
 
-//static 
+//static
+U32 LLFloaterPerms::getNextOwnerPermsInverted(std::string prefix)
+{
+	// Sets bits for permissions that are off
+	U32 flags = PERM_MOVE;
+	if (!gSavedSettings.getBOOL(prefix+"NextOwnerCopy"))
+	{
+		flags |= PERM_COPY;
+	}
+	if (!gSavedSettings.getBOOL(prefix+"NextOwnerModify"))
+	{
+		flags |= PERM_MODIFY;
+	}
+	if (!gSavedSettings.getBOOL(prefix+"NextOwnerTransfer"))
+	{
+		flags |= PERM_TRANSFER;
+	}
+	return flags;
+}
+
+//static
 U32 LLFloaterPerms::getNextOwnerPerms(std::string prefix)
 {
 	U32 flags = PERM_MOVE;
@@ -197,9 +102,232 @@ U32 LLFloaterPerms::getNextOwnerPerms(std::string prefix)
 	return flags;
 }
 
-
-//static
-void LLFloaterPerms::onClickHelp(void* data)
+namespace
 {
-	LLNotificationsUtil::add("ClickUploadHelpPermissions");
+	void handle_checkboxes(LLView* view, const std::string& ctrl_name, const LLSD& value, const std::string& type)
+	{
+		if (ctrl_name == type+"everyone_export")
+		{
+			view->getChildView(type+"next_owner_copy")->setEnabled(!value);
+			view->getChildView(type+"next_owner_modify")->setEnabled(!value);
+			view->getChildView(type+"next_owner_transfer")->setEnabled(!value);
+		}
+		else
+		{
+			if (ctrl_name == type+"next_owner_copy")
+			{
+				if (!value) // Implements fair use
+					gSavedSettings.setBOOL(type+"NextOwnerTransfer", true);
+				view->getChildView(type+"next_owner_transfer")->setEnabled(value);
+			}
+			if (!value) // If any of these are unchecked, export can no longer be checked.
+				view->getChildView(type+"everyone_export")->setEnabled(false);
+			else
+				view->getChildView(type+"everyone_export")->setEnabled(LFSimFeatureHandler::instance().simSupportsExport() && (LLFloaterPerms::getNextOwnerPerms(type) & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
+		}
+	}
+}
+
+static bool mCapSent = false;
+
+LLFloaterPermsDefault::LLFloaterPermsDefault(const LLSD& seed)
+	: LLFloater()
+{
+	mCommitCallbackRegistrar.add("PermsDefault.OK", boost::bind(&LLFloaterPermsDefault::onClickOK, this));
+	mCommitCallbackRegistrar.add("PermsDefault.Cancel", boost::bind(&LLFloaterPermsDefault::onClickCancel, this));
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_perm_prefs.xml");
+}
+
+// String equivalents of enum Categories - initialization order must match enum order!
+const std::string LLFloaterPermsDefault::sCategoryNames[CAT_LAST] =
+{
+	"Objects",
+	"Uploads",
+	"Scripts",
+	"Notecards",
+	"Gestures",
+	"Wearables"
+};
+
+void LLFloaterPermsDefault::initCheckboxes(bool export_support, const std::string& type)
+{
+	const U32 next_owner_perms = LLFloaterPerms::getNextOwnerPerms(type);
+	getChildView(type + "everyone_export")->setEnabled(export_support && (next_owner_perms & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED);
+
+	if (!(next_owner_perms & PERM_COPY))
+	{
+		getChildView(type + "next_owner_transfer")->setEnabled(false);
+	}
+	else if (export_support)
+	{
+		bool export_off = !gSavedPerAccountSettings.getBOOL(type+"EveryoneExport");
+		getChildView(type + "next_owner_copy")->setEnabled(export_off);
+		getChildView(type + "next_owner_modify")->setEnabled(export_off);
+		getChildView(type + "next_owner_transfer")->setEnabled(export_off);
+	}
+	else // Set type+EveryoneExport false, just in case.
+		gSavedPerAccountSettings.setBOOL(type+"EveryoneExport", false);
+}
+
+BOOL LLFloaterPermsDefault::postBuild()
+{
+	//handle_checkboxes
+	bool export_support = LFSimFeatureHandler::instance().simSupportsExport();
+	bool is_sl = gHippoGridManager->getCurrentGrid()->isSecondLife();
+	for (S32 i = 0; i < CAT_LAST; ++i)
+	{
+		const std::string& type(sCategoryNames[i]);
+		initCheckboxes(export_support, type);
+		commit_callback_t handle_checks(boost::bind(handle_checkboxes, this, boost::bind(&LLView::getName, _1), _2, type));
+		getChild<LLUICtrl>(type + "next_owner_copy")->setCommitCallback(handle_checks);
+		getChild<LLUICtrl>(type + "next_owner_modify")->setCommitCallback(handle_checks);
+		getChild<LLUICtrl>(type + "next_owner_transfer")->setCommitCallback(handle_checks);
+		if (is_sl)
+			getChildView(type + "everyone_export")->setVisible(false);
+		else
+			getChild<LLUICtrl>(type + "everyone_export")->setCommitCallback(handle_checks);
+	}
+	if (is_sl)
+	{
+		LLView* view(getChildView("ExportationLabel"));
+		S32 shift(view->getRect().getWidth()); // Determine size of export area
+		LLRect rect(getRect());
+		rect.mRight -= shift;
+		setRect(rect); // Cut off the export side
+		view->setVisible(false); // Hide label
+		// Move bottom buttons over so they look nice.
+		shift /= -2;
+		view = getChildView("ok");
+		rect = view->getRect();
+		rect.translate(shift, 0);
+		view->setRect(rect);
+		view = getChildView("cancel");
+		rect = view->getRect();
+		rect.translate(shift, 0);
+		view->setRect(rect);
+	}
+
+	refresh();
+	
+	return TRUE;
+}
+
+void LLFloaterPermsDefault::onClickOK()
+{
+	ok();
+	close();
+}
+
+void LLFloaterPermsDefault::onClickCancel()
+{
+	cancel();
+	close();
+}
+
+class LLFloaterPermsResponder : public LLHTTPClient::ResponderWithResult
+{
+public:
+	LLFloaterPermsResponder() : LLHTTPClient::ResponderWithResult() {}
+private:
+	static std::string sPreviousReason;
+
+	void httpFailure(void)
+	{
+		// <singu> Prevent 404s from annoying the user all the tme
+		if (mStatus == HTTP_NOT_FOUND)
+			LL_INFOS("FloaterPermsResponder") << "Failed to send default permissions to simulator. 404, reason: " << mReason << LL_ENDL;
+		else
+		// </singu>
+		// Do not display the same error more than once in a row
+		if (mReason != sPreviousReason)
+		{
+			sPreviousReason = mReason;
+			LLSD args;
+			args["REASON"] = mReason;
+			LLNotificationsUtil::add("DefaultObjectPermissions", args);
+		}
+	}
+	void httpSuccess(void)
+	{
+		// Since we have had a successful POST call be sure to display the next error message
+		// even if it is the same as a previous one.
+		sPreviousReason = "";
+		mCapSent = true;
+		LL_INFOS("FloaterPermsResponder") << "Sent default permissions to simulator" << LL_ENDL;
+	}
+	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy() const { return floaterPermsResponder_timeout; }
+	/*virtual*/ char const* getName() const { return "LLFloaterPermsResponder"; }
+};
+
+std::string LLFloaterPermsResponder::sPreviousReason;
+
+void LLFloaterPermsDefault::sendInitialPerms()
+{
+	if (!mCapSent)
+	{
+		updateCap();
+	}
+}
+
+void LLFloaterPermsDefault::updateCap()
+{
+	std::string object_url = gAgent.getRegion()->getCapability("AgentPreferences");
+
+	if (!object_url.empty())
+	{
+		LLSD report = LLSD::emptyMap();
+		report["default_object_perm_masks"]["Group"] =
+			(LLSD::Integer)LLFloaterPerms::getGroupPerms(sCategoryNames[CAT_OBJECTS]);
+		report["default_object_perm_masks"]["Everyone"] =
+			(LLSD::Integer)LLFloaterPerms::getEveryonePerms(sCategoryNames[CAT_OBJECTS]);
+		report["default_object_perm_masks"]["NextOwner"] =
+			(LLSD::Integer)LLFloaterPerms::getNextOwnerPerms(sCategoryNames[CAT_OBJECTS]);
+
+		LLHTTPClient::post(object_url, report, new LLFloaterPermsResponder());
+	}
+}
+
+void LLFloaterPermsDefault::ok()
+{
+	// Changes were already applied to saved settings.
+	// Refreshing internal values makes it official.
+	refresh();
+
+	// We know some setting has changed but not which one.  Just in case it was a setting for
+	// object permissions tell the server what the values are.
+	updateCap();
+}
+
+void LLFloaterPermsDefault::cancel()
+{
+	for (U32 iter = CAT_OBJECTS; iter < CAT_LAST; iter++)
+	{
+		gSavedSettings.setBOOL(sCategoryNames[iter]+"ShareWithGroup",    mShareWithGroup[iter]);
+		gSavedSettings.setBOOL(sCategoryNames[iter]+"EveryoneCopy",      mEveryoneCopy[iter]);
+		gSavedSettings.setBOOL(sCategoryNames[iter]+"NextOwnerCopy",     mNextOwnerCopy[iter]);
+		gSavedSettings.setBOOL(sCategoryNames[iter]+"NextOwnerModify",   mNextOwnerModify[iter]);
+		gSavedSettings.setBOOL(sCategoryNames[iter]+"NextOwnerTransfer", mNextOwnerTransfer[iter]);
+		gSavedPerAccountSettings.setBOOL(sCategoryNames[iter]+"EveryoneExport", mEveryoneExport[iter]);
+	}
+}
+
+void LLFloaterPermsDefault::refresh()
+{
+	for (U32 iter = CAT_OBJECTS; iter < CAT_LAST; iter++)
+	{
+		mShareWithGroup[iter]    = gSavedSettings.getBOOL(sCategoryNames[iter]+"ShareWithGroup");
+		mEveryoneCopy[iter]      = gSavedSettings.getBOOL(sCategoryNames[iter]+"EveryoneCopy");
+		mNextOwnerCopy[iter]     = gSavedSettings.getBOOL(sCategoryNames[iter]+"NextOwnerCopy");
+		mNextOwnerModify[iter]   = gSavedSettings.getBOOL(sCategoryNames[iter]+"NextOwnerModify");
+		mNextOwnerTransfer[iter] = gSavedSettings.getBOOL(sCategoryNames[iter]+"NextOwnerTransfer");
+		mEveryoneExport[iter]    = gSavedPerAccountSettings.getBOOL(sCategoryNames[iter]+"EveryoneExport");
+	}
+}
+
+void LLFloaterPermsDefault::onClose(bool app_quitting)
+{
+	// Cancel any unsaved changes before closing.
+	// Note: when closed due to the OK button this amounts to a no-op.
+	cancel();
+	LLFloater::onClose(app_quitting);
 }
