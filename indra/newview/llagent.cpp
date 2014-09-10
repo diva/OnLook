@@ -812,6 +812,8 @@ void LLAgent::toggleFlying()
 bool LLAgent::enableFlying()
 {
 	BOOL sitting = FALSE;
+	static LLCachedControl<bool> continue_flying_on_unsit(gSavedSettings, "LiruContinueFlyingOnUnsit", false);
+	if (!continue_flying_on_unsit)
 	if (isAgentAvatarValid())
 	{
 		sitting = gAgentAvatarp->isSitting();

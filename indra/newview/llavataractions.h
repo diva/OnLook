@@ -155,6 +155,7 @@ public:
 	 * Invite avatar to a group.
 	 */	
 	static void inviteToGroup(const LLUUID& id);
+	static void inviteToGroup(const uuid_vec_t& ids);
 	
 	/**
 	 * Kick avatar off grid
@@ -217,7 +218,7 @@ private:
 	static bool handleKick(const LLSD& notification, const LLSD& response);
 	static bool handleFreeze(const LLSD& notification, const LLSD& response);
 	static bool handleUnfreeze(const LLSD& notification, const LLSD& response);
-	static void callback_invite_to_group(LLUUID group_id, LLUUID id);
+	static void callback_invite_to_group(LLUUID group_id, uuid_vec_t& ids);
 	static void on_avatar_name_cache_teleport_request(const LLUUID& id, const LLAvatarName& av_name);
 
 public:

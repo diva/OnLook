@@ -128,36 +128,31 @@ bool LLGiveInventory::isInventoryGiveAcceptable(const LLInventoryItem* item)
 	{
 		return false;
 	}
-	
-	
+
 	bool acceptable = true;
 	switch(item->getType())
 	{
-	case LLAssetType::AT_CALLINGCARD:
-		acceptable = false;
-		break;
 	case LLAssetType::AT_OBJECT:
-		// <edit>		
-		/*if(my_avatar->isWearingAttachment(item->getUUID()))
+		/* <edit>
+		if (get_is_item_worn(item->getUUID()))
 		{
 			acceptable = false;
-		}*/
-		// </edit>
+		}
+		</edit> */
 		break;
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_CLOTHING:
 		{
 			// <edit>
 			/*bool copyable = false;
-			if(item->getPermissions().allowCopyBy(gAgent.getID())) copyable = true;
+			if(item->getPermissions().allowCopyBy(gAgentID)) copyable = true;
 		
-			if(!copyable && gAgentWearables.isWearingItem(item->getUUID()))
+			if (!copyable || get_is_item_worn(item->getUUID()))
 			{
 				acceptable = false;
 			}*/
 			// </edit>
 		}
-		
 		break;
 	default:
 		break;
@@ -185,20 +180,16 @@ bool LLGiveInventory::isInventoryGroupGiveAcceptable(const LLInventoryItem* item
 
 
 	bool acceptable = true;
-	
 	switch(item->getType())
 	{
-	case LLAssetType::AT_CALLINGCARD:
-		acceptable = false;
-		break;
-		// <edit>
-	/*case LLAssetType::AT_OBJECT:
+	case LLAssetType::AT_OBJECT:
+		/* <edit>
 		if(gAgentAvatarp->isWearingAttachment(item->getUUID()))
 		{
 			acceptable = false;
-		}*
-		break;*/
-		// </edit>
+		}
+		</edit> */
+		break;
 	default:
 		break;
 	}
@@ -245,11 +236,17 @@ void LLGiveInventory::doGiveInventoryCategory(const LLUUID& to_agent,
 											  const LLUUID& im_session_id)
 
 {
-	if (!cat) return;
+	if (!cat)
+	{
+		return;
+	}
 	llinfos << "LLGiveInventory::giveInventoryCategory() - "
 		<< cat->getUUID() << llendl;
 
-	if (!isAgentAvatarValid()) return;
+	if (!isAgentAvatarValid())
+	{
+		return;
+	}
 
 	// Test out how many items are being given.
 	LLViewerInventoryCategory::cat_array_t cats;
@@ -275,17 +272,17 @@ void LLGiveInventory::doGiveInventoryCategory(const LLUUID& to_agent,
 		LLNotificationsUtil::add("IncompleteInventory");
 		return;
 	}
- 	count = items.count() + cats.count();
- 	if(count > MAX_ITEMS)
-  	{
+	count = items.count() + cats.count();
+	if(count > MAX_ITEMS)
+	{
 		LLNotificationsUtil::add("TooManyItems");
-  		return;
-  	}
- 	else if(count == 0)
-  	{
+		return;
+	}
+	else if(count == 0)
+	{
 		LLNotificationsUtil::add("NoItems");
-  		return;
-  	}
+		return;
+	}
 	else
 	{
 		if(0 == giveable.countNoCopy())
@@ -358,6 +355,7 @@ bool LLGiveInventory::handleCopyProtectedItem(const LLSD& notification, const LL
 	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	LLSD itmes = notification["payload"]["items"];
 	LLInventoryItem* item = NULL;
+	bool give_successful = true;
 	switch(option)
 	{
 	case 0:  // "Yes"
@@ -376,15 +374,17 @@ bool LLGiveInventory::handleCopyProtectedItem(const LLSD& notification, const LL
 			else
 			{
 				LLNotificationsUtil::add("CannotGiveItem");
+				give_successful = false;
 			}
 		}
 		break;
 
 	default: // no, cancel, whatever, who cares, not yes.
 		LLNotificationsUtil::add("TransactionCancelled");
+		give_successful = false;
 		break;
 	}
-	return false;
+	return give_successful;
 }
 
 // static
@@ -419,6 +419,7 @@ void LLGiveInventory::commitGiveInventoryItem(const LLUUID& to_agent,
 		bucket,
 		BUCKET_SIZE);
 	gAgent.sendReliableMessage();
+
 	// <edit>
 	if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 	{
@@ -486,7 +487,10 @@ void LLGiveInventory::commitGiveInventoryCategory(const LLUUID& to_agent,
 													const LLUUID& im_session_id)
 
 {
-if(!cat) return;
+	if(!cat)
+	{
+		return;
+	}
 	llinfos << "LLGiveInventory::commitGiveInventoryCategory() - "
 			<< cat->getUUID() << llendl;
 
@@ -565,6 +569,7 @@ if(!cat) return;
 			bucket_size);
 		gAgent.sendReliableMessage();
 		delete[] bucket;
+
 		// <edit>
  		if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 		{
@@ -585,4 +590,5 @@ if(!cat) return;
 		logInventoryOffer(to_agent, im_session_id);
 	}
 }
+
 // EOF
