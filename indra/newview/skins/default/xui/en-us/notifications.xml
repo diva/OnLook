@@ -5938,11 +5938,25 @@ A login URI is required to retrieve the grid info.
 Builds with extended hollow or extended hole size do not render properly on other viewers. Please keep this option checked, if you want your builds looking properly in other viewers.
   </notification>
 
+<notification
+   icon="alertmodal.tga"
+   name="ImportFailed"
+   type="alertmodal">
+Bad XML file. Import aborted.
+</notification>
+
+<notification
+   icon="notifytip.tga"
+   name="ExportAborted"
+   type="notifytip">
+The Object was deselected before the export could occur. Export aborted.
+</notification>
+
   <notification
    icon="alertmodal.tga"
    name="ExportFailed"
    type="alertmodal">
-None of the selected objects are exportable. Export aborted.
+Bad permissions for the exported object. Export aborted.
   </notification>
 
   <notification
@@ -5958,6 +5972,23 @@ Object exported. Some textures could not be saved due to: [REASON]
    type="notifytip">
 Export successful.
   </notification>
+
+<notification
+   icon="alertmodal.tga"
+   name="ConfirmAbortBackup"
+   type="alertmodal">
+Are you sure you want to abort the current object backup operation?
+    <form name="form">
+      <button
+       index="0"
+       name="Yes"
+       text="Yes"/>
+      <button
+       index="1"
+       name="No"
+       text="No"/>
+    </form>
+</notification>
 
   <notification
    icon="notifytip.tga"

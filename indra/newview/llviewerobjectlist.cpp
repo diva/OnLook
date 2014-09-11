@@ -272,7 +272,7 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	}
 	else
 	{
-		LLObjectBackup::getInstance()->primUpdate(objectp);
+		LLObjectBackup::primUpdate(objectp);
 	}
 	
 
@@ -310,7 +310,7 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 		gViewerWindow->getWindow()->decBusyCount();
 		gViewerWindow->getWindow()->setCursor( UI_CURSOR_ARROW );
 		
-		LLObjectBackup::getInstance()->newPrim(objectp);		
+		LLObjectBackup::newPrim(objectp);
 	}
 }
 
