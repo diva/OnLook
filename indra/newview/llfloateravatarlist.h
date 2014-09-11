@@ -80,7 +80,7 @@ enum ACTIVITY_TYPE
 	 * Update world position.
 	 * Affects age.
 	 */	
-	void setPosition(const LLVector3d& position, bool this_sim, bool drawn, bool chatrange, bool shoutrange);
+	void setPosition(const LLVector3d& position, const F32& dist, bool drawn);
 
 	const LLVector3d& getPosition() const { return mPosition; }
 

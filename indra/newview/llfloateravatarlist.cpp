@@ -68,7 +68,7 @@ extern U32 gFrameCount;
 
 namespace
 {
-	void chat_avatar_status(const std::string& name, const LLUUID& key, ERadarStatType type, bool entering)
+	void chat_avatar_status(const std::string& name, const LLUUID& key, ERadarStatType type, bool entering, const F32& dist)
 	{
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; // RLVa:LF Don't announce people are around when blind, that cheats the system.
 		static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
@@ -96,6 +96,11 @@ namespace
 		if (args.find("[RANGE]") != args.end())
 			chat.mText = self->getString("template", args);
 		else if (chat.mText.empty()) return;
+		if (entering) // Note: If we decide to make this for leaving as well, change this check to dist != F32_MIN
+		{
+			static const LLCachedControl<bool> radar_show_dist("RadarAlertShowDist");
+			if (radar_show_dist) chat.mText += llformat(" (%.2fm)", dist);
+		}
 		chat.mFromName = name;
 		chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
 		chat.mSourceType = CHAT_SOURCE_SYSTEM;
@@ -160,7 +165,7 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
 				if ((U32)mAge < sAvatarAgeAlertDays)
 				{
-					chat_avatar_status(mName, mID, STAT_TYPE_AGE, mStats[STAT_TYPE_AGE] = true);
+					chat_avatar_status(mName, mID, STAT_TYPE_AGE, mStats[STAT_TYPE_AGE] = true, (mPosition - gAgent.getPositionGlobal()).magVec());
 				}
 			}
 			// If one wanted more information that gets displayed on profiles to be displayed, here would be the place to do it.
@@ -168,14 +173,18 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 	}
 }
 
-void LLAvatarListEntry::setPosition(const LLVector3d& position, bool this_sim, bool drawn, bool chatrange, bool shoutrange)
+void LLAvatarListEntry::setPosition(const LLVector3d& position, const F32& dist, bool drawn)
 {
 	mPosition = position;
 	mFrame = gFrameCount;
-	if (this_sim != mStats[STAT_TYPE_SIM])			chat_avatar_status(mName, mID, STAT_TYPE_SIM, mStats[STAT_TYPE_SIM] = this_sim);
-	if (drawn != mStats[STAT_TYPE_DRAW])			chat_avatar_status(mName, mID, STAT_TYPE_DRAW, mStats[STAT_TYPE_DRAW] = drawn);
-	if (shoutrange != mStats[STAT_TYPE_SHOUTRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_SHOUTRANGE, mStats[STAT_TYPE_SHOUTRANGE] = shoutrange);
-	if (chatrange != mStats[STAT_TYPE_CHATRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_CHATRANGE, mStats[STAT_TYPE_CHATRANGE] = chatrange);
+	bool here(dist != F32_MIN); // F32_MIN only if dead
+	bool this_sim(here && (gAgent.getRegion()->pointInRegionGlobal(position) || !(LLWorld::getInstance()->positionRegionValidGlobal(position))));
+	if (this_sim != mStats[STAT_TYPE_SIM])			chat_avatar_status(mName, mID, STAT_TYPE_SIM, mStats[STAT_TYPE_SIM] = this_sim, dist);
+	if (drawn != mStats[STAT_TYPE_DRAW])			chat_avatar_status(mName, mID, STAT_TYPE_DRAW, mStats[STAT_TYPE_DRAW] = drawn, dist);
+	bool shoutrange(here && dist < LFSimFeatureHandler::getInstance()->shoutRange());
+	if (shoutrange != mStats[STAT_TYPE_SHOUTRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_SHOUTRANGE, mStats[STAT_TYPE_SHOUTRANGE] = shoutrange, dist);
+	bool chatrange(here && dist < LFSimFeatureHandler::getInstance()->sayRange());
+	if (chatrange != mStats[STAT_TYPE_CHATRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_CHATRANGE, mStats[STAT_TYPE_CHATRANGE] = chatrange, dist);
 	mUpdateTimer.start();
 }
 
@@ -553,8 +562,7 @@ void LLFloaterAvatarList::updateAvatarList()
 			}
 
 			// Announce position
-			F32 dist((position - mypos).magVec());
-			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position) || !(LLWorld::getInstance()->positionRegionValidGlobal(position)), avatarp, dist < LFSimFeatureHandler::getInstance()->sayRange(), dist < LFSimFeatureHandler::getInstance()->shoutRange());
+			entry->setPosition(position, (position - mypos).magVec(), avatarp);
 
 			// Mark as typing if they are typing
 			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
@@ -621,7 +629,7 @@ void LLFloaterAvatarList::expireAvatarList()
 		}
 		else
 		{
-			entry->setPosition(entry->getPosition(), false, false, false, false); // Dead and gone
+			entry->setPosition(entry->getPosition(), F32_MIN, false); // Dead and gone
 			it = mAvatars.erase(it);
 		}
 	}
