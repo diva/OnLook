@@ -1426,7 +1426,7 @@ void LLSnapshotLivePreview::saveTexture()
 	LLAssetStorage::LLStoreAssetCallback callback = &LLSnapshotLivePreview::saveTextureDone;
 	S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 	saveTextureUserData* user_data = new saveTextureUserData(this, sSnapshotIndex, gSavedSettings.getBOOL("TemporaryUpload"));
-	if (!upload_new_resource(tid,	// tid
+	if (upload_new_resource(tid,	// tid
 				LLAssetType::AT_TEXTURE,
 				"Snapshot : " + pos_string,
 				"Taken by " + who_took_it + " at " + pos_string,
@@ -1437,7 +1437,11 @@ void LLSnapshotLivePreview::saveTexture()
 				LLFloaterPerms::getGroupPerms("Uploads"), // that is more permissive than other uploads
 				LLFloaterPerms::getEveryonePerms("Uploads"),
 				"Snapshot : " + pos_string,
-				callback, expected_upload_cost, user_data, &LLSnapshotLivePreview::saveTextureDone2))
+				callback, expected_upload_cost, user_data))
+	{
+		saveTextureDone2(true, user_data);
+	}
+	else
 	{
 		// Something went wrong.
 		delete user_data;

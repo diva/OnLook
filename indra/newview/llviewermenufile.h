@@ -78,8 +78,7 @@ bool upload_new_resource(const LLTransactionID &tid,
 						 const std::string& display_name,
 						 LLAssetStorage::LLStoreAssetCallback callback,
 						 S32 expected_upload_cost,
-						 void *userdata,
-						 void (*callback2)(bool, void*) = NULL);
+						 void *userdata);
 
 // The default callback functions, called when 'callback' == NULL (for normal and temporary uploads).
 // user_data must be a LLResourceData allocated with new (or NULL).

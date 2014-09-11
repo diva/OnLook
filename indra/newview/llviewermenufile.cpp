@@ -1177,8 +1177,7 @@ bool upload_new_resource(
 	const std::string& display_name,
 	LLAssetStorage::LLStoreAssetCallback callback,
 	S32 expected_upload_cost,
-	void *userdata,
-	void (*callback2)(bool, void*))
+	void *userdata)
 {
 	if(gDisconnected)
 	{
@@ -1230,9 +1229,7 @@ bool upload_new_resource(
 			new LLNewAgentInventoryResponder(
 				body,
 				uuid,
-				asset_type,
-				callback2,
-				userdata));
+				asset_type));
 	}
 	else
 	{
@@ -1294,16 +1291,15 @@ bool upload_new_resource(
 
 LLAssetID generate_asset_id_for_new_upload(const LLTransactionID& tid)
 {
-	LLAssetID uuid;
-
 	if (gDisconnected)
 	{	
-		uuid.setNull();
+		LLAssetID rv;
+
+		rv.setNull();
+		return rv;
 	}
-	else
-	{
-		uuid = tid.makeAssetID(gAgent.getSecureSessionID());
-	}
+
+	LLAssetID uuid = tid.makeAssetID(gAgent.getSecureSessionID());
 
 	return uuid;
 }
