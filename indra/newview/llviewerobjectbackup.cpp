@@ -559,7 +559,7 @@ void LLObjectBackup::exportWorker(void *userdata)
 		case EXPORT_INIT:
 		{
 			self->showFloater(true);
-			LLSelectMgr::getInstance()->getSelection()->ref();
+			//LLSelectMgr::getInstance()->getSelection()->ref(); // Singu Note: Don't do this.
 			// Fall through to EXPORT_CHECK_PERMS
 		}
 		case EXPORT_CHECK_PERMS:
