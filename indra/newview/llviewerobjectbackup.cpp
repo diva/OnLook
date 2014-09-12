@@ -627,7 +627,7 @@ void LLObjectBackup::exportWorker(void *userdata)
 				virtual bool apply(LLSelectNode* node)
 				{
 					LLViewerObject* object = node->getObject();
-					return object->getPhysicsShapeUnknown();
+					return gObjectList.gotObjectPhysicsFlags(object);
 				}
 			} func;
 

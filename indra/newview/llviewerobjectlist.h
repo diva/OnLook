@@ -99,6 +99,8 @@ public:
 	void fetchObjectCosts();
 	void fetchPhysicsFlags();
 
+	bool gotObjectPhysicsFlags(LLViewerObject* objectp);
+
 	void updateObjectCost(LLViewerObject* object);
 	void updateObjectCost(const LLUUID& object_id, F32 object_cost, F32 link_cost, F32 physics_cost, F32 link_physics_cost);
 	void onObjectCostFetchFailure(const LLUUID& object_id);
