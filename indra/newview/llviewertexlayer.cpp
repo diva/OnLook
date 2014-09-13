@@ -361,6 +361,51 @@ BOOL LLViewerTexLayerSetBuffer::requestUpdateImmediate()
 	return result;
 }
 
+class LLSendTexLayerResponder : public LLAssetUploadResponder
+{
+	LOG_CLASS(LLSendTexLayerResponder);
+public:
+	LLSendTexLayerResponder(const LLSD& post_data, const LLUUID& vfile_id, LLAssetType::EType asset_type, LLBakedUploadData * baked_upload_data)
+	: LLAssetUploadResponder(post_data, vfile_id, asset_type)
+	, mBakedUploadData(baked_upload_data)
+	{}
+
+	~LLSendTexLayerResponder()
+	{
+		// mBakedUploadData is normally deleted by calls to LLViewerTexLayerSetBuffer::onTextureUploadComplete() below
+		if (mBakedUploadData)
+		{	// ...but delete it in the case where uploadComplete() is never called
+			delete mBakedUploadData;
+			mBakedUploadData = NULL;
+		}
+	}
+
+	// Baked texture upload completed
+	/*virtual*/ void uploadComplete(const LLSD& content)
+	{
+		const std::string& result = content["state"];
+		const LLUUID& new_id = content["new_asset"];
+
+		llinfos << "result: " << result << " new_id: " << new_id << llendl;
+		LLViewerTexLayerSetBuffer::onTextureUploadComplete(new_id, (void*) mBakedUploadData, (result == "complete" && mBakedUploadData) ? 0 : -1, LL_EXSTAT_NONE);
+		mBakedUploadData = NULL;	// deleted in onTextureUploadComplete()
+	}
+
+	/*virtual*/ void httpFailure()
+	{
+		llinfos << dumpResponse() << llendl;
+
+		// Invoke the original callback with an error result
+		LLViewerTexLayerSetBuffer::onTextureUploadComplete(LLUUID::null, (void*) mBakedUploadData, -1, LL_EXSTAT_NONE);
+		mBakedUploadData = NULL;	// deleted in onTextureUploadComplete()
+	}
+
+	/*virtual*/ char const* getName() const { return "LLSendTexLayerResponder"; }
+
+private:
+	LLBakedUploadData* mBakedUploadData;
+};
+
 // Create the baked texture, send it out to the server, then wait for it to come
 // back so we can switch to using it.
 void LLViewerTexLayerSetBuffer::doUpload()

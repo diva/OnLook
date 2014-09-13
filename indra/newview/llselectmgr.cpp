@@ -5201,7 +5201,9 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 		{
 			if (node->mInventorySerial != inv_serial)
 			{
-				node->getObject()->dirtyInventory();
+				if (LLViewerObject* object = node->getObject())
+					if (object->getInventorySerial() != inv_serial) // Singu Note: the serial number in the object may be correct.
+						object->dirtyInventory();
 			}
 
 			// save texture data as soon as we get texture perms first time

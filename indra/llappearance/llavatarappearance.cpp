@@ -182,9 +182,6 @@ LLAvatarAppearance::LLAvatarAppearance(LLWearableData* wearable_data) :
 	}
 
 	mIsBuilt = FALSE;
-
-	mNumCollisionVolumes = 0;
-	mCollisionVolumes = NULL;
 }
 
 // virtual
@@ -294,7 +291,7 @@ LLAvatarAppearance::~LLAvatarAppearance()
 	mJointMap.clear();
 
 	clearSkeleton();
-	deleteAndClearArray(mCollisionVolumes);
+	clearCollisionVolumes();
 
 	std::for_each(mPolyMeshes.begin(), mPolyMeshes.end(), DeletePairedPointer());
 	mPolyMeshes.clear();
@@ -575,12 +572,12 @@ BOOL LLAvatarAppearance::setupBone(const LLAvatarBoneInfo* info, LLJoint* parent
 	}
 	else // collision volume
 	{
-		if (volume_num >= (S32)mNumCollisionVolumes)
+		if (volume_num >= (S32)mCollisionVolumes.size())
 		{
 			llwarns << "Too many bones" << llendl;
 			return FALSE;
 		}
-		joint = (&mCollisionVolumes[volume_num]);
+		joint = (mCollisionVolumes[volume_num]);
 		joint->setName( info->mName );
 	}
 
@@ -1250,12 +1247,12 @@ LLVector3 LLAvatarAppearance::getVolumePos(S32 joint_index, LLVector3& volume_of
 		return LLVector3::zero;
 	}
 
-	if (joint_index > mNumCollisionVolumes)
+	if (joint_index > (S32)mCollisionVolumes.size())
 	{
 		return LLVector3::zero;
 	}
 
-	return mCollisionVolumes[joint_index].getVolumePos(volume_offset);
+	return mCollisionVolumes[joint_index]->getVolumePos(volume_offset);
 }
 
 //-----------------------------------------------------------------------------
@@ -1266,12 +1263,12 @@ LLJoint* LLAvatarAppearance::findCollisionVolume(U32 volume_id)
 	//SNOW-488: As mNumCollisionVolumes is a S32 and we are casting from a U32 to a S32
 	//to compare we also need to be sure of the wrap around case producing (S32) <0
 	//or in terms of the U32 an out of bounds index in the array.
-	if ((S32)volume_id > mNumCollisionVolumes || (S32)volume_id<0)
+	if ((S32)volume_id > (S32)mCollisionVolumes.size() || (S32)volume_id<0)
 	{
 		return NULL;
 	}
 	
-	return &mCollisionVolumes[volume_id];
+	return mCollisionVolumes[volume_id];
 }
 
 //-----------------------------------------------------------------------------
@@ -1279,9 +1276,9 @@ LLJoint* LLAvatarAppearance::findCollisionVolume(U32 volume_id)
 //-----------------------------------------------------------------------------
 S32 LLAvatarAppearance::getCollisionVolumeID(std::string &name)
 {
-	for (S32 i = 0; i < mNumCollisionVolumes; i++)
+	for (S32 i = 0; i < (S32)mCollisionVolumes.size(); i++)
 	{
-		if (mCollisionVolumes[i].getName() == name)
+		if (mCollisionVolumes[i]->getName() == name)
 		{
 			return i;
 		}
@@ -1530,21 +1527,34 @@ LLTexLayerSet* LLAvatarAppearance::getAvatarLayerSet(EBakedTextureIndex baked_in
 	return mBakedTextureDatas[baked_index].mTexLayerSet;
 }
 
+void LLAvatarAppearance::clearCollisionVolumes()
+{
+	std::for_each(mCollisionVolumes.begin(), mCollisionVolumes.end(),
+		DeletePointer());
+	mCollisionVolumes.clear();
+}
+
 //-----------------------------------------------------------------------------
 // allocateCollisionVolumes()
 //-----------------------------------------------------------------------------
 BOOL LLAvatarAppearance::allocateCollisionVolumes( U32 num )
 {
-	deleteAndClearArray(mCollisionVolumes);
-	mNumCollisionVolumes = 0;
+	mCollisionVolumes.reserve(num);
 
-	mCollisionVolumes = new LLAvatarJointCollisionVolume[num];
-	if (!mCollisionVolumes)
+	LLAvatarJointCollisionVolume* cv;
+	for (U32 i = 0; i < num; ++i)
 	{
-		return FALSE;
+		cv = new LLAvatarJointCollisionVolume();
+		if (cv)
+		{
+			mCollisionVolumes.push_back(cv);
+		}
+		else
+		{
+			clearCollisionVolumes();
+			return false;
+		}
 	}
-
-	mNumCollisionVolumes = num;
 	return TRUE;
 }
 

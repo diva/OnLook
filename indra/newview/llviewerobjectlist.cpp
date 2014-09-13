@@ -272,7 +272,7 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	}
 	else
 	{
-		LLObjectBackup::getInstance()->primUpdate(objectp);
+		LLObjectBackup::primUpdate(objectp);
 	}
 	
 
@@ -310,7 +310,7 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 		gViewerWindow->getWindow()->decBusyCount();
 		gViewerWindow->getWindow()->setCursor( UI_CURSOR_ARROW );
 		
-		LLObjectBackup::getInstance()->newPrim(objectp);		
+		LLObjectBackup::newPrim(objectp);
 	}
 }
 
@@ -1214,6 +1214,17 @@ void LLViewerObjectList::fetchPhysicsFlags()
 			}
 		}
 	}
+}
+
+bool LLViewerObjectList::gotObjectPhysicsFlags(LLViewerObject* objectp)
+{
+	// This will insert objectp in mStalePhysicsFlags if needed:
+	objectp->getPhysicsShapeType();
+	// Data has been retrieved if the object is not in either of the
+	// two lists:
+	const LLUUID& id = objectp->getID();
+	return mPendingPhysicsFlags.count(id) == 0 &&
+		   mStalePhysicsFlags.count(id) == 0;
 }
 
 void LLViewerObjectList::clearDebugText()

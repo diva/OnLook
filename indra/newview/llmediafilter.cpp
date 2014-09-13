@@ -101,7 +101,6 @@ void LLMediaFilter::filterAudioUrl(const std::string& url)
 {
 	if (url.empty())
 	{
-		gAudiop->startInternetStream(url);
 		return;
 	}
 	if (url == mCurrentAudioURL) return;

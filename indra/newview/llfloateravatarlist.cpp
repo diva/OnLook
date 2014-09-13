@@ -68,7 +68,7 @@ extern U32 gFrameCount;
 
 namespace
 {
-	void chat_avatar_status(const std::string& name, const LLUUID& key, ERadarStatType type, bool entering)
+	void chat_avatar_status(const std::string& name, const LLUUID& key, ERadarStatType type, bool entering, const F32& dist)
 	{
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; // RLVa:LF Don't announce people are around when blind, that cheats the system.
 		static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
@@ -96,6 +96,11 @@ namespace
 		if (args.find("[RANGE]") != args.end())
 			chat.mText = self->getString("template", args);
 		else if (chat.mText.empty()) return;
+		if (entering) // Note: If we decide to make this for leaving as well, change this check to dist != F32_MIN
+		{
+			static const LLCachedControl<bool> radar_show_dist("RadarAlertShowDist");
+			if (radar_show_dist) chat.mText += llformat(" (%.2fm)", dist);
+		}
 		chat.mFromName = name;
 		chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
 		chat.mSourceType = CHAT_SOURCE_SYSTEM;
@@ -160,7 +165,7 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
 				if ((U32)mAge < sAvatarAgeAlertDays)
 				{
-					chat_avatar_status(mName, mID, STAT_TYPE_AGE, mStats[STAT_TYPE_AGE] = true);
+					chat_avatar_status(mName, mID, STAT_TYPE_AGE, mStats[STAT_TYPE_AGE] = true, (mPosition - gAgent.getPositionGlobal()).magVec());
 				}
 			}
 			// If one wanted more information that gets displayed on profiles to be displayed, here would be the place to do it.
@@ -168,14 +173,18 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 	}
 }
 
-void LLAvatarListEntry::setPosition(const LLVector3d& position, bool this_sim, bool drawn, bool chatrange, bool shoutrange)
+void LLAvatarListEntry::setPosition(const LLVector3d& position, const F32& dist, bool drawn)
 {
 	mPosition = position;
 	mFrame = gFrameCount;
-	if (this_sim != mStats[STAT_TYPE_SIM])			chat_avatar_status(mName, mID, STAT_TYPE_SIM, mStats[STAT_TYPE_SIM] = this_sim);
-	if (drawn != mStats[STAT_TYPE_DRAW])			chat_avatar_status(mName, mID, STAT_TYPE_DRAW, mStats[STAT_TYPE_DRAW] = drawn);
-	if (shoutrange != mStats[STAT_TYPE_SHOUTRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_SHOUTRANGE, mStats[STAT_TYPE_SHOUTRANGE] = shoutrange);
-	if (chatrange != mStats[STAT_TYPE_CHATRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_CHATRANGE, mStats[STAT_TYPE_CHATRANGE] = chatrange);
+	bool here(dist != F32_MIN); // F32_MIN only if dead
+	bool this_sim(here && (gAgent.getRegion()->pointInRegionGlobal(position) || !(LLWorld::getInstance()->positionRegionValidGlobal(position))));
+	if (this_sim != mStats[STAT_TYPE_SIM])			chat_avatar_status(mName, mID, STAT_TYPE_SIM, mStats[STAT_TYPE_SIM] = this_sim, dist);
+	if (drawn != mStats[STAT_TYPE_DRAW])			chat_avatar_status(mName, mID, STAT_TYPE_DRAW, mStats[STAT_TYPE_DRAW] = drawn, dist);
+	bool shoutrange(here && dist < LFSimFeatureHandler::getInstance()->shoutRange());
+	if (shoutrange != mStats[STAT_TYPE_SHOUTRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_SHOUTRANGE, mStats[STAT_TYPE_SHOUTRANGE] = shoutrange, dist);
+	bool chatrange(here && dist < LFSimFeatureHandler::getInstance()->sayRange());
+	if (chatrange != mStats[STAT_TYPE_CHATRANGE])	chat_avatar_status(mName, mID, STAT_TYPE_CHATRANGE, mStats[STAT_TYPE_CHATRANGE] = chatrange, dist);
 	mUpdateTimer.start();
 }
 
@@ -553,8 +562,7 @@ void LLFloaterAvatarList::updateAvatarList()
 			}
 
 			// Announce position
-			F32 dist((position - mypos).magVec());
-			entry->setPosition(position, gAgent.getRegion()->pointInRegionGlobal(position) || !(LLWorld::getInstance()->positionRegionValidGlobal(position)), avatarp, dist < LFSimFeatureHandler::getInstance()->sayRange(), dist < LFSimFeatureHandler::getInstance()->shoutRange());
+			entry->setPosition(position, (position - mypos).magVec(), avatarp);
 
 			// Mark as typing if they are typing
 			if (avatarp && avatarp->isTyping()) entry->setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
@@ -621,7 +629,7 @@ void LLFloaterAvatarList::expireAvatarList()
 		}
 		else
 		{
-			entry->setPosition(entry->getPosition(), false, false, false, false); // Dead and gone
+			entry->setPosition(entry->getPosition(), F32_MIN, false); // Dead and gone
 			it = mAvatars.erase(it);
 		}
 	}
@@ -700,151 +708,171 @@ void LLFloaterAvatarList::refreshAvatarList()
 		LLScrollListItem::Params element;
 		element.value = av_id;
 
-		LLScrollListCell::Params mark;
-		mark.column = "marked";
-		mark.type = "text";
-		if (entry->isMarked())
+		static const LLCachedControl<bool> hide_mark("RadarColumnMarkHidden");
+		if (!hide_mark)
 		{
-			mark.value = "X";
-			mark.color = LLColor4::blue;
-			mark.font_style = "BOLD";
-		}
-
-		LLScrollListCell::Params name;
-		name.column = "avatar_name";
-		name.type = "text";
-		name.value = entry->getName();
-		if (entry->isFocused())
-		{
-			name.font_style = "BOLD";
-		}
-
-		//<edit> custom colors for certain types of avatars!
-		//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
-		//name.color = gColors.getColor( "MapAvatar" );
-		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
-		LLUUID estate_owner = LLUUID::null;
-		if (parent_estate && parent_estate->isAlive())
-		{
-			estate_owner = parent_estate->getOwner();
+			LLScrollListCell::Params mark;
+			mark.column = "marked";
+			mark.type = "text";
+			if (entry->isMarked())
+			{
+				mark.value = "X";
+				mark.color = LLColor4::blue;
+				mark.font_style = "BOLD";
+			}
+			element.columns.add(mark);
 		}
 
 		static const LLCachedControl<LLColor4> unselected_color(gColors, "ScrollUnselectedColor", LLColor4(0.f, 0.f, 0.f, 0.8f));
 
-		static LLCachedControl<LLColor4> sDefaultListText(gColors, "DefaultListText");
-		static LLCachedControl<LLColor4> sRadarTextChatRange(gColors, "RadarTextChatRange");
-		static LLCachedControl<LLColor4> sRadarTextShoutRange(gColors, "RadarTextShoutRange");
-		static LLCachedControl<LLColor4> sRadarTextDrawDist(gColors, "RadarTextDrawDist");
-		static LLCachedControl<LLColor4> sRadarTextYoung(gColors, "RadarTextYoung");
+		static const LLCachedControl<LLColor4> sDefaultListText(gColors, "DefaultListText");
 		static const LLCachedControl<LLColor4> ascent_muted_color("AscentMutedColor", LLColor4(0.7f,0.7f,0.7f,1.f));
 		LLColor4 color = sDefaultListText;
 
-		//Lindens are always more Linden than your friend, make that take precedence
-		if (mm_getMarkerColor(av_id, color)) {}
-		else if (LLMuteList::getInstance()->isLinden(av_id))
+		// Name never hidden
 		{
-			static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor", LLColor4(0.f,0.f,1.f,1.f));
-			color = ascent_linden_color;
+			LLScrollListCell::Params name;
+			name.column = "avatar_name";
+			name.type = "text";
+			name.value = entry->getName();
+			if (entry->isFocused())
+			{
+				name.font_style = "BOLD";
+			}
+
+			//<edit> custom colors for certain types of avatars!
+			//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
+			//name.color = gColors.getColor( "MapAvatar" );
+			LLUUID estate_owner = LLUUID::null;
+			if (LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition()))
+				if (parent_estate->isAlive())
+					estate_owner = parent_estate->getOwner();
+
+			//Lindens are always more Linden than your friend, make that take precedence
+			if (mm_getMarkerColor(av_id, color)) {}
+			else if (LLMuteList::getInstance()->isLinden(av_id))
+			{
+				static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor", LLColor4(0.f,0.f,1.f,1.f));
+				color = ascent_linden_color;
+			}
+			//check if they are an estate owner at their current position
+			else if (estate_owner.notNull() && av_id == estate_owner)
+			{
+				static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor", LLColor4(1.f,0.6f,1.f,1.f));
+				color = ascent_estate_owner_color;
+			}
+			//without these dots, SL would suck.
+			else if (LLAvatarActions::isFriend(av_id))
+			{
+				static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor", LLColor4(1.f,1.f,0.f,1.f));
+				color = ascent_friend_color;
+			}
+			//big fat jerkface who is probably a jerk, display them as such.
+			else if (LLMuteList::getInstance()->isMuted(av_id))
+			{
+				color = ascent_muted_color;
+			}
+			name.color = color*0.5f + unselected_color*0.5f;
+			element.columns.add(name);
 		}
-		//check if they are an estate owner at their current position
-		else if (estate_owner.notNull() && av_id == estate_owner)
-		{
-			static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor", LLColor4(1.f,0.6f,1.f,1.f));
-			color = ascent_estate_owner_color;
-		}
-		//without these dots, SL would suck.
-		else if (LLAvatarActions::isFriend(av_id))
-		{
-			static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor", LLColor4(1.f,1.f,0.f,1.f));
-			color = ascent_friend_color;
-		}
-		//big fat jerkface who is probably a jerk, display them as such.
-		else if (LLMuteList::getInstance()->isMuted(av_id))
-		{
-			color = ascent_muted_color;
-		}
-		name.color = color*0.5f + unselected_color*0.5f;
 
 		char temp[32];
-		color = sDefaultListText;
-		LLScrollListCell::Params dist;
-		dist.column = "distance";
-		dist.type = "text";
-		if (UnknownAltitude)
+		// Distance never hidden
 		{
-			strcpy(temp, "?");
-			if (entry->mStats[STAT_TYPE_DRAW])
+			color = sDefaultListText;
+			LLScrollListCell::Params dist;
+			dist.column = "distance";
+			dist.type = "text";
+			static const LLCachedControl<LLColor4> sRadarTextDrawDist(gColors, "RadarTextDrawDist");
+			if (UnknownAltitude)
 			{
-				color = sRadarTextDrawDist;
-			}
-		}
-		else
-		{
-			if (distance <= LFSimFeatureHandler::getInstance()->shoutRange())
-			{
-				snprintf(temp, sizeof(temp), "%.1f", distance);
-				color = (distance > LFSimFeatureHandler::getInstance()->sayRange()) ? sRadarTextShoutRange : sRadarTextChatRange;
+				strcpy(temp, "?");
+				if (entry->mStats[STAT_TYPE_DRAW])
+				{
+					color = sRadarTextDrawDist;
+				}
 			}
 			else
 			{
-				if (entry->mStats[STAT_TYPE_DRAW]) color = sRadarTextDrawDist;
-				snprintf(temp, sizeof(temp), "%d", (S32)distance);
+				if (distance <= LFSimFeatureHandler::getInstance()->shoutRange())
+				{
+					static const LLCachedControl<LLColor4> sRadarTextChatRange(gColors, "RadarTextChatRange");
+					static const LLCachedControl<LLColor4> sRadarTextShoutRange(gColors, "RadarTextShoutRange");
+					snprintf(temp, sizeof(temp), "%.1f", distance);
+					color = (distance > LFSimFeatureHandler::getInstance()->sayRange()) ? sRadarTextShoutRange : sRadarTextChatRange;
+				}
+				else
+				{
+					if (entry->mStats[STAT_TYPE_DRAW]) color = sRadarTextDrawDist;
+					snprintf(temp, sizeof(temp), "%d", (S32)distance);
+				}
 			}
+			dist.value = temp;
+			dist.color = color * 0.7f + unselected_color * 0.3f; // Liru: Blend testing!
+			//dist.color = color;
+			element.columns.add(dist);
 		}
-		dist.value = temp;
-		dist.color = color * 0.7f + unselected_color * 0.3f; // Liru: Blend testing!
-		//dist.color = color;
 
-		LLScrollListCell::Params pos;
-		position -= simpos;
+		static const LLCachedControl<bool> hide_pos("RadarColumnPositionHidden");
+		if (!hide_pos)
+		{
+			LLScrollListCell::Params pos;
+			position -= simpos;
 
-		S32 x(position.mdV[VX]);
-		S32 y(position.mdV[VY]);
-		if (x >= 0 && x <= width && y >= 0 && y <= width)
-		{
-			snprintf(temp, sizeof(temp), "%d, %d", x, y);
+			S32 x(position.mdV[VX]);
+			S32 y(position.mdV[VY]);
+			if (x >= 0 && x <= width && y >= 0 && y <= width)
+			{
+				snprintf(temp, sizeof(temp), "%d, %d", x, y);
+			}
+			else
+			{
+				temp[0] = '\0';
+				if (y < 0)
+				{
+					strcat(temp, "S");
+				}
+				else if (y > width)
+				{
+					strcat(temp, "N");
+				}
+				if (x < 0)
+				{
+					strcat(temp, "W");
+				}
+				else if (x > width)
+				{
+					strcat(temp, "E");
+				}
+			}
+			pos.column = "position";
+			pos.type = "text";
+			pos.value = temp;
+			element.columns.add(pos);
 		}
-		else
-		{
-			temp[0] = '\0';
-			if (y < 0)
-			{
-				strcat(temp, "S");
-			}
-			else if (y > width)
-			{
-				strcat(temp, "N");
-			}
-			if (x < 0)
-			{
-				strcat(temp, "W");
-			}
-			else if (x > width)
-			{
-				strcat(temp, "E");
-			}
-		}
-		pos.column = "position";
-		pos.type = "text";
-		pos.value = temp;
 
-		LLScrollListCell::Params alt;
-		alt.column = "altitude";
-		alt.type = "text";
-		if (UnknownAltitude)
+		static const LLCachedControl<bool> hide_alt("RadarColumnAltitudeHidden");
+		if (!hide_alt)
 		{
-			strcpy(temp, "?");
+			LLScrollListCell::Params alt;
+			alt.column = "altitude";
+			alt.type = "text";
+			if (UnknownAltitude)
+			{
+				strcpy(temp, "?");
+			}
+			else
+			{
+				snprintf(temp, sizeof(temp), "%d", (S32)position.mdV[VZ]);
+			}
+			alt.value = temp;
+			element.columns.add(alt);
 		}
-		else
-		{
-			snprintf(temp, sizeof(temp), "%d", (S32)position.mdV[VZ]);
-		}
-		alt.value = temp;
 
-		LLScrollListCell::Params act;
 		static const LLCachedControl<bool> hide_act("RadarColumnActivityHidden");
 		if (!hide_act)
 		{
+			LLScrollListCell::Params act;
 			act.column = "activity";
 			act.type = "icon";
 			switch(entry->getActivity())
@@ -880,12 +908,13 @@ void LLFloaterAvatarList::refreshAvatarList()
 			default:
 				break;
 			}
+			element.columns.add(act);
 		}
 
-		LLScrollListCell::Params voice;
 		static const LLCachedControl<bool> hide_voice("RadarColumnVoiceHidden");
 		if (!hide_voice)
 		{
+			LLScrollListCell::Params voice;
 			voice.column("voice");
 			voice.type("icon");
 			// transplant from llparticipantlist.cpp, update accordingly.
@@ -914,71 +943,78 @@ void LLFloaterAvatarList::refreshAvatarList()
 					voice.color(speakerp->mStatus > LLSpeaker::STATUS_VOICE_ACTIVE ? LLColor4::transparent : speakerp->mDotColor);
 				}
 			}
+			element.columns.add(voice);
 		}
 
-		LLScrollListCell::Params agep;
-		agep.column = "age";
-		agep.type = "text";
-		color = sDefaultListText;
-		std::string age = boost::lexical_cast<std::string>(entry->mAge);
-		if (entry->mAge > -1)
+		static const LLCachedControl<bool> hide_age("RadarColumnAgeHidden");
+		if (!hide_age)
 		{
-			static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
-			if ((U32)entry->mAge < sAvatarAgeAlertDays)
-				color = sRadarTextYoung;
-		}
-		else
-		{
-			age = "?";
-		}
-		agep.value = age;
-		agep.color = color;
-
-		int dur = difftime(time(NULL), entry->getTime());
-		int hours = dur / 3600;
-		int mins = (dur % 3600) / 60;
-		int secs = (dur % 3600) % 60;
-
-		LLScrollListCell::Params time;
-		time.column = "time";
-		time.type = "text";
-		time.value = llformat("%d:%02d:%02d", hours, mins, secs);
-
-		LLScrollListCell::Params viewer;
-		viewer.column = "client";
-		viewer.type = "text";
-
-		static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(0.98f, 0.69f, 0.36f, 1.f));
-		color = avatar_name_color;
-		if (LLVOAvatar* avatarp = gObjectList.findAvatar(av_id))
-		{
-			std::string client = SHClientTagMgr::instance().getClientName(avatarp, false);
-			if (client.empty())
+			LLScrollListCell::Params agep;
+			agep.column = "age";
+			agep.type = "text";
+			color = sDefaultListText;
+			std::string age = boost::lexical_cast<std::string>(entry->mAge);
+			if (entry->mAge > -1)
 			{
-				color = unselected_color;
-				client = "?";
+				static const LLCachedControl<U32> sAvatarAgeAlertDays(gSavedSettings, "AvatarAgeAlertDays");
+				if ((U32)entry->mAge < sAvatarAgeAlertDays)
+				{
+					static const LLCachedControl<LLColor4> sRadarTextYoung(gColors, "RadarTextYoung");
+					color = sRadarTextYoung;
+				}
 			}
-			else SHClientTagMgr::instance().getClientColor(avatarp, false, color);
-			viewer.value = client.c_str();
+			else
+			{
+				age = "?";
+			}
+			agep.value = age;
+			agep.color = color;
+			element.columns.add(agep);
 		}
-		else
-		{
-			viewer.value = getString("Out Of Range");
-		}
-		//Blend to make the color show up better
-		viewer.color = color *.5f + unselected_color * .5f;
 
-		// Add individual column cell params to the item param
-		element.columns.add(mark);
-		element.columns.add(name);
-		element.columns.add(dist);
-		element.columns.add(pos);
-		element.columns.add(alt);
-		if (!hide_act) element.columns.add(act);
-		if (!hide_voice) element.columns.add(voice);
-		element.columns.add(agep);
-		element.columns.add(time);
-		element.columns.add(viewer);
+		static const LLCachedControl<bool> hide_time("RadarColumnTimeHidden");
+		if (!hide_time)
+		{
+			int dur = difftime(time(NULL), entry->getTime());
+			int hours = dur / 3600;
+			int mins = (dur % 3600) / 60;
+			int secs = (dur % 3600) % 60;
+
+			LLScrollListCell::Params time;
+			time.column = "time";
+			time.type = "text";
+			time.value = llformat("%d:%02d:%02d", hours, mins, secs);
+			element.columns.add(time);
+		}
+
+		static const LLCachedControl<bool> hide_client("RadarColumnClientHidden");
+		if (!hide_client)
+		{
+			LLScrollListCell::Params viewer;
+			viewer.column = "client";
+			viewer.type = "text";
+
+			static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(0.98f, 0.69f, 0.36f, 1.f));
+			color = avatar_name_color;
+			if (LLVOAvatar* avatarp = gObjectList.findAvatar(av_id))
+			{
+				std::string client = SHClientTagMgr::instance().getClientName(avatarp, false);
+				if (client.empty())
+				{
+					color = unselected_color;
+					client = "?";
+				}
+				else SHClientTagMgr::instance().getClientColor(avatarp, false, color);
+				viewer.value = client.c_str();
+			}
+			else
+			{
+				viewer.value = getString("Out Of Range");
+			}
+			//Blend to make the color show up better
+			viewer.color = color *.5f + unselected_color * .5f;
+			element.columns.add(viewer);
+		}
 
 		// Add to list
 		mAvatarList->addRow(element);

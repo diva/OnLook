@@ -905,7 +905,6 @@ AIHTTPTimeoutPolicy const* AIHTTPTimeoutPolicy::getTimeoutPolicyByName(std::stri
 #define P2(n, b)	AIHTTPTimeoutPolicy n##_timeout(#n, b)
 
 // Policy name									Policy
-P(assetUploadResponder);
 P(assetReportHandler);
 P(avatarPickerResponder);
 P(authHandler);
@@ -952,7 +951,6 @@ P2(meshPhysicsShapeResponder,					connect_30s);
 P2(meshSkinInfoResponder,						connect_30s);
 P(mimeDiscoveryResponder);
 P(moderationResponder);
-P(newAgentInventoryVariablePriceResponder);
 P(objectCostResponder);
 P(physicsFlagsResponder);
 P(productInfoRequestResponder);

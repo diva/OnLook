@@ -119,6 +119,10 @@
       <on_check control="RadarAlertAge"/>
     </menu_item_check>
     <menu_item_separator/>
+    <menu_item_check label="Include distance in alerts" name="Include distance in alerts">
+      <on_click function="ToggleControl" userdata="RadarAlertShowDist"/>
+      <on_check control="RadarAlertShowDist"/>
+    </menu_item_check>
     <menu_item_check label="Announce even when closed" name="Announce even when closed">
       <on_click function="ToggleControl" userdata="RadarKeepOpen"/>
       <on_check control="RadarKeepOpen"/>
