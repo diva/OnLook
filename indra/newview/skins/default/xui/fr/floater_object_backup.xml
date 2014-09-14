@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Object Backup" title="Progression">
+  <text name="name_label">
+    Progression
+  </text>
+  <string name="export">
+    Export de L'objet
+  </string>
+  <string name="import">
+    Import de l'objet
+  </string>
+</floater>
