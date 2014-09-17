@@ -75,7 +75,6 @@ public:
 	void setEntityID(const LLUUID& id) { mEntityID = id;}
 protected:
 	LLUUID mEntityID;
-private:
 	class LLViewBorder* mBorder;
 	LLControlVariable* mControl;
 	class LLTextBox* mText;

@@ -46,7 +46,7 @@
 
 static LLRegisterWidget<LLDropTarget> r("drop_target");
 
-static std::string currently_set_to(const LLViewerInventoryItem* item)
+std::string currently_set_to(const LLViewerInventoryItem* item)
 {
 	LLStringUtil::format_map_t args;
 	args["[ITEM]"] = item->getName();
@@ -84,7 +84,7 @@ LLDropTarget::~LLDropTarget()
 // static
 LLView* LLDropTarget::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory* factory)
 {
-	LLDropTarget* target = new LLDropTarget();
+	LLDropTarget* target = new LLDropTarget;
 	target->initFromXML(node, parent);
 	return target;
 }
@@ -188,23 +188,19 @@ void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
 
 BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg)
 {
-	if (mEntityID.isNull())
+	if (mEntityID.notNull())
+		return getParent() ? LLToolDragAndDrop::handleGiveDragAndDrop(mEntityID, LLUUID::null, drop, cargo_type, cargo_data, accept) : false;
+
+	if (LLViewerInventoryItem* inv_item = static_cast<LLViewerInventoryItem*>(cargo_data))
 	{
-		if (LLViewerInventoryItem* inv_item = static_cast<LLViewerInventoryItem*>(cargo_data))
+		*accept = ACCEPT_YES_COPY_SINGLE;
+		if (drop)
 		{
-			*accept = ACCEPT_YES_COPY_SINGLE;
-			if (drop)
-			{
-				mText->setText(currently_set_to(inv_item));
-				if (mControl) mControl->setValue(inv_item->getUUID().asString());
-			}
+			mText->setText(currently_set_to(inv_item));
+			if (mControl)
+				mControl->setValue(inv_item->getLinkedUUID().asString());
 		}
-		else
-		{
-			*accept = ACCEPT_NO;
-		}
-		return true;
 	}
-	return getParent() ? LLToolDragAndDrop::handleGiveDragAndDrop(mEntityID, LLUUID::null, drop, cargo_type, cargo_data, accept) : false;
+	return true;
 }
 
