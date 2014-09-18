@@ -198,7 +198,7 @@ BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAn
 		{
 			mText->setText(currently_set_to(inv_item));
 			if (mControl)
-				mControl->setValue(inv_item->getLinkedUUID().asString());
+				mControl->setValue(inv_item->getUUID().asString());
 		}
 	}
 	return true;
