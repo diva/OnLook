@@ -507,10 +507,10 @@ public:
 					gVFS->getData(data->assetid, data->type, buffer, 0, size);
 					std::string script((char*)buffer);
 					BOOL domono = FALSE;//Phox- this needs to be fixed when the preproc is added = JCLSLPreprocessor::mono_directive(script);
-					*//*if(script.find("//mono\n") != -1)
+					*//*if(script.find("//mono\n") != std::string::npos)
 					{
 						domono = TRUE;
-					}else if(script.find("//lsl2\n") != -1)
+					}else if(script.find("//lsl2\n") != std::string::npos)
 					{
 						domono = FALSE;
 					}*//*
