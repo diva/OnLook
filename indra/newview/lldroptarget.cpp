@@ -37,6 +37,8 @@
 
 #include "lldroptarget.h"
 
+#include <boost/signals2/shared_connection_block.hpp>
+
 #include "llinventorymodel.h"
 #include "llstartup.h"
 #include "lltextbox.h"
@@ -135,6 +137,7 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 	if (control_name.empty()) // The "empty set"
 	{
 		mControl = NULL;
+		mConnection.disconnect();
 		return; // This DropTarget never changes text, it isn't tied to a control
 	}
 
@@ -159,6 +162,10 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 		else
 			text = LLTrans::getString("CurrentlySetToAnItemNotOnThisAccount");
 	}
+	if (mControl)
+		mConnection = mControl->getSignal()->connect(boost::bind(&LLView::setValue, this, _2));
+	else
+		mConnection.disconnect();
 
 	mText->setText(text);
 }
@@ -186,6 +193,7 @@ void LLDropTarget::setControlValue(const std::string& val)
 {
 	if (mControl)
 	{
+		boost::signals2::shared_connection_block block(mConnection);
 		mControl->setValue(val);
 	}
 }

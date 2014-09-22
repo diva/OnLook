@@ -82,6 +82,7 @@ protected:
 	LLUUID mEntityID;
 	class LLViewBorder* mBorder;
 	LLControlVariable* mControl;
+	boost::signals2::scoped_connection mConnection;
 	class LLTextBox* mText;
 };
 
