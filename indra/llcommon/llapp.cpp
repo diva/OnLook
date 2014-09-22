@@ -385,12 +385,12 @@ void LLApp::setupErrorHandling()
 		// installing the handler.
 		installHandler = true;
 	}
-	#endif
 
 	if(installHandler && (mExceptionHandler == 0))
 	{
 		mExceptionHandler = new google_breakpad::ExceptionHandler(mDumpPath, clear_CrashLoggerReserve_callback, &unix_post_minidump_callback, 0, true, 0);
 	}
+	#endif
 #elif LL_LINUX
 	if(installHandler && (mExceptionHandler == 0))
 	{
