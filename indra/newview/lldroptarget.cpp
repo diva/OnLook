@@ -61,23 +61,23 @@ LLDropTarget::LLDropTarget(const LLDropTarget::Params& p)
 {
 	setToolTip(std::string(p.tool_tip));
 
-	mText = new LLTextBox("drop_text", p.rect, p.label);
+	mText = new LLTextBox("drop_text", LLRect(), p.label);
 	addChild(mText);
 
 	setControlName(p.control_name, NULL);
-	mText->setOrigin(0, 0);
 	mText->setFollows(FOLLOWS_NONE);
 	mText->setMouseOpaque(false);
 	mText->setHAlign(LLFontGL::HCENTER);
 	mText->setVPad(1);
 
-	mBorder = new LLViewBorder("drop_border", p.rect, LLViewBorder::BEVEL_IN);
+	mBorder = new LLViewBorder("drop_border", LLRect(), LLViewBorder::BEVEL_IN);
 	addChild(mBorder);
 
 	mBorder->setMouseOpaque(false);
-
-	if (p.fill_parent) fillParent(getParent());
 	if (!p.border_visible) mBorder->setBorderWidth(0);
+
+	// Now set the rects of the children
+	p.fill_parent ? fillParent(getParent()) : setChildRects(p.rect);
 }
 
 LLDropTarget::~LLDropTarget()
@@ -98,9 +98,7 @@ void LLDropTarget::initFromXML(LLXMLNodePtr node, LLView* parent)
 	LLView::initFromXML(node, parent);
 
 	const LLRect& rect = getRect();
-	const LLRect child_rect(0, rect.getHeight(), rect.getWidth(), 0);
-	mText->setRect(child_rect);
-	mBorder->setRect(child_rect);
+	setChildRects(LLRect(0, rect.getHeight(), rect.getWidth(), 0));
 
 	if (node->hasAttribute("name")) // Views can't have names, but drop targets can
 	{
@@ -170,6 +168,14 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 	mText->setText(text);
 }
 
+void LLDropTarget::setChildRects(LLRect rect)
+{
+	mBorder->setRect(rect);
+	{
+		mText->setRect(rect);
+	}
+}
+
 void LLDropTarget::fillParent(const LLView* parent)
 {
 	if (!parent) return; // No parent to fill
@@ -182,9 +188,7 @@ void LLDropTarget::fillParent(const LLView* parent)
 	}
 
 	// The following block enlarges the target, but maintains the desired size for the text and border
-	const LLRect& rect = getRect(); // Children maintain the old rectangle
-	mText->setRect(rect);
-	mBorder->setRect(rect);
+	setChildRects(getRect()); // Children maintain the old rectangle
 	const LLRect& parent_rect = parent->getRect();
 	setRect(LLRect(0, parent_rect.getHeight(), parent_rect.getWidth(), 0));
 }

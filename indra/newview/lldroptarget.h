@@ -72,6 +72,7 @@ public:
 	virtual void setControlName(const std::string& control, LLView* context);
 	virtual void setValue(const LLSD& value);
 
+	void setChildRects(LLRect rect);
 	void fillParent(const LLView* parent);
 	void setEntityID(const LLUUID& id) { mEntityID = id;}
 
