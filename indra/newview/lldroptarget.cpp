@@ -39,6 +39,7 @@
 
 #include <boost/signals2/shared_connection_block.hpp>
 
+#include "llbutton.h"
 #include "llinventorymodel.h"
 #include "llstartup.h"
 #include "lltextbox.h"
@@ -58,6 +59,7 @@ std::string currently_set_to(const LLInventoryItem* item)
 
 LLDropTarget::LLDropTarget(const LLDropTarget::Params& p)
 :	LLView(p)
+,	mReset(NULL)
 {
 	setToolTip(std::string(p.tool_tip));
 
@@ -75,6 +77,11 @@ LLDropTarget::LLDropTarget(const LLDropTarget::Params& p)
 
 	mBorder->setMouseOpaque(false);
 	if (!p.border_visible) mBorder->setBorderWidth(0);
+
+	if (p.show_reset)
+	{
+		addChild(mReset = new LLButton("reset", LLRect(), "icn_clear_lineeditor.tga", "icn_clear_lineeditor.tga", "", boost::bind(&LLDropTarget::setValue, this, _2)));
+	}
 
 	// Now set the rects of the children
 	p.fill_parent ? fillParent(getParent()) : setChildRects(p.rect);
@@ -98,6 +105,16 @@ void LLDropTarget::initFromXML(LLXMLNodePtr node, LLView* parent)
 	LLView::initFromXML(node, parent);
 
 	const LLRect& rect = getRect();
+	if (node->hasAttribute("show_reset"))
+	{
+		bool show;
+		node->getAttribute_bool("show_reset", show);
+		if (!show)
+		{
+			delete mReset;
+			mReset = NULL;
+		}
+	}
 	setChildRects(LLRect(0, rect.getHeight(), rect.getWidth(), 0));
 
 	if (node->hasAttribute("name")) // Views can't have names, but drop targets can
@@ -171,6 +188,17 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 void LLDropTarget::setChildRects(LLRect rect)
 {
 	mBorder->setRect(rect);
+	if (mReset)
+	{
+		// Reset button takes rightmost part of the text area.
+		S32 height(rect.getHeight());
+		rect.mRight -= height;
+		mText->setRect(rect);
+		rect.mLeft = rect.mRight;
+		rect.mRight += height;
+		mReset->setRect(rect);
+	}
+	else
 	{
 		mText->setRect(rect);
 	}

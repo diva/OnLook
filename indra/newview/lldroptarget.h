@@ -47,11 +47,13 @@ public:
 		Optional<bool> border_visible; // Whether or not to display the border
 		Optional<std::string> control_name; // Control to change on item drop (Per Account only)
 		Optional<std::string> label; // Label for the LLTextBox, used when label doesn't dynamically change on drop
+		Optional<bool> show_reset; // Whether or not to show the reset button
 		Optional<bool> fill_parent; // Whether or not to fill the direct parent, to have a larger drop target.  If true, the next sibling must explicitly define its rect without deltas.
 		Params()
 		:	border_visible("border_visible", true)
 		,	control_name("control_name", "")
 		,	label("label", "")
+		,	show_reset("show_reset", true)
 		,	fill_parent("fill_parent", false)
 		{
 			changeDefault(mouse_opaque, false);
@@ -85,6 +87,7 @@ protected:
 	LLControlVariable* mControl;
 	boost::signals2::scoped_connection mConnection;
 	class LLTextBox* mText;
+	class LLButton* mReset;
 };
 
 #endif // LLDROPTARGET_H
