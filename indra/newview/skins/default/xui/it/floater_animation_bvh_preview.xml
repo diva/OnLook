@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="Animation Preview" title="">
+<floater name="Animation Preview">
 	<text name="name_label">
 		Nome:
 	</text>
@@ -147,7 +147,7 @@ Raccomandiamo file di tipo BVH esportati da
 Poser 4.
 	</text>
 	<button label="Annulla" name="cancel_btn"/>
-	<button label="Importa ([AMOUNT]L$)" name="ok_btn"/>
+	<button label="Importa ([UPLOADFEE])" name="ok_btn"/>
 	<string name="failed_to_initialize">
 		Impossibile inizializzare la sequenza
 	</string>
