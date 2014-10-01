@@ -69,11 +69,16 @@ public:
 	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg);
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
 	virtual void initFromXML(LLXMLNodePtr node, LLView* parent);
-	virtual void setControlName(const std::string& control, LLView* context);	
+	virtual void setControlName(const std::string& control, LLView* context);
+	virtual void setValue(const LLSD& value);
 
 	void fillParent(const LLView* parent);
 	void setEntityID(const LLUUID& id) { mEntityID = id;}
+
 protected:
+	virtual void setItem(const class LLInventoryItem* item);
+	void setControlValue(const std::string& val);
+
 	LLUUID mEntityID;
 	class LLViewBorder* mBorder;
 	LLControlVariable* mControl;

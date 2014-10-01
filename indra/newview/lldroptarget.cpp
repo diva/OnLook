@@ -46,8 +46,9 @@
 
 static LLRegisterWidget<LLDropTarget> r("drop_target");
 
-std::string currently_set_to(const LLViewerInventoryItem* item)
+std::string currently_set_to(const LLInventoryItem* item)
 {
+	if (!item) return LLTrans::getString("CurrentlyNotSet");
 	LLStringUtil::format_map_t args;
 	args["[ITEM]"] = item->getName();
 	return LLTrans::getString("CurrentlySetTo", args);
@@ -181,6 +182,26 @@ void LLDropTarget::fillParent(const LLView* parent)
 	setRect(LLRect(0, parent_rect.getHeight(), parent_rect.getWidth(), 0));
 }
 
+void LLDropTarget::setControlValue(const std::string& val)
+{
+	if (mControl)
+	{
+		mControl->setValue(val);
+	}
+}
+
+void LLDropTarget::setItem(const LLInventoryItem* item)
+{
+	mText->setText(currently_set_to(item));
+	setControlValue(item ? item->getUUID().asString() : "");
+}
+
+void LLDropTarget::setValue(const LLSD& value)
+{
+	const LLUUID& id(value.asUUID());
+	setItem(id.isNull() ? NULL : gInventory.getItem(id));
+}
+
 void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
 {
 	llinfos << "LLDropTarget::doDrop()" << llendl;
@@ -194,12 +215,7 @@ BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAn
 	if (LLViewerInventoryItem* inv_item = static_cast<LLViewerInventoryItem*>(cargo_data))
 	{
 		*accept = ACCEPT_YES_COPY_SINGLE;
-		if (drop)
-		{
-			mText->setText(currently_set_to(inv_item));
-			if (mControl)
-				mControl->setValue(inv_item->getUUID().asString());
-		}
+		if (drop) setItem(inv_item);
 	}
 	return true;
 }
