@@ -468,5 +468,5 @@ In alternativa, puoi crearne una nuova da zero ed indossarla.
 	<scroll_container left="254" name="panel_container"/>
 	<button label="Annulla" label_selected="Annulla" name="Cancel"/>
 	<button label="OK" label_selected="OK" name="Ok"/>
-	<button label="Crea Outfit..." label_selected="Crea Outfit..." name="Make Outfit" left="122" />
+	<button label="Crea Outfit..." label_selected="Crea Outfit..." name="Make Outfit"/>
 </floater>
