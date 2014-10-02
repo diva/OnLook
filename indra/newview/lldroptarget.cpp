@@ -156,6 +156,7 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 		return; // This DropTarget never changes text, it isn't tied to a control
 	}
 
+	bool none(false);
 	std::string text;
 	if (LLStartUp::getStartupState() != STATE_STARTED) // Too early for PerAccount
 	{
@@ -170,7 +171,8 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 			return; // Though this should never happen.
 		}
 		const LLUUID id(mControl->getValue().asString());
-		if (id.isNull())
+		none = id.isNull();
+		if (none)
 			text = LLTrans::getString("CurrentlyNotSet");
 		else if (LLViewerInventoryItem* item = gInventory.getItem(id))
 			text = currently_set_to(item);
@@ -183,6 +185,7 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 		mConnection.disconnect();
 
 	mText->setText(text);
+	if (mReset) mReset->setVisible(none);
 }
 
 void LLDropTarget::setChildRects(LLRect rect)
@@ -232,6 +235,7 @@ void LLDropTarget::setControlValue(const std::string& val)
 
 void LLDropTarget::setItem(const LLInventoryItem* item)
 {
+	if (mReset) mReset->setVisible(!!item);
 	mText->setText(currently_set_to(item));
 	setControlValue(item ? item->getUUID().asString() : "");
 }
