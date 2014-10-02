@@ -171,7 +171,9 @@ void AIArchetype::toXML(std::ostream& os, int indentation) const
   {
 	tag.attribute("name", LLWearableType::getTypeName(mType));
   }
-  if (!mMetaData.mPath.empty())
+  // mMetaData.mPath can be empty even exporting from the Appearance editor:
+  // when the asset is in the "My Inventory" root.
+  if (!mMetaData.mPath.empty() || !mMetaData.mName.empty())		// Is this not an old-style linden_genepool?
   {
 	tag.child(mMetaData);
   }
