@@ -178,25 +178,25 @@ Asegurate que tu conexión a internet funciona correctamente.
 	
 	<notification name="OutboxFolderCreated">
 		<unique/>
-			Una nueva carpeta ha sido creada por cada ítem que has transferido en el nivel superior de tu Merchant Outbox.
+			Una nueva carpeta ha sido creada por cada ítem que has transferido en el nivel superior de tu Buzón de Salida del Comerciante.
 	
-		<usetemplate ignoretext="Una nueva carpeta ha sido creada en el Merchant Outbox" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="Una nueva carpeta ha sido creada en el Buzón de Salida del Comerciante" name="okignore" yestext="OK"/>
 	</notification>
 	
 	<notification name="OutboxImportComplete">
 		Completado
 
-Todas las carpetas ha sido enviadas satisfactoriamente al Marketplace.
+Todas las carpetas ha sido enviadas satisfactoriamente al Mercado en Línea.
 
-		<usetemplate ignoretext="Todas las carpetas se han enviado al Marketplace" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="Todas las carpetas se han enviado al Mercado en Línea" name="okignore" yestext="OK"/>
 	</notification>
 	
 	<notification name="OutboxImportHadErrors">
 		Algunas carpetas no fueron transferidas
 
-Ha habido errores al enviar algunas carpetas al Markeplace. Estas carpetas aún están en tu Merchant Outbox.
+Ha habido errores al enviar algunas carpetas al Mercado en Línea. Estas carpetas aún están en tu Buzón de Salida del Comerciante.
 
-Mira en el [log de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
+Mira en el [registro de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
 
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
@@ -204,15 +204,15 @@ Mira en el [log de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
 	<notification name="OutboxImportFailed">
 		La transferencia ha fallado
 
-No se han enviado carpetas al Marketplace debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
+No se han enviado carpetas al Mercado en Línea debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
 
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	
 	<notification name="OutboxInitFailed">
-		Ha fallado la inicialización del Marketplace
+		Ha fallado la inicialización del Mercado en Línea
 
-La inicialización con el Marketplace ha fallado debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
+La inicialización con el Mercado en Línea ha fallado debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
 
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>	
@@ -398,7 +398,7 @@ Marcando este ítem, se mostrará:
  * Pulsar Cargar &gt; &apos;En un navegador externo&apos; para ver la página en tu navegador por defecto.
  * Pulsar Cargar &gt; &apos;URL Inicio&apos; para volver al perfil en la web de este residente si has estado navegando por otros sitios.
 
-Cuando estés viendo su propio perfil, puedes introducir cualquier URL como tu perfil web, y pulsar OK para fijarla.
+Cuando estés viendo tu propio perfil, puedes introducir cualquier URL como tu perfil web, y pulsar OK para fijarla.
 Los demás residentes podrán visitar la URL que hayas elegido cuando vean tu perfil.	
 	</notification>
 	
@@ -862,7 +862,7 @@ Si lo entregas, lo perderás de tu inventario.
 	
 	<notification name="CannotCopyCountItems">
 		No tiene permiso para copiar [COUNT] de los
-ítems seleccionados. Si los entregas, los perderás de su inventario.
+ítems seleccionados. Si los entregas, los perderás de tu inventario.
 ¿Realmente quieres darlos?
 		<usetemplate name="okcancelbuttons" notext="No" yestext="Sí"/>
 	</notification>
@@ -894,7 +894,7 @@ Temporalmente, será incapaz de moverse, usar el chat, o interactuar con el mund
 	</notification>
 	
 	<notification name="EjectAvatarFullnameNoBan">
-		¿Expulsar a [AVATAR_NAME] de su terreno?
+		¿Expulsar a [AVATAR_NAME] de tu terreno?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Expulsar"/>
 	</notification>
 
@@ -2950,7 +2950,7 @@ Gracias,
 	</notification>
 	
 	<notification name="ConfirmClearBrowserCache">
-		¿Estás seguro de que quieres limpiar la caché de su navegador?
+		¿Estás seguro de que quieres limpiar la caché de tu navegador?
 		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Sí"/>
 	</notification>
 	
@@ -3334,11 +3334,19 @@ Ya existe un grid con el mismo nombre.
 	</notification>
 
 	<notification name="HelpRenderCompat">
-		Las construcciones con huecos extendidos o tamaños de agujeros extendidos no se renderizarán adecuadamente en otros visores. Por favor, mantén esta opción marcada si quieres que tus construcciones se vean adecuadamente in otros visores.
+		Las construcciones con huecos extendidos o tamaños de agujeros extendidos no se renderizarán adecuadamente en otros visores. Por favor, mantén esta opción marcada si quieres que tus construcciones se vean adecuadamente en otros visores.
+	</notification>
+
+	<notification name="ImportFailed">
+		Archivo XML Incorrecto. Importación abortada.
+	</notification>
+
+	<notification name="ExportAborted">
+		El objeto fue deseleccionado antes de poder ser exportado. Exportación abortada.
 	</notification>
 	
 	<notification name="ExportFailed">
-		Ninguno de los objetos seleccionados es exportable. Se aborta el proceso de exportado.
+		Permisos incorrectos para el objeto exportado. Exportación abortada.
 	</notification>
 	
 	<notification name="ExportPartial">
@@ -3347,6 +3355,14 @@ Ya existe un grid con el mismo nombre.
 	
 	<notification name="ExportSuccessful">
 		Exportado satisfactorio.
+	</notification>
+
+	<notification name="ConfirmAbortBackup">
+		¿Estás seguro que quieres abortar la operación de resguardo?
+		<form name="form">
+			<button name="Yes" text="Si"/>
+			<button name="No" text="No"/>
+		</form>
 	</notification>
 	
 	<notification name="SystemMessageTip">
