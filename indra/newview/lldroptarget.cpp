@@ -156,7 +156,7 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 		return; // This DropTarget never changes text, it isn't tied to a control
 	}
 
-	bool none(false);
+	bool none(true);
 	std::string text;
 	if (LLStartUp::getStartupState() != STATE_STARTED) // Too early for PerAccount
 	{
@@ -185,7 +185,7 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 		mConnection.disconnect();
 
 	mText->setText(text);
-	if (mReset) mReset->setVisible(none);
+	if (mReset) mReset->setVisible(!none);
 }
 
 void LLDropTarget::setChildRects(LLRect rect)
