@@ -71,7 +71,14 @@ const S32 NOTICE_DATE_STRING_SIZE = 30;
 class LLGroupDropTarget : public LLDropTarget
 {
 public:
-	LLGroupDropTarget(const LLDropTarget::Params& p = LLDropTarget::Params());
+	struct Params : public LLInitParam::Block<Params, LLDropTarget::Params>
+	{
+		Params()
+		{
+			changeDefault(show_reset, false); // We have a button for this
+		}
+	};
+	LLGroupDropTarget(const Params& p = Params());
 	~LLGroupDropTarget() {};
 
 	//
@@ -92,14 +99,14 @@ protected:
 	LLPanelGroupNotices* mGroupNoticesPanel;
 };
 
-LLGroupDropTarget::LLGroupDropTarget(const LLDropTarget::Params& p)
+LLGroupDropTarget::LLGroupDropTarget(const LLGroupDropTarget::Params& p)
 :	LLDropTarget(p)
 {}
 
 // static
 LLView* LLGroupDropTarget::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory* factory)
 {
-	LLGroupDropTarget* target = new LLGroupDropTarget();
+	LLGroupDropTarget* target = new LLGroupDropTarget;
 	target->initFromXML(node, parent);
 	return target;
 }

@@ -102,7 +102,7 @@ LLFloaterRegionRestarting::LLFloaterRegionRestarting(const LLSD& key) :
 {
 	//buildFromFile("floater_region_restarting.xml");
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_region_restarting.xml");
-	mName = key["NAME"].asString(); // <alchemy/>
+	mName = key.has("NAME") ? key["NAME"].asString() : gAgent.getRegion()->getName(); // <alchemy/>
 	center();
 
 }

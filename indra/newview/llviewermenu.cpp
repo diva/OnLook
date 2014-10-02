@@ -2818,24 +2818,27 @@ bool handle_go_to()
 	std::vector<std::string> strings;
 	std::string val;
 	LLVector3d pos = LLToolPie::getInstance()->getPick().mPosGlobal;
-	val = llformat("%g", pos.mdV[VX]);
+	val = llformat("%.9g", pos.mdV[VX]);
 	strings.push_back(val);
-	val = llformat("%g", pos.mdV[VY]);
+	val = llformat("%.9g", pos.mdV[VY]);
 	strings.push_back(val);
-	val = llformat("%g", pos.mdV[VZ]);
+	val = llformat("%.9g", pos.mdV[VZ]);
 	strings.push_back(val);
 	send_generic_message("autopilot", strings);
 
 	LLViewerParcelMgr::getInstance()->deselectLand();
 
-	if (isAgentAvatarValid() && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
+	if (gSavedSettings.getBOOL("SinguMotionResetsCamera"))
 	{
-		gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentAvatarp->getID());
-	}
-	else 
-	{
-		// Snap camera back to behind avatar
-		gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
+		if (!gSavedSettings.getBOOL("AutoPilotLocksCamera"))
+		{
+			gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentID);
+		}
+		else
+		{
+			// Snap camera back to behind avatar
+			gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
+		}
 	}
 
 	// Could be first use

@@ -3103,7 +3103,7 @@ void LLFolderBridge::pasteFromClipboard(bool only_copies)
 			{
 				if (move_is_into_current_outfit || move_is_into_outfit)
 				{
-					if (can_move_to_outfit(item, move_is_into_current_outfit))
+					if (item && can_move_to_outfit(item, move_is_into_current_outfit))
 					{
 						dropToOutfit(item, move_is_into_current_outfit);
 					}

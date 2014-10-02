@@ -547,6 +547,7 @@ void LLFloaterTools::refresh()
 		std::string value_string;
 		if ((prim_count == 1) && gSavedSettings.getBOOL("EditLinkedParts")) //Selecting a single prim in "Edit Linked" mode, show link number
 		{
+			link_cost = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
 			childSetTextArg("link_num_obj_count", "[DESC]", std::string("Link number:"));
 
 			LLViewerObject* selected = LLSelectMgr::getInstance()->getSelection()->getFirstObject();

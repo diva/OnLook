@@ -47,11 +47,13 @@ public:
 		Optional<bool> border_visible; // Whether or not to display the border
 		Optional<std::string> control_name; // Control to change on item drop (Per Account only)
 		Optional<std::string> label; // Label for the LLTextBox, used when label doesn't dynamically change on drop
+		Optional<bool> show_reset; // Whether or not to show the reset button
 		Optional<bool> fill_parent; // Whether or not to fill the direct parent, to have a larger drop target.  If true, the next sibling must explicitly define its rect without deltas.
 		Params()
 		:	border_visible("border_visible", true)
 		,	control_name("control_name", "")
 		,	label("label", "")
+		,	show_reset("show_reset", true)
 		,	fill_parent("fill_parent", false)
 		{
 			changeDefault(mouse_opaque, false);
@@ -69,16 +71,23 @@ public:
 	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg);
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
 	virtual void initFromXML(LLXMLNodePtr node, LLView* parent);
-	virtual void setControlName(const std::string& control, LLView* context);	
+	virtual void setControlName(const std::string& control, LLView* context);
+	virtual void setValue(const LLSD& value);
 
+	void setChildRects(LLRect rect);
 	void fillParent(const LLView* parent);
 	void setEntityID(const LLUUID& id) { mEntityID = id;}
+
 protected:
+	virtual void setItem(const class LLInventoryItem* item);
+	void setControlValue(const std::string& val);
+
 	LLUUID mEntityID;
-private:
 	class LLViewBorder* mBorder;
 	LLControlVariable* mControl;
+	boost::signals2::scoped_connection mConnection;
 	class LLTextBox* mText;
+	class LLButton* mReset;
 };
 
 #endif // LLDROPTARGET_H

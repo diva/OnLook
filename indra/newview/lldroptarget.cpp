@@ -37,6 +37,9 @@
 
 #include "lldroptarget.h"
 
+#include <boost/signals2/shared_connection_block.hpp>
+
+#include "llbutton.h"
 #include "llinventorymodel.h"
 #include "llstartup.h"
 #include "lltextbox.h"
@@ -46,8 +49,9 @@
 
 static LLRegisterWidget<LLDropTarget> r("drop_target");
 
-static std::string currently_set_to(const LLViewerInventoryItem* item)
+std::string currently_set_to(const LLInventoryItem* item)
 {
+	if (!item) return LLTrans::getString("CurrentlyNotSet");
 	LLStringUtil::format_map_t args;
 	args["[ITEM]"] = item->getName();
 	return LLTrans::getString("CurrentlySetTo", args);
@@ -55,26 +59,32 @@ static std::string currently_set_to(const LLViewerInventoryItem* item)
 
 LLDropTarget::LLDropTarget(const LLDropTarget::Params& p)
 :	LLView(p)
+,	mReset(NULL)
 {
 	setToolTip(std::string(p.tool_tip));
 
-	mText = new LLTextBox("drop_text", p.rect, p.label);
+	mText = new LLTextBox("drop_text", LLRect(), p.label);
 	addChild(mText);
 
 	setControlName(p.control_name, NULL);
-	mText->setOrigin(0, 0);
 	mText->setFollows(FOLLOWS_NONE);
 	mText->setMouseOpaque(false);
 	mText->setHAlign(LLFontGL::HCENTER);
 	mText->setVPad(1);
 
-	mBorder = new LLViewBorder("drop_border", p.rect, LLViewBorder::BEVEL_IN);
+	mBorder = new LLViewBorder("drop_border", LLRect(), LLViewBorder::BEVEL_IN);
 	addChild(mBorder);
 
 	mBorder->setMouseOpaque(false);
-
-	if (p.fill_parent) fillParent(getParent());
 	if (!p.border_visible) mBorder->setBorderWidth(0);
+
+	if (p.show_reset)
+	{
+		addChild(mReset = new LLButton("reset", LLRect(), "icn_clear_lineeditor.tga", "icn_clear_lineeditor.tga", "", boost::bind(&LLDropTarget::setValue, this, _2)));
+	}
+
+	// Now set the rects of the children
+	p.fill_parent ? fillParent(getParent()) : setChildRects(p.rect);
 }
 
 LLDropTarget::~LLDropTarget()
@@ -84,7 +94,7 @@ LLDropTarget::~LLDropTarget()
 // static
 LLView* LLDropTarget::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory* factory)
 {
-	LLDropTarget* target = new LLDropTarget();
+	LLDropTarget* target = new LLDropTarget;
 	target->initFromXML(node, parent);
 	return target;
 }
@@ -95,9 +105,17 @@ void LLDropTarget::initFromXML(LLXMLNodePtr node, LLView* parent)
 	LLView::initFromXML(node, parent);
 
 	const LLRect& rect = getRect();
-	const LLRect child_rect(0, rect.getHeight(), rect.getWidth(), 0);
-	mText->setRect(child_rect);
-	mBorder->setRect(child_rect);
+	if (node->hasAttribute("show_reset"))
+	{
+		bool show;
+		node->getAttribute_bool("show_reset", show);
+		if (!show)
+		{
+			delete mReset;
+			mReset = NULL;
+		}
+	}
+	setChildRects(LLRect(0, rect.getHeight(), rect.getWidth(), 0));
 
 	if (node->hasAttribute("name")) // Views can't have names, but drop targets can
 	{
@@ -134,9 +152,11 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 	if (control_name.empty()) // The "empty set"
 	{
 		mControl = NULL;
+		mConnection.disconnect();
 		return; // This DropTarget never changes text, it isn't tied to a control
 	}
 
+	bool none(true);
 	std::string text;
 	if (LLStartUp::getStartupState() != STATE_STARTED) // Too early for PerAccount
 	{
@@ -151,15 +171,40 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 			return; // Though this should never happen.
 		}
 		const LLUUID id(mControl->getValue().asString());
-		if (id.isNull())
+		none = id.isNull();
+		if (none)
 			text = LLTrans::getString("CurrentlyNotSet");
 		else if (LLViewerInventoryItem* item = gInventory.getItem(id))
 			text = currently_set_to(item);
 		else
 			text = LLTrans::getString("CurrentlySetToAnItemNotOnThisAccount");
 	}
+	if (mControl)
+		mConnection = mControl->getSignal()->connect(boost::bind(&LLView::setValue, this, _2));
+	else
+		mConnection.disconnect();
 
 	mText->setText(text);
+	if (mReset) mReset->setVisible(!none);
+}
+
+void LLDropTarget::setChildRects(LLRect rect)
+{
+	mBorder->setRect(rect);
+	if (mReset)
+	{
+		// Reset button takes rightmost part of the text area.
+		S32 height(rect.getHeight());
+		rect.mRight -= height;
+		mText->setRect(rect);
+		rect.mLeft = rect.mRight;
+		rect.mRight += height;
+		mReset->setRect(rect);
+	}
+	else
+	{
+		mText->setRect(rect);
+	}
 }
 
 void LLDropTarget::fillParent(const LLView* parent)
@@ -174,11 +219,31 @@ void LLDropTarget::fillParent(const LLView* parent)
 	}
 
 	// The following block enlarges the target, but maintains the desired size for the text and border
-	const LLRect& rect = getRect(); // Children maintain the old rectangle
-	mText->setRect(rect);
-	mBorder->setRect(rect);
+	setChildRects(getRect()); // Children maintain the old rectangle
 	const LLRect& parent_rect = parent->getRect();
 	setRect(LLRect(0, parent_rect.getHeight(), parent_rect.getWidth(), 0));
+}
+
+void LLDropTarget::setControlValue(const std::string& val)
+{
+	if (mControl)
+	{
+		boost::signals2::shared_connection_block block(mConnection);
+		mControl->setValue(val);
+	}
+}
+
+void LLDropTarget::setItem(const LLInventoryItem* item)
+{
+	if (mReset) mReset->setVisible(!!item);
+	mText->setText(currently_set_to(item));
+	setControlValue(item ? item->getUUID().asString() : "");
+}
+
+void LLDropTarget::setValue(const LLSD& value)
+{
+	const LLUUID& id(value.asUUID());
+	setItem(id.isNull() ? NULL : gInventory.getItem(id));
 }
 
 void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
@@ -188,23 +253,14 @@ void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
 
 BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg)
 {
-	if (mEntityID.isNull())
+	if (mEntityID.notNull())
+		return getParent() ? LLToolDragAndDrop::handleGiveDragAndDrop(mEntityID, LLUUID::null, drop, cargo_type, cargo_data, accept) : false;
+
+	if (LLViewerInventoryItem* inv_item = static_cast<LLViewerInventoryItem*>(cargo_data))
 	{
-		if (LLViewerInventoryItem* inv_item = static_cast<LLViewerInventoryItem*>(cargo_data))
-		{
-			*accept = ACCEPT_YES_COPY_SINGLE;
-			if (drop)
-			{
-				mText->setText(currently_set_to(inv_item));
-				if (mControl) mControl->setValue(inv_item->getUUID().asString());
-			}
-		}
-		else
-		{
-			*accept = ACCEPT_NO;
-		}
-		return true;
+		*accept = ACCEPT_YES_COPY_SINGLE;
+		if (drop) setItem(inv_item);
 	}
-	return getParent() ? LLToolDragAndDrop::handleGiveDragAndDrop(mEntityID, LLUUID::null, drop, cargo_type, cargo_data, accept) : false;
+	return true;
 }
 
