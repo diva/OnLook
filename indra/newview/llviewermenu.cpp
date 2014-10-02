@@ -2828,14 +2828,17 @@ bool handle_go_to()
 
 	LLViewerParcelMgr::getInstance()->deselectLand();
 
-	if (isAgentAvatarValid() && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
+	if (gSavedSettings.getBOOL("SinguMotionResetsCamera"))
 	{
-		gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentAvatarp->getID());
-	}
-	else 
-	{
-		// Snap camera back to behind avatar
-		gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
+		if (!gSavedSettings.getBOOL("AutoPilotLocksCamera"))
+		{
+			gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentID);
+		}
+		else
+		{
+			// Snap camera back to behind avatar
+			gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
+		}
 	}
 
 	// Could be first use
