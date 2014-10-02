@@ -29,9 +29,9 @@
       <text bottom="-160" left="10" follows="left|top" name="objects_link_text_box3">Show links on chatting object names in chat history for:</text>
       <radio_group bottom_delta="-26" control_name="LinksForChattingObjects" tool_tip="Enables a link to show you the owner of the speaking object."
         follows="top" height="20" left="20" name="objects_link" width="350">
-        <radio_item bottom_delta="0" left_delta="5" name="no_object" width="48">No object</radio_item>
-        <radio_item bottom_delta="0" left_delta="45" name="others_objects" width="48">Others' objects</radio_item>
-        <radio_item bottom_delta="0" left_delta="60" name="anyones_objects" width="48">Anyone's objects</radio_item>
+        <radio_item bottom_delta="0" left_delta="5" name="no_object" width="48" value="0">No object</radio_item>
+        <radio_item bottom_delta="0" left_delta="45" name="others_objects" width="48" value="1">Others' objects</radio_item>
+        <radio_item bottom_delta="0" left_delta="60" name="anyones_objects" width="48" value="2">Anyone's objects</radio_item>
       </radio_group>
       <text bottom_delta="-18" left="10" follows="top" name="time_format_text_box">Time format:</text>
       <combo_box bottom_delta="-5" left="90" follows="top" height="18" tool_tip="Show hours in either 12-23 or 12PM-11PM format." name="time_format_combobox" width="130">
