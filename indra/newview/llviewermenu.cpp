@@ -2818,11 +2818,11 @@ bool handle_go_to()
 	std::vector<std::string> strings;
 	std::string val;
 	LLVector3d pos = LLToolPie::getInstance()->getPick().mPosGlobal;
-	val = llformat("%g", pos.mdV[VX]);
+	val = llformat("%.9g", pos.mdV[VX]);
 	strings.push_back(val);
-	val = llformat("%g", pos.mdV[VY]);
+	val = llformat("%.9g", pos.mdV[VY]);
 	strings.push_back(val);
-	val = llformat("%g", pos.mdV[VZ]);
+	val = llformat("%.9g", pos.mdV[VZ]);
 	strings.push_back(val);
 	send_generic_message("autopilot", strings);
 
