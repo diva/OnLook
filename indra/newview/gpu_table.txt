@@ -53,6 +53,9 @@ ATI ASUS EAH38xx				.*ATI.*ASUS.*EAH38.*						3		1
 ATI ASUS EAH43xx				.*ATI.*ASUS.*EAH43.*						1		1
 ATI ASUS EAH45xx				.*ATI.*ASUS.*EAH45.*						1		1
 ATI ASUS EAH48xx				.*ATI.*ASUS.*EAH48.*						3		1
+ATI ASUS EAH54xx				.*ATI.*ASUS.*EAH54.*						3		1
+ATI ASUS EAH55xx				.*ATI.*ASUS.*EAH55.*						3		1
+ATI ASUS EAH56xx				.*ATI.*ASUS.*EAH56.*						3		1
 ATI ASUS EAH57xx				.*ATI.*ASUS.*EAH57.*						3		1
 ATI ASUS EAH58xx				.*ATI.*ASUS.*EAH58.*						3		1
 ATI ASUS EAH6xxx				.*ATI.*ASUS.*EAH6.*							3		1
@@ -186,6 +189,14 @@ ATI Radeon HD 7600				.*ATI.*Radeon HD *76..						3		1
 ATI Radeon HD 7700				.*ATI.*Radeon HD *77..						3		1
 ATI Radeon HD 7800				.*ATI.*Radeon HD *78..						3		1
 ATI Radeon HD 7900				.*ATI.*Radeon HD *79..						3		1
+ATI Radeon HD 8200				.*ATI.*AMD Radeon.* HD 82.*					3		1
+ATI Radeon HD 8300				.*ATI.*AMD Radeon.* HD 83.*					3		1
+ATI Radeon HD 8400				.*ATI.*AMD Radeon.* HD 84.*					3		1
+ATI Radeon HD 8500				.*ATI.*AMD Radeon.* HD 85.*					3		1
+ATI Radeon HD 8600				.*ATI.*AMD Radeon.* HD 86.*					3		1
+ATI Radeon HD 8700				.*ATI.*AMD Radeon.* HD 87.*					3		1
+ATI Radeon HD 8800				.*ATI.*AMD Radeon.* HD 88.*					3		1
+ATI Radeon HD 8900				.*ATI.*AMD Radeon.* HD 89.*					3		1
 ATI Radeon OpenGL				.*ATI.*Radeon OpenGL.*						0		0
 ATI Radeon 2100					.*ATI.*Radeon 21..							0		1
 ATI Radeon 3000					.*ATI.*Radeon 30..							0		1
@@ -301,15 +312,15 @@ Intel Eaglelake					.*Intel.*Eaglelake.*						0		1
 Intel Graphics Media HD			.*Intel.*Graphics Media.*HD.*				0		1
 Intel HD Graphics 2000			.*Intel.*HD Graphics 2000.*					1		1
 Intel HD Graphics 3000			.*Intel.*HD Graphics 3000.*					2		1
-Intel HD Graphics 3000			.*Intel.*Sandybridge.*					2		1
+Intel HD Graphics 3000			.*Intel.*Sandybridge.*						2		1
 Intel HD Graphics 4000			.*Intel.*HD Graphics 4000.*					2		1
-Intel HD Graphics 4000			.*Intel.*Ivybridge.*					2		1
-Intel Intel Iris Pro Graphics 5200		.*Intel.*Iris Pro Graphics 52.*		2	1
-Intel Intel Iris Graphics 5100			.*Intel.*Iris Graphics 51.*		2	1
-Intel Intel Iris OpenGL Engine			.*Intel.*Iris OpenGL.*			2	1
-Intel Intel Iris Pro OpenGL Engine			.*Intel.*Iris Pro OpenGL.*	3	1
+Intel HD Graphics 4000			.*Intel.*Ivybridge.*						2		1
+Intel Intel Iris Pro Graphics 5200		.*Intel.*Iris Pro Graphics 52.*		2		1
+Intel Intel Iris Graphics 5100			.*Intel.*Iris Graphics 51.*			2		1
+Intel Intel Iris OpenGL Engine			.*Intel.*Iris OpenGL.*				2		1
+Intel Intel Iris Pro OpenGL Engine			.*Intel.*Iris Pro OpenGL.*		3		1
 Intel HD Graphics 5000			.*Intel.*HD Graphics 5.*					2		1
-Intel HD Graphics 5000			.*Intel.*Haswell.*					2		1
+Intel HD Graphics 5000			.*Intel.*Haswell.*							2		1
 Intel HD Graphics				.*Intel.*HD Graphics.*						2		1
 Intel Mobile 4 Series			.*Intel.*Mobile.* 4 Series.*				0		1
 Intel Media Graphics HD			.*Intel.*Media Graphics HD.*				0		1
@@ -319,8 +330,10 @@ Intel Springdale				.*Intel.*Springdale.*						0		0
 Intel HD Graphics 2000			.*Intel.*HD2000.*							1		1
 Intel HD Graphics 3000			.*Intel.*HD3000.*							2		1
 Matrox							.*Matrox.*									0		0
+Intel Mesa (Ivybridge)			.*Mesa DRI.*Ivybridge.*						2		1
+Intel Mesa (Haswell)			.*Mesa DRI.*Haswell.*						2		1
 Mesa							.*Mesa.*									0		0
-Gallium							.*Gallium.*							1		1
+Gallium							.*Gallium.*									1		1
 NVIDIA 205						.*NVIDIA .*GeForce 205.*					2		1
 NVIDIA 210						.*NVIDIA .*GeForce 210.*					2		1
 NVIDIA 310M						.*NVIDIA .*GeForce 310M.*					1		1
@@ -421,7 +434,7 @@ NVIDIA GTX 760					.*NVIDIA .*GTX *76.*						3		1
 NVIDIA GTX 770					.*NVIDIA .*GTX *77.*						3		1
 NVIDIA GTX 780					.*NVIDIA .*GTX *78.*						3		1
 NVIDIA GTX TITAN				.*NVIDIA .*GTX *TITAN.*						3		1
-NVIDIA GT 7xxM					.*NVIDIA .*GT *7.*						3		1
+NVIDIA GT 7xxM					.*NVIDIA .*GT *7.*							3		1
 NVIDIA C51						.*NVIDIA .*C51.*							0		1
 NVIDIA G72						.*NVIDIA .*G72.*							1		1
 NVIDIA G73						.*NVIDIA .*G73.*							1		1
@@ -544,6 +557,7 @@ NVIDIA MCP78					.*NVIDIA .*MCP78.*							1		1
 NVIDIA MCP79					.*NVIDIA .*MCP79.*							1		1
 NVIDIA MCP7A					.*NVIDIA .*MCP7A.*							1		1
 NVIDIA Quadro2					.*Quadro2.*									0		1
+NVIDIA Quadro K1000				.*Quadro.* (K1|1)00[0-9].*					2		1
 NVIDIA Quadro 1000M				.*Quadro.*1000M.*							2		1
 NVIDIA Quadro 2000 M/D			.*Quadro.*2000.*							3		1
 NVIDIA Quadro 3000M				.*Quadro.*3000M.*							3		1
@@ -552,6 +566,7 @@ NVIDIA Quadro 4000				.*Quadro *4000.*							3		1
 NVIDIA Quadro 50x0 M			.*Quadro.*50.0.*							3		1
 NVIDIA Quadro 6000				.*Quadro.*6000.*							3		1
 NVIDIA Quadro 400				.*Quadro.*400.*								2		1
+NVIDIA Quadro K600				.*Quadro.* (K6|6)0[0-9][^0].*				2		1
 NVIDIA Quadro 600				.*Quadro.*600.*								2		1
 NVIDIA Quadro4					.*Quadro4.*									0		1
 NVIDIA Quadro DCC				.*Quadro DCC.*								0		1
@@ -606,6 +621,8 @@ NVIDIA Quadro 6000				.*Quadro.*6000.*							2		1
 NVIDIA Quadro 600				.*Quadro.*600.*								2		1
 NVIDIA Quadro NVS				.*(Quadro|NVIDIA) NVS.*						0		1
 NVIDIA RIVA TNT					.*RIVA TNT.*								0		0
+NVIDIA GRID						.*NVIDIA .*GRID.*							0		0
+NVIDIA ION						.*NVIDIA.* *ION.*							2		1
 NVIDIA PCI						.*NVIDIA.*/PCI/SSE2							0		0
 S3								.*S3 Graphics.*								0		0
 SiS								SiS.*										0		0
