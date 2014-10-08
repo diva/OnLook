@@ -8002,6 +8002,24 @@ Only textures will upload as temporary on Agni and Aditi.
   </notification>
 
   <notification
+  name="AuthRequest"
+  type="browser">
+The site at &apos;[HOST_NAME]&apos; in realm &apos;[REALM]&apos; requires a user name and password.
+    <tag>confirm</tag>
+    <form name="form">
+      <input name="username" type="text" text="User Name"/>
+      <input name="password" type="password" text="Password    "/>
+      <button default="true"
+              index="0"
+              name="ok"
+              text="Submit"/>
+      <button index="1"
+              name="cancel"
+              text="Cancel"/>
+    </form>
+  </notification>
+
+  <notification
    icon="alertmodal.tga"
    name="PathfindingLinksets_WarnOnPhantom"
    type="alertmodal">
