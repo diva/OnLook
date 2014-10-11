@@ -35,6 +35,8 @@ import sys
 import os.path
 import re
 import tarfile
+import time
+import subprocess
 viewer_dir = os.path.dirname(__file__)
 # add llmanifest library to our path so we don't have to muck with PYTHONPATH
 sys.path.append(os.path.join(viewer_dir, '../lib/python/indra/util'))
@@ -389,6 +391,22 @@ class WindowsManifest(ViewerManifest):
             mask = "%s_%s_Setup.exe"
         return mask % (self.channel_oneword(), '-'.join(self.args['version']))
 
+
+    def sign_command(self, *argv):
+        return [
+            "signtool.exe",
+            "sign", "/v",
+            "/f",os.environ['VIEWER_SIGNING_KEY'],
+            "/p",os.environ['VIEWER_SIGNING_PASSWORD'],
+            "/d","%s" % self.channel(),
+            "/du",os.environ['VIEWER_SIGNING_URL'],
+            "/t","http://timestamp.comodoca.com/authenticode"
+        ] + list(argv)
+
+
+    def sign(self, *argv):
+        subprocess.check_call(self.sign_command(*argv))
+
     def package_finish(self):
         # a standard map of strings for replacing in the templates
         substitution_strings = {
@@ -435,6 +453,13 @@ class WindowsManifest(ViewerManifest):
             installer_file = installer_file % substitution_strings
         substitution_strings['installer_file'] = installer_file
 
+        # Sign the binaries
+        try:
+            self.sign(self.args['configuration']+"\\"+self.final_exe())
+            self.sign(self.args['configuration']+"\\SLPlugin.exe")
+            self.sign(self.args['configuration']+"\\SLVoice.exe")
+        except Exception, e:
+		    print "Couldn't sign binaries. Tried to sign %s" % self.args['configuration'] + "\\" + self.final_exe() + "\nException: %s" % e
         tempfile = "secondlife_setup_tmp.nsi"
         # the following replaces strings in the nsi template
         # it also does python-style % substitution
@@ -462,14 +487,13 @@ class WindowsManifest(ViewerManifest):
                 NSIS_path = os.environ['ProgramFiles(X86)'] + '\\NSIS\\Unicode\\makensis.exe'
                 self.run_command([proper_windows_path(NSIS_path),self.dst_path_of(tempfile)])
         # self.remove(self.dst_path_of(tempfile))
-        # If we're on a build machine, sign the code using our Authenticode certificate. JC
-        sign_py = os.path.expandvars("{SIGN_PY}")
-        if sign_py == "" or sign_py == "{SIGN_PY}":
-            sign_py = 'C:\\buildscripts\\code-signing\\sign.py'
-        if os.path.exists(sign_py):
-            self.run_command('python ' + sign_py + ' ' + self.dst_path_of(installer_file))
-        else:
-            print "Skipping code signing,", sign_py, "does not exist"
+
+        # Sign the installer
+        try:
+            self.sign(self.args['configuration'] + "\\" + substitution_strings['installer_file'])
+        except Exception, e:
+            print "Couldn't sign windows installer. Tried to sign %s" % self.args['configuration'] + "\\" + substitution_strings['installer_file'] + "\nException: %s" % e
+
         self.created_path(self.dst_path_of(installer_file))
         self.package_file = installer_file
 
@@ -607,6 +631,38 @@ class DarwinManifest(ViewerManifest):
         channel_standin = self.app_name()
         if not self.default_channel_for_brand():
             channel_standin = self.channel()
+
+        # Sign the app if we have a key.
+        try:
+            signing_password = os.environ['VIEWER_SIGNING_PASSWORD']
+        except KeyError:
+            print "Skipping code signing"
+            pass
+        else:
+            home_path = os.environ['HOME']
+            self.run_command('security unlock-keychain -p "%s" "%s/Library/Keychains/viewer.keychain"' %
+                             (signing_password,
+						      home_path))
+            signed=False
+            sign_attempts=3
+            sign_retry_wait=15
+            while (not signed) and (sign_attempts > 0):
+                try:
+                    sign_attempts-=1;
+                    self.run_command('codesign --verbose --force --timestamp --keychain "%(home_path)s/Library/Keychains/viewer.keychain" -s %(identity)r -f %(bundle)r' % {
+                            'home_path' : home_path,
+                            'identity': os.environ['VIEWER_SIGNING_KEY'],
+                            'bundle': self.get_dst_prefix()
+                    })
+                    signed=True
+                except:
+                    if sign_attempts:
+                        print >> sys.stderr, "codesign failed, waiting %d seconds before retrying" % sign_retry_wait
+                        time.sleep(sign_retry_wait)
+                        sign_retry_wait*=2
+                    else:
+                        print >> sys.stderr, "Maximum codesign attempts exceeded; giving up"
+                        raise
 
         imagename=self.installer_prefix() + '_'.join(self.args['version'])
 
