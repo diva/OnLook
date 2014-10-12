@@ -3917,10 +3917,6 @@ void LLAppViewer::idle()
 	// Handle the regular UI idle callbacks as well as
 	// hover callbacks
 	//
-
-#ifdef LL_DARWIN
-	if (mQuitRequested)  //MAINT-4243
-#endif
 	{
 		LLFastTimer t(FTM_IDLE_CB);
 
