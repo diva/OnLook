@@ -35,6 +35,7 @@
 		<menu_item_check label="entra/abandona distancia de chat" name="chat range alerts"/>
 		<menu_item_check label="está por debajo del umbral de edad" name="chat range alerts"/>
 		<menu_item_separator/>
+		<menu_item_check label="Incluir distancia en alertas" name="Include distance in alerts"/>
 		<menu_item_check label="Anunciar aún estando cerrado" name="Announce even when closed"/>
 		<menu_item_check label="Anunciar UUIDs al HUD" name="Announce keys to HUD"/>
 		<menu_item_call label="Anunciar UUIDs ahora" name="Announce keys now"/>

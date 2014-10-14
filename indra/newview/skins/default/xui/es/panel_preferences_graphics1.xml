@@ -206,10 +206,16 @@ cuando se activan las Sombras de la Atmósfera.
 		<panel name="DoF" label="Profundidad de Campo">
 			<check_box label="Habilitar Profundidad de Campo" tool_tip="Alterna el efecto de profundidad de campo en la cámara, a menudo utilizado para difuminar objetos lejanos que no deben estar en el foco" name="RenderDepthOfField"/>
 			<slider width="318" label_width="130" name="CameraFNum" label="Número F:" tool_tip="Valor de efecto de apertura del diafragma de la cámara para el efecto de Profundidad de Campo"/>
+			<button width="62" name="reset_f_num" label="Reiniciar"/>
 			<slider width="318" label_width="130" name="CameraFocal" label="Longitud Focal (mm):" tool_tip="Longitud focal a de la Cámara para el efecto de Profundidad de Campo (en milímetros)"/>
+			<button width="62" name="reset_focal_length" label="Reiniciar"/>
 			<slider width="318" label_width="130" name="CameraCoF" label="Círculo de Confusión:" tool_tip="Define el Círculo de Confusión máximo de la Cámara"/>
+			<button width="62" name="reset_max_cof" label="Reiniciar"/>
 			<slider width="318" label_width="130" name="CameraFocusTrans" label="Tiempo de Transición (seg):" tool_tip="Tiempo que toma en cambiar el foco de un lugar al siguiente"/>
+			<button width="62" name="reset_trans_time" label="Reiniciar"/>
 			<slider width="318" label_width="130" name="CameraDoFRes" label="Resolución:" tool_tip="Definir la Resolución (Calidad) de cada pixel PDC (DOF)"/>
+			<button width="62" name="reset_res_scale" label="Reiniciar"/>
+			<button name="reset_dof" label="Reiniciar Parámetros Profundidad de Campo"/>
 		</panel>
 	</tab_container>
 	<string name="resolution_format">[RES_X] x [RES_Y]</string>

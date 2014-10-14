@@ -71,8 +71,9 @@ capacidad de Administrar la Lista de Prohibición pueden bloquear a ciertos usua
 				<column label="Cuotas Donadas" name="donated"/>
 				<column label="Última Conexión" name="online"/>
 			</name_list>
-			<button label="Invitar a un Nuevo Miembro..." name="member_invite" width="176"/>
-			<button label="Expulsar del Grupo" name="member_eject"/>
+			<button label="Invitar Residente" name="member_invite" width="120"/>
+			<button  left_delta="128" label="Expulsar del Grupo" name="member_eject" width="126"/>
+			<button left_delta="130" width="136" label="Prohibir Residente(s)" name="member_ban"/>
 			<string name="help_text">
 				Puedea añadir o quitar los roles asignados a los miembros.
 Selecciona varios nombres manteniendo pulsada la tecla Ctrl y pulsando en cada uno de ellos.

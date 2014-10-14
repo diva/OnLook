@@ -3325,6 +3325,11 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<string name="RegionInfoAllEstatesYouManage">todos los estados que administras para [OWNER]</string>
 	<string name="RegionInfoAllowedResidents">Residentes Permitidos: ([ALLOWEDAGENTS], máx [MAXACCESS])</string>
 	<string name="RegionInfoAllowedGroups">Grupos Permitidos: ([ALLOWEDGROUPS], máx [MAXACCESS])</string>
+	<string name="RegionInfoEstateManagers">Aministradores de Estado: ([ESTATEMANAGERS], máx [MAXMANAGERS])</string>
+	<string name="RegionInfoBannedResidents">Residentes Prohibidos: ([BANNEDAGENTS], máx [MAXBANNED])</string>
+	<string name="RegionInfoListTypeAllowedAgents">Residentes Permitidos</string>
+	<string name="RegionInfoListTypeBannedAgents">Residentes Prohibidos</string>
+
 
 	<!-- script limits floater -->
 	<string name="ScriptLimitsParcelScriptMemory">Memoria de Scripts en la Parcela</string>
