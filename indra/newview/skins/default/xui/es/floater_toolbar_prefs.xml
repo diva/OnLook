@@ -69,7 +69,7 @@
   <check_box label="Consola de Depuración" name="debug_console_btn"/>
   <check_box label="Consola de Región" name="region_console_btn"/>
   <check_box label="Temporizadores Rápidos" name="fast_timers_btn"/>
-  <check_box label="Concola de Cuadros" name="frame_console_btn"/>
+  <check_box label="Consola de Cuadros" name="frame_console_btn"/>
   <check_box label="Consola HTTP" name="http_console_btn"/>
   <check_box label="Consola de Texturas" name="texture_console_btn"/>
   <check_box label="Consola de Categorías de Texturas" name="texture_category_console_btn"/>
