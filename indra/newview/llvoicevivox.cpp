@@ -349,6 +349,7 @@ LLVivoxVoiceClient::LLVivoxVoiceClient() :
 	mCaptureBufferRecording(false),
 	mCaptureBufferRecorded(false),
 	mCaptureBufferPlaying(false),
+	mShutdownComplete(true),
 	mPlayRequestCount(0),
 
 	mAvatarNameCacheConnection()
@@ -404,6 +405,14 @@ void LLVivoxVoiceClient::terminate()
 	{
 		logout();
 		connectorShutdown();
+#ifdef LL_WINDOWS
+		S32 count = 0;
+		while (!mShutdownComplete && 10 > ++count)
+		{
+			stateMachine();
+			_sleep(1000);
+		}
+#endif // LL_WINDOW
 		closeSocket();		// Need to do this now -- bad things happen if the destructor does it later.
 		cleanUp();
 	}
@@ -503,10 +512,9 @@ void LLVivoxVoiceClient::connectorCreate()
 
 	std::string savedLogLevel = gSavedSettings.getString("VivoxDebugLevel");
 
-	if(savedLogLevel != "-0")
+	if(savedLogLevel != "0")
 	{
 		LL_DEBUGS("Voice") << "creating connector with logging enabled" << LL_ENDL;
-		loglevel = "0";
 	}
 
 	stream
@@ -524,13 +532,14 @@ void LLVivoxVoiceClient::connectorCreate()
 
 	stream
 		<< "<Logging>"
-			<< "<Folder>" << logpath << "</Folder>"
-			<< "<FileNamePrefix>Connector</FileNamePrefix>"
-			<< "<FileNameSuffix>.log</FileNameSuffix>"
-			<< "<LogLevel>" << loglevel << "</LogLevel>"
+		<< "<Folder>" << logpath << "</Folder>"
+		<< "<FileNamePrefix>Connector</FileNamePrefix>"
+		<< "<FileNameSuffix>.log</FileNameSuffix>"
+		<< "<LogLevel>" << loglevel << "</LogLevel>"
 		<< "</Logging>"
-		<< "<Application>SecondLifeViewer.1</Application>"
-	<< "</Request>\n\n\n";
+		<< "<Application></Application>"  //Name can cause problems per vivox.
+		<< "<MaxCalls>12</MaxCalls>"
+		<< "</Request>\n\n\n";
 
 	writeString(stream.str());
 }
@@ -548,6 +557,7 @@ void LLVivoxVoiceClient::connectorShutdown()
 		<< "</Request>"
 		<< "\n\n\n";
 
+		mShutdownComplete = false;
 		mConnectorHandle.clear();
 
 		writeString(stream.str());
@@ -838,6 +848,7 @@ void LLVivoxVoiceClient::stateMachine()
 						std::string args, cmd;
 
 						std::string loglevel = gSavedSettings.getString("VivoxDebugLevel");
+						std::string shutdown_timeout = gSavedSettings.getString("VivoxShutdownTimeout");
 						if(loglevel.empty())
 						{
 							loglevel = "0";	// turn logging off completely
@@ -851,6 +862,19 @@ void LLVivoxVoiceClient::stateMachine()
 #else
 						args += loglevel;
 #endif
+						args += " -lf ";
+						std::string log_folder = gSavedSettings.getString("VivoxLogDirectory");
+						if (log_folder.empty())
+						{
+							log_folder = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
+						}
+						args += "logfolder";
+						
+						if(!shutdown_timeout.empty())
+						{
+							args += " -st ";
+							args += shutdown_timeout;
+						}
 
 						// If we allow multiple instances of the viewer to start the voicedaemon
 						if (gSavedSettings.getBOOL("VoiceMultiInstance"))
@@ -1640,7 +1664,7 @@ void LLVivoxVoiceClient::stateMachine()
 			// Always reset the terminate request flag when we get here.
 			mSessionTerminateRequested = false;
 
-			if((mVoiceEnabled || !mIsInitialized) && !mRelogRequested)
+			if((mVoiceEnabled || !mIsInitialized) && !mRelogRequested  && !LLApp::isExiting())
 			{
 				// Just leaving a channel, go back to stateNoChannel (the "logged in but have no channel" state).
 				setState(stateNoChannel);
@@ -1683,6 +1707,7 @@ void LLVivoxVoiceClient::stateMachine()
 		//MARK: stateConnectorStopping
 		case stateConnectorStopping:	// waiting for connector stop
 			// The handler for the Connector.InitiateShutdown response will transition from here to stateConnectorStopped.
+			mShutdownComplete = true;
 		break;
 
 		//MARK: stateConnectorStopped

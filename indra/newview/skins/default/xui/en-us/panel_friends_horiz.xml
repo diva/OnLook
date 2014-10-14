@@ -19,7 +19,7 @@
 	</combo_box-->
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="Contact Search:" width="110">Contact Search:</text-->
   <filter_editor bottom_delta="-100" enabled="true" follows="left|top" font="SansSerif" height="18" name="buddy_search_lineedit" label="Contact Search" tool_tip="The friend name you want to search for" width="160"/>
-	<button bottom_delta="0" follows="top|right" height="22" label="0" left="-25" name="expand_collapse_btn" tool_tip="Expand/Collapse extra info" width="22"/>
+	<button bottom_delta="0" follows="top|right" height="22" left="-25" control_name="ContactListCollapsed" label="" image_selected="arrow_left.tga" image_unselected="arrow_right.tga" toggle="true" name="expand_collapse_btn" tool_tip="Expand/Collapse extra info" width="22"/>
 	<!--button bottom_delta="-25" follows="top|right" height="22" label="Set Contact" name="assign_btn" tool_tip="Assign a friend to a Contact Group" width="80"/-->
 	<text bottom="38" left="12" follows="left|bottom" height="32" name="friends" width="95">Online:</text>
 	<text bottom_delta="0" left_delta="60" follows="left|bottom" height="32" name="f_num" width="95">0000</text>

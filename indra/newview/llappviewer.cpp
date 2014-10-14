@@ -3917,7 +3917,6 @@ void LLAppViewer::idle()
 	// Handle the regular UI idle callbacks as well as
 	// hover callbacks
 	//
-
 	{
 		LLFastTimer t(FTM_IDLE_CB);
 

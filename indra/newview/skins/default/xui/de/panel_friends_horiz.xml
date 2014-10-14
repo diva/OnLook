@@ -18,7 +18,7 @@
 	</combo_box-->
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" name="Contact Search:" width="110">Contact Search:</text-->
   <filter_editor name="buddy_search_lineedit" label="Kontakt suche" tool_tip="Der Name des Freundes den du suchen möchtest"/>
-	<button label="0" name="expand_collapse_btn" tool_tip="Ein und Ausklappen von mehr Informationen"/>
+	<button name="expand_collapse_btn" tool_tip="Ein und Ausklappen von mehr Informationen"/>
 	<!--button bottom_delta="-25" follows="top|right" height="22" label="Set Contact" name="assign_btn" tool_tip="Assign a friend to a Contact Group" width="80"/-->
 	<text name="friends">Online</text>
 	<text name="f_num">0000</text>
