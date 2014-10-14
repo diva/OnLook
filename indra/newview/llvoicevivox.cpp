@@ -533,7 +533,7 @@ void LLVivoxVoiceClient::connectorCreate()
 	stream
 		<< "<Logging>"
 		<< "<Folder>" << logpath << "</Folder>"
-        << "<FileNamePrefix>Connector</FileNamePrefix>"
+		<< "<FileNamePrefix>Connector</FileNamePrefix>"
 		<< "<FileNameSuffix>.log</FileNameSuffix>"
 		<< "<LogLevel>" << loglevel << "</LogLevel>"
 		<< "</Logging>"

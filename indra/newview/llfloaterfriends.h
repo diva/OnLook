@@ -38,15 +38,14 @@
 #include "llpanel.h"
 #include "llstring.h"
 #include "lluuid.h"
-#include "lleventtimer.h"
+
 #include "llcallingcard.h"
 
 class LLAvatarName;
 class LLFriendObserver;
 class LLRelationship;
-class LLScrollListItem;
 class LLScrollListCtrl;
-class AIFilePicker;
+class LLScrollListItem;
 
 /** 
  * @class LLPanelFriends
@@ -55,18 +54,11 @@ class AIFilePicker;
  *
  * @sa LLFloater
  */
-class LLPanelFriends : public LLPanel, public LLEventTimer
+class LLPanelFriends : public LLPanel
 {
 public:
 	LLPanelFriends();
 	virtual ~LLPanelFriends();
-
-	/** 
-	 * @brief This method either creates or brings to the front the
-	 * current instantiation of this floater. There is only once since
-	 * you can currently only look at your local friends.
-	 */
-	virtual BOOL tick();
 
 	/** 
 	 * @brief This method is called in response to the LLAvatarTracker
@@ -99,16 +91,16 @@ private:
 	// <dogmode> Contacts search and group system
 	void filterContacts(const std::string& search_name);
 	void categorizeContacts();
-	void setContactGroup(std::string contact_grp);
-	std::string cleanFileName(std::string filename);
+	void setContactGroup(const std::string& contact_grp);
+	//std::string cleanFileName(std::string filename);
 	// --
-	BOOL refreshNamesSync(const LLAvatarTracker::buddy_map_t & all_buddies);
-	BOOL refreshNamesPresence(const LLAvatarTracker::buddy_map_t & all_buddies);
+	void refreshNamesSync(const LLAvatarTracker::buddy_map_t & all_buddies);
+	void refreshNamesPresence(const LLAvatarTracker::buddy_map_t & all_buddies);
 	void refreshUI();
 	void refreshRightsChangeList();
 	void applyRightsToFriends();
-	BOOL addFriend(const LLUUID& agent_id);	
-	BOOL updateFriendItem(const LLUUID& agent_id, const LLRelationship* relationship);
+	void addFriend(const LLUUID& agent_id);
+	void updateFriendItem(const LLUUID& agent_id, const LLRelationship* relationship);
 
 	typedef enum 
 	{
@@ -119,27 +111,22 @@ private:
 	void sendRightsGrant(rights_map_t& ids);
 
 	// callback methods
-	static void onSelectName(LLUICtrl* ctrl, void* user_data);
-	static void onChangeContactGroup(LLUICtrl* ctrl, void* user_data);
-	static void onPickAvatar(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names );
-	void onContactFilterEdit(const std::string& search_string);
-	static void onClickIM(void* user_data);
-	static void onClickAssign(void* user_data);
-	static void onClickExpand(void* user_data);
-	static void updateColumns(void* user_data);
-	static void onClickProfile(void* user_data);
-	static void onClickAddFriend(void* user_data);
-	static void onClickExport(void* user_data);
-	static void onClickExport_continued(void* user_data, AIFilePicker* filepicker);
-	static void onClickImport(void* user_data);
-	static void onClickImport_filepicker_continued(AIFilePicker* filepicker);
+	void onSelectName();
+	static void onPickAvatar(const uuid_vec_t& ids, const std::vector<LLAvatarName>& names);
+	void onClickIM(const uuid_vec_t& ids);
+	void updateColumns(bool collapsed);
+	void onClickAddFriend();
+/*
+	void onClickExport();
+	void onClickExport_continued(class AIFilePicker* filepicker);
+	void onClickImport();
+	void onClickImport_filepicker_continued(AIFilePicker* filepicker);
+*/
 public:
 	static void FriendImportState(LLUUID id, bool accepted);
 private:
-	static void onClickPay(void* user_data);
 
-	static void onClickModifyStatus(LLUICtrl* ctrl, void* user_data);
-	bool modifyRightsConfirmation(const LLSD& notification, const LLSD& response, rights_map_t* rights);
+	bool modifyRightsConfirmation(const LLSD& notification, const LLSD& response, rights_map_t rights);
 
 private:
 	// member data
@@ -147,13 +134,8 @@ private:
 	LLUUID mAddFriendID;
 	std::string mAddFriendName;
 	LLScrollListCtrl* mFriendsList;
-	std::string mContactFilter;
-	BOOL mShowMaxSelectWarning;
-	BOOL mAllowRightsChange;
-	S32 mNumRightsChanged;
 	S32 mNumOnline;
 	std::string mLastContactSearch;
 };
-
 
 #endif // LL_LLFLOATERFRIENDS_H
