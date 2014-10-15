@@ -238,7 +238,7 @@ void LLPanelFriends::filterContacts(const std::string& search_name)
 {
 	std::string friend_name;
 
-	if (!search_name.empty() /*&& search_name != mLastContactSearch*/)
+	if (!search_name.empty())
 	{
 		if (search_name.find(mLastContactSearch) == std::string::npos)
 		{
@@ -262,7 +262,7 @@ void LLPanelFriends::filterContacts(const std::string& search_name)
 		mFriendsList->updateLayout();
 		refreshUI();
 	}
-	//else if (!search_name.empty() && search_name != mLastContactSearch) refreshNames(LLFriendObserver::ADD); // Singu Note: Why was this here?  This would never happen
+	else if (!mLastContactSearch.empty()) refreshNames(LLFriendObserver::ADD);
 	mLastContactSearch = search_name;
 }
 // --
