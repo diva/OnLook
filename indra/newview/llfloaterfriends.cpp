@@ -54,7 +54,6 @@
 #include "lltextbox.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
-//#include "llvoiceclient.h"
 
 #include "statemachine/aifilepicker.h"
 
@@ -75,12 +74,9 @@ public:
 	{
 		mEventTimer.stop();
 		LLAvatarTracker::instance().addObserver(this);
-		// For notification when SIP online status changes.
-		//LLVoiceClient::getInstance()->addObserver(this);
 	}
 	/*virtual*/ ~LLLocalFriendsObserver()
 	{
-		//LLVoiceClient::getInstance()->removeObserver(this);
 		LLAvatarTracker::instance().removeObserver(this);
 	}
 	/*virtual*/ void changed(U32 mask)
@@ -344,7 +340,6 @@ void LLPanelFriends::addFriend(const LLUUID& agent_id)
 	const LLRelationship* relation_info = LLAvatarTracker::instance().getBuddyInfo(agent_id);
 	if (!relation_info) return;
 
-	//bool isOnlineSIP = LLVoiceClient::getInstance()->isOnlineSIP(agent_id);
 	bool isOnline = relation_info->isOnline();
 
 	std::string fullname;
@@ -369,12 +364,6 @@ void LLPanelFriends::addFriend(const LLUUID& agent_id)
 		friend_column.font_style("BOLD");
 		cell.value("icon_avatar_online.tga");
 	}
-	/*else if(isOnlineSIP)
-	{
-		++mNumOnline;
-		friend_column.font_style("BOLD");
-		cell.value("slim_icon_16_viewer.tga");
-	}*/
 
 	// Add the online indicator, then the names
 	element.columns.add(cell);
@@ -425,7 +414,6 @@ void LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 	LLScrollListItem* itemp = mFriendsList->getItem(agent_id);
 	if (!itemp) return;
 
-	//bool isOnlineSIP = LLVoiceClient::getInstance()->isOnlineSIP(itemp->getUUID());
 	bool isOnline = info->isOnline();
 
 	std::string fullname;
@@ -440,29 +428,29 @@ void LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 		itemp->getColumn(LIST_FRIEND_UPDATE_GEN)->setValue(-1);
 	}
 
-	// Name of the status icon to use
-	std::string statusIcon;
+	if (LLScrollListCell* cell = itemp->getColumn(LIST_ONLINE_STATUS))
+	{
+		if (cell->getValue().asString().empty() == isOnline)
+		{
+			// Name of the status icon to use
+			std::string statusIcon;
 
-	if (isOnline)
-	{
-		++mNumOnline;
-		statusIcon = "icon_avatar_online.tga";
+			if (isOnline)
+			{
+				++mNumOnline;
+				statusIcon = "icon_avatar_online.tga";
+			}
+			else
+			{
+				--mNumOnline;
+			}
+			cell->setValue(statusIcon);
+		}
 	}
-	/*else if (isOnlineSIP)
-	{
-		++mNumOnline;
-		statusIcon = "slim_icon_16_viewer.tga";
-	}*/
-	else
-	{
-		--mNumOnline;
-	}
-
-	itemp->getColumn(LIST_ONLINE_STATUS)->setValue(statusIcon);
 
 	itemp->getColumn(LIST_FRIEND_NAME)->setValue(fullname);
 	// render name of online friends in bold text
-	static_cast<LLScrollListText*>(itemp->getColumn(LIST_FRIEND_NAME))->setFontStyle(isOnline /*|| isOnlineSIP*/ ? LLFontGL::BOLD : LLFontGL::NORMAL);	
+	static_cast<LLScrollListText*>(itemp->getColumn(LIST_FRIEND_NAME))->setFontStyle(isOnline ? LLFontGL::BOLD : LLFontGL::NORMAL);
 	itemp->getColumn(LIST_VISIBLE_ONLINE)->setValue(info->isRightGrantedTo(LLRelationship::GRANT_ONLINE_STATUS));
 	itemp->getColumn(LIST_VISIBLE_MAP)->setValue(info->isRightGrantedTo(LLRelationship::GRANT_MAP_LOCATION));
 	itemp->getColumn(LIST_EDIT_MINE)->setValue(info->isRightGrantedTo(LLRelationship::GRANT_MODIFY_OBJECTS));
