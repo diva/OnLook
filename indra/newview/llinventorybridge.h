@@ -69,6 +69,7 @@ public:
 									   U32 flags = 0x00);
 	virtual ~LLInvFVBridge() {}
 
+	bool canShare() const;
 	bool canListOnMarketplace() const;
 	bool canListOnMarketplaceNow() const;
 
@@ -121,6 +122,8 @@ public:
 							void* cargo_data) { return FALSE; }
 	virtual LLInventoryType::EType getInventoryType() const { return mInvType; }
 	virtual LLWearableType::EType getWearableType() const { return LLWearableType::WT_NONE; }
+	virtual LLInventoryObject* getInventoryObject() const;
+
 
 	//--------------------------------------------------------------------
 	// Convenience functions for adding various common menu options.
@@ -137,16 +140,15 @@ protected:
 protected:
 	LLInvFVBridge(LLInventoryPanel* inventory, LLFolderView* root, const LLUUID& uuid);
 
-	LLInventoryObject* getInventoryObject() const;
 	LLInventoryModel* getInventoryModel() const;
 	
 	BOOL isLinkedObjectInTrash() const; // Is this obj or its baseobj in the trash?
 	BOOL isLinkedObjectMissing() const; // Is this a linked obj whose baseobj is not in inventory?
 
 	BOOL isAgentInventory() const; // false if lost or in the inventory library
-	BOOL isCOFFolder() const; // true if COF or descendent of
-	BOOL isInboxFolder() const; // true if COF or descendent of marketplace inbox
-	BOOL isOutboxFolder() const; // true if COF or descendent of marketplace outbox
+	BOOL isCOFFolder() const;       // true if COF or descendant of
+	BOOL isInboxFolder() const;     // true if COF or descendant of   marketplace inbox
+	BOOL isOutboxFolder() const;    // true if COF or descendant of   marketplace outbox
 	BOOL isOutboxFolderDirectParent() const;
 	const LLUUID getOutboxFolder() const;
 
@@ -165,7 +167,7 @@ protected:
 	LLFolderView* mRoot;
 	const LLUUID mUUID;	// item id
 	LLInventoryType::EType mInvType;
-	BOOL mIsLink;
+	bool mIsLink;
 	void purgeItem(LLInventoryModel *model, const LLUUID &uuid);
 };
 
@@ -213,7 +215,7 @@ public:
 	virtual BOOL renameItem(const std::string& new_name);
 	virtual BOOL removeItem();
 	virtual BOOL isItemCopyable() const;
-	virtual BOOL hasChildren() const { return FALSE; }
+	virtual bool hasChildren() const { return FALSE; }
 	virtual BOOL isUpToDate() const { return TRUE; }
 
 	static void showFloaterImagePreview(LLInventoryItem* item, AIFilePicker* filepicker);
@@ -235,8 +237,8 @@ class LLFolderBridge : public LLInvFVBridge
 public:
 	LLFolderBridge(LLInventoryPanel* inventory, 
 				   LLFolderView* root,
-				   const LLUUID& uuid) :
-		LLInvFVBridge(inventory, root, uuid),
+				   const LLUUID& uuid)
+	:	LLInvFVBridge(inventory, root, uuid),
 		mCallingCards(FALSE),
 		mWearables(FALSE)
 	{}
@@ -265,7 +267,7 @@ public:
 	virtual void pasteFromClipboard(bool only_copies = false);
 	virtual void pasteLinkFromClipboard();
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
-	virtual BOOL hasChildren() const;
+	virtual bool hasChildren() const;
 	virtual BOOL dragOrDrop(MASK mask, BOOL drop,
 							EDragAndDropType cargo_type,
 							void* cargo_data);
@@ -326,8 +328,9 @@ public:
 	static void staticFolderOptionsMenu();
 
 private:
-	BOOL				mCallingCards;
-	BOOL				mWearables;
+
+	bool				mCallingCards;
+	bool				mWearables;
 	menuentry_vec_t		mItems;
 	menuentry_vec_t		mDisabledItems;
 	LLRootHandle<LLFolderBridge> mHandle;
@@ -405,7 +408,6 @@ protected:
 	LLCallingCardObserver* mObserver;
 };
 
-
 class LLNotecardBridge : public LLItemBridge
 {
 public:
@@ -436,7 +438,6 @@ public:
 	static void playGesture(const LLUUID& item_id);
 };
 
-
 class LLAnimationBridge : public LLItemBridge
 {
 public:
@@ -449,7 +450,6 @@ public:
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual void openItem();
 };
-
 
 class LLObjectBridge : public LLItemBridge
 {
@@ -515,8 +515,6 @@ public:
 	void			editOnAvatar();
 
 	static BOOL		canRemoveFromAvatar( void* userdata );
-	//static void		onRemoveFromAvatar( void* userdata );
-	//static void		onRemoveFromAvatarArrived( LLViewerWearable* wearable, 	void* userdata );
 	//static void 	removeAllClothesFromAvatar();
 	void			removeFromAvatar();
 protected:
@@ -629,7 +627,8 @@ public:
 class LLRecentInventoryBridgeBuilder : public LLInventoryFVBridgeBuilder
 {
 public:
-	LLRecentInventoryBridgeBuilder(): LLInventoryFVBridgeBuilder() {}
+	LLRecentInventoryBridgeBuilder() {}
+
 	// Overrides FolderBridge for Recent Inventory Panel.
 	// It use base functionality for bridges other than FolderBridge.
 	virtual LLInvFVBridge* createBridge(LLAssetType::EType asset_type,

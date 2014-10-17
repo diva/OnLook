@@ -82,7 +82,7 @@ public:
 	virtual void pasteLinkFromClipboard() = 0;
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags) = 0;
 	virtual BOOL isUpToDate() const = 0;
-	virtual BOOL hasChildren() const = 0;
+	virtual bool hasChildren() const = 0;
 	virtual LLInventoryType::EType getInventoryType() const = 0;
 	virtual void performAction(LLInventoryModel* model, std::string action) = 0;
 	virtual LLWearableType::EType getWearableType() const = 0;

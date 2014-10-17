@@ -906,7 +906,6 @@ AIHTTPTimeoutPolicy const* AIHTTPTimeoutPolicy::getTimeoutPolicyByName(std::stri
 
 // Policy name									Policy
 P(assetReportHandler);
-P(avatarPickerResponder);
 P(authHandler);
 P(avatarNameResponder);
 P2(baseCapabilitiesComplete,					transfer_18s_connect_5s);

@@ -137,7 +137,7 @@ public:
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual void performAction(LLInventoryModel* model, std::string action);
 	virtual BOOL isUpToDate() const { return TRUE; }
-	virtual BOOL hasChildren() const { return FALSE; }
+	virtual bool hasChildren() const { return FALSE; }
 	virtual LLInventoryType::EType getInventoryType() const { return LLInventoryType::IT_NONE; }
 	virtual LLWearableType::EType getWearableType() const { return LLWearableType::WT_NONE; }
 
@@ -872,7 +872,7 @@ public:
 	virtual BOOL renameItem(const std::string& new_name);
 	virtual BOOL isItemRemovable() const;
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
-	virtual BOOL hasChildren() const;
+	virtual bool hasChildren() const;
 	virtual BOOL startDrag(EDragAndDropType* type, LLUUID* id) const;
 	virtual BOOL dragOrDrop(MASK mask, BOOL drop,
 							EDragAndDropType cargo_type,
@@ -922,7 +922,7 @@ void LLTaskCategoryBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	hide_context_entries(menu, items, disabled_items);
 }
 
-BOOL LLTaskCategoryBridge::hasChildren() const
+bool LLTaskCategoryBridge::hasChildren() const
 {
 	// return TRUE if we have or do know know if we have children.
 	// *FIX: For now, return FALSE - we will know for sure soon enough.

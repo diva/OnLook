@@ -804,6 +804,12 @@ void LLInvFVBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		items.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			disabled_items.push_back(std::string("Share"));
+		}
+
 		addOpenRightClickMenuOption(items);
 		items.push_back(std::string("Properties"));
 
@@ -1235,6 +1241,33 @@ void LLInvFVBridge::purgeItem(LLInventoryModel *model, const LLUUID &uuid)
 	}
 }
 
+bool LLInvFVBridge::canShare() const
+{
+	bool can_share = false;
+
+	if (!isItemInTrash() && isAgentInventory())
+	{
+		const LLInventoryModel* model = getInventoryModel();
+		if (model)
+		{
+			const LLViewerInventoryItem *item = model->getItem(mUUID);
+			if (item)
+			{
+				if (LLInventoryCollectFunctor::itemTransferCommonlyAllowed(item)) 
+				{
+					can_share = LLGiveInventory::isInventoryGiveAcceptable(item);
+				}
+			}
+			else
+			{
+				// Categories can be given.
+				can_share = (model->getCategory(mUUID) != NULL);
+			}
+		}
+	}
+
+	return can_share;
+}
 
 bool LLInvFVBridge::canListOnMarketplace() const
 {
@@ -2613,8 +2646,17 @@ void LLRightClickInventoryFetchDescendentsObserver::execute(bool clear_observer)
 		LLInventoryModel::item_array_t* item_array;
 		gInventory.getDirectDescendentsOf(*current_folder, cat_array, item_array);
 
-		S32 item_count = item_array->count();
-		S32 cat_count = cat_array->count();
+		S32 item_count(0);
+		if (item_array)
+		{
+			item_count = item_array->count();
+		}
+
+		S32 cat_count(0);
+		if (cat_array)
+		{
+			cat_count = cat_array->count();
+		}
 	
 		// Move to next if current folder empty
 		if ((item_count == 0) && (cat_count == 0))
@@ -3387,6 +3429,15 @@ void LLFolderBridge::buildContextMenuBaseOptions(U32 flags)
 	{
 		mDisabledItems.push_back(std::string("Delete System Folder"));
 	}
+
+	if (!isOutboxFolder() && !isItemInTrash()) // <alchemy/>
+	{
+		mItems.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			mDisabledItems.push_back(std::string("Share"));
+		}
+	}
 }
 
 void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
@@ -3528,7 +3579,7 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	menu.arrangeAndClear();
 }
 
-BOOL LLFolderBridge::hasChildren() const
+bool LLFolderBridge::hasChildren() const
 {
 	LLInventoryModel* model = getInventoryModel();
 	if(!model) return FALSE;
@@ -4321,6 +4372,12 @@ void LLTextureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		items.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			disabled_items.push_back(std::string("Share"));
+		}
+
 		addOpenRightClickMenuOption(items);
 		items.push_back(std::string("Properties"));
 
@@ -4412,6 +4469,11 @@ void LLSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		}	
 		else
 		{
+			items.push_back(std::string("Share"));
+			if (!canShare())
+			{
+				disabled_items.push_back(std::string("Share"));
+			}
 			items.push_back(std::string("Sound Open"));
 			items.push_back(std::string("Properties"));
 
@@ -4465,6 +4527,11 @@ void LLLandmarkBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		}	
 		else
 		{
+			items.push_back(std::string("Share"));
+			if (!canShare())
+			{
+				disabled_items.push_back(std::string("Share"));
+			}
 			items.push_back(std::string("Landmark Open"));
 			items.push_back(std::string("Properties"));
 
@@ -4734,6 +4801,11 @@ void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		items.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			disabled_items.push_back(std::string("Share"));
+		}
 		/* Singu Note: Multiple profiles get opened in a multifloater
 		if ((flags & FIRST_SELECTED_ITEM) == 0)
 		{
@@ -5039,6 +5111,11 @@ void LLGestureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		items.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			disabled_items.push_back(std::string("Share"));
+		}
 
 		addOpenRightClickMenuOption(items);
 		items.push_back(std::string("Properties"));
@@ -5094,6 +5171,11 @@ void LLAnimationBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		}
 		else
 		{
+			items.push_back(std::string("Share"));
+			if (!canShare())
+			{
+				disabled_items.push_back(std::string("Share"));
+			}
 			items.push_back(std::string("Animation Open"));
 			items.push_back(std::string("Properties"));
 
@@ -5411,6 +5493,12 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 	else
 	{
+		items.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			disabled_items.push_back(std::string("Share"));
+		}
+
 		items.push_back(std::string("Properties"));
 
 		getClipboardEntries(true, items, disabled_items, flags);
@@ -5819,6 +5907,12 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		{
 			can_open = FALSE;
 		}
+		items.push_back(std::string("Share"));
+		if (!canShare())
+		{
+			disabled_items.push_back(std::string("Share"));
+		}
+
 		if (can_open)
 		{
 			addOpenRightClickMenuOption(items);

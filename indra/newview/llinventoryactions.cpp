@@ -34,6 +34,7 @@
 
 #include "llagentwearables.h"
 #include "llappearancemgr.h"
+#include "llavataractions.h"
 #include "llfloaterperms.h"
 #include "llfoldervieweventlistener.h"
 #include "llimview.h"
@@ -628,6 +629,7 @@ void init_object_inventory_panel_actions(LLPanelObjectInventory *panel)
 void init_inventory_actions(LLInventoryView *floater)
 {
 	(new LLDoToSelectedFloater())->registerListener(floater, "Inventory.DoToSelected");
+	(new LLDoToSelectedFloater())->registerListener(floater, "Inventory.DoToSelected");
 	(new LLCloseAllFoldersFloater())->registerListener(floater, "Inventory.CloseAllFolders");
 	(new LLEmptyTrashFloater())->registerListener(floater, "Inventory.EmptyTrash");
 	(new LLDoCreateFloater())->registerListener(floater, "Inventory.DoCreate");
@@ -640,6 +642,15 @@ void init_inventory_actions(LLInventoryView *floater)
 	(new LLSetSearchType())->registerListener(floater, "Inventory.SetSearchType");
 }
 
+class LLShare : public inventory_panel_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLAvatarActions::shareWithAvatars(mPtr);
+		return true;
+	}
+};
+
 void init_inventory_panel_actions(LLInventoryPanel *panel)
 {
 	(new LLDoToSelected())->registerListener(panel, "Inventory.DoToSelected");
@@ -649,4 +660,5 @@ void init_inventory_panel_actions(LLInventoryPanel *panel)
 	(new LLEmptyLostAndFound())->registerListener(panel, "Inventory.EmptyLostAndFound");
 	(new LLDoCreate())->registerListener(panel, "Inventory.DoCreate");
 	(new LLBeginIMSession())->registerListener(panel, "Inventory.BeginIMSession");
+	(new LLShare())->registerListener(panel, "Inventory.Share");
 }

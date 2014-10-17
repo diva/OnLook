@@ -56,6 +56,10 @@
     <on_click function="List.RequestTeleport"/>
     <on_visible function="List.EnableSingleSelected"/>
   </menu_item_call>
+  <menu_item_call label="Share" name="Share">
+    <on_click function="List.Share"/>
+    <on_visible function="List.EnableSingleSelected"/>
+  </menu_item_call>
   <menu_item_separator/>
   <menu_item_call label="Mute/Unmute" name="Mute/Unmute">
     <on_click function="List.ToggleMute"/>

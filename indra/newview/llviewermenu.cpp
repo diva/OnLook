@@ -2930,6 +2930,7 @@ class LLObjectImportUpload : public view_listener_t
 //---------------------------------------------------------------------------
 // Parcel freeze, eject, etc.
 //---------------------------------------------------------------------------
+void send_freeze(const LLUUID& avatar_id, bool freeze);
 bool callback_freeze(const LLSD& notification, const LLSD& response)
 {
 	LLUUID avatar_id = notification["payload"]["avatar_id"].asUUID();
@@ -2937,27 +2938,7 @@ bool callback_freeze(const LLSD& notification, const LLSD& response)
 
 	if (0 == option || 1 == option)
 	{
-		U32 flags = KICK_FLAGS_FREEZE;
-		if (1 == option)
-		{
-			// unfreeze
-			flags |= KICK_FLAGS_UNFREEZE;
-		}
-
-		LLMessageSystem* msg = gMessageSystem;
-		LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
-
-		if (avatarp && avatarp->getRegion())
-		{
-			msg->newMessage("FreezeUser");
-			msg->nextBlock("AgentData");
-			msg->addUUID("AgentID", gAgent.getID());
-			msg->addUUID("SessionID", gAgent.getSessionID());
-			msg->nextBlock("Data");
-			msg->addUUID("TargetID", avatar_id );
-			msg->addU32("Flags", flags );
-			msg->sendReliable( avatarp->getRegion()->getHost() );
-		}
+		send_freeze(avatar_id, !option);
 	}
 	return false;
 }
@@ -9105,6 +9086,15 @@ class ListRequestTeleport : public view_listener_t
 	}
 };
 
+class ListShare : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLAvatarActions::share(get_focused_list_id_selected());
+		return true;
+	}
+};
+
 class ListShowProfile : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9559,6 +9549,7 @@ void initialize_menus()
 	addMenu(new ListRemoveFriend(), "List.RemoveFriend");
 	addMenu(new ListRequestFriendship(), "List.RequestFriendship");
 	addMenu(new ListRequestTeleport(), "List.RequestTeleport");
+	addMenu(new ListShare(), "List.Share");
 	addMenu(new ListShowProfile(), "List.ShowProfile");
 	addMenu(new ListShowWebProfile(), "List.ShowWebProfile");
 	addMenu(new ListStartAdhocCall(), "List.StartAdhocCall");
