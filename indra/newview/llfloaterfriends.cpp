@@ -885,8 +885,6 @@ bool LLPanelFriends::modifyRightsConfirmation(const LLSD& notification, const LL
 
 void LLPanelFriends::applyRightsToFriends()
 {
-	bool rights_changed = false;
-
 	// store modify rights separately for confirmation
 	rights_map_t rights_updates;
 
@@ -904,6 +902,7 @@ void LLPanelFriends::applyRightsToFriends()
 		bool show_online_staus = (*itr)->getColumn(LIST_VISIBLE_ONLINE)->getValue().asBoolean();
 		bool show_map_location = (*itr)->getColumn(LIST_VISIBLE_MAP)->getValue().asBoolean();
 		bool allow_modify_objects = (*itr)->getColumn(LIST_EDIT_MINE)->getValue().asBoolean();
+		bool rights_changed(false);
 
 		S32 rights = buddy_relationship->getRightsGrantedTo();
 		if (buddy_relationship->isRightGrantedTo(LLRelationship::GRANT_ONLINE_STATUS) != show_online_staus)
