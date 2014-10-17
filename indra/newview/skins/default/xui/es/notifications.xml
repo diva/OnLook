@@ -4456,6 +4456,17 @@ Sólo se cargarán texturas como temporal en Agni y Aditi.
 		<usetemplate name="yesnocancelbuttons" notext="Permanente" yestext="Temporal" canceltext="Cancelar"/>
 	</notification>
 
+	<notification name="AuthRequest">
+		El sitio &apos;[HOST_NAME]&apos; en realm &apos;[REALM]&apos; requiere un nombre de usuario y contraseña.
+		<tag>confirm</tag>
+		<form name="form">
+			<input name="username" text="Usuario"/>
+			<input name="password" text="Contraseña "/>
+			<button name="ok" text="Enviar"/>
+			<button name="cancel" text="Cancelar"/>
+		</form>
+	</notification>
+
 	<notification name="PathfindingLinksets_WarnOnPhantom">
 		Algunos de los conjuntos de enlaces seleccionados tienen activada la marca de inmaterial.
 
