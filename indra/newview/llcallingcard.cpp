@@ -895,11 +895,10 @@ bool LLCollectOnlineBuddies::operator()(const LLUUID& buddy_id, LLRelationship* 
 	return true;
 }
 
+const S32& friend_name_system();
 bool LLCollectAllBuddies::operator()(const LLUUID& buddy_id, LLRelationship* buddy)
 {
-	LLAvatarName av_name;
-	LLAvatarNameCache::get(buddy_id, &av_name);
-	mFullName = av_name.mDisplayName;
+	LLAvatarNameCache::getPNSName(buddy_id, mFullName, friend_name_system());
 	buddy_map_t::value_type value(mFullName, buddy_id);
 	if(buddy->isOnline())
 	{

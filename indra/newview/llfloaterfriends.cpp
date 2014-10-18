@@ -322,7 +322,7 @@ BOOL LLPanelFriends::postBuild()
 	return true;
 }
 
-static const S32& friend_name_system()
+const S32& friend_name_system()
 {
 	static const LLCachedControl<S32> name_system("FriendNameSystem", 0);
 	return name_system;
