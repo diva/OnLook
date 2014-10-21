@@ -50,7 +50,6 @@ elseif (LINUX)
         ssl
 #       qgif
 #       qjpeg
-        jscore
         jpeg
         fontconfig
         X11
@@ -58,5 +57,8 @@ elseif (LINUX)
         Xext
         GL
         )
+       if (CMAKE_SIZEOF_VOID_P EQUAL 4) # Singu TODO: update webkit
+         set(WEBKIT_PLUGIN_LIBRARIES ${WEBKIT_PLUGIN_LIBRARIES} jscore)
+       endif (CMAKE_SIZEOF_VOID_P EQUAL 4)
      endif (STANDALONE)
 endif (WINDOWS)

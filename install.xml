@@ -310,9 +310,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>f6d0f7a6151c1b5a2633679126fbefb0</string>
+            <string>6d610caca171531d71b79075ebfa54eb</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/curl-7.24.0-linux-x86_64-20120605.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/curl-7.38-linux64-20141020.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -898,9 +898,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>ec833cfbfce8a818158e289a6c21ad72</string>
+            <string>b6bef6d2dcc1c57fb05de868de2756ea</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libpng-1.5.10-linux-x86_64-20120420.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/libpng-1.6.13-linux64-20141020.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -989,9 +989,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>50ab4b0642c427e062f4e86b5421eb01</string>
+            <string>79fcd5b5e1c1ac4f35235354289205ba</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.7.1-linux64-20130116.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/llqtwebkit-4.8.6-linux64-20141021.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -1178,9 +1178,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>e4d434731ad8280e85f5177da8d8ed3a</string>
+            <string>10e3de555fe95d7be00b6209e26a0566</string>
             <key>url</key>
-            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openssl-1.0.0g-linux-x86_64-20120605.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/openssl-1.0.1j-linux64-20141020.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>

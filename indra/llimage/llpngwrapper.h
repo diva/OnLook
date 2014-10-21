@@ -26,7 +26,7 @@
 #ifndef LL_LLPNGWRAPPER_H
 #define LL_LLPNGWRAPPER_H
 
-#ifdef LL_STANDALONE
+#if LL_STANDALONE || (LL_LINUX && defined(__x86_64__))
 #include <png.h>
 #else
 // Workaround for wrongly packaged prebuilt.

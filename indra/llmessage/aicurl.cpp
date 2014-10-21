@@ -1513,7 +1513,7 @@ CurlMultiHandle::~CurlMultiHandle()
 
 } // namespace AICurlPrivate
 
-#if LL_LINUX
+#if LL_LINUX && !defined(__x86_64__)
 extern "C" {
 
 // Keep linker happy.
