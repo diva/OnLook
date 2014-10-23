@@ -94,5 +94,6 @@
   -->
   <check_box bottom_delta="-20" label="Tutorial" name="tutorial_btn" follows="left|right" control_name="ToolbarVisibleHelpTutorial"/>
   <check_box bottom_delta="-20" label="About [SHORT_APP_NAME]" name="about_btn" follows="left|right" control_name="ToolbarVisibleAbout"/>
+  <check_box bottom_delta="-20" label="Quit" name="quit_btn" follows="left|right" control_name="ToolbarVisibleQuit"/>
   <check_box bottom_delta="-20" label="Change Buttons" name="change_buttons_btn" follows="left|right" control_name="ToolbarVisibleToolbarPrefs"/>
 </floater>

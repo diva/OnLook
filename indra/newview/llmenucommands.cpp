@@ -204,6 +204,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater("outfit", boost::bind(show_outfit_dialog));
 		registerFloater("PostProcess", boost::bind(LLFloaterPostProcess::show));
 		registerFloater("preferences", boost::bind(LLFloaterPreference::show, (void*)NULL));
+		registerFloater("quit", boost::bind(&LLAppViewer::userQuit, LLAppViewer::instance()));
 		registerFloater("RegionDebugConsole", boost::bind(handle_singleton_toggle<LLFloaterRegionDebugConsole>, (void*)NULL), boost::bind(LLFloaterRegionDebugConsole::instanceExists));
 		registerFloater("script errors", boost::bind(LLFloaterScriptDebug::show, LLUUID::null));
 		registerFloater("search", boost::bind(toggle_search_floater));
