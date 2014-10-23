@@ -90,10 +90,6 @@ private:
 	// simple method to setup the part that holds the date
 	void setupDate();
 
-	static void onCommitSearch(LLUICtrl*, void* data);
-	static void onClickSearch(void* data);
-	static void onClickStatGraph(void* data);
-
 	void onRegionBoundaryCrossed();
 	void createNavMeshStatusListenerForCurrentRegion();
 	void onNavMeshStatusChange(const LLPathfindingNavMeshStatus &pNavMeshStatus);
@@ -110,6 +106,23 @@ private:
 	LLStatGraph *mSGPacketLoss;
 
 	LLButton	*mBtnBuyCurrency;
+
+	LLUICtrl*	mScriptOut;
+	LLUICtrl*	mHealthV;
+	LLUICtrl*	mNoFly;
+	LLUICtrl*	mBuyLand;
+	LLUICtrl*	mBuyCurrency;
+	LLUICtrl*	mNoBuild;
+	LLUICtrl*	mPFDirty;
+	LLUICtrl*	mPFDisabled;
+	LLUICtrl*	mStatusSeeAV;
+	LLUICtrl*	mNoScripts;
+	LLUICtrl*	mRestrictPush;
+	LLUICtrl*	mStatusNoVoice;
+	LLUICtrl*	mSearchEditor;
+	LLUICtrl*	mSearchBtn;
+	LLView*		mSearchBevel;
+	LLTextBox*	mStatBtn;
 
 	S32				mBalance;
 	S32				mUPC;
