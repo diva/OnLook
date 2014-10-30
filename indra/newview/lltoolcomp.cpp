@@ -638,7 +638,7 @@ void LLToolCompRotate::render()
 
 LLToolCompGun::LLToolCompGun()
 	: LLToolComposite(std::string("Mouselook"))
-	, mRightMouseButton(false), mMenuShown(false), mTimerFOV(), mOriginalFOV(), mStartFOV(), mTargetFOV() // <exodus/>
+	, mMenuShown(false), mTimerFOV(), mOriginalFOV(), mStartFOV(), mTargetFOV() // <exodus/>
 {
 	mGun = new LLToolGun(this);
 	mGrab = new LLToolGrab(this);
@@ -764,10 +764,9 @@ void	LLToolCompGun::handleSelect()
 void	LLToolCompGun::handleDeselect()
 {
 	LLToolComposite::handleDeselect();
-	if (mRightMouseButton || mTimerFOV.getStarted()) // Singu Note: Load Default FOV if we were zoomed in
+	if (mTimerFOV.getStarted()) // <singu/> Note: Load Default FOV if we were zooming in
 	{
 		LLViewerCamera::getInstance()->loadDefaultFOV();
-		mRightMouseButton = false;
 	}
 	setMouseCapture(FALSE);
 }
@@ -777,21 +776,17 @@ void	LLToolCompGun::handleDeselect()
 BOOL LLToolCompGun::handleRightMouseUp(S32 x, S32 y, MASK mask)
 {
 	// Singu Note: Beware the alt-click menu
-	if (mRightMouseButton)
-	{
-		mRightMouseButton = false;
-
-		mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
-		mTargetFOV = mOriginalFOV;
-		gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV) :
-		mTimerFOV.start();
-	}
-
 	if (mMenuShown)
 	{
 		mMenuShown = false;
 		return LLToolComposite::handleRightMouseUp(x, y, mask);
 	}
+
+	LLViewerCamera& cam(LLViewerCamera::instance());
+	mStartFOV = cam.getDefaultFOV();
+	mTargetFOV = mOriginalFOV;
+	gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? cam.setDefaultFOV(mTargetFOV) : mTimerFOV.start();
+	cam.mSavedFOVLoaded = false;
 
 	return TRUE;
 }
@@ -805,27 +800,27 @@ BOOL LLToolCompGun::handleRightMouseDown(S32 x, S32 y, MASK mask)
 		return false;
 	}
 
-	mRightMouseButton = true;
-
-	if(!mTimerFOV.getStarted())
+	LLViewerCamera& cam(LLViewerCamera::instance());
+	if (!mTimerFOV.getStarted())
 	{
-		mStartFOV = LLViewerCamera::getInstance()->getAndSaveDefaultFOV();
+		mStartFOV = cam.getAndSaveDefaultFOV();
 		mOriginalFOV = mStartFOV;
 	}
-	else mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
+	else mStartFOV = cam.getDefaultFOV();
 
 	mTargetFOV = gSavedSettings.getF32("ExodusAlternativeFOV");
-	gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV) :
-	mTimerFOV.start();
+	gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? cam.setDefaultFOV(mTargetFOV) : mTimerFOV.start();
+	cam.mSavedFOVLoaded = false;
 
 	return TRUE;
 }
 
 BOOL LLToolCompGun::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
-	if (mRightMouseButton)
+	if (gViewerWindow->getRightMouseDown())
 	{
-		mStartFOV = LLViewerCamera::getInstance()->getDefaultFOV();
+		LLViewerCamera& cam(LLViewerCamera::instance());
+		mStartFOV = cam.getDefaultFOV();
 
 		gSavedSettings.setF32(
 			"ExodusAlternativeFOV",
@@ -834,8 +829,8 @@ BOOL LLToolCompGun::handleScrollWheel(S32 x, S32 y, S32 clicks)
 				llclamp(mTargetFOV -= (0.05f * -clicks), 0.1f, 3.0f)
 		);
 
-		gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV) :
-		mTimerFOV.start();
+		gSavedSettings.getBOOL("LiruMouselookInstantZoom") ? cam.setDefaultFOV(mTargetFOV) : mTimerFOV.start();
+		cam.mSavedFOVLoaded = false;
 	}
 	else if (clicks > 0) gAgentCamera.changeCameraToDefault();
 
@@ -848,16 +843,17 @@ void LLToolCompGun::draw()
 {
 	if (mTimerFOV.getStarted())
 	{
-		if (!LLViewerCamera::getInstance()->mSavedFOVLoaded && mStartFOV != mTargetFOV)
+		LLViewerCamera& cam(LLViewerCamera::instance());
+		if (!cam.mSavedFOVLoaded && mStartFOV != mTargetFOV)
 		{
 			F32 timer = mTimerFOV.getElapsedTimeF32();
 
 			if (timer > 0.15f)
 			{
-				LLViewerCamera::getInstance()->setDefaultFOV(mTargetFOV);
+				cam.setDefaultFOV(mTargetFOV);
 				mTimerFOV.stop();
 			}
-			else LLViewerCamera::getInstance()->setDefaultFOV(lerp(mStartFOV, mTargetFOV, timer * 6.66f));
+			else cam.setDefaultFOV(lerp(mStartFOV, mTargetFOV, timer * 6.66f));
 		}
 		else mTimerFOV.stop();
 	}

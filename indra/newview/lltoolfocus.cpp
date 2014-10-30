@@ -313,11 +313,9 @@ BOOL LLToolCamera::handleMouseUp(S32 x, S32 y, MASK mask)
 	return TRUE;
 }
 
-static bool right_hold_mouse_walk=false;
-
 BOOL LLToolCamera::handleHover(S32 x, S32 y, MASK mask)
 {
-	if(right_hold_mouse_walk)
+	if (gViewerWindow->getRightMouseDown())
 	{
 		agent_push_forward(KEYSTATE_LEVEL);
 	}
@@ -461,7 +459,6 @@ BOOL LLToolCamera::handleRightMouseDown(S32 x, S32 y, MASK mask)
 	if(mMouseSteering)
 	{
 		agent_push_forward(KEYSTATE_DOWN);
-		right_hold_mouse_walk = true;
 		return TRUE;
 	}
 	else
@@ -472,10 +469,9 @@ BOOL LLToolCamera::handleRightMouseDown(S32 x, S32 y, MASK mask)
 
 BOOL LLToolCamera::handleRightMouseUp(S32 x, S32 y, MASK mask)
 {
-	if(mMouseSteering || right_hold_mouse_walk)
+	if (mMouseSteering)
 	{
 		agent_push_forward(KEYSTATE_UP);
-		right_hold_mouse_walk = false;
 		return TRUE;
 	}
 	else
@@ -487,5 +483,5 @@ BOOL LLToolCamera::handleRightMouseUp(S32 x, S32 y, MASK mask)
 void LLToolCamera::onMouseCaptureLost()
 {
 	releaseMouse();
-	handleRightMouseUp(0,0,0);
+	if (gViewerWindow->getRightMouseDown()) agent_push_forward(KEYSTATE_UP);
 }

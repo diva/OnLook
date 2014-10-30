@@ -751,6 +751,7 @@ void LLViewerCamera::setDefaultFOV(F32 vertical_fov_rads)
 // <exodus>
 void LLViewerCamera::loadDefaultFOV()
 {
+	if (mSavedFOVLoaded) return;
 	setView(mSavedFOVDefault);
 	mSavedFOVLoaded = true;
 	mCameraFOVDefault = mSavedFOVDefault;

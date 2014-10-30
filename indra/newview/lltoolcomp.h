@@ -235,7 +235,7 @@ protected:
 
 	// <exodus>
 private:
-	bool				mRightMouseButton, mMenuShown;
+	bool				mMenuShown;
 	LLTimer				mTimerFOV;
 	F32					mOriginalFOV, mStartFOV, mTargetFOV;
 	// </exodus>

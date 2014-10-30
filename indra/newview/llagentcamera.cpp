@@ -2272,6 +2272,7 @@ void LLAgentCamera::changeCameraToFollow(BOOL animate)
 		if (mCameraMode == CAMERA_MODE_MOUSELOOK)
 		{
 			animate = FALSE;
+			if (gViewerWindow->getRightMouseDown()) LLViewerCamera::instance().loadDefaultFOV(); // <singu/> We could be zoomed in
 		}
 		startCameraAnimation();
 
@@ -2361,6 +2362,7 @@ void LLAgentCamera::changeCameraToThirdPerson(BOOL animate)
 			mCurrentCameraDistance = MIN_CAMERA_DISTANCE;
 			mTargetCameraDistance = MIN_CAMERA_DISTANCE;
 			animate = FALSE;
+			if (gViewerWindow->getRightMouseDown()) LLViewerCamera::instance().loadDefaultFOV(); // <singu/> We could be zoomed in
 		}
 		updateLastCamera();
 		mCameraMode = CAMERA_MODE_THIRD_PERSON;
