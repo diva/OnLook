@@ -218,12 +218,12 @@ void LLUserAuth::authenticate(
 	XMLRPC_VectorAppendString(params, "start", start.c_str(), 0);
 	XMLRPC_VectorAppendString(params, "version", llformat("%d.%d.%d.%d", gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild).c_str(), 0);
 	// Singu Note: At the request of Linden Lab we change channel sent to the login server in the following way:
-	// * If channel is "Singularity" we change it to "Singularity Release", due to their statistics system
+	// * If channel is "OnLook" we change it to "OnLook Release", due to their statistics system
 	//   not being able to distinguish just the release version
 	// * We append "64" to channel name on 64-bit for systems for the LL stats system to be able to produce independent
 	//   crash statistics depending on the architecture
 	std::string chan(gVersionChannel);
-	if (chan == "Singularity")
+	if (chan == "OnLook")
 	{
 		chan += " Release";
 	}

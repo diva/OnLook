@@ -894,7 +894,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>http://singularity-viewer.github.io</string>
+      <string/>
     </map>
     <key>SingularitySplashPagePath</key>
     <map>
@@ -905,7 +905,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>pages/login/</string>
+      <string/>
     </map>
     <!-- The following block of settings say whether or not a toolbar button is visible in
     the future, we want this block gone, upstream handles this sorta thing much better-->

@@ -80,7 +80,7 @@ class PlatformSetup(object):
     standalone = 'OFF'
     unattended = 'OFF'
     universal = 'OFF'
-    project_name = 'Singularity'
+    project_name = 'OnLook'
     distcc = True
     cmake_opts = []
     word_size = 32
