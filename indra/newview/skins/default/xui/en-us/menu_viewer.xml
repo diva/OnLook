@@ -949,7 +949,7 @@
 			<on_click function="ShowFloater" userdata="lag meter" />
 		</menu_item_call>
 		<menu_item_separator name="separator7"/>
-		<menu bottom="-554" create_jump_keys="true" drop_shadow="true" enabled="true"
+		<!--menu bottom="-554" create_jump_keys="true" drop_shadow="true" enabled="true"
 		     height="109" label="Bug Reporting" left="0" mouse_opaque="false"
 		     name="Bug Reporting" opaque="true" tear_off="true" width="118">
 			<menu_item_call bottom="-94" enabled="true" height="19" label="Public Issue Tracker..."
@@ -997,7 +997,7 @@
 			<menu_item_call bottom="-240" enabled="true" height="19" label="Request New Feature..." name="Request New Feature..." width="166">
 				<on_click function="PromptShowURL" name="RequestFeature_url" userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry?template=Feature%20request"/>
 			</menu_item_call>
-		</menu>
+		</menu-->
 		<menu_item_call bottom="-313" enabled="true" height="19" label="About [SHORT_APP_NAME]..." left="0"
 		     mouse_opaque="true" name="About Second Life..." width="166">
 			<on_click function="ShowFloater" userdata="about" />

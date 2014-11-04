@@ -154,13 +154,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Siana Gearz"
-            VALUE "FileDescription", "Singularity Viewer"
+            VALUE "CompanyName", "Encitra"
+            VALUE "FileDescription", "OnLook Viewer"
             VALUE "FileVersion", "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}"
-            VALUE "InternalName", "Second Life"
-            VALUE "LegalCopyright", "Copyright © 2001-2010, Linden Research, Inc., Copyright 2010 Siana Gearz"
-            VALUE "OriginalFilename", "SingularityViewer.exe"
-            VALUE "ProductName", "Singularity Viewer"
+            VALUE "InternalName", "OnLook Viewer"
+            VALUE "LegalCopyright", "Copyright © 2001-2010, Linden Research, Inc., Copyright 2010-2014 Siana Gearz, Copyright 2014 Encitra"
+            VALUE "OriginalFilename", "OnLookViewer.exe"
+            VALUE "ProductName", "OnLook Viewer"
             VALUE "ProductVersion", "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}"
         END
     END

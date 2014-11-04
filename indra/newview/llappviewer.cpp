@@ -312,7 +312,7 @@ static BOOL gDoDisconnect = FALSE;
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
-const char* const VIEWER_WINDOW_CLASSNAME = "Second Life"; // Don't change
+const char* const VIEWER_WINDOW_CLASSNAME = "OnLook Viewer"; // Don't change
 
 //-- LLDeferredTaskList ------------------------------------------------------
 
