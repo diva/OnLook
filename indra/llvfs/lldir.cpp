@@ -311,7 +311,7 @@ const std::string &LLDir::getDumpDir() const
 					+ "dump-" + uid.asString();
 		*/
 
-		sDumpDir = getExpandedFilename(LL_PATH_LOGS, "") + "singularity-debug";
+		sDumpDir = getExpandedFilename(LL_PATH_LOGS, "") + "onlook-debug";
 		dir_exists_or_crash(sDumpDir);
 	}
 
@@ -364,9 +364,9 @@ std::string LLDir::buildSLOSCacheDir() const
 	else
 	{
 #if defined(_WIN64)
-		res = add(getOSCacheDir(), "SingularityViewer64");
+		res = add(getOSCacheDir(), "OnLookViewer64");
 #else
-		res = add(getOSCacheDir(), "SingularityViewer");
+		res = add(getOSCacheDir(), "OnLookViewer");
 #endif
 	}
 	return res;

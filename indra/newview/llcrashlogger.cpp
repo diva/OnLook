@@ -368,7 +368,7 @@ bool LLCrashLogger::sendCrashLog(std::string dump_dir)
     gDirUtilp->setDumpDir( dump_dir );
     
     std::string dump_path = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,
-                                                           "SingularityCrashReport");
+                                                           "OnLookCrashReport");
     std::string report_file = dump_path + ".log";
 
 	gatherFiles();

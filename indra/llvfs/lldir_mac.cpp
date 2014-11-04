@@ -117,7 +117,7 @@ LLDir_Mac::LLDir_Mac()
 	CFStringRef		stringRef = NULL;
 	OSStatus		error = noErr;
 	FSRef			fileRef;
-	CFStringRef		secondLifeString = CFSTR("SecondLife");
+	CFStringRef		secondLifeString = CFSTR("OnLook");
 	
 	mainBundleRef = CFBundleGetMainBundle();
 		
@@ -193,7 +193,7 @@ LLDir_Mac::LLDir_Mac()
 		if (error == noErr)
 		{
 			FSRefToLLString(&cacheDirRef, mOSCacheDir);
-			(void)CFCreateDirectory(&cacheDirRef, CFSTR("SingularityViewer"), NULL);
+			(void)CFCreateDirectory(&cacheDirRef, CFSTR("OnLookViewer"), NULL);
 		}
 		
 		// mOSUserAppDir
