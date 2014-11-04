@@ -78,6 +78,7 @@
 #include "raytrace.h"
 
 // newview includes
+#include "lfsimfeaturehandler.h"
 #include "llbox.h"
 #include "llchatbar.h"
 #include "llconsole.h"
@@ -979,7 +980,7 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 	}
 
 	// Do not allow tool manager to handle mouseclicks if we have disconnected	
-	if(!gDisconnected && LLToolMgr::getInstance()->getCurrentTool()->handleAnyMouseClick( x, y, mask, clicktype, down ) )
+	if (!gDisconnected && (~LFSimFeatureHandler::instance().getOnLookMask() & 1 || clicktype != LLMouseHandler::CLICK_RIGHT) && LLToolMgr::getInstance()->getCurrentTool()->handleAnyMouseClick(x, y, mask, clicktype, down))
 	{
 		return TRUE;
 	}
@@ -2677,6 +2678,9 @@ void LLViewerWindow::draw()
 // Takes a single keydown event, usually when UI is visible
 BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 {
+	bool camera_only_mode(LFSimFeatureHandler::instance().getOnLookMask() & 1);
+	if (!camera_only_mode)
+	{
 	// Hide tooltips on keypress
 	mToolTipBlocked = TRUE; // block until next time mouse is moved
 
@@ -2713,6 +2717,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		if (gSavedSettings.getBOOL("LiruUseAdvancedMenuShortcut"))
 			toggle_debug_menus(NULL);
 	}
+	}
 
 	// handle shift-escape key (reset camera view)
 	if (key == KEY_ESCAPE && mask == MASK_SHIFT)
@@ -2721,6 +2726,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		return TRUE;
 	}
 
+	if (!camera_only_mode)
 	// let menus handle navigation keys for navigation
 	if ((gMenuBarView && gMenuBarView->handleKey(key, mask, TRUE))
 		|| (gLoginMenuBarView && gLoginMenuBarView->handleKey(key, mask, TRUE))
@@ -2731,6 +2737,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 
 	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
 
+	if (!camera_only_mode)
 	// give menus a chance to handle modified (Ctrl, Alt) shortcut keys before current focus
 	// as long as focus isn't locked
 	if (mask & (MASK_CONTROL | MASK_ALT) && !gFocusMgr.focusLocked())
@@ -2784,6 +2791,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 	// Traverses up the hierarchy
 	if( keyboard_focus )
 	{
+		if (!camera_only_mode)
 		// arrow keys move avatar while chatting hack
 		if (gChatBar && gChatBar->inputEditorHasFocus())
 		{
@@ -2827,6 +2835,8 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		}
 	}
 
+	if (!camera_only_mode)
+	{
 	if( LLToolMgr::getInstance()->getCurrentTool()->handleKey(key, mask) )
 	{
 		return TRUE;
@@ -2851,6 +2861,7 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 	{
 		return TRUE;
 	}
+	}
 
 	// don't pass keys on to world when something in ui has focus
 	return gFocusMgr.childHasKeyboardFocus(mRootView) 
@@ -2872,10 +2883,13 @@ BOOL LLViewerWindow::handleUnicodeChar(llwchar uni_char, MASK mask)
 		return gViewerKeyboard.handleKey(KEY_RETURN, mask, gKeyboard->getKeyRepeated(KEY_RETURN));
 	}
 
+	if (~LFSimFeatureHandler::instance().getOnLookMask() & 1)
+	{
 	// let menus handle navigation (jump) keys
 	if (gMenuBarView && gMenuBarView->handleUnicodeChar(uni_char, TRUE))
 	{
 		return TRUE;
+	}
 	}
 
 	// Traverses up the hierarchy

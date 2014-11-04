@@ -73,6 +73,7 @@ void LFSimFeatureHandler::setSupportedFeatures()
 		LLSD info;
 		region->getSimulatorFeatures(info);
 		//bool hg(); // Singu Note: There should probably be a flag for this some day.
+		U8 onlook_mask = 0;
 		if (info.has("OpenSimExtras")) // OpenSim specific sim features
 		{
 			// For definition of OpenSimExtras please see
@@ -88,6 +89,13 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			has_feature_or_default(mSayRange, extras, "say-range");
 			has_feature_or_default(mShoutRange, extras, "shout-range");
 			has_feature_or_default(mWhisperRange, extras, "whisper-range");
+			if (extras.has("camera-only-mode")) onlook_mask |= 1;
+			if (extras.has("special-ui"))
+			{
+				mSpecialUI = extras["special-ui"].asString();
+				onlook_mask |= 2;
+			}
+			else mSpecialUI.reset();
 		}
 		else // OpenSim specifics are unsupported reset all to default
 		{
@@ -101,7 +109,9 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			mSayRange.reset();
 			mShoutRange.reset();
 			mWhisperRange.reset();
+			mSpecialUI.reset();
 		}
+		mOnLookMask = onlook_mask;
 	}
 }
 
@@ -133,4 +143,14 @@ boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const Sig
 boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot)
 {
 	return mWhisperRange.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setOnLookMaskCallback(const SignaledType<U8>::slot_t& slot)
+{
+	return mOnLookMask.connect(slot);
+}
+
+boost::signals2::connection LFSimFeatureHandler::setSpecialUICallback(const SignaledType<std::string>::slot_t& slot)
+{
+	return mSpecialUI.connect(slot);
 }

@@ -319,6 +319,26 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 // </FS:CR> Aurora Sim
 void transition_back_to_login_panel(const std::string& emsg);
 
+void load_default_bindings(const U8& mask);
+void onlook_mask_changed(const U8& mask)
+{
+	load_default_bindings(mask);
+	// Now hide the UI, if needed
+	bool visible(~mask & 2);
+	gMenuBarView->setVisible(visible);
+	gStatusBar->setVisible(visible);
+	gStatusBar->setEnabled(visible);
+	// Cameras get no floaters in the way, but don't interrupt mouselook, otherwise.
+	bool ml(gAgentCamera.cameraMouselook());
+	if (mask & 1)
+	{
+		if (ml) gAgentCamera.changeCameraToDefault();
+		gFloaterView->pushVisibleAll(false);
+	}
+	else if (!ml) gFloaterView->popVisibleAll();
+}
+void rebuild_toolbar(const std::string& buffer);
+
 void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is_group)
 {
 	LLNameBox::refreshAll(id, full_name, is_group);
@@ -1805,6 +1825,7 @@ bool idle_startup()
 		}	
 		gLoginMenuBarView->setVisible( FALSE );
 		gLoginMenuBarView->setEnabled( FALSE );
+		onlook_mask_changed(LFSimFeatureHandler::instance().getOnLookMask());
 		display_startup();
 		LLRect window(0, gViewerWindow->getWindowHeight(), gViewerWindow->getWindowWidth(), 0);
 		gViewerWindow->adjustControlRectanglesForFirstUse(window);
@@ -4214,6 +4235,14 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 		gSavedSettings.setString("AvatarPickerURL", tmp);
 		gMenuBarView->getChildView("Avatar Picker")->setVisible(!tmp.empty());
 		gSavedSettings.setString("DestinationGuideURL", response["destination_guide_url"].asString());
+
+		U8 mask(0);
+		if (response.has("camera-only-mode")) mask |= 1;
+		if (response.has("special-ui")) mask |= 2;
+		LFSimFeatureHandler& inst(LFSimFeatureHandler::instance());
+		inst.setOnLookMask(0);
+		inst.setOnLookMaskCallback(boost::bind(onlook_mask_changed, _1));
+		inst.setSpecialUICallback(boost::bind(rebuild_toolbar, _1));
 	}
 	tmp = response["currency"].asString();
 	if (!tmp.empty())

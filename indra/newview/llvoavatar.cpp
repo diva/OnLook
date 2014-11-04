@@ -118,6 +118,7 @@
 #include "../lscript/lscript_byteformat.h"
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 // [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.2.0c)
 #include "rlvhandler.h"
@@ -3066,6 +3067,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	if (isSelf())
 	{
 		render_name = render_name
+						&& ~LFSimFeatureHandler::instance().getOnLookMask() & 1
 						&& !gAgentCamera.cameraMouselook()
 						&& (visible_chat || !render_name_hide_self);
 	}

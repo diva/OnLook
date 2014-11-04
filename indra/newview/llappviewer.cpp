@@ -124,6 +124,7 @@
 // <edit>
 #include "aicurleasyrequeststatemachine.h"
 #include "aihttptimeoutpolicy.h"
+#include "lfsimfeaturehandler.h"
 // </edit>
 // The files below handle dependencies from cleanup.
 #include "llkeyframemotion.h"
@@ -589,16 +590,32 @@ public:
 	}
 };
 
-void load_default_bindings(bool zqsd)
+void rebuild_toolbar(const std::string& buffer)
+{
+	gToolBar->deleteAllChildren();
+	buffer.empty() ? LLUICtrlFactory::instance().buildPanel(gToolBar, "panel_toolbar.xml") : LLUICtrlFactory::instance().buildPanelFromBuffer(gToolBar, buffer);
+}
+
+void load_default_bindings(const std::string& keys)
 {
 	gViewerKeyboard.unloadBindings();
-	const std::string keys(zqsd ? "keysZQSD.ini" : "keys.ini");
 	if (!gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, keys)))
 	{
 		LL_ERRS("InitInfo") << "Unable to open " << keys << LL_ENDL;
 	}
 	// Load Custom bindings (override defaults)
 	gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"custom_keys.ini"));
+}
+
+void load_default_bindings(const U8& mask)
+{
+	bool zqsd(gSavedSettings.getBOOL("LiruUseZQSDKeys"));
+	load_default_bindings(mask & 1 ? zqsd ? "keysCamOnlyZQSD.ini" : "keysCamOnly.ini" : zqsd ? "keysZQSD.ini" : "keys.ini");
+}
+
+void load_default_bindings()
+{
+	load_default_bindings(LFSimFeatureHandler::instanceExists() ? LFSimFeatureHandler::instance().getOnLookMask() : 0);
 }
 
 bool LLAppViewer::init()
@@ -882,7 +899,7 @@ bool LLAppViewer::init()
 	gGLManager.printGLInfoString();
 
 	// Load Default bindings
-	load_default_bindings(gSavedSettings.getBOOL("LiruUseZQSDKeys"));
+	load_default_bindings();
 
 	// If we don't have the right GL requirements, exit.
 	if (!gGLManager.mHasRequirements && !gNoRender)

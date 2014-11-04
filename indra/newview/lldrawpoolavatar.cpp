@@ -39,6 +39,7 @@
 #include "m3math.h"
 #include "llmatrix4a.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llagent.h" //for gAgent.needsRenderAvatar()
 #include "lldrawable.h"
 #include "lldrawpoolbump.h"
@@ -1117,6 +1118,7 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 	{
 		return;
 	}
+	if (LFSimFeatureHandler::instance().getOnLookMask() & 1 && avatarp->isSelf()) return;
 
 	if (!single_avatar && !avatarp->isFullyLoaded() )
 	{

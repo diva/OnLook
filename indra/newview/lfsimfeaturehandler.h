@@ -67,6 +67,8 @@ public:
 	boost::signals2::connection setSayRangeCallback(const SignaledType<U32>::slot_t& slot);
 	boost::signals2::connection setShoutRangeCallback(const SignaledType<U32>::slot_t& slot);
 	boost::signals2::connection setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot);
+	boost::signals2::connection setOnLookMaskCallback(const SignaledType<U8>::slot_t& slot);
+	boost::signals2::connection setSpecialUICallback(const SignaledType<std::string>::slot_t& slot);
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }
@@ -76,7 +78,11 @@ public:
 	U32 sayRange() const { return mSayRange; }
 	U32 shoutRange() const { return mShoutRange; }
 	U32 whisperRange() const { return mWhisperRange; }
+	U8 getOnLookMask() const { return mOnLookMask; }
 	ExportPolicy exportPolicy() const;
+
+	// Mutators
+	void setOnLookMask(const U8& mask) { mOnLookMask = mask; }
 
 private:
 	// SignaledTypes
@@ -87,6 +93,8 @@ private:
 	SignaledType<U32> mSayRange;
 	SignaledType<U32> mShoutRange;
 	SignaledType<U32> mWhisperRange;
+	SignaledType<U8> mOnLookMask;
+	SignaledType<std::string> mSpecialUI;
 };
 
 #endif //LFSIMFEATUREHANDLER_H

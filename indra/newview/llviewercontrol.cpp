@@ -84,7 +84,7 @@
 #include "aicurl.h"
 #include "aihttptimeoutpolicy.h"
 
-void load_default_bindings(bool zqsd);
+void load_default_bindings();
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 BOOL 				gHackGodmode = FALSE;
@@ -832,7 +832,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("FriendNameSystem")->getSignal()->connect(boost::bind(handleUpdateFriends));
 
 	gSavedSettings.getControl("AllowLargeSounds")->getSignal()->connect(boost::bind(&handleAllowLargeSounds, _2));
-	gSavedSettings.getControl("LiruUseZQSDKeys")->getSignal()->connect(boost::bind(load_default_bindings, _2));
+	gSavedSettings.getControl("LiruUseZQSDKeys")->getSignal()->connect(boost::bind(load_default_bindings));
 }
 
 void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name)
