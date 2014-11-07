@@ -79,12 +79,15 @@ public:
 	U32 shoutRange() const { return mShoutRange; }
 	U32 whisperRange() const { return mWhisperRange; }
 	U8 getOnLookMask() const { return mOnLookMask; }
+	const LLSD& specialFloaters() const { return mSpecialFloaters; }
 	ExportPolicy exportPolicy() const;
 
 	// Mutators
 	void setOnLookMask(const U8& mask) { mOnLookMask = mask; }
 
 private:
+	void resetSpecialFloaters();
+
 	// SignaledTypes
 	SignaledType<bool> mSupportsExport;
 	SignaledType<std::string> mDestinationGuideURL;
@@ -95,6 +98,7 @@ private:
 	SignaledType<U32> mWhisperRange;
 	SignaledType<U8> mOnLookMask;
 	SignaledType<std::string> mSpecialUI;
+	LLSD mSpecialFloaters;
 };
 
 #endif //LFSIMFEATUREHANDLER_H

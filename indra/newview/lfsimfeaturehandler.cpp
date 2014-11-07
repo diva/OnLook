@@ -20,6 +20,7 @@
 #include "lfsimfeaturehandler.h"
 
 #include "llagent.h"
+#include "lluictrlfactory.h" // For OnLook Special UI.
 #include "llviewerregion.h"
 #include "hippogridmanager.h"
 
@@ -66,6 +67,7 @@ void has_feature_or_default(SignaledType<U32>& type, const LLSD& features, const
 	type = (features.has(feature)) ? features[feature].asInteger() : type.getDefault();
 }
 
+void close_if_built(const std::string& name) { if (LLFloater* floater = LLUICtrlFactory::instance().getBuiltFloater(name)) floater->close(); }
 void LFSimFeatureHandler::setSupportedFeatures()
 {
 	if (LLViewerRegion* region = gAgent.getRegion())
@@ -92,8 +94,16 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			if (extras.has("camera-only-mode")) onlook_mask |= 1;
 			if (extras.has("special-ui"))
 			{
-				mSpecialUI = extras["special-ui"].asString();
+				mSpecialUI = extras["special-ui"]["toolbar"].asString();
 				onlook_mask |= 2;
+				if (extras["special-ui"].has("floaters"))
+				{
+					const LLSD& floaters(extras["special-ui"]["floaters"]);
+					for (LLSD::map_const_iterator it = mSpecialFloaters.beginMap(), end = mSpecialFloaters.endMap(); it != end; ++it)
+						if (!floaters.has(it->first)) close_if_built(it->first);
+					mSpecialFloaters = floaters;
+				}
+				else resetSpecialFloaters();
 			}
 			else mSpecialUI.reset();
 		}
@@ -110,9 +120,17 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			mShoutRange.reset();
 			mWhisperRange.reset();
 			mSpecialUI.reset();
+			resetSpecialFloaters();
 		}
 		mOnLookMask = onlook_mask;
 	}
+}
+
+void LFSimFeatureHandler::resetSpecialFloaters()
+{
+	for (LLSD::map_const_iterator it = mSpecialFloaters.beginMap(), end = mSpecialFloaters.endMap(); it != end; ++it)
+		close_if_built(it->first);
+	mSpecialFloaters.clear();
 }
 
 boost::signals2::connection LFSimFeatureHandler::setSupportsExportCallback(const SignaledType<bool>::slot_t& slot)

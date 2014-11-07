@@ -39,6 +39,7 @@
 #include "floaterlocalassetbrowse.h"
 #include "hbfloatergrouptitles.h"
 #include "jcfloaterareasearch.h"
+#include "lfsimfeaturehandler.h"
 #include "llagentcamera.h"
 #include "llchatbar.h"
 #include "llconsole.h"
@@ -279,10 +280,15 @@ void show_floater(const std::string& floater_name)
 	MenuFloaterDict::menu_floater_map_t::iterator it = MenuFloaterDict::instance().mEntries.find(floater_name);
 	if (it == MenuFloaterDict::instance().mEntries.end()) // Simple codeless floater
 	{
-		if (LLFloater* floater = LLUICtrlFactory::getInstance()->getBuiltFloater(floater_name))
+		LLUICtrlFactory& inst(LLUICtrlFactory::instance());
+		if (LLFloater* floater = inst.getBuiltFloater(floater_name))
 			floater->isFrontmost() ? floater->close() : gFloaterView->bringToFront(floater);
 		else
-			LLUICtrlFactory::getInstance()->buildFloater(new LLFloater(), floater_name);
+		{
+			const LLSD& special(LFSimFeatureHandler::instance().specialFloaters());
+			LLFloater* f(new LLFloater);
+			special.has(floater_name) ? inst.buildFloaterFromBuffer(f, special[floater_name]) : inst.buildFloater(f, floater_name);
+		}
 	}
 	else if (it->second.first)
 	{
