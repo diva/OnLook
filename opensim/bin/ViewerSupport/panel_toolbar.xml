@@ -5,7 +5,7 @@
   <string name="IM">1 IM</string>
   <panel bottom="0" filename="panel_bg_toolbar.xml" height="28" left="0" width="1024"/>
   <layout_stack name="toolbar_stack" follows="left|right|bottom|top" bottom="2" left="1" width="1022" height="26" min_width="200" orientation="horizontal" border_size="0">
-    <layout_panel name="panelcameracontrols" height="24" width="50" user_resize="false" visible="true">
+    <layout_panel name="panelcameracontrols" height="24" width="50" user_resize="false">
       <button bottom="0" height="24" label="Camera Controls" name="camera_controls_btn" image_overlay="icn_toolbar_camera_controls.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
         <button.commit_callback function="ShowFloater" parameter="camera controls"/>
       </button>
