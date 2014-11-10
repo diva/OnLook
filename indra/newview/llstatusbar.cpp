@@ -92,6 +92,7 @@
 #include <iomanip>
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 // [RLVa:KB]
 #include "rlvactions.h"
@@ -541,7 +542,10 @@ void LLStatusBar::refresh()
 // [/RLVa:KB]
 		if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
 			location_name = "???";
+		else
 		{
+			const std::string& grid(LFSimFeatureHandler::instance().gridName());
+			if (!grid.empty()) location_name += ", " + grid;
 		}
 
 		static const LLCachedControl<bool> show_channel("ShowSimChannel");

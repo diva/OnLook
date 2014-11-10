@@ -41,6 +41,7 @@ public:
 		return *this;
 	}
 	operator Type() const { return mValue; }
+	const Type& ref() const { return mValue; }
 	void reset() { *this = mDefaultValue; }
 	const Type& getDefault() const { return mDefaultValue; }
 
@@ -73,6 +74,7 @@ public:
 	std::string destinationGuideURL() const { return mDestinationGuideURL; }
 	std::string mapServerURL() const { return mMapServerURL; }
 	std::string searchURL() const { return mSearchURL; }
+	const std::string& gridName() const { return mGridName.ref(); }
 	U32 sayRange() const { return mSayRange; }
 	U32 shoutRange() const { return mShoutRange; }
 	U32 whisperRange() const { return mWhisperRange; }
@@ -84,6 +86,7 @@ private:
 	SignaledType<std::string> mDestinationGuideURL;
 	std::string mMapServerURL;
 	SignaledType<std::string> mSearchURL;
+	SignaledType<std::string> mGridName;
 	SignaledType<U32> mSayRange;
 	SignaledType<U32> mShoutRange;
 	SignaledType<U32> mWhisperRange;
