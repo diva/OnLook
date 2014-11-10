@@ -61,12 +61,12 @@ public:
 	void setSupportedFeatures();
 
 	// Connection setters
-	boost::signals2::connection setSupportsExportCallback(const SignaledType<bool>::slot_t& slot);
-	boost::signals2::connection setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot);
-	boost::signals2::connection setSearchURLCallback(const SignaledType<std::string>::slot_t& slot);
-	boost::signals2::connection setSayRangeCallback(const SignaledType<U32>::slot_t& slot);
-	boost::signals2::connection setShoutRangeCallback(const SignaledType<U32>::slot_t& slot);
-	boost::signals2::connection setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot);
+	boost::signals2::connection setSupportsExportCallback(const SignaledType<bool>::slot_t& slot) { return mSupportsExport.connect(slot); }
+	boost::signals2::connection setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot) { return mDestinationGuideURL.connect(slot); }
+	boost::signals2::connection setSearchURLCallback(const SignaledType<std::string>::slot_t& slot) { return mSearchURL.connect(slot); }
+	boost::signals2::connection setSayRangeCallback(const SignaledType<U32>::slot_t& slot) { return mSayRange.connect(slot); }
+	boost::signals2::connection setShoutRangeCallback(const SignaledType<U32>::slot_t& slot) { return mShoutRange.connect(slot); }
+	boost::signals2::connection setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot) { return mWhisperRange.connect(slot); }
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }

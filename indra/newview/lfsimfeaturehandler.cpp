@@ -104,33 +104,3 @@ void LFSimFeatureHandler::setSupportedFeatures()
 		}
 	}
 }
-
-boost::signals2::connection LFSimFeatureHandler::setSupportsExportCallback(const SignaledType<bool>::slot_t& slot)
-{
-	return mSupportsExport.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot)
-{
-	return mDestinationGuideURL.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const SignaledType<std::string>::slot_t& slot)
-{
-	return mSearchURL.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setSayRangeCallback(const SignaledType<U32>::slot_t& slot)
-{
-	return mSayRange.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const SignaledType<U32>::slot_t& slot)
-{
-	return mShoutRange.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot)
-{
-	return mWhisperRange.connect(slot);
-}
