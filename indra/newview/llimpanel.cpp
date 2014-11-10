@@ -404,7 +404,17 @@ void LLFloaterIMPanel::onAvatarNameLookup(const LLAvatarName& avatar_name)
 	std::string title;
 	LLAvatarNameCache::getPNSName(avatar_name, title);
 	setTitle(title);
-	// Singu Note: We could set tab name here, too now.
+	const S32& ns(gSavedSettings.getS32("IMNameSystem"));
+	LLAvatarNameCache::getPNSName(avatar_name, title, ns);
+	if (!ns || ns == 3) // Remove Resident, if applicable.
+	{
+		size_t pos(title.find(" Resident"));
+		if (pos != std::string::npos && !gSavedSettings.getBOOL("LiruShowLastNameResident"))
+			title.erase(pos, 9);
+	}
+	setShortTitle(title);
+	if (LLMultiFloater* mf = dynamic_cast<LLMultiFloater*>(getParent()))
+		mf->updateFloaterTitle(this);
 }
 
 LLFloaterIMPanel::~LLFloaterIMPanel()
