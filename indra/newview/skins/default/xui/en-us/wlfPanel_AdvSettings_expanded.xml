@@ -28,5 +28,5 @@
 	<check_box bottom_delta="0" left_delta="110" label="Crossfade?" control_name="PhoenixInterpolateSky" height="16" name="Crossfade" tool_tip="If unchecked, Sky Windlight settings changes will apply immediately, without hesitation/animation."/>
 	<icon bottom_delta="-18" height="14" image_name="icon_day_cycle.tga" left="10" width="150"/>
 	<slider bottom_delta="-8" control_name="EnvTimeSlider" left="5" height="10" increment="0.00000001" label="" max_val="1" min_val="0" name="EnvTimeSlider" show_text="false" width="160"/>
-	<button bottom="1" height="22" label="" left="172" name="expand" scale_image="true" toggle="true" tool_tip="Hide the Settings Panel" width="22"/>
+	<button bottom="1" height="22" label="" left="172" name="expand" scale_image="true" image_overlay="arrow_down.tga" toggle="true" tool_tip="Hide the Settings Panel" width="22"/>
 </panel>

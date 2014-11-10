@@ -45,9 +45,9 @@ class LLSliderCtrl;
 class wlfPanel_AdvSettings : public LLPanel, public LLSingleton<wlfPanel_AdvSettings>
 {
 public:
-	wlfPanel_AdvSettings ();
+	wlfPanel_AdvSettings();
 	
-	~wlfPanel_AdvSettings ();
+	~wlfPanel_AdvSettings();
 	BOOL postBuild();
 	void draw();
 
@@ -56,7 +56,7 @@ public:
 
 	static void updateClass();
 
-	static void onClickExpandBtn(void* user_data);
+	void onClickExpandBtn();
 	void onChangeCameraPreset(LLUICtrl* ctrl, const LLSD& param);
 	void onChangeWWPresetName(const LLSD& value);
 	void onChangeWLPresetName(const LLSD& value);
