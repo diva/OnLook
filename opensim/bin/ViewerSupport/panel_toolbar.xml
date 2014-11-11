@@ -25,10 +25,13 @@
         <button.commit_callback function="ShowFloater" parameter="EnvSettings"/>
       </button>
     </layout_panel>
-    <layout_panel name="paneldaycycle" height="24" width="50" user_resize="false">
-      <button bottom="0" height="24" label="Day Cycle Editor" name="day_cycle_editor_btn" image_overlay="icn_toolbar_day_cycle_editor.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
-        <button.commit_callback function="ShowFloater" parameter="DayCycle"/>
+    <layout_panel name="panelenvsettings" height="24" width="50" user_resize="false">
+      <button bottom="0" height="24" label="Environment Editor" name="env_editor_btn" image_overlay="icn_toolbar_env_editor.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="EnvSettings"/>
       </button>
+    </layout_panel>
+    <layout_panel name="paneldaycycle" height="24" width="50" user_resize="false">
+      <button toggle="true" control_name="wlfAdvSettingsPopup" bottom="0" height="24" label="Settings" name="settings_btn" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right"/>
     </layout_panel>
     <layout_panel name="panelwindlight" height="24" width="50" user_resize="false">
       <button bottom="0" height="24" label="Windlight" name="windlight_btn" image_overlay="icn_toolbar_windlight.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
