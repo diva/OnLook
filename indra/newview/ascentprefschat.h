@@ -87,6 +87,7 @@ private:
 	bool mLegacyEndScroll;
 	bool mItalicizeActions;
 	bool mLegacyLogLaunch;
+	S32 mChatTabNames;
 	S32 mFriendNames;
 	S32 mGroupMembersNames;
 	S32 mLandManagementNames;

@@ -41,6 +41,7 @@ public:
 		return *this;
 	}
 	operator Type() const { return mValue; }
+	const Type& ref() const { return mValue; }
 	void reset() { *this = mDefaultValue; }
 	const Type& getDefault() const { return mDefaultValue; }
 
@@ -61,24 +62,25 @@ public:
 	void setSupportedFeatures();
 
 	// Connection setters
-	boost::signals2::connection setSupportsExportCallback(const SignaledType<bool>::slot_t& slot);
-	boost::signals2::connection setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot);
-	boost::signals2::connection setSearchURLCallback(const SignaledType<std::string>::slot_t& slot);
-	boost::signals2::connection setSayRangeCallback(const SignaledType<U32>::slot_t& slot);
-	boost::signals2::connection setShoutRangeCallback(const SignaledType<U32>::slot_t& slot);
-	boost::signals2::connection setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot);
-	boost::signals2::connection setOnLookMaskCallback(const SignaledType<U8>::slot_t& slot);
-	boost::signals2::connection setSpecialUICallback(const SignaledType<std::string>::slot_t& slot);
+	boost::signals2::connection setSupportsExportCallback(const SignaledType<bool>::slot_t& slot) { return mSupportsExport.connect(slot); }
+	boost::signals2::connection setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot) { return mDestinationGuideURL.connect(slot); }
+	boost::signals2::connection setSearchURLCallback(const SignaledType<std::string>::slot_t& slot) { return mSearchURL.connect(slot); }
+	boost::signals2::connection setSayRangeCallback(const SignaledType<U32>::slot_t& slot) { return mSayRange.connect(slot); }
+	boost::signals2::connection setShoutRangeCallback(const SignaledType<U32>::slot_t& slot) { return mShoutRange.connect(slot); }
+	boost::signals2::connection setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot) { return mWhisperRange.connect(slot); }
+	boost::signals2::connection setOnLookMaskCallback(const SignaledType<U8>::slot_t& slot) { return mOnLookMask.connect(slot); }
+	boost::signals2::connection setSpecialUICallback(const SignaledType<std::string>::slot_t& slot) { return mSpecialUI.connect(slot); }
 
 	// Accessors
 	bool simSupportsExport() const { return mSupportsExport; }
 	std::string destinationGuideURL() const { return mDestinationGuideURL; }
 	std::string mapServerURL() const { return mMapServerURL; }
 	std::string searchURL() const { return mSearchURL; }
+	const std::string& gridName() const { return mGridName.ref(); }
 	U32 sayRange() const { return mSayRange; }
 	U32 shoutRange() const { return mShoutRange; }
 	U32 whisperRange() const { return mWhisperRange; }
-	U8 getOnLookMask() const { return mOnLookMask; }
+	const U8& getOnLookMask() const { return mOnLookMask.ref(); }
 	const LLSD& specialFloaters() const { return mSpecialFloaters; }
 	ExportPolicy exportPolicy() const;
 
@@ -93,6 +95,7 @@ private:
 	SignaledType<std::string> mDestinationGuideURL;
 	std::string mMapServerURL;
 	SignaledType<std::string> mSearchURL;
+	SignaledType<std::string> mGridName;
 	SignaledType<U32> mSayRange;
 	SignaledType<U32> mShoutRange;
 	SignaledType<U32> mWhisperRange;

@@ -67,54 +67,40 @@ wlfPanel_AdvSettings::wlfPanel_AdvSettings() : mExpanded(false)
 //static
 void wlfPanel_AdvSettings::updateClass()
 {
-	if(!wlfPanel_AdvSettings::instanceExists())
-		return;
-	wlfPanel_AdvSettings::getInstance()->build(); 
+	if (!instanceExists()) return;
+	instance().build();
 }
 
 void wlfPanel_AdvSettings::build()
 {
 	mConnections.clear();
 	deleteAllChildren();
-	std::string ButtonState;
-	if (gSavedSettings.getBOOL("wlfAdvSettingsPopup"))
-	{
-		mExpanded = true;
-		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings_expanded.xml", &getFactoryMap());
-		ButtonState = "arrow_down.tga";
-	}
-	else
-	{
-		mExpanded = false;
-		LLUICtrlFactory::getInstance()->buildPanel(this, "wlfPanel_AdvSettings.xml", &getFactoryMap());
-		ButtonState = "arrow_up.tga";
-	}
-	getChild<LLButton>("expand")->setImageOverlay(ButtonState);
+	mExpanded = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	LLUICtrlFactory::instance().buildPanel(this, mExpanded ? "wlfPanel_AdvSettings_expanded.xml" : "wlfPanel_AdvSettings.xml", &getFactoryMap());
 }
 
 // [RLVa:KB] - Checked: 2013-06-20
 void wlfPanel_AdvSettings::updateRlvVisibility()
 {
-	if(!mExpanded || !rlv_handler_t::isEnabled())
+	if (!mExpanded || !rlv_handler_t::isEnabled())
 		return;
 
 	bool enable = !gRlvHandler.hasBehaviour(RLV_BHVR_SETENV);
 	childSetEnabled("use_estate_wl", enable);
 	childSetEnabled("EnvAdvancedWaterButton", enable);
-	childSetEnabled("WLWaterPresetsCombo", enable);
+	mWaterPresetCombo->setEnabled(enable);
 	childSetEnabled("WWprev", enable);
 	childSetEnabled("WWnext", enable);
 	childSetEnabled("EnvAdvancedSkyButton", enable);
-	childSetEnabled("WLSkyPresetsCombo", enable);
+	mSkyPresetCombo->setEnabled(enable);
 	childSetEnabled("WLprev", enable);
 	childSetEnabled("WLnext", enable);
-	childSetEnabled("EnvTimeSlider", enable);
+	mTimeSlider->setEnabled(enable);
 }
 
 void wlfPanel_AdvSettings::onRlvBehaviorChange(ERlvBehaviour eBhvr, ERlvParamType eType)
 {
-	if(eBhvr == RLV_BHVR_SETENV)
-		updateRlvVisibility();
+	if (eBhvr == RLV_BHVR_SETENV) updateRlvVisibility();
 }
 // [/RLVa:KB]
 
@@ -149,7 +135,8 @@ void wlfPanel_AdvSettings::refreshLists()
 BOOL wlfPanel_AdvSettings::postBuild()
 {
 	setVisible(true);
-	childSetAction("expand", onClickExpandBtn, this);
+	if (LLUICtrl* ctrl = findChild<LLUICtrl>("expand"))
+		ctrl->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onClickExpandBtn, this));
 
 	if (mExpanded)
 	{
@@ -208,9 +195,10 @@ wlfPanel_AdvSettings::~wlfPanel_AdvSettings ()
 {
 }
 
-void wlfPanel_AdvSettings::onClickExpandBtn(void* user_data)
+void wlfPanel_AdvSettings::onClickExpandBtn()
 {
-	gSavedSettings.setBOOL("wlfAdvSettingsPopup",!gSavedSettings.getBOOL("wlfAdvSettingsPopup"));
+	LLControlVariable* ctrl = gSavedSettings.getControl("wlfAdvSettingsPopup");
+	ctrl->set(!ctrl->get());
 }
 
 void wlfPanel_AdvSettings::onChangeCameraPreset(LLUICtrl* ctrl, const LLSD& param)
@@ -277,7 +265,7 @@ void wlfPanel_AdvSettings::onClickWWNext()
 		index = 0;
 	mWaterPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWWPresetName(mWaterPresetCombo->getSelectedValue());
+	onChangeWWPresetName(mWaterPresetCombo->getSelectedValue());
 }
 
 void wlfPanel_AdvSettings::onClickWWPrev()
@@ -288,7 +276,7 @@ void wlfPanel_AdvSettings::onClickWWPrev()
 	--index;
 	mWaterPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWWPresetName(mWaterPresetCombo->getSelectedValue());
+	onChangeWWPresetName(mWaterPresetCombo->getSelectedValue());
 }
 
 void wlfPanel_AdvSettings::onClickWLNext()
@@ -299,7 +287,7 @@ void wlfPanel_AdvSettings::onClickWLNext()
 		index = 0;
 	mSkyPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWLPresetName(mSkyPresetCombo->getSelectedValue());
+	onChangeWLPresetName(mSkyPresetCombo->getSelectedValue());
 }
 
 void wlfPanel_AdvSettings::onClickWLPrev()
@@ -310,13 +298,14 @@ void wlfPanel_AdvSettings::onClickWLPrev()
 	--index;
 	mSkyPresetCombo->setCurrentByIndex(index);
 
-	wlfPanel_AdvSettings::onChangeWLPresetName(mSkyPresetCombo->getSelectedValue());
+	onChangeWLPresetName(mSkyPresetCombo->getSelectedValue());
 }
 
 void wlfPanel_AdvSettings::onChangeDayTime(const LLSD& value)
 {
 	// deactivate animator
-	LLWLParamManager::getInstance()->mAnimator.deactivate();
+	LLWLParamManager& inst(LLWLParamManager::instance());
+	inst.mAnimator.deactivate();
 
 	F32 val = value.asFloat() + 0.25f;
 	if(val > 1.0)
@@ -324,8 +313,8 @@ void wlfPanel_AdvSettings::onChangeDayTime(const LLSD& value)
 		val--;
 	}
 
-	LLWLParamManager::getInstance()->mAnimator.setDayTime((F64)val);
-	LLWLParamManager::getInstance()->mAnimator.update(LLWLParamManager::getInstance()->mCurParams);
+	inst.mAnimator.setDayTime((F64)val);
+	inst.mAnimator.update(inst.mCurParams);
 }
 
 void wlfPanel_AdvSettings::populateWaterPresetsList()

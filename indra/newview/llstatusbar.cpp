@@ -92,6 +92,7 @@
 #include <iomanip>
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 // [RLVa:KB]
 #include "rlvactions.h"
@@ -528,48 +529,26 @@ void LLStatusBar::refresh()
 	else mBuyLand->setVisible(false);
 
 	std::string location_name;
-	if (region)
+	if (region && parcel)
 	{
-		const LLVector3& agent_pos_region = gAgent.getPositionAgent();
-		S32 pos_x = lltrunc( agent_pos_region.mV[VX] );
-		S32 pos_y = lltrunc( agent_pos_region.mV[VY] );
-		S32 pos_z = lltrunc( agent_pos_region.mV[VZ] );
-
-		// Round the numbers based on the velocity
-		LLVector3 agent_velocity = gAgent.getVelocity();
-		F32 velocity_mag_sq = agent_velocity.magVecSquared();
-
-		const F32 FLY_CUTOFF = 6.f;		// meters/sec
-		const F32 FLY_CUTOFF_SQ = FLY_CUTOFF * FLY_CUTOFF;
-		const F32 WALK_CUTOFF = 1.5f;	// meters/sec
-		const F32 WALK_CUTOFF_SQ = WALK_CUTOFF * WALK_CUTOFF;
-
-		if (velocity_mag_sq > FLY_CUTOFF_SQ)
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
+		if (RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC))
 		{
-			pos_x -= pos_x % 4;
-			pos_y -= pos_y % 4;
-		}
-		else if (velocity_mag_sq > WALK_CUTOFF_SQ)
-		{
-			pos_x -= pos_x % 2;
-			pos_y -= pos_y % 2;
-		}
-
-		if (parcel)
-		{
-			if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
-			{
-				location_name = "???";
-			}
+			location_name = llformat("%s (%s) - %s",
+					RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
+					RlvStrings::getString(RLV_STRING_HIDDEN).c_str());
 		}
 		else
+// [/RLVa:KB]
+		if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
+			location_name = "???";
+		else
 		{
-			location_name = region->getName()
-				+ llformat(" %d, %d, %d (%s)", 
-						   pos_x, pos_y, pos_z,
-						   region->getSimAccessString().c_str());
+			const std::string& grid(LFSimFeatureHandler::instance().gridName());
+			if (!grid.empty()) location_name += ", " + grid;
 		}
-		static LLCachedControl<bool> show_channel("ShowSimChannel");
+
+		static const LLCachedControl<bool> show_channel("ShowSimChannel");
 		if (show_channel && !gLastVersionChannel.empty()) location_name += " - " + gLastVersionChannel;
 	}
 	else
@@ -577,15 +556,6 @@ void LLStatusBar::refresh()
 		// no region
 		location_name = "(Unknown)";
 	}
-
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
-	if ( (region) && (RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we lose our connection to the grid
-	{
-		location_name = llformat("%s (%s) - %s", 
-			RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
-			RlvStrings::getString(RLV_STRING_HIDDEN).c_str());
-	}
-// [/RLVa:KB]
 
 	mTextParcelName->setText(location_name);
 

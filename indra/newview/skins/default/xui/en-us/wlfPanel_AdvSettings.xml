@@ -3,7 +3,7 @@
      enabled="true" follows="left|bottom" height="20" left="0"
      name="Adv_Settings" use_bounding_rect="true" width="30" >
 	<panel bottom="1" filename="panel_bg_tab.xml" height="22" left="0" width="30" />
-	<button bottom="1" height="22" label=""
+	<button bottom="1" height="22" label="" image_overlay="arrow_up.tga"
 	     left="5" name="expand" scale_image="true" toggle="true"
 	     tool_tip="Show the Settings Panel" width="22" />
 </panel>
