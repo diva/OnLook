@@ -37,6 +37,7 @@
 
 #include "pipeline.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llagent.h" //  Get state values from here
 #include "llagentcamera.h"
 #include "llagentwearables.h"
@@ -963,6 +964,7 @@ void LLVOAvatarSelf::restoreMeshData()
 //-----------------------------------------------------------------------------
 void LLVOAvatarSelf::updateAttachmentVisibility(U32 camera_mode)
 {
+	if (LFSimFeatureHandler::instance().getOnLookMask() & 1) return;
 	for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
 		 iter != mAttachmentPoints.end();
 		 ++iter)

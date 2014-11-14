@@ -320,6 +320,11 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 void transition_back_to_login_panel(const std::string& emsg);
 
 void load_default_bindings(const U8& mask);
+void set_attachment_visible_nonhud(bool visible, LLViewerJointAttachment* attachment)
+{
+	if (!attachment->getIsHUDAttachment())
+		attachment->setAttachmentVisibility(visible);
+}
 void onlook_mask_changed(const U8& mask)
 {
 	load_default_bindings(mask);
@@ -330,7 +335,10 @@ void onlook_mask_changed(const U8& mask)
 	gStatusBar->setEnabled(visible);
 	// Cameras get no floaters in the way, but don't interrupt mouselook, otherwise.
 	bool ml(gAgentCamera.cameraMouselook());
-	if (mask & 1)
+	bool cam_mode(mask & 1);
+	if (isAgentAvatarValid())
+		std::for_each(gAgentAvatarp->mAttachmentPoints.begin(), gAgentAvatarp->mAttachmentPoints.end(), boost::bind(set_attachment_visible_nonhud, !cam_mode, boost::bind(&std::pair<S32, LLViewerJointAttachment*>::second, _1)));
+	if (cam_mode)
 	{
 		if (ml) gAgentCamera.changeCameraToDefault();
 		gFloaterView->pushVisibleAll(false);
