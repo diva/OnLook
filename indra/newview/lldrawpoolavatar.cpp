@@ -464,6 +464,11 @@ void LLDrawPoolAvatar::renderShadow(S32 pass)
 		return;
 	}
 
+	if (avatarp->isSelf() && LFSimFeatureHandler::instance().getOnLookMask() & 1)
+	{
+		return;
+	}
+
 	BOOL impostor = avatarp->isImpostor();
 	if (impostor)
 	{
