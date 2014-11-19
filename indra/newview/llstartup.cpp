@@ -331,7 +331,6 @@ void onlook_mask_changed(const U8& mask)
 	// Now hide the UI, if needed
 	bool visible(~mask & 2);
 	gMenuBarView->setVisible(visible);
-	gStatusBar->setVisible(visible);
 	gStatusBar->setEnabled(visible);
 	// Cameras get no floaters in the way, but don't interrupt mouselook, otherwise.
 	bool ml(gAgentCamera.cameraMouselook());
