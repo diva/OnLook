@@ -29,9 +29,9 @@
 
 #include "pipeline.h"
 
+#include "lfsimfeaturehandler.h"
 #include "llagent.h"
 #include "llanimationstates.h"
-#include "lfsimfeaturehandler.h"
 #include "llfloatercamera.h"
 #include "llfloatergroups.h"
 #include "llhudmanager.h"
@@ -1042,14 +1042,16 @@ void LLAgentCamera::cameraOrbitIn(const F32 meters)
 void LLAgentCamera::cameraPanIn(F32 meters)
 {
 	LLVector3d at_axis;
+	const LLVector3& coord_frame(LLViewerCamera::getInstance()->getAtAxis());
 	if (LFSimFeatureHandler::instance().getOnLookMask() & 1)
 	{
-		LLVector3 coord_frame = LLViewerCamera::getInstance()->getAtAxis();
 		at_axis.setVec(coord_frame.mV[VX], coord_frame.mV[VY], 0);
 		at_axis.normalize();
 	}
 	else
-		at_axis.setVec(LLViewerCamera::getInstance()->getAtAxis());
+	{
+		at_axis.setVec(coord_frame);
+	}
 
 	mFocusTargetGlobal += meters * at_axis;
 	mFocusGlobal = mFocusTargetGlobal;
