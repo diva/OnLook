@@ -3846,7 +3846,7 @@ void LLAppViewer::idle()
 			LLFastTimer t(FTM_AGENT_UPDATE);
 			// Send avatar and camera info
 			last_control_flags = gAgent.getControlFlags();
-			send_agent_update(TRUE);
+			send_agent_update(FALSE);
 			agent_update_timer.reset();
 		}
 	}
