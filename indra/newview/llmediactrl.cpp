@@ -565,9 +565,12 @@ void LLMediaCtrl::navigateTo( std::string url_in, std::string mime_type)
 	
 	if (ensureMediaSourceExists())
 	{
-		mCurrentNavUrl = url_in;
-		mMediaSource->setSize(mTextureWidth, mTextureHeight);
-		mMediaSource->navigateTo(url_in, mime_type, mime_type.empty());
+		if (mCurrentNavUrl != url_in)
+		{
+			mCurrentNavUrl = url_in;
+			mMediaSource->setSize(mTextureWidth, mTextureHeight);
+			mMediaSource->navigateTo(url_in, mime_type, mime_type.empty());
+		}
 	}
 }
 
@@ -970,6 +973,7 @@ void LLMediaCtrl::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event)
 		case MEDIA_EVENT_LOCATION_CHANGED:
 		{
 			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_LOCATION_CHANGED, new uri is: " << self->getLocation() << LL_ENDL;
+			mCurrentNavUrl = self->getLocation();
 		};
 		break;
 
