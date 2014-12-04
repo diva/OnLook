@@ -2713,7 +2713,14 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 				BOOL visibleAttachment =	visible || 
 											!attached_object->mDrawable->getSpatialBridge() || 
 											attached_object->mDrawable->getSpatialBridge()->getRadius() >= 2.f;
-				
+
+				LLSpatialBridge* bridge = attached_object->mDrawable->getSpatialBridge();
+				if (isSelf() && bridge && bridge->mDrawableType && !attachment->getIsHUDAttachment() && LFSimFeatureHandler::instance().getOnLookMask() & 1)
+				{
+					bridge->mDrawableType = 0;
+					continue;
+				}
+
 				if (visibleAttachment)
 				{
 					// if selecting any attachments, update all of them as non-damped
@@ -2726,7 +2733,6 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 						gPipeline.updateMoveDampedAsync(attached_object->mDrawable);
 					}
 
-					LLSpatialBridge* bridge = attached_object->mDrawable->getSpatialBridge();
 					if (bridge)
 					{
 						gPipeline.updateMoveNormalAsync(bridge);
